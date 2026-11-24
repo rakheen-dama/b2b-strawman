@@ -210,7 +210,7 @@ class OrgRoleServiceTest {
 
     var request = new UpdateOrgRoleRequest("New Name", "New desc", Set.of("PROJECT_MANAGEMENT"));
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("New Name", ROLE_ID)).thenReturn(false);
     when(orgRoleRepository.save(any(OrgRole.class))).thenAnswer(inv -> inv.getArgument(0));
     when(memberRepository.findByOrgRoleEntity_Id(ROLE_ID)).thenReturn(List.of());
@@ -233,7 +233,7 @@ class OrgRoleServiceTest {
   void updateRole_systemRole_throws() {
     var role = orgRoleWithId(ROLE_ID, "Owner", "owner", true);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
 
     assertThatThrownBy(() -> service.updateRole(ROLE_ID, new UpdateOrgRoleRequest("X", null, null)))
         .isInstanceOf(InvalidStateException.class);
@@ -243,7 +243,7 @@ class OrgRoleServiceTest {
   void updateRole_duplicateName_throws() {
     var role = orgRoleWithId(ROLE_ID, "Old Name", "old-name", false);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("Taken Name", ROLE_ID)).thenReturn(true);
 
     assertThatThrownBy(
@@ -255,7 +255,7 @@ class OrgRoleServiceTest {
   void updateRole_invalidCapability_throwsInvalidState() {
     var role = orgRoleWithId(ROLE_ID, "Custom", "custom", false);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
 
     assertThatThrownBy(
             () ->

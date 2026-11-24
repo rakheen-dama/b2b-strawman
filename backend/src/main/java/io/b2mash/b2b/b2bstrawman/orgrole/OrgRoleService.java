@@ -207,9 +207,10 @@ public class OrgRoleService {
 
   @Transactional
   public OrgRoleResponse updateRole(UUID id, UpdateOrgRoleRequest request) {
+    // locked: the added capabilities are computed from what the role holds now (FR-4)
     var role =
         orgRoleRepository
-            .findById(id)
+            .findByIdForUpdate(id)
             .orElseThrow(() -> new ResourceNotFoundException("OrgRole", id));
 
     if (role.isSystem()) {
@@ -285,9 +286,10 @@ public class OrgRoleService {
 
   @Transactional
   public MemberCapabilitiesResponse assignRole(UUID memberId, AssignRoleRequest request) {
+    // locked: what the change grants is computed from the member's current role and overrides
     var member =
         memberRepository
-            .findById(memberId)
+            .findByIdForUpdate(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
     // Owner protection: cannot change the owner's role

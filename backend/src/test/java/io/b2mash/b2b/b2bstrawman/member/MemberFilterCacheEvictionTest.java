@@ -57,6 +57,9 @@ class MemberFilterCacheEvictionTest {
     var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, CLERK_USER_ID, "member");
     var newRole = orgRoleWithId(NEW_ROLE_ID, "Admin", "admin", true);
 
+    org.mockito.Mockito.when(memberRepository.findByIdForUpdate(MEMBER_ID))
+        .thenReturn(Optional.of(member));
+    // the response re-reads the member (getMemberCapabilities)
     org.mockito.Mockito.when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
     org.mockito.Mockito.when(orgRoleRepository.findById(NEW_ROLE_ID))
         .thenReturn(Optional.of(newRole));
@@ -90,7 +93,8 @@ class MemberFilterCacheEvictionTest {
     var member1 = memberWithIdAndRole(UUID.randomUUID(), ROLE_ID, "user_1", "member");
     var member2 = memberWithIdAndRole(UUID.randomUUID(), ROLE_ID, "user_2", "member");
 
-    org.mockito.Mockito.when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    org.mockito.Mockito.when(orgRoleRepository.findByIdForUpdate(ROLE_ID))
+        .thenReturn(Optional.of(role));
     org.mockito.Mockito.when(memberRepository.findByOrgRoleEntity_Id(ROLE_ID))
         .thenReturn(List.of(member1, member2));
     org.mockito.Mockito.when(orgRoleRepository.save(role)).thenReturn(role);
@@ -111,7 +115,8 @@ class MemberFilterCacheEvictionTest {
     var role = orgRoleWithId(ROLE_ID, "Custom", "custom", false);
     role.setCapabilities(Set.of(Capability.INVOICING));
 
-    org.mockito.Mockito.when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    org.mockito.Mockito.when(orgRoleRepository.findByIdForUpdate(ROLE_ID))
+        .thenReturn(Optional.of(role));
     org.mockito.Mockito.when(orgRoleRepository.save(role)).thenReturn(role);
     org.mockito.Mockito.when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(0L);
 

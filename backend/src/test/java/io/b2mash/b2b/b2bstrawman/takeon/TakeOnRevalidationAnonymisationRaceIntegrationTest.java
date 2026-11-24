@@ -8,6 +8,7 @@ import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustWorld.Accounts;
@@ -138,12 +139,14 @@ class TakeOnRevalidationAnonymisationRaceIntegrationTest {
                     revalidationFailure.set(t);
                   }
                 });
+    // both workers stay reachable so the finally joins them even when an assertion fails inside
+    Thread anonymising = null;
+    var anonymiseFailure = new AtomicReference<Throwable>();
     try {
       assertThat(paused.await(60, TimeUnit.SECONDS)).as("the re-validation paused").isTrue();
 
       // the anonymisation runs and commits while the re-validation holds its stale rows
-      var anonymiseFailure = new AtomicReference<Throwable>();
-      Thread anonymising =
+      anonymising =
           Thread.ofVirtual()
               .start(
                   () -> {
@@ -165,8 +168,11 @@ class TakeOnRevalidationAnonymisationRaceIntegrationTest {
           .isEqualTo(1);
     } finally {
       release.countDown();
+      validating.join(60_000);
+      if (anonymising != null) {
+        anonymising.join(30_000);
+      }
     }
-    validating.join(60_000);
     assertThat(validating.isAlive()).isFalse();
     assertThat(revalidationFailure.get()).isNull();
 
@@ -190,7 +196,12 @@ class TakeOnRevalidationAnonymisationRaceIntegrationTest {
     assertThat(response.getStatus())
         .as("re-validation response %s", response.getContentAsString())
         .isEqualTo(409);
-    assertThat(response.getContentAsString()).contains("\"code\":\"TAKE_ON_CONCURRENT_CHANGE\"");
+    String problem = response.getContentAsString();
+    assertThat((Integer) JsonPath.read(problem, "$.status")).isEqualTo(409);
+    assertThat((String) JsonPath.read(problem, "$.code")).isEqualTo("TAKE_ON_CONCURRENT_CHANGE");
+    assertThat((String) JsonPath.read(problem, "$.title")).isEqualTo("Take-on batch changed");
+    assertThat((String) JsonPath.read(problem, "$.detail"))
+        .isEqualTo("This take-on batch was changed at the same time. Try again.");
   }
 
   private void anonymise(UUID clientId) throws Exception {

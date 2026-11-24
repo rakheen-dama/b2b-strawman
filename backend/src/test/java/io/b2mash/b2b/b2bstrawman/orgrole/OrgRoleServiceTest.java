@@ -305,6 +305,32 @@ class OrgRoleServiceTest {
     return TestIds.withId(role, id);
   }
 
+  // review round 3: the resolution is independent of the overrides' iteration order — every "+"
+  // first, then every "-" ("-" wins on a contradictory pair, as the frontend shows it)
+  @Test
+  void resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder() {
+    var role = orgRoleWithId(ROLE_ID, "Bookkeeper", "bookkeeper", false);
+    role.setCapabilities(Set.of(Capability.INVOICING));
+    for (var order :
+        List.of(
+            List.of(
+                "+SIGN_OFF_TRUST_TAKE_ON", "-SIGN_OFF_TRUST_TAKE_ON", "-INVOICING", "+INVOICING"),
+            List.of(
+                "-SIGN_OFF_TRUST_TAKE_ON",
+                "+SIGN_OFF_TRUST_TAKE_ON",
+                "+INVOICING",
+                "-INVOICING"))) {
+      var member = org.mockito.Mockito.mock(Member.class);
+      when(member.getOrgRoleEntity()).thenReturn(role);
+      when(member.getCapabilityOverrides()).thenReturn(new java.util.LinkedHashSet<>(order));
+      when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
+
+      assertThat(service.resolveCapabilities(MEMBER_ID))
+          .as("overrides iterated as %s", order)
+          .doesNotContain("SIGN_OFF_TRUST_TAKE_ON", "INVOICING");
+    }
+  }
+
   private static Member memberWithRole(UUID memberId, OrgRole role, Set<String> overrides) {
     var member = new Member("clerk_user", "test@test.com", "Test", null, role);
     TestIds.withId(member, memberId);

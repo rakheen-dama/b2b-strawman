@@ -103,7 +103,12 @@ public class OrgSettingsController {
       @Valid @RequestBody UpdateComplianceSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateComplianceSettings(
-            request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), actor));
+            request.dormancyThresholdDays(),
+            request.dataRequestDeadlineDays(),
+            request.ficaReviewMonthsLow(),
+            request.ficaReviewMonthsMedium(),
+            request.ficaReviewMonthsHigh(),
+            actor));
   }
 
   @PatchMapping("/tax")

@@ -100,7 +100,9 @@ class ClientListRowIntegrationTest {
   private static final String BARE = "user_clr_bare";
   private static final String PACK_ID = "fica-onboarding-pack";
   private static final int CLIENT_PAGE = 50;
-  private static final int STATEMENT_CAP = 10;
+  // Authorised pin change (655B, D-136): 10 -> 11 for the active FICA attestations read — one
+  // query, independent of page size (§17.3.4 "a client list costs one more query", ADR-388).
+  private static final int STATEMENT_CAP = 11;
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -400,7 +402,7 @@ class ClientListRowIntegrationTest {
         .andExpect(jsonPath("$.title").value("Invalid FICA status filter"))
         .andExpect(
             jsonPath("$.detail")
-                .value("Invalid ficaStatus: 'bogus'. Valid values: OUTSTANDING, DONE"));
+                .value("Invalid ficaStatus: 'bogus'. Valid values: OUTSTANDING, DONE, REVIEW"));
   }
 
   @Test

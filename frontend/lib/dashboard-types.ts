@@ -155,7 +155,8 @@ export interface UnbilledWipResponse {
   redacted: boolean;
 }
 
-export type FicaOutstandingStatus = "NOT_STARTED" | "IN_PROGRESS";
+/** `FicaStatusProjector.isOutstanding` (Phase 93 655B adds ATTESTED_REVIEW). */
+export type FicaOutstandingStatus = "NOT_STARTED" | "IN_PROGRESS" | "ATTESTED_REVIEW";
 
 export interface FicaOutstandingClient {
   clientId: string;

@@ -11,6 +11,10 @@ export interface OrgSettings {
   // compliance fields (may be absent from API response until backend adds them)
   dormancyThresholdDays?: number;
   dataRequestDeadlineDays?: number;
+  /** FICA review intervals in months (Phase 93 655B, FD-7; defaults 36 / 24 / 12). */
+  ficaReviewMonthsLow?: number;
+  ficaReviewMonthsMedium?: number;
+  ficaReviewMonthsHigh?: number;
   compliancePackStatus?: CompliancePackEntry[];
   // integration feature flags
   accountingEnabled?: boolean;

@@ -35,6 +35,8 @@ import {
   type ClientColumnId,
 } from "@/lib/clients-list";
 import type { ClientListRow } from "@/lib/types";
+import { ficaReviewReasonLabels } from "@/lib/types/fica";
+import { TAKE_ON_CLIENT_VALUE_LABEL } from "@/lib/types/take-on";
 import { ClientRowActions } from "./client-row-actions";
 
 const NUMERIC_COLUMNS = new Set<ClientColumnId>(["openMatterCount", "outstanding", "trustBalance"]);
@@ -101,8 +103,74 @@ function ficaVerified(row: ClientListRow): string {
     : "";
 }
 
+/** The attested badges wrap (the X3 labels are long) so the always-shown FICA column stays narrow. */
+const ATTESTED_BADGE_CLASS = "max-w-[11rem] rounded-md text-left whitespace-normal";
+
+/** "Risk: Low" from the attestation's rating (655A labels); null when absent or hidden (D-148). */
+function ficaRiskText(row: ClientListRow): string | null {
+  const label = row.ficaRiskRating
+    ? TAKE_ON_CLIENT_VALUE_LABEL.riskRating[row.ficaRiskRating]
+    : undefined;
+  return label ? `Risk: ${label}` : null;
+}
+
+/**
+ * ATTESTED_REVIEW reason labels. Empty reasons on a review-due row mean the caller cannot see the
+ * detail (D-148: no CUSTOMER_MANAGEMENT) — "—", never an empty list.
+ */
+function ficaReasonsText(row: ClientListRow): string {
+  const labels = ficaReviewReasonLabels(row.ficaReviewReasons);
+  return labels.length > 0 ? labels.join(", ") : "—";
+}
+
+/** The attestation's records location, muted and truncated (full text in the title). */
+function RecordsLocation({ row }: { row: ClientListRow }) {
+  if (!row.ficaRecordsLocation) return null;
+  return (
+    <span
+      className="text-muted-foreground block max-w-[11rem] truncate text-xs"
+      title={row.ficaRecordsLocation}
+      data-testid="client-fica-records-location"
+    >
+      {row.ficaRecordsLocation}
+    </span>
+  );
+}
+
 function FicaCell({ row }: { row: ClientListRow }) {
   switch (row.ficaStatus) {
+    case "ATTESTED":
+      return (
+        <span className="inline-flex flex-col items-start gap-0.5">
+          <Badge
+            variant="success"
+            className={ATTESTED_BADGE_CLASS}
+            data-testid="client-fica-status"
+          >
+            {FICA_STATUS_LABEL.ATTESTED}
+          </Badge>
+          <RecordsLocation row={row} />
+        </span>
+      );
+    case "ATTESTED_REVIEW": {
+      const risk = ficaRiskText(row);
+      return (
+        <span className="inline-flex flex-col items-start gap-0.5">
+          <Badge
+            variant="warning"
+            className={ATTESTED_BADGE_CLASS}
+            data-testid="client-fica-status"
+          >
+            {FICA_STATUS_LABEL.ATTESTED_REVIEW}
+          </Badge>
+          <span className="max-w-[11rem] text-xs" data-testid="client-fica-review-reasons">
+            {ficaReasonsText(row)}
+          </span>
+          {risk && <span className="text-muted-foreground text-xs">{risk}</span>}
+          <RecordsLocation row={row} />
+        </span>
+      );
+    }
     case "DONE": {
       const verified = ficaVerified(row);
       return (
@@ -251,6 +319,11 @@ function clientCsv(column: ClientColumnId, row: ClientListRow): string | number 
       return row.lifecycleStatus ? lifecycleStatusLabel(row.lifecycleStatus) : null;
     case "ficaStatus": {
       const label = FICA_STATUS_LABEL[row.ficaStatus] ?? FICA_STATUS_LABEL.NOT_STARTED;
+      if (row.ficaStatus === "ATTESTED_REVIEW") {
+        // Hidden detail (D-148) → the label alone, as for "—" elsewhere in the CSV.
+        const reasons = ficaReviewReasonLabels(row.ficaReviewReasons).join(", ");
+        return reasons ? `${label} · ${reasons}` : label;
+      }
       const verified = ficaVerified(row);
       return verified ? `${label} · ${verified}` : label;
     }
@@ -277,8 +350,8 @@ export interface ClientColumnOptions {
   customFieldNames: Readonly<Record<string, string>>;
   /** `false` for a saved view's own column choice: no column is hidden by priority. */
   hideLowPriorityColumns: boolean;
-  /** The active sort column: never hidden by priority. */
-  sortKey: ClientColumnId;
+  /** The active sort column (null = server order): never hidden by priority. */
+  sortKey: ClientColumnId | null;
 }
 
 /** The DataTable columns for the resolved column ids, in order, plus the trailing row menu. */

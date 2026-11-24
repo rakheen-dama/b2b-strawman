@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import static io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService.FICA_ONBOARDING_PACK_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -10,17 +11,29 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
+import io.b2mash.b2b.b2bstrawman.compliance.BeneficialOwnershipStatus;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestation;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
+import io.b2mash.b2b.b2bstrawman.compliance.FicaClientType;
+import io.b2mash.b2b.b2bstrawman.compliance.FicaRiskRating;
+import io.b2mash.b2b.b2bstrawman.compliance.FicaScreeningStatus;
+import io.b2mash.b2b.b2bstrawman.compliance.SourceOfFundsStatus;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -34,11 +47,15 @@ import org.springframework.context.ApplicationEventPublisher;
  * (the fallback, reached with no onboarding checklist instances); part 2 pins the checklist-first
  * branch; part 3 proves the batched {@code getFicaStatuses} and the single-client {@code
  * getFicaStatus} return identical results for the same fixtures (the single read delegates to the
- * batch today — this guards against a future split).
+ * batch today — this guards against a future split); part 4 pins the attestation branch (Phase 93
+ * 655B, §17.3.4, ADR-388).
  */
 class FicaStatusProjectorTest {
 
   private static final Instant T0 = Instant.parse("2026-09-01T08:00:00Z");
+
+  /** The projector's {@code today} — a constant, never {@code LocalDate.now()} (P-15). */
+  private static final LocalDate TODAY = LocalDate.of(2026, 9, 1);
 
   private final UUID ficaTemplate = UUID.randomUUID();
   private final UUID inactiveFicaTemplate = UUID.randomUUID();
@@ -58,7 +75,7 @@ class FicaStatusProjectorTest {
     @Test
     void noRequestsIsNotStarted() {
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(), lookup),
+          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(), lookup, null, TODAY),
           "NOT_STARTED",
           null);
     }
@@ -67,7 +84,7 @@ class FicaStatusProjectorTest {
     void noFicaTemplatesIsNotStarted() {
       var r = request(client, ficaTemplate, RequestStatus.DRAFT, T0, null);
       assertProjection(
-          FicaStatusProjector.project(List.of(), Set.of(), List.of(r), lookup),
+          FicaStatusProjector.project(List.of(), Set.of(), List.of(r), lookup, null, TODAY),
           "NOT_STARTED",
           null);
     }
@@ -77,7 +94,8 @@ class FicaStatusProjectorTest {
       var other = request(client, otherTemplate, RequestStatus.DRAFT, T0, null);
       var adHoc = request(client, null, RequestStatus.SENT, T0, null);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(other, adHoc), lookup),
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(other, adHoc), lookup, null, TODAY),
           "NOT_STARTED",
           null);
     }
@@ -86,7 +104,8 @@ class FicaStatusProjectorTest {
     void onlyCancelledFicaRequestsAreNotStarted() {
       var cancelled = request(client, ficaTemplate, RequestStatus.CANCELLED, T0, null);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(cancelled), lookup),
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(cancelled), lookup, null, TODAY),
           "NOT_STARTED",
           null);
     }
@@ -99,7 +118,7 @@ class FicaStatusProjectorTest {
           request(client, ficaTemplate, RequestStatus.IN_PROGRESS, T0.plusSeconds(30), null);
       assertProjection(
           FicaStatusProjector.project(
-              List.of(), ficaTemplates, List.of(draft, sent, inProgress), lookup),
+              List.of(), ficaTemplates, List.of(draft, sent, inProgress), lookup, null, TODAY),
           "IN_PROGRESS",
           sent.getId());
     }
@@ -110,7 +129,8 @@ class FicaStatusProjectorTest {
       var r = request(client, ficaTemplate, RequestStatus.COMPLETED, T0, completedAt);
       item(r, ItemStatus.ACCEPTED);
       item(r, ItemStatus.ACCEPTED);
-      var p = FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup);
+      var p =
+          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.requestId()).isEqualTo(r.getId());
       assertThat(p.completedAt()).isEqualTo(completedAt);
@@ -122,14 +142,16 @@ class FicaStatusProjectorTest {
       item(submitted, ItemStatus.ACCEPTED);
       item(submitted, ItemStatus.SUBMITTED);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(submitted), lookup),
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(submitted), lookup, null, TODAY),
           "IN_PROGRESS",
           submitted.getId());
 
       var rejected = request(client, ficaTemplate, RequestStatus.COMPLETED, T0, T0);
       item(rejected, ItemStatus.REJECTED);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(rejected), lookup),
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(rejected), lookup, null, TODAY),
           "IN_PROGRESS",
           rejected.getId());
     }
@@ -138,7 +160,7 @@ class FicaStatusProjectorTest {
     void completedWithNoItemsIsInProgress() {
       var r = request(client, ficaTemplate, RequestStatus.COMPLETED, T0, T0);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup),
+          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup, null, TODAY),
           "IN_PROGRESS",
           r.getId());
     }
@@ -149,7 +171,8 @@ class FicaStatusProjectorTest {
       item(done, ItemStatus.ACCEPTED);
       var newerLive = request(client, ficaTemplate, RequestStatus.SENT, T0.plusSeconds(3600), null);
       var p =
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(newerLive, done), lookup);
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(newerLive, done), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.requestId()).isEqualTo(done.getId());
     }
@@ -164,7 +187,7 @@ class FicaStatusProjectorTest {
       item(newerIncomplete, ItemStatus.REJECTED);
       assertProjection(
           FicaStatusProjector.project(
-              List.of(), ficaTemplates, List.of(olderDone, newerIncomplete), lookup),
+              List.of(), ficaTemplates, List.of(olderDone, newerIncomplete), lookup, null, TODAY),
           "IN_PROGRESS",
           newerIncomplete.getId());
     }
@@ -176,7 +199,8 @@ class FicaStatusProjectorTest {
       var cancelled =
           request(client, ficaTemplate, RequestStatus.CANCELLED, T0.plusSeconds(3600), null);
       var p =
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(cancelled, done), lookup);
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(cancelled, done), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.requestId()).isEqualTo(done.getId());
     }
@@ -185,7 +209,7 @@ class FicaStatusProjectorTest {
     void inactiveFicaTemplatesStillCount() {
       var r = request(client, inactiveFicaTemplate, RequestStatus.SENT, T0, null);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup),
+          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(r), lookup, null, TODAY),
           "IN_PROGRESS",
           r.getId());
     }
@@ -196,11 +220,13 @@ class FicaStatusProjectorTest {
       var b = request(client, ficaTemplate, RequestStatus.DRAFT, T0, null);
       UUID expected = a.getId().compareTo(b.getId()) < 0 ? a.getId() : b.getId();
       assertThat(
-              FicaStatusProjector.project(List.of(), ficaTemplates, List.of(a, b), lookup)
+              FicaStatusProjector.project(
+                      List.of(), ficaTemplates, List.of(a, b), lookup, null, TODAY)
                   .requestId())
           .isEqualTo(expected);
       assertThat(
-              FicaStatusProjector.project(List.of(), ficaTemplates, List.of(b, a), lookup)
+              FicaStatusProjector.project(
+                      List.of(), ficaTemplates, List.of(b, a), lookup, null, TODAY)
                   .requestId())
           .isEqualTo(expected);
     }
@@ -215,7 +241,9 @@ class FicaStatusProjectorTest {
       var done = instance(client, "COMPLETED", T0, completedAt);
       // A live FICA request alone would read IN_PROGRESS — the checklist outranks it.
       var sent = request(client, ficaTemplate, RequestStatus.SENT, T0.plusSeconds(60), null);
-      var p = FicaStatusProjector.project(List.of(done), ficaTemplates, List.of(sent), lookup);
+      var p =
+          FicaStatusProjector.project(
+              List.of(done), ficaTemplates, List.of(sent), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.completedAt()).isEqualTo(completedAt);
       assertThat(p.checklistInstanceId()).isEqualTo(done.getId());
@@ -227,7 +255,9 @@ class FicaStatusProjectorTest {
       var open = instance(client, "IN_PROGRESS", T0, null);
       var doneReq = request(client, ficaTemplate, RequestStatus.COMPLETED, T0, T0.plusSeconds(5));
       item(doneReq, ItemStatus.ACCEPTED);
-      var p = FicaStatusProjector.project(List.of(open), ficaTemplates, List.of(doneReq), lookup);
+      var p =
+          FicaStatusProjector.project(
+              List.of(open), ficaTemplates, List.of(doneReq), lookup, null, TODAY);
       // A2: the checklist branch outranks the information-request branch entirely.
       assertChecklistProjection(p, "IN_PROGRESS", open.getId());
     }
@@ -238,7 +268,7 @@ class FicaStatusProjectorTest {
       var newerOpen = instance(client, "IN_PROGRESS", T0.plusSeconds(3600), null);
       assertChecklistProjection(
           FicaStatusProjector.project(
-              List.of(completed, newerOpen), ficaTemplates, List.of(), lookup),
+              List.of(completed, newerOpen), ficaTemplates, List.of(), lookup, null, TODAY),
           "IN_PROGRESS",
           newerOpen.getId());
 
@@ -248,7 +278,7 @@ class FicaStatusProjectorTest {
           instance(client, "COMPLETED", T0.plusSeconds(3600), T0.plusSeconds(7200));
       assertChecklistProjection(
           FicaStatusProjector.project(
-              List.of(newerCompleted, olderOpen), ficaTemplates, List.of(), lookup),
+              List.of(newerCompleted, olderOpen), ficaTemplates, List.of(), lookup, null, TODAY),
           "IN_PROGRESS",
           olderOpen.getId());
     }
@@ -257,7 +287,9 @@ class FicaStatusProjectorTest {
     void newestCompletedWins() {
       var older = instance(client, "COMPLETED", T0, T0.plusSeconds(10));
       var newer = instance(client, "COMPLETED", T0.plusSeconds(3600), T0.plusSeconds(3610));
-      var p = FicaStatusProjector.project(List.of(older, newer), ficaTemplates, List.of(), lookup);
+      var p =
+          FicaStatusProjector.project(
+              List.of(older, newer), ficaTemplates, List.of(), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.checklistInstanceId()).isEqualTo(newer.getId());
       assertThat(p.completedAt()).isEqualTo(T0.plusSeconds(3610));
@@ -272,7 +304,8 @@ class FicaStatusProjectorTest {
       item(doneReq, ItemStatus.ACCEPTED);
       // Falls back to the request rule: DONE via the request.
       var p =
-          FicaStatusProjector.project(List.of(cancelled), ficaTemplates, List.of(doneReq), lookup);
+          FicaStatusProjector.project(
+              List.of(cancelled), ficaTemplates, List.of(doneReq), lookup, null, TODAY);
       assertThat(p.status()).isEqualTo("DONE");
       assertThat(p.requestId()).isEqualTo(doneReq.getId());
       assertThat(p.completedAt()).isEqualTo(completedAt);
@@ -280,7 +313,8 @@ class FicaStatusProjectorTest {
 
       // Only a CANCELLED instance and nothing else → NOT_STARTED.
       assertProjection(
-          FicaStatusProjector.project(List.of(cancelled), ficaTemplates, List.of(), lookup),
+          FicaStatusProjector.project(
+              List.of(cancelled), ficaTemplates, List.of(), lookup, null, TODAY),
           "NOT_STARTED",
           null);
     }
@@ -289,7 +323,7 @@ class FicaStatusProjectorTest {
     void noInstancesFallsBackToTheRequestRule() {
       var sent = request(client, ficaTemplate, RequestStatus.SENT, T0, null);
       assertProjection(
-          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(sent), lookup),
+          FicaStatusProjector.project(List.of(), ficaTemplates, List.of(sent), lookup, null, TODAY),
           "IN_PROGRESS",
           sent.getId());
     }
@@ -303,6 +337,8 @@ class FicaStatusProjectorTest {
     private final RequestItemRepository itemRepository = mock(RequestItemRepository.class);
     private final ChecklistInstanceRepository instanceRepository =
         mock(ChecklistInstanceRepository.class);
+    private final ClientFicaAttestationService attestationService =
+        mock(ClientFicaAttestationService.class);
     private final List<InformationRequest> requests = new ArrayList<>();
     private final List<ChecklistInstance> instances = new ArrayList<>();
 
@@ -320,7 +356,9 @@ class FicaStatusProjectorTest {
             mock(ApplicationEventPublisher.class),
             mock(AuditService.class),
             mock(MemberRepository.class),
-            instanceRepository);
+            instanceRepository,
+            attestationService,
+            Clock.fixed(T0, KaziTime.ZONE));
 
     /**
      * What the database returns: the clients' onboarding instances; the clients' requests on a
@@ -472,8 +510,262 @@ class FicaStatusProjectorTest {
     }
 
     @Test
+    void batchMatchesSingleClientWithAttestations() {
+      UUID attested = UUID.randomUUID();
+      UUID review = UUID.randomUUID();
+      UUID checklistOverAttestation = UUID.randomUUID();
+      var clean = cleanAttestation(attested);
+      var unrated = attestation(review, FicaRiskRating.UNRATED, null);
+      var checklistAttestation = cleanAttestation(checklistOverAttestation);
+      var open = addInstance(instance(checklistOverAttestation, "IN_PROGRESS", T0, null));
+      stubRepositories(Set.of(ficaTemplate));
+      var active =
+          Map.of(attested, clean, review, unrated, checklistOverAttestation, checklistAttestation);
+      when(attestationService.activeFor(anyCollection()))
+          .thenAnswer(
+              inv -> {
+                Collection<UUID> ids = inv.getArgument(0);
+                var found = new HashMap<UUID, ClientFicaAttestation>(active);
+                found.keySet().retainAll(ids);
+                return found;
+              });
+      var clients = List.of(attested, review, checklistOverAttestation);
+
+      var batch = service.getFicaStatuses(clients);
+
+      for (UUID c : clients) {
+        assertThat(batch.get(c)).as("client %s", c).isEqualTo(service.getFicaStatus(c));
+      }
+      assertThat(batch.get(attested).status()).isEqualTo("ATTESTED");
+      assertThat(batch.get(attested).attestationId()).isEqualTo(clean.getId());
+      assertThat(batch.get(attested).reviewReasons()).isEmpty();
+      assertThat(batch.get(attested).lastVerifiedAt()).isNull();
+      assertThat(batch.get(review).status()).isEqualTo("ATTESTED_REVIEW");
+      assertThat(batch.get(review).reviewReasons()).containsExactly("UNRATED");
+      assertThat(batch.get(checklistOverAttestation).status()).isEqualTo("IN_PROGRESS");
+      assertThat(batch.get(checklistOverAttestation).checklistInstanceId()).isEqualTo(open.getId());
+      assertThat(batch.get(checklistOverAttestation).attestationId()).isNull();
+    }
+
+    @Test
     void emptyInputIsEmptyMap() {
       assertThat(service.getFicaStatuses(List.of())).isEmpty();
+    }
+  }
+
+  @Nested
+  class Attestation {
+
+    @Test
+    void openChecklistBeatsAnAttestation() {
+      var open = instance(client, "IN_PROGRESS", T0, null);
+      var p =
+          FicaStatusProjector.project(
+              List.of(open), ficaTemplates, List.of(), lookup, cleanAttestation(client), TODAY);
+      assertChecklistProjection(p, "IN_PROGRESS", open.getId());
+    }
+
+    @Test
+    void completedChecklistBeatsAnAttestation() {
+      // FD-29: Kazi evidence wins — a completed Kazi onboarding checklist supersedes it.
+      var done = instance(client, "COMPLETED", T0, T0.plusSeconds(60));
+      var p =
+          FicaStatusProjector.project(
+              List.of(done),
+              ficaTemplates,
+              List.of(),
+              lookup,
+              attestation(client, FicaRiskRating.UNRATED, null),
+              TODAY);
+      assertThat(p.status()).isEqualTo("DONE");
+      assertThat(p.checklistInstanceId()).isEqualTo(done.getId());
+      assertThat(p.attestationId()).isNull();
+      assertThat(p.reviewReasons()).isEmpty();
+    }
+
+    @Test
+    void liveFicaRequestBeatsAnAttestation() {
+      var sent = request(client, ficaTemplate, RequestStatus.SENT, T0, null);
+      assertProjection(
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(sent), lookup, cleanAttestation(client), TODAY),
+          "IN_PROGRESS",
+          sent.getId());
+    }
+
+    @Test
+    void requestBranchNotStartedFallsThroughToTheAttestation() {
+      // A cancelled FICA request leaves the request rule at NOT_STARTED — the attestation decides.
+      var cancelled = request(client, ficaTemplate, RequestStatus.CANCELLED, T0, null);
+      var a = cleanAttestation(client);
+      var p =
+          FicaStatusProjector.project(
+              List.of(), ficaTemplates, List.of(cancelled), lookup, a, TODAY);
+      assertThat(p.status()).isEqualTo("ATTESTED");
+      assertThat(p.attestationId()).isEqualTo(a.getId());
+    }
+
+    @Test
+    void cleanAttestationIsAttested() {
+      var a = cleanAttestation(client);
+      var p = FicaStatusProjector.project(List.of(), ficaTemplates, List.of(), lookup, a, TODAY);
+      assertAttested(p, "ATTESTED", a);
+      assertThat(p.reviewReasons()).isEmpty();
+    }
+
+    @Test
+    void unratedIsReviewDue() {
+      var a = attestation(client, FicaRiskRating.UNRATED, null);
+      assertAttested(project(a), "ATTESTED_REVIEW", a);
+      assertThat(project(a).reviewReasons()).containsExactly("UNRATED");
+    }
+
+    @Test
+    void beneficialOwnershipOutstandingIsReviewDue() {
+      var a =
+          attestation(
+              client,
+              FicaRiskRating.LOW,
+              TODAY.plusYears(1),
+              BeneficialOwnershipStatus.OUTSTANDING,
+              FicaScreeningStatus.SCREENED_CLEAR,
+              SourceOfFundsStatus.NOT_REQUIRED);
+      assertAttested(project(a), "ATTESTED_REVIEW", a);
+      assertThat(project(a).reviewReasons()).containsExactly("BENEFICIAL_OWNERSHIP_OUTSTANDING");
+    }
+
+    @Test
+    void sourceOfFundsOutstandingIsReviewDue() {
+      var a =
+          attestation(
+              client,
+              FicaRiskRating.MEDIUM,
+              TODAY.plusYears(1),
+              BeneficialOwnershipStatus.DONE,
+              FicaScreeningStatus.SCREENED_CLEAR,
+              SourceOfFundsStatus.OUTSTANDING);
+      assertThat(project(a).status()).isEqualTo("ATTESTED_REVIEW");
+      assertThat(project(a).reviewReasons()).containsExactly("SOURCE_OF_FUNDS_OUTSTANDING");
+    }
+
+    @Test
+    void notScreenedIsReviewDue() {
+      var a =
+          attestation(
+              client,
+              FicaRiskRating.HIGH,
+              TODAY.plusYears(1),
+              BeneficialOwnershipStatus.NOT_APPLICABLE,
+              FicaScreeningStatus.NOT_SCREENED,
+              SourceOfFundsStatus.DONE);
+      assertThat(project(a).status()).isEqualTo("ATTESTED_REVIEW");
+      assertThat(project(a).reviewReasons()).containsExactly("NOT_SCREENED");
+    }
+
+    @Test
+    void reviewDateOnOrBeforeTodayHasPassed() {
+      var dueToday = attestation(client, FicaRiskRating.HIGH, TODAY);
+      assertThat(project(dueToday).status()).isEqualTo("ATTESTED_REVIEW");
+      assertThat(project(dueToday).reviewReasons()).containsExactly("REVIEW_DATE_PASSED");
+
+      var overdue = attestation(client, FicaRiskRating.HIGH, TODAY.minusYears(2));
+      assertThat(project(overdue).reviewReasons()).containsExactly("REVIEW_DATE_PASSED");
+
+      var dueTomorrow = attestation(client, FicaRiskRating.HIGH, TODAY.plusDays(1));
+      assertThat(project(dueTomorrow).status()).isEqualTo("ATTESTED");
+      assertThat(project(dueTomorrow).reviewReasons()).isEmpty();
+    }
+
+    @Test
+    void severalReasonsComeInDeclarationOrder() {
+      var a =
+          attestation(
+              client,
+              FicaRiskRating.UNRATED,
+              null,
+              BeneficialOwnershipStatus.OUTSTANDING,
+              FicaScreeningStatus.NOT_SCREENED,
+              SourceOfFundsStatus.OUTSTANDING);
+      assertThat(project(a).reviewReasons())
+          .containsExactly(
+              "UNRATED",
+              "BENEFICIAL_OWNERSHIP_OUTSTANDING",
+              "SOURCE_OF_FUNDS_OUTSTANDING",
+              "NOT_SCREENED");
+
+      var allFive =
+          attestation(
+              client,
+              FicaRiskRating.LOW,
+              TODAY.minusDays(1),
+              BeneficialOwnershipStatus.OUTSTANDING,
+              FicaScreeningStatus.NOT_SCREENED,
+              SourceOfFundsStatus.OUTSTANDING);
+      assertThat(project(allFive).reviewReasons())
+          .containsExactly(
+              "BENEFICIAL_OWNERSHIP_OUTSTANDING",
+              "SOURCE_OF_FUNDS_OUTSTANDING",
+              "NOT_SCREENED",
+              "REVIEW_DATE_PASSED");
+      assertThat(FicaReviewReason.values())
+          .extracting(Enum::name)
+          .containsExactly(
+              "UNRATED",
+              "BENEFICIAL_OWNERSHIP_OUTSTANDING",
+              "SOURCE_OF_FUNDS_OUTSTANDING",
+              "NOT_SCREENED",
+              "REVIEW_DATE_PASSED");
+    }
+
+    @Test
+    void screeningMatchAloneIsNotAReviewReason() {
+      // FD-30 names five reasons; a screening match is not one of them (F-655B-2, RG-3).
+      var a =
+          attestation(
+              client,
+              FicaRiskRating.LOW,
+              TODAY.plusYears(1),
+              BeneficialOwnershipStatus.DONE,
+              FicaScreeningStatus.SCREENED_MATCH,
+              SourceOfFundsStatus.NOT_REQUIRED);
+      assertThat(project(a).status()).isEqualTo("ATTESTED");
+    }
+
+    @Test
+    void supersededAttestationIsIgnored() {
+      var a = cleanAttestation(client);
+      a.supersede(T0);
+      assertProjection(project(a), "NOT_STARTED", null);
+    }
+
+    @Test
+    void todayIsRequired() {
+      assertThatThrownBy(
+              () ->
+                  FicaStatusProjector.project(
+                      List.of(), ficaTemplates, List.of(), lookup, null, null))
+          .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void outstandingAndClearPredicates() {
+      assertThat(FicaStatusProjector.isOutstanding("NOT_STARTED")).isTrue();
+      assertThat(FicaStatusProjector.isOutstanding("IN_PROGRESS")).isTrue();
+      assertThat(FicaStatusProjector.isOutstanding("ATTESTED_REVIEW")).isTrue();
+      assertThat(FicaStatusProjector.isOutstanding("DONE")).isFalse();
+      assertThat(FicaStatusProjector.isOutstanding("ATTESTED")).isFalse();
+      assertThat(FicaStatusProjector.isOutstanding(null)).isFalse();
+
+      assertThat(FicaStatusProjector.isClear("DONE")).isTrue();
+      assertThat(FicaStatusProjector.isClear("ATTESTED")).isTrue();
+      assertThat(FicaStatusProjector.isClear("NOT_STARTED")).isFalse();
+      assertThat(FicaStatusProjector.isClear("IN_PROGRESS")).isFalse();
+      assertThat(FicaStatusProjector.isClear("ATTESTED_REVIEW")).isFalse();
+      assertThat(FicaStatusProjector.isClear(null)).isFalse();
+    }
+
+    private FicaStatusProjector.Projection project(ClientFicaAttestation a) {
+      return FicaStatusProjector.project(List.of(), ficaTemplates, List.of(), lookup, a, TODAY);
     }
   }
 
@@ -515,6 +807,62 @@ class FicaStatusProjectorTest {
     return i;
   }
 
+  /** A clean, LOW-rated attestation due for review a year after {@link #TODAY}. */
+  private static ClientFicaAttestation cleanAttestation(UUID clientId) {
+    return attestation(clientId, FicaRiskRating.LOW, TODAY.plusYears(1));
+  }
+
+  private static ClientFicaAttestation attestation(
+      UUID clientId, FicaRiskRating rating, LocalDate nextReview) {
+    return attestation(
+        clientId,
+        rating,
+        nextReview,
+        BeneficialOwnershipStatus.DONE,
+        FicaScreeningStatus.SCREENED_CLEAR,
+        SourceOfFundsStatus.NOT_REQUIRED);
+  }
+
+  private static ClientFicaAttestation attestation(
+      UUID clientId,
+      FicaRiskRating rating,
+      LocalDate nextReview,
+      BeneficialOwnershipStatus bo,
+      FicaScreeningStatus screening,
+      SourceOfFundsStatus sof) {
+    var a =
+        new ClientFicaAttestation(
+            clientId,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            LocalDate.of(2024, 2, 1),
+            null,
+            rating,
+            FicaClientType.NATURAL_PERSON,
+            bo,
+            screening,
+            screening == FicaScreeningStatus.NOT_SCREENED ? null : LocalDate.of(2024, 2, 1),
+            sof,
+            "Archive box 12",
+            "PREV-1",
+            nextReview,
+            UUID.randomUUID(),
+            T0,
+            T0);
+    return TestIds.withId(a, UUID.randomUUID());
+  }
+
+  /** An attestation-branch outcome: the attestation id, no other id, no completedAt. */
+  private static void assertAttested(
+      FicaStatusProjector.Projection p, String status, ClientFicaAttestation a) {
+    assertThat(p.status()).isEqualTo(status);
+    assertThat(p.attestationId()).isEqualTo(a.getId());
+    assertThat(p.requestId()).isNull();
+    assertThat(p.checklistInstanceId()).isNull();
+    assertThat(p.completedAt()).isNull();
+  }
+
   /** A request-branch (or NOT_STARTED) outcome: no checklist instance id, no completedAt. */
   private static void assertProjection(
       FicaStatusProjector.Projection p, String status, UUID requestId) {
@@ -522,6 +870,8 @@ class FicaStatusProjectorTest {
     assertThat(p.requestId()).isEqualTo(requestId);
     assertThat(p.completedAt()).isNull();
     assertThat(p.checklistInstanceId()).isNull();
+    assertThat(p.attestationId()).isNull();
+    assertThat(p.reviewReasons()).isEmpty();
   }
 
   /** A checklist-branch non-DONE outcome: the instance id, no request id, no completedAt. */
@@ -531,5 +881,7 @@ class FicaStatusProjectorTest {
     assertThat(p.checklistInstanceId()).isEqualTo(instanceId);
     assertThat(p.requestId()).isNull();
     assertThat(p.completedAt()).isNull();
+    assertThat(p.attestationId()).isNull();
+    assertThat(p.reviewReasons()).isEmpty();
   }
 }

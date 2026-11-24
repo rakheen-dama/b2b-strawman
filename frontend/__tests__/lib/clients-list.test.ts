@@ -38,6 +38,10 @@ function row(overrides: Partial<ClientListRow> = {}): ClientListRow {
     lifecycleStatusChangedAt: null,
     ficaStatus: "DONE",
     ficaLastVerifiedAt: "2026-05-03T08:00:00Z",
+    ficaReviewReasons: [],
+    ficaRiskRating: null,
+    ficaNextReviewDate: null,
+    ficaRecordsLocation: null,
     outstandingFeeNoteTotal: 18400,
     outstandingFeeNoteCount: 2,
     currency: "ZAR",
@@ -132,6 +136,23 @@ describe("sortClientRows (R-1)", () => {
     ];
     expect(ids(sortClientRows(rows, "lifecycleStatus", "asc"))).toEqual(["p", "o", "a", "n"]);
     expect(ids(sortClientRows(rows, "ficaStatus", "asc")).slice(0, 2)).toEqual(["p", "o"]);
+  });
+
+  it("ranks the attested statuses with outstanding first, clear last (655B, D-149)", () => {
+    const rows = [
+      row({ id: "done", ficaStatus: "DONE" }),
+      row({ id: "att", ficaStatus: "ATTESTED" }),
+      row({ id: "prog", ficaStatus: "IN_PROGRESS" }),
+      row({ id: "rev", ficaStatus: "ATTESTED_REVIEW" }),
+      row({ id: "none", ficaStatus: "NOT_STARTED" }),
+    ];
+    expect(ids(sortClientRows(rows, "ficaStatus", "asc"))).toEqual([
+      "none",
+      "rev",
+      "prog",
+      "att",
+      "done",
+    ]);
   });
 
   it("sorts outstanding by total, or by count when redacted (D-6)", () => {
@@ -249,6 +270,9 @@ describe("buildClientListParams", () => {
     expect(buildClientListParams(select("system:with-trust-balance"), {})).toEqual({
       hasTrustBalance: "true",
     });
+    expect(buildClientListParams(select("system:fica-review-due"), {})).toEqual({
+      ficaStatus: "REVIEW",
+    });
   });
 
   it("D-2: URL lifecycleStatus overrides a system view; ALL lifts it and is never sent", () => {
@@ -295,6 +319,14 @@ describe("buildClientListParams", () => {
     });
     const bad = savedView({ filters: { ficaStatus: "MAYBE", hasTrustBalance: "no" } });
     expect(buildClientListParams(select(bad.id, [bad]), {})).toEqual({ view: bad.id });
+  });
+
+  it("saved view carrying the review-queue filter forwards ficaStatus=REVIEW (655B)", () => {
+    const saved = savedView({ filters: { ficaStatus: "review" } });
+    expect(buildClientListParams(select(saved.id, [saved]), {})).toEqual({
+      view: saved.id,
+      ficaStatus: "REVIEW",
+    });
   });
 });
 
@@ -368,6 +400,7 @@ describe("describeCarriedFilter — client system views (615D)", () => {
     expect(describeCarriedFilter("lifecycleStatus", "ACTIVE")).toBe("Lifecycle: Active");
     expect(describeCarriedFilter("ficaStatus", "OUTSTANDING")).toBe("FICA outstanding");
     expect(describeCarriedFilter("ficaStatus", "DONE")).toBe("FICA done");
+    expect(describeCarriedFilter("ficaStatus", "REVIEW")).toBe("FICA review due");
     expect(describeCarriedFilter("hasTrustBalance", "true")).toBe("Has a trust balance");
   });
 });

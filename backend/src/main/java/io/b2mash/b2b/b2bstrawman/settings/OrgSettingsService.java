@@ -145,7 +145,11 @@ public class OrgSettingsService {
                 DataProtectionSettings
                     .DEFAULT_LEGAL_MATTER_RETENTION_YEARS, // legalMatterRetentionYears
                 PortalDigestCadence.WEEKLY.name(), // portalDigestCadence
-                LetterheadSettingsResponse.EMPTY)); // letterhead
+                LetterheadSettingsResponse.EMPTY, // letterhead
+                // No row yet: the V34 column defaults (Phase 93 655B, FD-7).
+                DataRequestSettings.DEFAULT_FICA_REVIEW_MONTHS_LOW,
+                DataRequestSettings.DEFAULT_FICA_REVIEW_MONTHS_MEDIUM,
+                DataRequestSettings.DEFAULT_FICA_REVIEW_MONTHS_HIGH));
   }
 
   /** Updates settings including branding fields. */
@@ -357,7 +361,10 @@ public class OrgSettingsService {
         // Effective (non-null) years, so the response always shows the value a close would stamp.
         settings.getDataProtection().getEffectiveLegalMatterRetentionYears(),
         settings.getPortal().getEffectivePortalDigestCadence().name(),
-        toLetterheadResponse(settings.getLetterhead()));
+        toLetterheadResponse(settings.getLetterhead()),
+        settings.getDataRequest().getFicaReviewMonthsLow(),
+        settings.getDataRequest().getFicaReviewMonthsMedium(),
+        settings.getDataRequest().getFicaReviewMonthsHigh());
   }
 
   /**
@@ -498,13 +505,26 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
-  /** Updates compliance-related settings (dormancy threshold, data request deadline). */
+  /**
+   * Updates compliance-related settings (dormancy threshold, data request deadline, and the FICA
+   * review intervals in months — Phase 93 655B, FD-7). A null keeps the stored value. A changed
+   * interval applies to attestations created afterwards ({@code next_review_date} is stored).
+   */
   @Transactional
   public SettingsResponse updateComplianceSettings(
-      Integer dormancyThresholdDays, Integer dataRequestDeadlineDays, ActorContext actor) {
+      Integer dormancyThresholdDays,
+      Integer dataRequestDeadlineDays,
+      Integer ficaReviewMonthsLow,
+      Integer ficaReviewMonthsMedium,
+      Integer ficaReviewMonthsHigh,
+      ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
-    if (dormancyThresholdDays == null && dataRequestDeadlineDays == null) {
+    if (dormancyThresholdDays == null
+        && dataRequestDeadlineDays == null
+        && ficaReviewMonthsLow == null
+        && ficaReviewMonthsMedium == null
+        && ficaReviewMonthsHigh == null) {
       return getSettingsWithBranding();
     }
 
@@ -523,13 +543,20 @@ public class OrgSettingsService {
     if (dataRequestDeadlineDays != null) {
       settings.getDataRequest().setDataRequestDeadlineDays(dataRequestDeadlineDays);
     }
+    settings
+        .getDataRequest()
+        .setFicaReviewMonths(ficaReviewMonthsLow, ficaReviewMonthsMedium, ficaReviewMonthsHigh);
     settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info(
-        "Updated compliance settings: dormancyThresholdDays={}, dataRequestDeadlineDays={}",
+        "Updated compliance settings: dormancyThresholdDays={}, dataRequestDeadlineDays={},"
+            + " ficaReviewMonths low={} medium={} high={}",
         dormancyThresholdDays,
-        dataRequestDeadlineDays);
+        dataRequestDeadlineDays,
+        ficaReviewMonthsLow,
+        ficaReviewMonthsMedium,
+        ficaReviewMonthsHigh);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -541,7 +568,13 @@ public class OrgSettingsService {
                     "dormancy_threshold_days",
                     dormancyThresholdDays != null ? dormancyThresholdDays : "",
                     "data_request_deadline_days",
-                    dataRequestDeadlineDays != null ? dataRequestDeadlineDays : ""))
+                    dataRequestDeadlineDays != null ? dataRequestDeadlineDays : "",
+                    "fica_review_months_low",
+                    ficaReviewMonthsLow != null ? ficaReviewMonthsLow : "",
+                    "fica_review_months_medium",
+                    ficaReviewMonthsMedium != null ? ficaReviewMonthsMedium : "",
+                    "fica_review_months_high",
+                    ficaReviewMonthsHigh != null ? ficaReviewMonthsHigh : ""))
             .build());
 
     return toSettingsResponse(settings);

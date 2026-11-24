@@ -120,8 +120,8 @@ public class DashboardController {
   }
 
   /**
-   * Returns ONBOARDING/ACTIVE clients whose FICA status is not DONE, longest-outstanding first.
-   * Limit is optional (default 10, clamped to 1-50).
+   * Returns ONBOARDING/ACTIVE clients whose FICA status is outstanding (NOT_STARTED, IN_PROGRESS,
+   * ATTESTED_REVIEW), longest-outstanding first. Limit is optional (default 10, clamped to 1-50).
    */
   @GetMapping("/api/dashboard/fica-outstanding")
   @RequiresCapability("CUSTOMER_MANAGEMENT")

@@ -1,4 +1,157 @@
 {
+  "ClientFicaAttestationResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "status",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.FicaAttestationStatus"
+  }, {
+    "name" : "takeOnBatchId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "cddCompletedDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "lastReviewDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "riskRating",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.FicaRiskRating"
+  }, {
+    "name" : "ficaClientType",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.FicaClientType"
+  }, {
+    "name" : "beneficialOwnershipStatus",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.BeneficialOwnershipStatus"
+  }, {
+    "name" : "screeningStatus",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.FicaScreeningStatus"
+  }, {
+    "name" : "screeningDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "sourceOfFundsStatus",
+    "type" : "io.b2mash.b2b.b2bstrawman.compliance.SourceOfFundsStatus"
+  }, {
+    "name" : "cddRecordsLocation",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "sourceSystemRef",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "nextReviewDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "attestedBy",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "attestedByName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "attestedByRole",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementVersion",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "attestedAt",
+    "type" : "java.time.Instant"
+  } ],
+  "ClientListRow" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "email",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "phone",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "clientType",
+    "type" : "io.b2mash.b2b.b2bstrawman.customer.CustomerType"
+  }, {
+    "name" : "lifecycleStatus",
+    "type" : "io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus"
+  }, {
+    "name" : "status",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "createdAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "lifecycleStatusChangedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "ficaStatus",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ficaLastVerifiedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "ficaReviewReasons",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "ficaRiskRating",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ficaNextReviewDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "ficaRecordsLocation",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "outstandingFeeNoteTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "outstandingFeeNoteCount",
+    "type" : "int"
+  }, {
+    "name" : "currency",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "trustBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "openMatterCount",
+    "type" : "int"
+  }, {
+    "name" : "completenessPercent",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "tags",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse>"
+  }, {
+    "name" : "customFields",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  } ],
+  "FicaStatusResponse" : [ {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "status",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "lastVerifiedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "requestId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "checklistInstanceId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "reviewReasons",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "attestationId",
+    "type" : "java.util.UUID"
+  } ],
   "TakeOnAttestationRequest" : [ {
     "name" : "validationHash",
     "type" : "java.lang.String"
@@ -417,5 +570,21 @@
   }, {
     "name" : "warnings",
     "type" : "java.util.List<java.lang.String>"
+  } ],
+  "UpdateComplianceSettingsRequest" : [ {
+    "name" : "dormancyThresholdDays",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "dataRequestDeadlineDays",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "ficaReviewMonthsLow",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "ficaReviewMonthsMedium",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "ficaReviewMonthsHigh",
+    "type" : "java.lang.Integer"
   } ]
 }

@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.DataRequestSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -41,6 +43,34 @@ public class ClientFicaAttestationService {
       SourceOfFundsStatus sourceOfFundsStatus,
       String cddRecordsLocation,
       String sourceSystemRef) {}
+
+  /**
+   * {@code GET /api/clients/{clientId}/fica-attestation} (Phase 93 655B, §17.3.5): the client's
+   * active attestation — the §17.2.5 fields plus who attested ({@code attestedByName} / {@code
+   * attestedByRole} / {@code statementVersion} are the sign-off's snapshot) and when. {@code
+   * nextReviewDate} is null when {@code riskRating} is {@code UNRATED}.
+   */
+  public record ClientFicaAttestationResponse(
+      UUID id,
+      UUID clientId,
+      FicaAttestationStatus status,
+      UUID takeOnBatchId,
+      LocalDate cddCompletedDate,
+      LocalDate lastReviewDate,
+      FicaRiskRating riskRating,
+      FicaClientType ficaClientType,
+      BeneficialOwnershipStatus beneficialOwnershipStatus,
+      FicaScreeningStatus screeningStatus,
+      LocalDate screeningDate,
+      SourceOfFundsStatus sourceOfFundsStatus,
+      String cddRecordsLocation,
+      String sourceSystemRef,
+      LocalDate nextReviewDate,
+      UUID attestedBy,
+      String attestedByName,
+      String attestedByRole,
+      String statementVersion,
+      Instant attestedAt) {}
 
   /** The batch attestation the client's row is covered by. */
   public record BatchAttestation(
@@ -162,6 +192,56 @@ public class ClientFicaAttestationService {
   @Transactional(readOnly = true)
   public Optional<ClientFicaAttestation> active(UUID customerId) {
     return attestations.findByCustomerIdAndStatus(customerId, FicaAttestationStatus.ACTIVE);
+  }
+
+  /**
+   * The client's active attestation with the sign-off snapshot, or a 404 when the client has none
+   * (a client created in Kazi, or an unknown id).
+   */
+  @Transactional(readOnly = true)
+  public ClientFicaAttestationResponse getActiveForClient(UUID clientId) {
+    var a =
+        active(clientId)
+            .orElseThrow(() -> new ResourceNotFoundException("FICA attestation", clientId));
+    var signOff = attestations.findSignOffSnapshot(a.getSignOffId()).orElse(null);
+    return new ClientFicaAttestationResponse(
+        a.getId(),
+        a.getCustomerId(),
+        a.getStatus(),
+        a.getTakeOnBatchId(),
+        a.getCddCompletedDate(),
+        a.getLastReviewDate(),
+        a.getRiskRating(),
+        a.getFicaClientType(),
+        a.getBeneficialOwnershipStatus(),
+        a.getScreeningStatus(),
+        a.getScreeningDate(),
+        a.getSourceOfFundsStatus(),
+        a.getCddRecordsLocation(),
+        a.getSourceSystemRef(),
+        a.getNextReviewDate(),
+        a.getAttestedBy(),
+        signOff == null ? null : signOff.getMemberName(),
+        signOff == null ? null : signOff.getRoleName(),
+        signOff == null ? null : signOff.getStatementVersion(),
+        a.getAttestedAt());
+  }
+
+  /**
+   * The capability behind every FICA attestation read: {@code GET
+   * /api/clients/{clientId}/fica-attestation}, {@code GET /api/clients/{clientId}/fica-status} and
+   * the {@code ficaStatus=REVIEW} client list (§17.10 X1, D-152).
+   */
+  public static final String FICA_ATTESTATION_CAPABILITY = "CUSTOMER_MANAGEMENT";
+
+  /**
+   * Whether the current caller may see FICA attestation detail — on the client list (the rows'
+   * review reasons, risk rating, next review date and CDD records location, D-148) and the review
+   * queue ({@code ficaStatus=REVIEW}, D-152). Owner/admin hold the capability through their system
+   * roles; the seeded Member role does not; custom roles only by grant.
+   */
+  public static boolean callerSeesFicaAttestationDetail() {
+    return RequestScopes.hasCapability(FICA_ATTESTATION_CAPABILITY);
   }
 
   /** The active attestations of many clients in one query (for list projections, 655B). */

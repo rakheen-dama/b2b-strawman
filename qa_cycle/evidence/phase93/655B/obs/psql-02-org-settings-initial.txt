@@ -1,0 +1,5 @@
+ fica_review_months_low | fica_review_months_medium | fica_review_months_high | dormancy_threshold_days |          updated_at           
+------------------------+---------------------------+-------------------------+-------------------------+-------------------------------
+                     36 |                        24 |                      12 |                         | 2026-11-24 01:48:00.432154+00
+(1 row)
+

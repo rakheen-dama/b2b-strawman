@@ -201,15 +201,39 @@ public final class InformationRequestDtos {
    *   <li>{@code DONE} — the newest live onboarding checklist is COMPLETED (none open), or (no
    *       checklist) the newest COMPLETED FICA request has every item ACCEPTED; {@code
    *       lastVerifiedAt} is that checklist's / request's completedAt.
+   *   <li>{@code ATTESTED} — no Kazi evidence decided and the client's active FICA attestation
+   *       (Phase 93 655B, ADR-388) has no review reason ("Verified in prior system (attested)").
+   *   <li>{@code ATTESTED_REVIEW} — as {@code ATTESTED}, but at least one review reason applies
+   *       ("Review due (attested)"); {@code reviewReasons} says which.
    * </ul>
    *
    * {@code checklistInstanceId} is set when the checklist decided; {@code requestId} keeps its
-   * information-request meaning and is set only when a request decided.
+   * information-request meaning and is set only when a request decided; {@code attestationId} is
+   * set only for {@code ATTESTED} / {@code ATTESTED_REVIEW} (then {@code lastVerifiedAt} is null —
+   * the attestation's dates live on {@code GET /api/clients/{id}/fica-attestation}). {@code
+   * reviewReasons} is never null ({@code UNRATED}, {@code BENEFICIAL_OWNERSHIP_OUTSTANDING}, {@code
+   * SOURCE_OF_FUNDS_OUTSTANDING}, {@code NOT_SCREENED}, {@code REVIEW_DATE_PASSED}, in that order).
+   *
+   * <p>{@code GET /api/clients/{id}/fica-status} requires {@code CUSTOMER_MANAGEMENT} (D-152). On
+   * the ungated client list, a caller without it gets {@link #withoutAttestationDetail()} (D-148) —
+   * the status stays.
    */
   public record FicaStatusResponse(
       UUID clientId,
       String status,
       Instant lastVerifiedAt,
       UUID requestId,
-      UUID checklistInstanceId) {}
+      UUID checklistInstanceId,
+      List<String> reviewReasons,
+      UUID attestationId) {
+
+    /**
+     * The same status with the attestation detail blanked — {@code reviewReasons} empty (never
+     * null), {@code attestationId} null (the client list without CUSTOMER_MANAGEMENT, D-148).
+     */
+    public FicaStatusResponse withoutAttestationDetail() {
+      return new FicaStatusResponse(
+          clientId, status, lastVerifiedAt, requestId, checklistInstanceId, List.of(), null);
+    }
+  }
 }

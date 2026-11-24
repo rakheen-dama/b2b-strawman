@@ -76,7 +76,7 @@ public class ComplianceTools {
             var instances = checklistInstanceService.getInstancesWithItemsForCustomer(customerId);
             var dto =
                 McpComplianceGapDto.from(
-                    customerId, fica.status(), instances, McpPagination.DEFAULT_MAX_SIZE);
+                    customerId, fica, instances, McpPagination.DEFAULT_MAX_SIZE);
             var meta = McpAuditMetadata.builder().rowCount(1).entityRef(customerId).build();
             McpToolAudit.emitInvoked(
                 "list_compliance_gaps",

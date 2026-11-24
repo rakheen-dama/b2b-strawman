@@ -132,6 +132,12 @@
     }, {
       "name" : "truncated",
       "type" : "boolean"
+    }, {
+      "name" : "ficaOutstanding",
+      "type" : "boolean"
+    }, {
+      "name" : "ficaReviewReasons",
+      "type" : "java.util.List<java.lang.String>"
     } ],
     "dto.McpComplianceGapDto$Item" : [ {
       "name" : "name",

@@ -51,4 +51,8 @@ public record SettingsResponse(
     // Epic 498A: Firm-wide portal digest cadence (WEEKLY / BIWEEKLY / OFF)
     String portalDigestCadence,
     // Phase 88 U8 (ADR-353): firm letterhead group — never null (all-null object when unset)
-    LetterheadSettingsResponse letterhead) {}
+    LetterheadSettingsResponse letterhead,
+    // Phase 93 655B (FD-7): FICA review intervals by risk rating, months (never null)
+    Integer ficaReviewMonthsLow,
+    Integer ficaReviewMonthsMedium,
+    Integer ficaReviewMonthsHigh) {}

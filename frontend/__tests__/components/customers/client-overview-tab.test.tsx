@@ -144,4 +144,31 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByTestId("fica-panel")).toBeInTheDocument();
     expect(screen.getByText("FICA Verification Content")).toBeInTheDocument();
   });
+
+  // Test 6 (655B): the take-on attestation card renders on its own, before the FICA panel
+  it("renders the FICA attestation panel when provided, ahead of the FICA panel", () => {
+    const { unmount } = render(
+      <ClientOverviewTab
+        {...baseProps}
+        ficaAttestationPanel={<div data-testid="attestation-panel">Attestation</div>}
+      />
+    );
+    // On its own it is content: no "everything looks good" empty state.
+    expect(screen.getByTestId("attestation-panel")).toBeInTheDocument();
+    expect(screen.queryByText(/Everything looks good/)).not.toBeInTheDocument();
+    unmount();
+
+    render(
+      <ClientOverviewTab
+        {...baseProps}
+        ficaAttestationPanel={<div data-testid="attestation-panel">Attestation</div>}
+        ficaPanel={<div data-testid="fica-panel">FICA Verification Content</div>}
+      />
+    );
+    const attestation = screen.getByTestId("attestation-panel");
+    expect(
+      attestation.compareDocumentPosition(screen.getByTestId("fica-panel")) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
 });

@@ -21,6 +21,8 @@ import {
   resolveViewSelection,
 } from "@/lib/constants/system-views";
 import {
+  FICA_REVIEW_FILTER,
+  SERVER_ORDER_SORT,
   applySavedViewLifecycle,
   buildClientListParams,
   isLifecycleStatus,
@@ -120,9 +122,17 @@ export default async function ClientsPage({
 
   // R-1 / D-7: the backend has no sort or search param; both run here over the full list.
   const search = param("search");
-  const sort = parseClientSort(param("sortBy"), param("sortDir"));
+  const columnSort = parseClientSort(param("sortBy"), param("sortDir"));
   const viewRows = applySavedViewLifecycle(rows, selection);
-  const visibleRows = sortClientRows(searchClientRows(viewRows, search), sort.key, sort.dir);
+  const searchedRows = searchClientRows(viewRows, search);
+  // C-3 (655B, D-153): the FICA review queue ("FICA review due", or a saved view carrying
+  // ficaStatus=REVIEW) keeps the backend's review order — the single source of that order — until
+  // the user picks a column; no header shows as active meanwhile. An explicit `sortBy` still wins.
+  const reviewOrder = listParams.ficaStatus === FICA_REVIEW_FILTER && param("sortBy") === null;
+  const sort = reviewOrder ? SERVER_ORDER_SORT : columnSort;
+  const visibleRows = reviewOrder
+    ? searchedRows
+    : sortClientRows(searchedRows, columnSort.key, columnSort.dir);
 
   const columns = resolveClientColumns(savedViewActive ? selection.view.columns : null, {
     trustVisible,

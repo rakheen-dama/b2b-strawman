@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestation;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -29,7 +31,9 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
@@ -66,6 +70,8 @@ public class InformationRequestService {
   private final AuditService auditService;
   private final MemberRepository memberRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
+  private final ClientFicaAttestationService ficaAttestationService;
+  private final Clock clock;
 
   public InformationRequestService(
       InformationRequestRepository requestRepository,
@@ -80,7 +86,9 @@ public class InformationRequestService {
       ApplicationEventPublisher eventPublisher,
       AuditService auditService,
       MemberRepository memberRepository,
-      ChecklistInstanceRepository checklistInstanceRepository) {
+      ChecklistInstanceRepository checklistInstanceRepository,
+      ClientFicaAttestationService ficaAttestationService,
+      Clock clock) {
     this.requestRepository = requestRepository;
     this.itemRepository = itemRepository;
     this.requestNumberService = requestNumberService;
@@ -94,6 +102,8 @@ public class InformationRequestService {
     this.auditService = auditService;
     this.memberRepository = memberRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
+    this.ficaAttestationService = ficaAttestationService;
+    this.clock = clock;
   }
 
   private String resolveActorName() {
@@ -771,15 +781,62 @@ public class InformationRequestService {
   }
 
   /**
-   * Batched FICA status in at most three statements, independent of how many clients are asked for
-   * (the Clients list's 10-statement cap depends on it): (1) the clients' onboarding checklist
-   * instances (template {@code auto_instantiate = true} folded in as a subquery), (2) their
-   * non-cancelled requests on a FICA-pack template (pack lookup folded in as a subquery), (3) the
-   * items of the COMPLETED ones (only when there are any). One entry per requested id, in iteration
-   * order; the rule is {@link FicaStatusProjector}.
+   * The facts of a client's active FICA attestation that the client list shows (655B, C-4) — a
+   * value, so the {@code compliance} JPA entity never leaves the FICA read. {@code riskRating} is
+   * the {@code FicaRiskRating} name; {@code nextReviewDate} is null when UNRATED.
+   */
+  public record FicaAttestationSummary(
+      String riskRating, LocalDate nextReviewDate, String recordsLocation) {
+
+    static FicaAttestationSummary of(ClientFicaAttestation attestation) {
+      return attestation == null
+          ? null
+          : new FicaAttestationSummary(
+              attestation.getRiskRating().name(),
+              attestation.getNextReviewDate(),
+              attestation.getCddRecordsLocation());
+    }
+  }
+
+  /**
+   * One client's FICA status together with a summary of the active attestation the projection read
+   * (null when none) — so the client list can show the attestation's rating, review date and
+   * records location without another query (655B, C-4).
+   */
+  public record FicaRead(FicaStatusResponse status, FicaAttestationSummary attestation) {
+
+    /**
+     * The same status with every piece of attestation detail blanked — the status's review reasons
+     * and attestation id, and the attestation summary (so the list's rating, review date and
+     * records location read null). D-148.
+     */
+    public FicaRead withoutAttestationDetail() {
+      return new FicaRead(status == null ? null : status.withoutAttestationDetail(), null);
+    }
+  }
+
+  /**
+   * Batched FICA status, independent of how many clients are asked for — {@link #getFicaReads}
+   * mapped to the status. One entry per requested id, in iteration order.
    */
   @Transactional(readOnly = true)
   public Map<UUID, FicaStatusResponse> getFicaStatuses(Collection<UUID> customerIds) {
+    var result = new LinkedHashMap<UUID, FicaStatusResponse>();
+    getFicaReads(customerIds).forEach((id, read) -> result.put(id, read.status()));
+    return result;
+  }
+
+  /**
+   * Batched FICA reads in at most four statements, independent of how many clients are asked for
+   * (the Clients list's 11-statement cap depends on it): (1) the clients' onboarding checklist
+   * instances (template {@code auto_instantiate = true} folded in as a subquery), (2) their
+   * non-cancelled requests on a FICA-pack template (pack lookup folded in as a subquery), (3) the
+   * items of the COMPLETED ones (only when there are any), (4) their active FICA attestations
+   * (655B, §17.3.4). One entry per requested id, in iteration order; the rule is {@link
+   * FicaStatusProjector}, with {@code today} from the injected clock.
+   */
+  @Transactional(readOnly = true)
+  public Map<UUID, FicaRead> getFicaReads(Collection<UUID> customerIds) {
     if (customerIds.isEmpty()) {
       return Map.of();
     }
@@ -808,15 +865,26 @@ public class InformationRequestService {
             : itemRepository.findByRequestIdIn(completedIds).stream()
                 .collect(Collectors.groupingBy(RequestItem::getRequestId));
 
-    var result = new LinkedHashMap<UUID, FicaStatusResponse>();
+    Map<UUID, ClientFicaAttestation> attestationsByClient =
+        ficaAttestationService.activeFor(customerIds);
+    LocalDate today = LocalDate.now(clock);
+
+    var result = new LinkedHashMap<UUID, FicaRead>();
     for (UUID customerId : customerIds) {
+      var attestation = attestationsByClient.get(customerId);
       var projection =
           FicaStatusProjector.project(
               instancesByClient.getOrDefault(customerId, List.of()),
               ficaTemplateIds,
               requestsByClient.getOrDefault(customerId, List.of()),
-              requestId -> itemsByRequest.getOrDefault(requestId, List.of()));
-      result.put(customerId, toFicaStatusResponse(customerId, projection));
+              requestId -> itemsByRequest.getOrDefault(requestId, List.of()),
+              attestation,
+              today);
+      result.put(
+          customerId,
+          new FicaRead(
+              toFicaStatusResponse(customerId, projection),
+              FicaAttestationSummary.of(attestation)));
     }
     return result;
   }
@@ -828,7 +896,9 @@ public class InformationRequestService {
         projection.status(),
         projection.completedAt(),
         projection.requestId(),
-        projection.checklistInstanceId());
+        projection.checklistInstanceId(),
+        projection.reviewReasons(),
+        projection.attestationId());
   }
 
   // ========== Dashboard Summary ==========

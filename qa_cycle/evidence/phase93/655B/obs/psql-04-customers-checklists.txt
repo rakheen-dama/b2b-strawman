@@ -1,0 +1,15 @@
+-- read-only: customers (lifecycle, take-on batch), active attestations count, checklist instances per customer, after OBS
+                name                | lifecycle_status | taken_on | active_attestations | checklist_instances 
+------------------------------------+------------------+----------+---------------------+---------------------
+ Acme Corp                          | ACTIVE           | f        |                   0 | COMPLETED
+ Palesa Dube (OBS 655B onboarding)  | ONBOARDING       | f        |                   0 | IN_PROGRESS
+ Busisiwe Ngcobo                    | ACTIVE           | t        |                   1 | 
+ Umhlanga Ridge Holdings (Pty) Ltd  | ACTIVE           | t        |                   1 | 
+ Hendrik Joubert                    | ACTIVE           | t        |                   1 | 
+ Thabo Mashaba                      | ACTIVE           | t        |                   1 | 
+ Mokopane Mining Supplies (Pty) Ltd | ACTIVE           | t        |                   1 | 
+ Refilwe Moloi                      | ACTIVE           | t        |                   1 | 
+ Andile Khumalo                     | ACTIVE           | t        |                   1 | 
+ Gerrit Coetzee                     | ACTIVE           | t        |                   1 | 
+(10 rows)
+

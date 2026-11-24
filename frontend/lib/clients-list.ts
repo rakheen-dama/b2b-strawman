@@ -7,6 +7,7 @@
  */
 import type { ClientListRow, ClientType, FicaOnboardingStatus, LifecycleStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { FICA_ATTESTED_STATUS_LABEL } from "@/lib/types/fica";
 import type { ViewSelection } from "@/lib/constants/system-views";
 
 /** Table column ids = sort keys = saved-view `columns` values (§12.6.4 order). */
@@ -25,10 +26,22 @@ export const CLIENT_COLUMNS = [
 
 export type ClientColumnId = (typeof CLIENT_COLUMNS)[number]["id"];
 export type SortDir = "asc" | "desc";
+/** The table's sort state. `key: null` = no column is the sort (the server order shows). */
 export interface ClientSort {
-  key: ClientColumnId;
+  key: ClientColumnId | null;
   dir: SortDir;
 }
+
+/** A column sort the page applies itself (`sortClientRows`). */
+export interface ClientColumnSort extends ClientSort {
+  key: ClientColumnId;
+}
+
+/**
+ * The FICA review queue's server order is on screen (§17.3.5, D-153): no column header is active
+ * (`aria-sort` none), and the first header click sorts that column ascending.
+ */
+export const SERVER_ORDER_SORT: ClientSort = { key: null, dir: "asc" };
 
 /** Prefix of a custom-field column id in a saved view's `columns` (`cf:<slug>`). */
 export const CUSTOM_FIELD_COLUMN_PREFIX = "cf:";
@@ -52,11 +65,15 @@ export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
   TRUST: "Trust",
 };
 
-/** FICA onboarding status labels: the Clients table (cell + CSV) and the client hero tile (642B). */
+/**
+ * FICA onboarding status labels: the Clients table (cell + CSV) and the client hero tile (642B).
+ * The two attested statuses use the §17.10 X3 wording (Phase 93 655B).
+ */
 export const FICA_STATUS_LABEL: Record<FicaOnboardingStatus, string> = {
   DONE: "Done",
   IN_PROGRESS: "In progress",
   NOT_STARTED: "Not started",
+  ...FICA_ATTESTED_STATUS_LABEL,
 };
 
 /** Lifecycle order used for sorting (the order a client moves through). */
@@ -70,7 +87,8 @@ export const LIFECYCLE_ORDER: readonly LifecycleStatus[] = [
   "ANONYMIZED",
 ];
 
-const FICA_ORDER = ["NOT_STARTED", "IN_PROGRESS", "DONE"] as const;
+/** FICA sort rank: outstanding first (`isOutstanding`), then clear (`isClear`) — D-149. */
+const FICA_ORDER = ["NOT_STARTED", "ATTESTED_REVIEW", "IN_PROGRESS", "ATTESTED", "DONE"] as const;
 
 export function isLifecycleStatus(value: string | null | undefined): value is LifecycleStatus {
   return typeof value === "string" && (LIFECYCLE_ORDER as readonly string[]).includes(value);
@@ -80,7 +98,7 @@ export function isLifecycleStatus(value: string | null | undefined): value is Li
 export function parseClientSort(
   rawSortBy: string | null | undefined,
   rawSortDir: string | null | undefined
-): ClientSort {
+): ClientColumnSort {
   if (isClientColumnId(rawSortBy) && !UNSORTABLE_CLIENT_COLUMNS.has(rawSortBy)) {
     return { key: rawSortBy, dir: rawSortDir === "desc" ? "desc" : "asc" };
   }
@@ -262,7 +280,10 @@ export function buildClientSortHref(
 /** Keys a saved view's `filters` may carry that the list endpoint applies on the view path. */
 const FORWARDED_VIEW_FILTER_KEYS = ["ficaStatus", "hasTrustBalance", "showIncomplete"] as const;
 
-const FICA_FILTER_VALUES = new Set(["OUTSTANDING", "DONE"]);
+const FICA_FILTER_VALUES = new Set(["OUTSTANDING", "DONE", "REVIEW"]);
+
+/** The `ficaStatus` list param of the FICA review queue (`system:fica-review-due`, §17.3.5). */
+export const FICA_REVIEW_FILTER = "REVIEW";
 
 function isTrue(value: unknown): boolean {
   return value === true || value === "true";

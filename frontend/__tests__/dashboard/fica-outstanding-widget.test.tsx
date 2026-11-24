@@ -63,6 +63,35 @@ describe("FicaOutstandingWidget", () => {
     expect(screen.getByText("1 day")).toBeInTheDocument();
   });
 
+  it("an attested client due for review counts as outstanding, with the X3 label (655B, FD-6)", () => {
+    render(
+      <FicaOutstandingWidget
+        slug="acme"
+        data={{
+          ...DATA,
+          clients: [
+            {
+              clientId: "c3",
+              clientName: "Nkosi Attorneys Trust",
+              lifecycleStatus: "ACTIVE",
+              ficaStatus: "ATTESTED_REVIEW",
+              requestId: null,
+              openedAt: "2026-08-01T08:00:00Z",
+              daysOutstanding: 80,
+            },
+          ],
+        }}
+      />
+    );
+
+    expect(screen.getByText("Review due (attested)")).toHaveAttribute("data-tone", "warning");
+    expect(screen.getByRole("link", { name: /Nkosi Attorneys Trust/ })).toHaveAttribute(
+      "href",
+      "/org/acme/clients/c3"
+    );
+    expect(screen.queryByText("ATTESTED_REVIEW")).not.toBeInTheDocument();
+  });
+
   it("header links the FICA outstanding client view and compliance; footer links incomplete profiles", () => {
     render(<FicaOutstandingWidget slug="acme" data={DATA} />);
 

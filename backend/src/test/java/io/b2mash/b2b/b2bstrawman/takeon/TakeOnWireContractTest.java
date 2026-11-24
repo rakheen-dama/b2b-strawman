@@ -3,6 +3,10 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos;
+import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
 import java.io.IOException;
 import java.lang.reflect.RecordComponent;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +39,9 @@ class TakeOnWireContractTest {
    * The take-on wire records: 18 from 653A, + 5 from 655A (sign-off, attestation statement,
    * attestation and commit requests, portal-contacts response) = 23; each later slice adds the
    * records it introduces. 655A also appended {@code TakeOnBatchResponse.summary} (review B-H2: the
-   * stored validation summary, so the attestation step never pages rows into the browser).
+   * stored validation summary, so the attestation step never pages rows into the browser). 655B
+   * adds the FICA wire records the review queue reads (C-10): the FICA status, the attestation
+   * read, the client-list row and the compliance-settings request = 27.
    */
   static final List<Class<?>> PINNED =
       List.of(
@@ -62,7 +68,12 @@ class TakeOnWireContractTest {
           TakeOnBatchService.TakeOnAttestationStatementResponse.class,
           TakeOnBatchService.TakeOnAttestationRequest.class,
           TakeOnBatchService.TakeOnCommitRequest.class,
-          TakeOnBatchService.TakeOnPortalContactsResponse.class);
+          TakeOnBatchService.TakeOnPortalContactsResponse.class,
+          // 655B
+          InformationRequestDtos.FicaStatusResponse.class,
+          ClientFicaAttestationService.ClientFicaAttestationResponse.class,
+          ClientListRow.class,
+          UpdateComplianceSettingsRequest.class);
 
   private static final String UPDATE_FLAG = "takeon.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/take-on-contract.json");

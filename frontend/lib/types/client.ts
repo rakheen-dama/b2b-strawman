@@ -1,7 +1,7 @@
 // ---- Clients (from CustomerController.java) ----
 
 import type { TagResponse } from "./common";
-import type { FicaOnboardingStatus } from "./fica";
+import type { FicaOnboardingStatus, FicaReviewReason, FicaRiskRating } from "./fica";
 
 export type ClientStatus = "ACTIVE" | "ARCHIVED";
 
@@ -74,6 +74,18 @@ export interface ClientListRow {
   ficaStatus: FicaOnboardingStatus;
   /** ISO instant; set when DONE. */
   ficaLastVerifiedAt: string | null;
+  /**
+   * Phase 93 655B (C-4): the active FICA attestation's review reasons (never null; set only for
+   * ATTESTED_REVIEW). Empty, with the next three null, for a caller without CUSTOMER_MANAGEMENT
+   * (D-148) — an ATTESTED_REVIEW row with no reasons means "detail hidden", not "no reason".
+   */
+  ficaReviewReasons: FicaReviewReason[];
+  /** The attestation's risk rating; null without an active attestation (or hidden, D-148). */
+  ficaRiskRating: FicaRiskRating | null;
+  /** "YYYY-MM-DD"; null without an attestation, when UNRATED, or hidden (D-148). */
+  ficaNextReviewDate: string | null;
+  /** Where the previous system's CDD records are kept; null without an attestation (or hidden). */
+  ficaRecordsLocation: string | null;
   /** SENT fee notes with a due date. null without FINANCIAL_VISIBILITY (owner/admin always see it). */
   outstandingFeeNoteTotal: number | null;
   /** Never redacted. */
@@ -382,6 +394,10 @@ export interface CompliancePackDetail {
 export interface UpdateComplianceSettingsRequest {
   dormancyThresholdDays?: number;
   dataRequestDeadlineDays?: number;
+  /** FICA review intervals in months (1–120), the firm's RMCP choice (Phase 93 655B, FD-7). */
+  ficaReviewMonthsLow?: number;
+  ficaReviewMonthsMedium?: number;
+  ficaReviewMonthsHigh?: number;
 }
 
 export interface PortalContactSummary {

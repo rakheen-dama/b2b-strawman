@@ -463,9 +463,11 @@ public class DashboardService {
 
   /**
    * Non-archived ONBOARDING/ACTIVE clients whose FICA status (batched through {@link
-   * FicaStatusProjector}) is not DONE, longest-outstanding first. {@code daysOutstanding} counts
-   * from the client's last lifecycle transition (or creation). {@code outstandingCount} counts all
-   * outstanding clients; {@code clients} holds the top {@code limit} (clamped to 1–50).
+   * FicaStatusProjector}) is outstanding ({@link FicaStatusProjector#isOutstanding}: NOT_STARTED,
+   * IN_PROGRESS, ATTESTED_REVIEW — a cleanly attested client is not), longest-outstanding first.
+   * {@code daysOutstanding} counts from the client's last lifecycle transition (or creation).
+   * {@code outstandingCount} counts all outstanding clients; {@code clients} holds the top {@code
+   * limit} (clamped to 1–50).
    */
   @Transactional(readOnly = true)
   public FicaOutstandingResponse getFicaOutstanding(int limit) {
@@ -478,7 +480,7 @@ public class DashboardService {
     LocalDate today = LocalDate.now(clock);
     List<FicaOutstandingClient> outstanding =
         clients.stream()
-            .filter(c -> !FicaStatusProjector.DONE.equals(statuses.get(c.getId()).status()))
+            .filter(c -> FicaStatusProjector.isOutstanding(statuses.get(c.getId()).status()))
             .map(
                 c -> {
                   var fica = statuses.get(c.getId());

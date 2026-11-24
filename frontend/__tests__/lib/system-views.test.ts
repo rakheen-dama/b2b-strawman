@@ -76,13 +76,17 @@ describe("system view definitions", () => {
     expect(CLIENT_SYSTEM_VIEWS.map((v) => v.name)).toEqual([
       "Active",
       "FICA outstanding",
+      "FICA review due",
       "With trust balance",
     ]);
     expect(CLIENT_SYSTEM_VIEWS.map((v) => v.params)).toEqual([
       { lifecycleStatus: "ACTIVE" },
       { ficaStatus: "OUTSTANDING" },
+      { ficaStatus: "REVIEW" },
       { hasTrustBalance: "true" },
     ]);
+    // 655B (§17.3.5): the review queue's id sits beside system:fica-outstanding.
+    expect(CLIENT_SYSTEM_VIEWS[2].id).toBe("system:fica-review-due");
   });
 
   it("default ids name existing views", () => {
@@ -114,7 +118,7 @@ describe("mergeViews", () => {
   });
 
   it("no saved views → system views only", () => {
-    expect(mergeViews(CLIENT_SYSTEM_VIEWS, [])).toHaveLength(3);
+    expect(mergeViews(CLIENT_SYSTEM_VIEWS, [])).toHaveLength(4);
   });
 });
 

@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Clients (ONBOARDING/ACTIVE) whose FICA status is not DONE — {@code GET
+ * Clients (ONBOARDING/ACTIVE) whose FICA status is outstanding (NOT_STARTED, IN_PROGRESS or
+ * ATTESTED_REVIEW — {@code FicaStatusProjector.isOutstanding}, Phase 93 655B) — {@code GET
  * /api/dashboard/fica-outstanding} (Phase 87, Epic 614A, arch §12.2.6). {@code outstandingCount}
  * counts every outstanding client; {@code clients} holds the top {@code limit} by days outstanding.
  */

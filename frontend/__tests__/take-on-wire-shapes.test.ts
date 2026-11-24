@@ -27,6 +27,12 @@ import type {
   TakeOnSource,
   TakeOnUploadResult,
 } from "@/lib/types/take-on";
+import type {
+  ClientFicaAttestation,
+  ClientListRow,
+  FicaStatus,
+  UpdateComplianceSettingsRequest,
+} from "@/lib/types";
 
 const componentNames = (components: { name: string }[]) => components.map((c) => c.name);
 
@@ -72,8 +78,11 @@ const BATCH: Required<TakeOnBatch> = {
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 23 take-on records of 653A and 655A", () => {
+  it("pins exactly the 27 records of 653A, 655A and 655B", () => {
     expect(Object.keys(contract).sort()).toEqual([
+      "ClientFicaAttestationResponse",
+      "ClientListRow",
+      "FicaStatusResponse",
       "TakeOnAttestationRequest",
       "TakeOnAttestationStatementResponse",
       "TakeOnBatchResponse",
@@ -97,6 +106,7 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnSignOffResponse",
       "TakeOnSourceResponse",
       "TakeOnUploadResponse",
+      "UpdateComplianceSettingsRequest",
     ]);
   });
 
@@ -309,5 +319,85 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       skippedCount: 0,
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnPortalContactsResponse));
+  });
+
+  // 655B (C-10, D-144): the FICA wire records the review queue reads.
+  it("FicaStatus ↔ FicaStatusResponse", () => {
+    const literal: Required<FicaStatus> = {
+      clientId: "",
+      status: "ATTESTED",
+      lastVerifiedAt: null,
+      requestId: null,
+      checklistInstanceId: null,
+      reviewReasons: [],
+      attestationId: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.FicaStatusResponse));
+  });
+
+  it("ClientFicaAttestation ↔ ClientFicaAttestationResponse", () => {
+    const literal: Required<ClientFicaAttestation> = {
+      id: "",
+      clientId: "",
+      status: "ACTIVE",
+      takeOnBatchId: "",
+      cddCompletedDate: "",
+      lastReviewDate: null,
+      riskRating: "UNRATED",
+      ficaClientType: "NATURAL_PERSON",
+      beneficialOwnershipStatus: "DONE",
+      screeningStatus: "NOT_SCREENED",
+      screeningDate: null,
+      sourceOfFundsStatus: "NOT_REQUIRED",
+      cddRecordsLocation: "",
+      sourceSystemRef: null,
+      nextReviewDate: null,
+      attestedBy: "",
+      attestedByName: "",
+      attestedByRole: "",
+      statementVersion: "",
+      attestedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.ClientFicaAttestationResponse));
+  });
+
+  it("ClientListRow ↔ ClientListRow", () => {
+    const literal: Required<ClientListRow> = {
+      id: "",
+      name: "",
+      email: "",
+      phone: null,
+      clientType: null,
+      lifecycleStatus: null,
+      status: "ACTIVE",
+      createdAt: "",
+      lifecycleStatusChangedAt: null,
+      ficaStatus: "NOT_STARTED",
+      ficaLastVerifiedAt: null,
+      ficaReviewReasons: [],
+      ficaRiskRating: null,
+      ficaNextReviewDate: null,
+      ficaRecordsLocation: null,
+      outstandingFeeNoteTotal: null,
+      outstandingFeeNoteCount: 0,
+      currency: "",
+      trustBalance: null,
+      openMatterCount: 0,
+      completenessPercent: null,
+      tags: [],
+      customFields: {},
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.ClientListRow));
+  });
+
+  it("UpdateComplianceSettingsRequest ↔ UpdateComplianceSettingsRequest", () => {
+    const literal: Required<UpdateComplianceSettingsRequest> = {
+      dormancyThresholdDays: 0,
+      dataRequestDeadlineDays: 0,
+      ficaReviewMonthsLow: 0,
+      ficaReviewMonthsMedium: 0,
+      ficaReviewMonthsHigh: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.UpdateComplianceSettingsRequest));
   });
 });

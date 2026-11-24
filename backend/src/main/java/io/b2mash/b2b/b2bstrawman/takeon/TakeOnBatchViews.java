@@ -281,7 +281,7 @@ public class TakeOnBatchViews {
       case MAPPED -> actions.add(Action.VALIDATE);
       case VALIDATED -> {
         actions.add(Action.REVALIDATE);
-        boolean blocked = batch.getBlockCount() > 0;
+        boolean blocked = batch.blocksCommit(); // a block; for a trust batch any error (D-191)
         if (committer != null && !blocked && signedOffForCommit(batch, liveSignOffs, committer)) {
           actions.add(Action.COMMIT);
         }

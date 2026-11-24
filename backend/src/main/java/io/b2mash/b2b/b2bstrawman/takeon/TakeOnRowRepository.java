@@ -209,8 +209,11 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * client (its mapped {@code clientId}, D-159; the SQL literal {@code 'clientId'} repeats {@code
    * MattersDatasetHandler.CLIENT_ID}) is redacted the same way: it links to the matter and is keyed
    * by the matter, but holds the client reference the file gave (email, previous system id, ID
-   * number — D-178). The row shell (number, status, result link) stays; the archived file is not
-   * rewritten while a legal retention period runs. Pass at least one key.
+   * number — D-178). A trust position row resolved to the client (the same mapped {@code clientId},
+   * {@code TrustPositionDatasetHandler.CLIENT_ID}: client and matter balances, section 86(4)
+   * investments, items outstanding) is redacted the same way, in every status (D-192). The row
+   * shell (number, status, result link) stays; the archived file is not rewritten while a legal
+   * retention period runs. Pass at least one key.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -228,7 +231,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
            WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
-              OR (dataset = 'MATTERS'
+              OR (dataset IN ('MATTERS', 'TRUST_POSITION')
                   AND mapped_values ->> 'clientId' = CAST(:clientId AS varchar))
               OR (dedup_key IN (:dedupKeys)
                   AND (result_entity_id IS NULL OR result_entity_id = :clientId)

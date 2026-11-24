@@ -58,4 +58,16 @@ public interface TakeOnDatasetHandler {
   default int batchBlockCount(ValidationContext context) {
     return 0;
   }
+
+  /**
+   * The errors found across rows, not on one row (657B: a failed §17.3.9 account check on the
+   * banking account or on an investment account the rows name). Counted into {@code error_rows}
+   * with the rows in error, so a batch that is all-or-nothing ({@link
+   * io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset#commitsWhole}) cannot be offered or claimed for
+   * commit while one stands ({@link io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch#blocksCommit},
+   * D-191). Called after {@link #validateBatchLevel}.
+   */
+  default int batchErrorCount(ValidationContext context) {
+    return 0;
+  }
 }

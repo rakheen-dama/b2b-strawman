@@ -27,6 +27,8 @@ import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.RAT
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.RATE_NEGATIVE_MESSAGE;
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.REFERENCE_OR_DESCRIPTION_REQUIRED;
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.REFERENCE_OR_DESCRIPTION_REQUIRED_MESSAGE;
+import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.ROW_REDACTED;
+import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.ROW_REDACTED_MESSAGE;
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.UNIDENTIFIED_DATE_MISSING;
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.UNIDENTIFIED_DATE_MISSING_MESSAGE;
 import static io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages.UNIDENTIFIED_OVER_ONE_YEAR;
@@ -71,6 +73,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -78,8 +81,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Predicate;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * The trust position dataset (Phase 93 657B, §17.3.7, §17.3.9): the dry run of one trust banking
@@ -93,7 +96,8 @@ import tools.jackson.databind.json.JsonMapper;
  * <ol>
  *   <li><b>Account checks first</b> (§17.3.9, {@link TrustTakeOnPreconditions}, then the month
  *       end): a failure is a batch-level error in {@code summary.accountErrors}, shown above the
- *       table, and stops further checks — the rows get the generic checks only.
+ *       table and counted into {@code error_rows} ({@link #batchErrorCount}, D-191), and stops
+ *       further checks — the rows get the generic checks only.
  *   <li><b>Row checks per section</b>: client and matter resolve (§17.3.6, {@link
  *       TrustClientMatterRule#requireClientMatter}); the statutory row blocks (client in debit,
  *       unidentified deposit without its date, a client balance without the client's matter); the
@@ -121,7 +125,8 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
   private static final String UNPRESENTED_PAYMENT = "UNPRESENTED_PAYMENT";
   private static final String INVESTMENT_IN_TRANSIT_KIND = "INVESTMENT_IN_TRANSIT";
 
-  private static final JsonMapper JSON = JsonMapper.builder().build();
+  /** The values a row keeps once its client is anonymised ({@code TakeOnRowRepository}, D-192). */
+  private static final String REDACTED = "redacted";
 
   /** The trust dry-run context: the account checks, the lookups and the running sums. */
   static final class TrustPositionValidationContext extends ValidationContext {
@@ -238,7 +243,7 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
 
     preconditions
         .firstFailure(account, cutover, TrustTakeOnPreconditions.Kind.BANKING, batch.getId())
-        .ifPresent(f -> context.accountErrors.add(new TrustPositionMessage(f.code(), f.message())));
+        .ifPresent(f -> context.accountErrors.add(accountError(f)));
     if (context.accountErrors.isEmpty()
         && !cutover.equals(YearMonth.from(cutover).atEndOfMonth())
         && !batch.isMidMonthAcknowledged()) {
@@ -287,6 +292,13 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
   @Override
   public void mapAndValidate(TakeOnRow row, ValidationContext base) {
     var context = (TrustPositionValidationContext) base;
+    if (Boolean.TRUE.equals(row.getRawValues().get(REDACTED))) {
+      // D-192: its client was anonymised after the upload — nothing left to check; one clean error
+      var redacted = new TakeOnRowCheck(new LinkedHashMap<>(Map.of(REDACTED, true)), null);
+      redacted.addError(ROW_REDACTED, null, ROW_REDACTED_MESSAGE);
+      GenericTakeOnDatasetHandler.finish(row, redacted, context);
+      return;
+    }
     var check = generic.checkGeneric(row, context);
     if (context.accountChecksPassed) {
       switch (row.getSection()) {
@@ -312,7 +324,7 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
     UUID matterId = null;
     boolean clientsMatter = false;
     if (matterRef == null) {
-      if (removeErrors(check, "matterRef", GenericTakeOnDatasetHandler.REQUIRED)) {
+      if (removeErrors(check, "matterRef", GenericTakeOnDatasetHandler.REQUIRED::equals)) {
         check.addBlock(CLIENT_MATTER_REQUIRED, "matterRef", matterRequired(clientRef));
       }
     } else {
@@ -353,8 +365,10 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
     var mapped = check.mapped();
     LocalDate received = date(mapped, "receivedDate");
     if (received == null) {
-      // blank, unparsable or an Excel error: the statutory block replaces the typing error
-      removeErrors(check, "receivedDate", null);
+      // blank or unparsable: the statutory block replaces the typing error; an Excel error cell
+      // keeps its CELL_ERROR beside the block (D-189 c)
+      removeErrors(
+          check, "receivedDate", code -> !GenericTakeOnDatasetHandler.CELL_ERROR.equals(code));
       check.addBlock(UNIDENTIFIED_DATE_MISSING, "receivedDate", UNIDENTIFIED_DATE_MISSING_MESSAGE);
     } else {
       if (received.isAfter(context.cutover)) {
@@ -515,6 +529,9 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
               TakeOnDedupKeys.trustInvestment(account.getId(), institution, accountNumber)));
     }
 
+    // D-193: the confirmation and the Fund amount count whatever the basis (the investments tie
+    // and the deficit test read them; EQ-2 does not), so an untyped basis never also fails the
+    // investments tie; its principal has no side, so it is in neither s86(3) nor s86(4)
     if (confirmation != null) {
       context.confirmations = context.confirmations.add(confirmation);
     }
@@ -609,8 +626,7 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
       preconditions
           .firstFailure(
               account, context.cutover, TrustTakeOnPreconditions.Kind.INVESTMENT, batch.getId())
-          .ifPresent(
-              f -> context.accountErrors.add(new TrustPositionMessage(f.code(), f.message())));
+          .ifPresent(f -> context.accountErrors.add(accountError(f)));
     }
     if (!context.accountErrors.isEmpty()) {
       return;
@@ -644,18 +660,27 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
     return ((TrustPositionValidationContext) base).blocks.size();
   }
 
+  /** The failed account checks: errors of the whole batch, counted into {@code error_rows}. */
   @Override
-  @SuppressWarnings("unchecked")
+  public int batchErrorCount(ValidationContext base) {
+    return ((TrustPositionValidationContext) base).accountErrors.size();
+  }
+
+  @Override
   public Map<String, Object> summary(ValidationContext base) {
     var context = (TrustPositionValidationContext) base;
-    var summary =
-        new TrustPositionSummary(
+    return new TrustPositionSummary(
             List.copyOf(context.accountErrors),
             List.copyOf(context.blocks),
             List.copyOf(context.warnings),
             List.copyOf(context.flags),
-            context.equation);
-    return JSON.convertValue(summary, Map.class);
+            context.equation)
+        .toMap();
+  }
+
+  /** An account check's failure as the summary's message (the wire record of the dataset). */
+  private static TrustPositionMessage accountError(TrustTakeOnPreconditions.Failure failure) {
+    return new TrustPositionMessage(failure.code(), failure.message());
   }
 
   // --- resolution ---
@@ -780,12 +805,9 @@ public class TrustPositionDatasetHandler implements TakeOnDatasetHandler {
         GenericTakeOnDatasetHandler.requiredMessage(spec, xlsx));
   }
 
-  /** Removes the errors on {@code field} (of {@code code}, or every code when null). */
-  private static boolean removeErrors(TakeOnRowCheck check, String field, String code) {
-    return check
-        .errors()
-        .removeIf(
-            e -> field.equals(e.get("field")) && (code == null || code.equals(e.get("code"))));
+  /** Removes the errors on {@code field} whose code {@code codes} accepts. */
+  private static boolean removeErrors(TakeOnRowCheck check, String field, Predicate<Object> codes) {
+    return check.errors().removeIf(e -> field.equals(e.get("field")) && codes.test(e.get("code")));
   }
 
   private static boolean hasError(TakeOnRowCheck check, String field) {

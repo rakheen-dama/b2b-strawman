@@ -81,6 +81,13 @@ const shown = (amount: number | null | undefined) =>
 interface TrustPositionFormProps {
   batch: TakeOnBatch;
   onBatchChange: (batch: TakeOnBatch) => void;
+  /**
+   * Another request on this batch is in flight (the Validation step's manual dry run): the form
+   * is disabled, so a slower response can never overwrite a newer batch.
+   */
+  disabled?: boolean;
+  /** Called with true when the save starts and false when it ends (the shared in-flight state). */
+  onBusyChange?: (busy: boolean) => void;
 }
 
 /**
@@ -89,7 +96,12 @@ interface TrustPositionFormProps {
  * changes the position moves the batch back to Mapped, and the dry run then runs straight away so
  * the equation indicator shows the new figures. Editable while the batch is open (CANCEL).
  */
-export function TrustPositionForm({ batch, onBatchChange }: TrustPositionFormProps) {
+export function TrustPositionForm({
+  batch,
+  onBatchChange,
+  disabled = false,
+  onBusyChange,
+}: TrustPositionFormProps) {
   const open = batch.allowedActions.includes("CANCEL");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -111,6 +123,7 @@ export function TrustPositionForm({ batch, onBatchChange }: TrustPositionFormPro
   async function onSubmit(values: TakeOnTrustPositionFormData) {
     setError(null);
     setBusy(true);
+    onBusyChange?.(true);
     try {
       const saved = await savePosition(batch.id, {
         cutoverDate: values.cutoverDate,
@@ -140,6 +153,7 @@ export function TrustPositionForm({ batch, onBatchChange }: TrustPositionFormPro
       onBatchChange(next);
     } finally {
       setBusy(false);
+      onBusyChange?.(false);
     }
   }
 
@@ -164,7 +178,7 @@ export function TrustPositionForm({ batch, onBatchChange }: TrustPositionFormPro
             date. Saving them runs the dry run again.
           </p>
         </div>
-        <fieldset disabled={!open || busy} className="space-y-4">
+        <fieldset disabled={!open || busy || disabled} className="space-y-4">
           <FormField
             control={form.control}
             name="cutoverDate"
@@ -229,7 +243,7 @@ export function TrustPositionForm({ batch, onBatchChange }: TrustPositionFormPro
               type="submit"
               variant="outline"
               size="sm"
-              disabled={busy}
+              disabled={busy || disabled}
               data-testid="take-on-position-save"
             >
               {busy ? "Saving…" : "Save position"}

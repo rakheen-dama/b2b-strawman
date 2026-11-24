@@ -161,7 +161,11 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const [blocksOnly, setBlocksOnly] = useState(false);
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  /**
+   * The one request on this batch in flight: the manual dry run or the position save (which runs
+   * its own dry run). Each disables the other, so a stale response never overwrites a newer batch.
+   */
+  const [inFlight, setInFlight] = useState<"dryRun" | "position" | null>(null);
 
   const rowsKey = `take-on-rows-${batch.id}-${batch.status}-${batch.validatedAt ?? "none"}-${status}-${section}-${blocksOnly}-${page}`;
   const rows = useSWR(rowsKey, async () => {
@@ -191,7 +195,7 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
 
   async function runDryRun() {
     setError(null);
-    setBusy(true);
+    setInFlight("dryRun");
     try {
       const result = await validateBatch(batch.id);
       if (!result.success || !result.data) {
@@ -201,8 +205,14 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
       setPage(0);
       onBatchChange(result.data);
     } finally {
-      setBusy(false);
+      setInFlight(null);
     }
+  }
+
+  /** A batch the position form saved (and re-validated): its rows start on the first page. */
+  function positionSaved(next: TakeOnBatch) {
+    setPage(0);
+    onBatchChange(next);
   }
 
   function filterChanged(apply: () => void) {
@@ -216,17 +226,28 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
 
   return (
     <div className="space-y-6" data-testid="take-on-validation">
-      {isTrust && <TrustPositionForm batch={batch} onBatchChange={onBatchChange} />}
+      {isTrust && (
+        <TrustPositionForm
+          batch={batch}
+          onBatchChange={positionSaved}
+          disabled={inFlight === "dryRun"}
+          onBusyChange={(b) => setInFlight(b ? "position" : null)}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-3">
         {canValidate && (
           <Button
             type="button"
             variant="accent"
-            disabled={busy}
+            disabled={inFlight !== null}
             onClick={runDryRun}
             data-testid="take-on-validate"
           >
-            {busy ? "Running the dry run…" : validated ? "Run the dry run again" : "Run dry run"}
+            {inFlight === "dryRun"
+              ? "Running the dry run…"
+              : validated
+                ? "Run the dry run again"
+                : "Run dry run"}
           </Button>
         )}
         <p className="text-sm text-slate-600 dark:text-slate-400">

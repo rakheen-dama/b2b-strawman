@@ -442,6 +442,15 @@ public class TakeOnBatch {
     return validRows;
   }
 
+  /**
+   * The batch may not be signed off or committed: a statutory block, or — for a batch committed
+   * whole ({@link TakeOnDataset#commitsWhole}, the trust position) — any error, a row's or an
+   * account check's (D-191). Every sign-off and commit guard reads this.
+   */
+  public boolean blocksCommit() {
+    return blockCount > 0 || (dataset.commitsWhole() && errorRows > 0);
+  }
+
   public int getErrorRows() {
     return errorRows;
   }

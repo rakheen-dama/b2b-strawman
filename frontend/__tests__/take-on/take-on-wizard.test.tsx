@@ -857,6 +857,8 @@ describe("TakeOnWizard — trust position (657B)", () => {
     const closed = "Trust Account G is closed. Take on only into open trust accounts.";
     renderWizard(
       trustBatch({
+        // D-191: the failed account check is counted as an error of the batch
+        counts: { ...trustBatch().counts, error: 1 },
         summary: trustSummaryWith({
           accountErrors: [{ code: "ACCOUNT_CLOSED", message: closed }],
           flags: [],
@@ -866,6 +868,7 @@ describe("TakeOnWizard — trust position (657B)", () => {
       TRUST_CATALOGUE
     );
     expect(screen.getByTestId("take-on-account-errors")).toHaveTextContent(closed);
+    expect(screen.getByTestId("take-on-card-error")).toHaveTextContent("1");
     expect(screen.queryByTestId("take-on-equation")).not.toBeInTheDocument();
     const errors = screen.getByTestId("take-on-account-errors");
     const filters = screen.getByTestId("take-on-row-filters");
@@ -909,5 +912,59 @@ describe("TakeOnWizard — trust position (657B)", () => {
     expect(row).toHaveTextContent("Client matched by: Client email");
     expect(row).not.toHaveTextContent("DEPOSIT_IN_TRANSIT");
     expect(row).not.toHaveTextContent("4b1d7c3e");
+  });
+
+  it("shares one in-flight state: a position save disables the dry run, and a dry run the save", async () => {
+    const user = userEvent.setup();
+    let finishSave: (v: unknown) => void = () => {};
+    actions.savePosition.mockReturnValue(new Promise((resolve) => (finishSave = resolve)));
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+
+    await user.click(screen.getByTestId("take-on-position-save"));
+    await waitFor(() => expect(screen.getByTestId("take-on-validate")).toBeDisabled());
+    finishSave({ success: true, data: trustBatch() }); // unchanged: stays Validated, no dry run
+    await waitFor(() => expect(screen.getByTestId("take-on-validate")).toBeEnabled());
+
+    let finishDryRun: (v: unknown) => void = () => {};
+    actions.validateBatch.mockReturnValue(new Promise((resolve) => (finishDryRun = resolve)));
+    await user.click(screen.getByTestId("take-on-validate"));
+    await waitFor(() => expect(screen.getByTestId("take-on-position-save")).toBeDisabled());
+    expect(screen.getByTestId("take-on-position-cutover-date")).toBeDisabled();
+    expect(screen.getByTestId("take-on-validate")).toHaveTextContent("Running the dry run…");
+    finishDryRun({ success: true, data: trustBatch() });
+    await waitFor(() => expect(screen.getByTestId("take-on-position-save")).toBeEnabled());
+    expect(actions.savePosition).toHaveBeenCalledTimes(1);
+    expect(actions.validateBatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the row table to the first page when a position save publishes a new batch", async () => {
+    const user = userEvent.setup();
+    actions.fetchTakeOnRows.mockResolvedValue({
+      success: true,
+      data: { content: [], page: { totalElements: 120, totalPages: 3, size: 50, number: 0 } },
+    });
+    const mapped = trustBatch({ status: "MAPPED", summary: null, validatedAt: null });
+    const revalidated = trustBatch({ validatedAt: "2026-11-24T10:00:00Z" });
+    actions.savePosition.mockResolvedValue({ success: true, data: mapped });
+    actions.validateBatch.mockResolvedValue({ success: true, data: revalidated });
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+
+    await user.click(await screen.findByTestId("take-on-rows-next"));
+    await waitFor(() =>
+      expect(actions.fetchTakeOnRows).toHaveBeenLastCalledWith(
+        "batch-657b",
+        expect.objectContaining({ page: 1 })
+      )
+    );
+
+    await user.click(screen.getByTestId("take-on-position-save"));
+    await waitFor(() => expect(actions.validateBatch).toHaveBeenCalledWith("batch-657b"));
+    await waitFor(() =>
+      expect(actions.fetchTakeOnRows).toHaveBeenLastCalledWith(
+        "batch-657b",
+        expect.objectContaining({ page: 0 })
+      )
+    );
+    expect(screen.getByText(/Page/)).toHaveTextContent("Page 1 of 3");
   });
 });

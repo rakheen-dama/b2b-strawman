@@ -548,6 +548,43 @@ class TakeOnBatchTest {
     assertThat(row.getResultEntityId()).isEqualTo(existing);
   }
 
+  // --- 657B D-191: a trust batch is committed whole ---
+
+  private static TakeOnBatch validatedWith(TakeOnDataset dataset, TakeOnBatch.Counts counts) {
+    var batch = uploaded(dataset);
+    if (dataset.requiresCutoverDate()) {
+      batch.setCutoverDate(LocalDate.of(2026, 10, 31));
+    }
+    batch.markMapped();
+    batch.markValidated(HASH, counts, Map.of());
+    return batch;
+  }
+
+  @Test
+  void aTrustBatchWithAnyError_blocksTheCommit_likeABlock() {
+    // 9 valid rows + 1 batch-level error (a failed account check), no block
+    var accountError =
+        validatedWith(TakeOnDataset.TRUST_POSITION, new TakeOnBatch.Counts(9, 9, 1, 0, 0));
+    assertThat(accountError.blocksCommit()).isTrue();
+    var blocked =
+        validatedWith(TakeOnDataset.TRUST_POSITION, new TakeOnBatch.Counts(9, 9, 0, 0, 1));
+    assertThat(blocked.blocksCommit()).isTrue();
+    var clean = validatedWith(TakeOnDataset.TRUST_POSITION, new TakeOnBatch.Counts(9, 9, 0, 0, 0));
+    assertThat(clean.blocksCommit()).isFalse();
+  }
+
+  @ParameterizedTest
+  @EnumSource(
+      value = TakeOnDataset.class,
+      names = {"CLIENTS", "MATTERS", "DEBTOR_BALANCES"})
+  void anotherDataset_commitsItsValidRows_andSkipsItsErrorRows(TakeOnDataset dataset) {
+    assertThat(dataset.commitsWhole()).isFalse();
+    var withErrors = validatedWith(dataset, new TakeOnBatch.Counts(3, 2, 1, 0, 0));
+    assertThat(withErrors.blocksCommit()).isFalse();
+    var blocked = validatedWith(dataset, new TakeOnBatch.Counts(3, 2, 1, 0, 1));
+    assertThat(blocked.blocksCommit()).isTrue();
+  }
+
   @Test
   void validRow_toFailed_keepsTheReasonWithinTheColumn() {
     var row = validRow();

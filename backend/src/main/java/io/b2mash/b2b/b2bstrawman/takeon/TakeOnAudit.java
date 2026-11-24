@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.TrustPositionSummary;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -79,20 +80,14 @@ public class TakeOnAudit {
             .put("duplicate_rows", batch.getDuplicateRows())
             .put("block_count", batch.getBlockCount());
     if (batch.getDataset() == TakeOnDataset.TRUST_POSITION) {
-      // 657B (D-20): whether EQ-1 and EQ-2 held — booleans only, never an amount (§17.6.4)
+      // 657B (D-20): whether EQ-1 and EQ-2 held — booleans only, never an amount (§17.6.4); false
+      // when no equation was computed (an account check failed)
+      var summary = TrustPositionSummary.from(batch.getSummary());
       details
-          .put("eq1_holds", equationHolds(batch.getSummary(), "eq1"))
-          .put("eq2_holds", equationHolds(batch.getSummary(), "eq2"));
+          .put("eq1_holds", summary.map(TrustPositionSummary::eq1Holds).orElse(false))
+          .put("eq2_holds", summary.map(TrustPositionSummary::eq2Holds).orElse(false));
     }
     log("takeon.batch.validated", BATCH, batch.getId(), details.build());
-  }
-
-  /** {@code summary.equation.<row>.holds}; false when no equation was computed (account check). */
-  private static boolean equationHolds(Map<String, Object> summary, String row) {
-    return summary != null
-        && summary.get("equation") instanceof Map<?, ?> equation
-        && equation.get(row) instanceof Map<?, ?> values
-        && Boolean.TRUE.equals(values.get("holds"));
   }
 
   /** {@code reasonCode}: {@code USER} (cancel) or {@code ABANDONED} (30-day purge). */

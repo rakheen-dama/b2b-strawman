@@ -91,6 +91,31 @@ public final class TakeOnTrustFiles {
     return sb.toString();
   }
 
+  /**
+   * {@code section}'s mapping with column headers renamed ({@code renames}: header → new header),
+   * for a file whose columns the firm named otherwise.
+   */
+  public static Map<String, Object> mapping(String section, Map<String, String> renames) {
+    var targets = new HashMap<String, String>();
+    TARGETS
+        .get(section)
+        .forEach((field, header) -> targets.put(field, renames.getOrDefault(header, header)));
+    var body = new HashMap<String, Object>();
+    body.put("targets", targets);
+    return body;
+  }
+
+  /** {@code section}'s CSV with column headers renamed ({@code renames}: header → new header). */
+  public static String csv(String section, List<String> rows, Map<String, String> renames) {
+    var header = new ArrayList<String>();
+    for (String h : HEADERS.get(section).split(",")) {
+      header.add(renames.getOrDefault(h, h));
+    }
+    var sb = new StringBuilder(String.join(",", header)).append('\n');
+    rows.forEach(r -> sb.append(r).append('\n'));
+    return sb.toString();
+  }
+
   /** The §17.3.13 client ledgers: A/A1 R300 000, B/B1 R150 000, C/C1 R49 500. */
   public static List<String> section17313ClientLedgers() {
     return List.of("A,A1,300000.00,", "B,B1,150000.00,", "C,C1,49500.00,");

@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * The trust position's arithmetic at cutover (Phase 93 657B, §17.3.9) — pure and in memory, from
@@ -20,6 +23,8 @@ import java.util.Objects;
 public final class TrustPositionEquation {
 
   private TrustPositionEquation() {}
+
+  private static final JsonMapper JSON = JsonMapper.builder().build();
 
   // --- Wire records (TakeOnBatchResponse.summary of a TRUST_POSITION batch) ---
 
@@ -82,7 +87,34 @@ public final class TrustPositionEquation {
       List<TrustPositionMessage> blocks,
       List<TrustPositionMessage> warnings,
       List<String> flags,
-      TrustEquationSummary equation) {}
+      TrustEquationSummary equation) {
+
+    /** The jsonb shape stored in {@code take_on_batches.summary}. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> toMap() {
+      return JSON.convertValue(this, Map.class);
+    }
+
+    /**
+     * The typed reader of a trust batch's stored {@code summary} (the inverse of {@link #toMap});
+     * empty when the batch has none (never validated).
+     */
+    public static Optional<TrustPositionSummary> from(Map<String, ?> summary) {
+      return summary == null
+          ? Optional.empty()
+          : Optional.of(JSON.convertValue(summary, TrustPositionSummary.class));
+    }
+
+    /** EQ-1(C) held; false when no equation was computed (an account check failed). */
+    public boolean eq1Holds() {
+      return equation != null && equation.eq1() != null && equation.eq1().holds();
+    }
+
+    /** EQ-2(C) held; false when no equation was computed (an account check failed). */
+    public boolean eq2Holds() {
+      return equation != null && equation.eq2() != null && equation.eq2().holds();
+    }
+  }
 
   // --- Inputs and result (not wire) ---
 
@@ -121,11 +153,7 @@ public final class TrustPositionEquation {
 
   /** The equation, and the batch-level blocks in display order. */
   public record Result(
-      TrustEquationSummary equation,
-      List<TrustPositionMessage> blocks,
-      boolean fundInDebit,
-      BigDecimal moneyHeld,
-      BigDecimal creditorsFirm) {}
+      TrustEquationSummary equation, List<TrustPositionMessage> blocks, boolean fundInDebit) {}
 
   /** §17.3.9, exactly; every comparison to the cent. */
   public static Result compute(Inputs in, Sums sums) {
@@ -225,7 +253,7 @@ public final class TrustPositionEquation {
               TrustPositionMessages.CONTROL_TOTAL_INVESTMENTS,
               TrustPositionMessages.investmentsListed(confirmations, invested)));
     }
-    return new Result(equation, List.copyOf(blocks), f.signum() < 0, moneyHeld, creditorsFirm);
+    return new Result(equation, List.copyOf(blocks), f.signum() < 0);
   }
 
   /** A wire amount: two decimals, plain ({@code "-100000.00"}). */

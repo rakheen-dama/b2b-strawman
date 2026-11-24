@@ -17,6 +17,7 @@ import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustFiles.section17313Posi
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustFiles.withFigure;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustFiles.withRows;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionMessages;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
@@ -37,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -55,6 +58,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.web.ErrorResponseException;
 
 /**
  * Phase 93 657B (task 657.15, §17.3.9): the trust position dry run through the endpoints the wizard
@@ -435,6 +439,34 @@ class TrustPositionValidationIntegrationTest {
     assertThat((Integer) JsonPath.read(json, "$.counts.blocks")).isEqualTo(2);
   }
 
+  // 7b (D-189 c): an Excel error cell on the date keeps its CELL_ERROR beside the block — even when
+  // the file names the column exactly as the field
+  @Test
+  void anExcelErrorInTheDateKeepsItsCellErrorBesideTheBlock() throws Exception {
+    var files =
+        withRows(
+            files(),
+            UNIDENTIFIED_DEPOSITS,
+            List.of("#REF!,2000.00,ACB CREDIT UNKNOWN,", "03/09/2026,750.00,EFT 7781,"));
+    UUID batch = upload(bankingAccount(), files, Map.of("Date received", "receivedDate"));
+    position(mockMvc, owner(), batch, section17313Position(C)).andExpect(status().isOk());
+    validate(mockMvc, owner(), batch).andExpect(status().isOk());
+
+    var row = rowsBySection(batch).get(UNIDENTIFIED_DEPOSITS + ":2");
+    assertThat(row.get("block")).isEqualTo(true);
+    assertThat(errors(row))
+        .extracting(e -> e.get("code"))
+        .containsExactlyInAnyOrder("CELL_ERROR", "UNIDENTIFIED_DATE_MISSING");
+    assertThat(errors(row))
+        .filteredOn(e -> "CELL_ERROR".equals(e.get("code")))
+        .singleElement()
+        .satisfies(
+            e ->
+                assertThat(e.get("message"))
+                    .isEqualTo(
+                        "This cell holds an error (#REF!). Correct it in Excel and upload again."));
+  }
+
   // 8
   @Test
   void aClientRowOnAnotherClientsMatterIsABlock_asIsABlankOrUnknownMatter() throws Exception {
@@ -532,6 +564,25 @@ class TrustPositionValidationIntegrationTest {
         .isZero();
     assertThat(rowsBySection(batch).values())
         .allSatisfy(r -> assertThat(values(r)).doesNotContainKey("clientId"));
+
+    // D-191: the account check is counted as an error of the batch, which is committed whole —
+    // every row passed the generic checks, so the one error is the account check
+    assertThat((Integer) JsonPath.read(json, "$.counts.valid")).isEqualTo(9);
+    assertThat((Integer) JsonPath.read(json, "$.counts.error")).isEqualTo(1);
+    assertThat((List<String>) JsonPath.read(json, "$.allowedActions"))
+        .contains("REVALIDATE", "CANCEL")
+        .doesNotContain("COMMIT", "ATTEST");
+    String hash = JsonPath.read(json, "$.validationHash");
+    assertThatThrownBy(() -> claim(batch, hash))
+        .isInstanceOf(ErrorResponseException.class)
+        .satisfies(
+            e -> {
+              var problem = ((ErrorResponseException) e).getBody();
+              assertThat(problem.getStatus()).isEqualTo(409);
+              assertThat(problem.getProperties()).containsEntry("code", "TAKE_ON_ERRORS_REMAIN");
+            });
+    assertThat((String) JsonPath.read(json(detail(mockMvc, owner(), batch)), "$.status"))
+        .isEqualTo("VALIDATED");
   }
 
   // 11
@@ -592,6 +643,23 @@ class TrustPositionValidationIntegrationTest {
         json,
         "ACCOUNT_ALREADY_TAKEN_ON",
         "This account has already been taken on (batch " + earlier + ").");
+  }
+
+  // 14b: another trust batch of the account has completed, the account not (yet) marked taken on
+  @Test
+  void anAccountAnotherTrustBatchHasTakenOnIsRefused() throws Exception {
+    UUID g = bankingAccount();
+    UUID other = books.takeOnBatch(g, CUTOVER);
+    books.completeTakeOnBatch(other); // COMPLETED through the entity transitions, no markTakenOn
+    assertThat(books.read(() -> trustAccounts.findById(g).orElseThrow().getTakeOnBatchId()))
+        .isNull();
+    UUID batch = uploadAndPosition(g, files(), section17313Position(C));
+    String json = json(validate(mockMvc, owner(), batch).andExpect(status().isOk()));
+    assertAccountError(
+        json,
+        "ACCOUNT_ALREADY_TAKEN_ON",
+        "This account has already been taken on (batch " + other + ").");
+    assertThat((Integer) JsonPath.read(json, "$.counts.error")).isEqualTo(1);
   }
 
   // 15
@@ -735,6 +803,36 @@ class TrustPositionValidationIntegrationTest {
         .isEqualTo("0.00");
   }
 
+  // 19b (D-193): a basis that does not type is the row's error; its confirmation still counts, so
+  // the investments tie does not also fail
+  @Test
+  void anUntypedInvestmentBasisIsARowError_andTheInvestmentsTieStillAgrees() throws Exception {
+    var files =
+        withRows(
+            files(),
+            INVESTMENTS,
+            List.of(
+                TakeOnTrustFiles.section863(i3Number, "100000.00", "100000.00")
+                    .replace("S86(3)", "S86(9)"),
+                TakeOnTrustFiles.section864(i4Number, "INSTR-A-01")));
+    UUID batch = uploadAndPosition(bankingAccount(), files, section17313Position(C));
+    String json = json(validate(mockMvc, owner(), batch).andExpect(status().isOk()));
+
+    var row = rowsBySection(batch).get(INVESTMENTS + ":2");
+    assertThat(row.get("status")).isEqualTo("ERROR");
+    assertThat(errors(row))
+        .extracting(e -> e.get("field"))
+        .as("the basis is the row's only error")
+        .containsExactly("basis");
+    assertThat((Boolean) JsonPath.read(json, "$.summary.equation.investments.holds")).isTrue();
+    assertThat((String) JsonPath.read(json, "$.summary.equation.investments.listed"))
+        .isEqualTo("300000.00");
+    assertThat((Boolean) JsonPath.read(json, "$.summary.equation.deficit.inDeficit")).isFalse();
+    assertThat((List<String>) JsonPath.read(json, "$.summary.blocks[*].code"))
+        .doesNotContain("CONTROL_TOTAL_INVESTMENTS", "TRUST_DEFICIT");
+    assertThat((List<String>) JsonPath.read(json, "$.allowedActions")).doesNotContain("COMMIT");
+  }
+
   // 20
   @Test
   void positionInputs_partOfTheHash_andAChangeReturnsTheBatchToMapped() throws Exception {
@@ -771,6 +869,8 @@ class TrustPositionValidationIntegrationTest {
             batch,
             withFigure(section17313Position(C), "outstandingDepositsTotal", "-1.00"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Amount cannot be negative"))
         .andExpect(
             jsonPath("$.detail")
                 .value(
@@ -781,6 +881,9 @@ class TrustPositionValidationIntegrationTest {
             new BigDecimal(
                 JsonPath.read(unchanged, "$.position.outstandingDepositsTotal").toString()))
         .isEqualByComparingTo("5000.00");
+    assertThat(new BigDecimal(JsonPath.read(unchanged, "$.position.fundLedgerBalance").toString()))
+        .as("the rejected save (Fund R1 250,00) stored nothing")
+        .isEqualByComparingTo("1300.00");
     assertThat((String) JsonPath.read(unchanged, "$.status")).isEqualTo("VALIDATED");
 
     // more than two decimals: 400
@@ -790,6 +893,8 @@ class TrustPositionValidationIntegrationTest {
             batch,
             withFigure(section17313Position(C), "bankBalance", "418500.001"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Amount not valid"))
         .andExpect(
             jsonPath("$.detail")
                 .value("Enter amounts in rand and cents, up to R9 999 999 999 999,99."));
@@ -799,6 +904,8 @@ class TrustPositionValidationIntegrationTest {
     position(mockMvc, owner(), bare, Map.of("cutoverDate", C)).andExpect(status().isOk());
     validate(mockMvc, owner(), bare)
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("Reconciled position required"))
         .andExpect(jsonPath("$.code").value("TAKE_ON_POSITION_REQUIRED"))
         .andExpect(
             jsonPath("$.detail")
@@ -814,6 +921,8 @@ class TrustPositionValidationIntegrationTest {
             TakeOnTestFiles.csv("Client,Fee note,Issued,Outstanding\nA,FN-1,01/10/2026,100.00\n"));
     position(mockMvc, owner(), debtors[0], withFigure(Map.of("cutoverDate", C), "bankBalance", 1))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Trust position not applicable"))
         .andExpect(
             jsonPath("$.detail").value("The trust position applies only to a trust take-on."));
     String debtorJson =
@@ -823,7 +932,120 @@ class TrustPositionValidationIntegrationTest {
     assertThat((Object) JsonPath.read(debtorJson, "$.position")).isNull();
   }
 
+  // 21 (CodeRabbit round 1, D-192; closes F-657B-1)
+  @Test
+  void anonymisingAClient_redactsTheTrustRowsResolvedToIt_andARevalidationGivesThemOneCleanError()
+      throws Exception {
+    // client D and its matter D1, taken on as the firm would (not A/B/C: the other cases use them)
+    var clients =
+        TakeOnTestApi.validatedClients(
+            mockMvc,
+            owner(),
+            TakeOnClientsFiles.csv(
+                TakeOnClientsFiles.row("Dumisani Client", "tpv.d@example.test").ref("TPV-D")),
+            TakeOnClientsFiles.mapping());
+    TakeOnTestApi.attest(mockMvc, owner(), clients.batchId(), clients.hash(), Map.of())
+        .andExpect(status().isOk());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schema, ORG_ID, ownerId, clients.batchId(), clients.hash());
+    var matters =
+        TakeOnTestApi.validatedMatters(
+            mockMvc,
+            owner(),
+            TakeOnMattersFiles.csv(
+                TakeOnMattersFiles.row("Estate of D").clientRef("TPV-D").number("TPV-D1")),
+            TakeOnMattersFiles.mapping());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schema, ORG_ID, ownerId, matters.batchId(), matters.hash());
+    UUID d = takenOnResult("CLIENTS", "TPV-D");
+    UUID b = takenOnResult("CLIENTS", "B");
+
+    // a client ledger row by D's previous-system id, and one by D's email on an outstanding item
+    var files =
+        withRows(
+            withRows(
+                files(),
+                CLIENT_LEDGER,
+                List.of(
+                    "A,A1,300000.00,",
+                    "B,B1,150000.00,",
+                    "C,C1,49500.00,",
+                    "TPV-D,TPV-D1,100.00,")),
+            OUTSTANDING_ITEMS,
+            List.of(
+                "Deposit,30/10/2026,5000.00,EFT B-0001,B,B1",
+                "Cheque,28/10/2026,20000.00,PAY-778,tpv.d@example.test,TPV-D1"));
+    UUID batch = uploadAndPosition(bankingAccount(), files, section17313Position(C));
+    validate(mockMvc, owner(), batch).andExpect(status().isOk());
+    var before = rowsBySection(batch);
+    assertThat(values(before.get(CLIENT_LEDGER + ":5"))).containsEntry("clientId", d.toString());
+    assertThat(values(before.get(OUTSTANDING_ITEMS + ":3")))
+        .containsEntry("clientId", d.toString());
+
+    mockMvc
+        .perform(
+            post("/api/clients/" + d + "/anonymize")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmationName\": \"Dumisani Client\", \"reason\": \"test\"}"))
+        .andExpect(status().isOk());
+
+    // D's two trust rows lose their values exactly as D's own clients row does; the shells stay
+    for (var key : List.of(List.of(CLIENT_LEDGER, 5), List.of(OUTSTANDING_ITEMS, 3))) {
+      var r = trustRow(batch, (String) key.get(0), (Integer) key.get(1));
+      assertThat((String) r.get("raw")).as("%s", key).isEqualTo("{\"redacted\": true}");
+      assertThat((String) r.get("mapped")).as("%s", key).isEqualTo("{\"redacted\": true}");
+      assertThat(r.get("source_ref")).as("%s", key).isNull();
+      assertThat(r.get("dedup_key")).as("%s", key).isNull();
+      assertThat((String) r.get("errors")).as("%s", key).doesNotContain("message");
+      assertThat(r.get("status")).as("%s", key).isEqualTo("VALIDATED");
+    }
+    // B's rows are untouched
+    var otherLedger = trustRow(batch, CLIENT_LEDGER, 3);
+    assertThat((String) otherLedger.get("mapped")).contains(b.toString());
+    assertThat(otherLedger.get("dedup_key")).isNotNull();
+    var otherItem = trustRow(batch, OUTSTANDING_ITEMS, 2);
+    assertThat((String) otherItem.get("raw")).contains("EFT B-0001");
+    assertThat((String) otherItem.get("mapped")).contains(b.toString());
+
+    // the batch is not committed: a new dry run gives each redacted row one clean error
+    String again = json(validate(mockMvc, owner(), batch).andExpect(status().isOk()));
+    assertThat((String) JsonPath.read(again, "$.status")).isEqualTo("VALIDATED");
+    var after = rowsBySection(batch);
+    for (String key : List.of(CLIENT_LEDGER + ":5", OUTSTANDING_ITEMS + ":3")) {
+      var row = after.get(key);
+      assertThat(row.get("status")).as(key).isEqualTo("ERROR");
+      assertThat(row.get("block")).as(key).isEqualTo(false);
+      assertThat(values(row)).as(key).containsExactly(Map.entry("redacted", true));
+      assertThat(errors(row))
+          .as(key)
+          .singleElement()
+          .satisfies(
+              e -> {
+                assertThat(e.get("code")).isEqualTo("ROW_REDACTED");
+                assertThat(e.get("message"))
+                    .isEqualTo(
+                        "This row's values were removed when its client's personal information"
+                            + " was anonymised. Upload a corrected file without it.");
+              });
+    }
+    assertThat((String) trustRow(batch, CLIENT_LEDGER, 5).get("raw"))
+        .isEqualTo("{\"redacted\": true}");
+  }
+
   // --- helpers ---
+
+  /** One trust take-on row as stored (read-only). */
+  private Map<String, Object> trustRow(UUID batch, String section, int rowNumber) {
+    return jdbc.queryForMap(
+        ("SELECT raw_values::text AS raw, mapped_values::text AS mapped, source_ref, dedup_key,"
+                + " errors::text AS errors, status FROM \"%s\".take_on_rows"
+                + " WHERE batch_id = ? AND section = ? AND row_number = ?")
+            .formatted(schema),
+        batch,
+        section,
+        rowNumber);
+  }
 
   private Map<String, List<String>> files() {
     return section17313(i3Number, i4Number);
@@ -831,13 +1053,19 @@ class TrustPositionValidationIntegrationTest {
 
   /** Uploads every section of {@code files} into a new trust batch on {@code account}, maps it. */
   private UUID upload(UUID account, Map<String, List<String>> files) throws Exception {
+    return upload(account, files, Map.of());
+  }
+
+  /** As {@link #upload(UUID, Map)}, with column headers renamed (header → new header). */
+  private UUID upload(UUID account, Map<String, List<String>> files, Map<String, String> renames)
+      throws Exception {
     UUID batch = null;
     for (String section : TakeOnTrustFiles.SECTIONS) {
       var rows = files.get(section);
       if (rows == null || rows.isEmpty()) {
         continue;
       }
-      byte[] bytes = TakeOnTestFiles.csv(TakeOnTrustFiles.csv(section, rows));
+      byte[] bytes = TakeOnTestFiles.csv(TakeOnTrustFiles.csv(section, rows, renames));
       String fileName = section.toLowerCase(java.util.Locale.ROOT) + ".csv";
       UUID source;
       if (batch == null) {
@@ -861,7 +1089,7 @@ class TrustPositionValidationIntegrationTest {
                     .andExpect(status().isCreated()));
         source = UUID.fromString(JsonPath.read(added, "$.sourceId"));
       }
-      map(mockMvc, owner(), batch, source, TakeOnTrustFiles.mapping(section))
+      map(mockMvc, owner(), batch, source, TakeOnTrustFiles.mapping(section, renames))
           .andExpect(status().isOk());
     }
     return batch;
@@ -1061,6 +1289,19 @@ class TrustPositionValidationIntegrationTest {
   private long count(String sql, Object... args) {
     Long n = jdbc.queryForObject(sql.formatted("\"" + schema + "\""), Long.class, args);
     return n == null ? 0 : n;
+  }
+
+  /** The commit claim as the owner, without the job queue ({@link TakeOnTestDrain} scopes). */
+  private TakeOnBatchService.TakeOnBatchResponse claim(UUID batch, String hash) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(RequestScopes.CAPABILITIES, Set.of("MANAGE_TAKE_ON", "MANAGE_TRUST", "VIEW_TRUST"))
+        .call(
+            () ->
+                commitService.requestCommit(
+                    batch, new TakeOnBatchService.TakeOnCommitRequest(hash)));
   }
 
   private static String json(ResultActions result) throws Exception {

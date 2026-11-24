@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.Inputs;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.Sums;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.TrustPositionMessage;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 
@@ -72,8 +73,6 @@ class TrustPositionEquationTest {
             new TrustPositionEquation.TrustInvestmentsTie("300000.00", "300000.00", "0.00", true));
     assertThat(eq.deficit())
         .isEqualTo(new TrustPositionEquation.TrustDeficit("703500.00", "703500.00", "0.00", false));
-    assertThat(result.moneyHeld()).isEqualByComparingTo("703500.00");
-    assertThat(result.creditorsFirm()).isEqualByComparingTo(result.moneyHeld());
     assertThat(result.blocks()).isEmpty();
     assertThat(result.fundInDebit()).isFalse();
   }
@@ -104,7 +103,9 @@ class TrustPositionEquationTest {
               new Inputs(bank, od, op, cashbook, fund, invested),
               new Sums(clients, unidentified, s863, s864, fundAmounts, invested, od, op));
 
-      assertThat(result.moneyHeld()).as("case %d", i).isEqualByComparingTo(result.creditorsFirm());
+      var deficit = result.equation().deficit();
+      assertThat(deficit.moneyHeld()).as("case %d", i).isEqualTo(deficit.trustCreditors());
+      assertThat(deficit.difference()).as("case %d", i).isEqualTo("0.00");
       assertThat(result.equation().deficit().inDeficit()).as("case %d", i).isFalse();
       assertThat(result.blocks()).as("case %d", i).isEmpty();
     }
@@ -210,5 +211,54 @@ class TrustPositionEquationTest {
 
   private static BigDecimal cents(Random random, int maxRand) {
     return BigDecimal.valueOf(random.nextLong(maxRand * 100L), 2);
+  }
+
+  // --- the typed reader of a stored summary (D-191) ---
+
+  @Test
+  void theStoredSummaryReadsBackAsTheRecord_withWhetherEq1AndEq2Held() {
+    var agrees = TrustPositionEquation.compute(section17313(), sums("5000.00", "20000.00"));
+    var summary =
+        new TrustPositionEquation.TrustPositionSummary(
+            List.of(),
+            agrees.blocks(),
+            List.of(),
+            List.of("UNIDENTIFIED_OVER_ONE_YEAR"),
+            agrees.equation());
+
+    var read = TrustPositionEquation.TrustPositionSummary.from(summary.toMap()).orElseThrow();
+    assertThat(read).isEqualTo(summary);
+    assertThat(read.eq1Holds()).isTrue();
+    assertThat(read.eq2Holds()).isTrue();
+
+    var offByTen =
+        TrustPositionEquation.compute(
+            inputs("418500.00", "403510.00", "5000.00", "20000.00"), sums("5000.00", "20000.00"));
+    var failing =
+        TrustPositionEquation.TrustPositionSummary.from(
+                new TrustPositionEquation.TrustPositionSummary(
+                        List.of(), offByTen.blocks(), List.of(), List.of(), offByTen.equation())
+                    .toMap())
+            .orElseThrow();
+    assertThat(failing.eq1Holds()).isFalse();
+    assertThat(failing.eq2Holds()).isFalse();
+  }
+
+  @Test
+  void anAccountCheckFailure_hasNoEquation_soNeitherHolds_andNoSummaryReadsEmpty() {
+    var summary =
+        new TrustPositionEquation.TrustPositionSummary(
+            List.of(new TrustPositionMessage("ACCOUNT_CLOSED", "G is closed.")),
+            List.of(),
+            List.of(),
+            List.of(),
+            null);
+    var read = TrustPositionEquation.TrustPositionSummary.from(summary.toMap()).orElseThrow();
+    assertThat(read.accountErrors())
+        .extracting(TrustPositionMessage::code)
+        .containsExactly("ACCOUNT_CLOSED");
+    assertThat(read.eq1Holds()).isFalse();
+    assertThat(read.eq2Holds()).isFalse();
+    assertThat(TrustPositionEquation.TrustPositionSummary.from(null)).isEmpty();
   }
 }

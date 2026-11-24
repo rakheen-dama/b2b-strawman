@@ -1,9 +1,14 @@
 # 657B — found outside the slice's own scope
 
-Neither finding is fixed in 657B (root `CLAUDE.md` §7, phase rule "a defect found outside the slice goes to found.md";
-decision D-188). Both need their own spec.
+F-657B-1 was fixed in review round 1 (D-192). F-657B-2 and F-657B-3 are not fixed in 657B (root `CLAUDE.md` §7,
+phase rule "a defect found outside the slice goes to found.md"; decision D-188) and need their own spec.
 
-## F-657B-1 (OP-11) — trust take-on rows keep the client reference after the client is anonymised (not fixed)
+## F-657B-1 (OP-11) — trust take-on rows keep the client reference after the client is anonymised — FIXED (D-192)
+
+**Status: FIXED in 657B review round 1 (D-192).** `redactForClient`'s mapped-`clientId` arm now covers
+`TRUST_POSITION` as well as `MATTERS`; a redacted row in an uncommitted batch re-validates as one `ROW_REDACTED`
+error. 657C still decides the committed-row / take-on report retention question (redact is the default). The
+original finding follows.
 
 A trust position take-on row stores the client reference the file gave (`clientRef` — an email, the previous system's
 client id or an ID number) in `raw_values` and `mapped_values`, and from 657B also the derived `clientId` /
@@ -49,3 +54,20 @@ Both cite Rules 54.14.8 and 54.14.10, and both say "trust creditors". The differ
 Rule 54.14.10 reporting duty, and which name for "trust money held" both use, is a legal-copy decision: it belongs
 with RG-13 (the trust auditor / LPC reading of Rule 54.14.10, carried from the Phase 92 F-6 opinion) and RG-10 (the
 A6 check of all legal copy before release).
+
+## F-657B-3 (architecture review M-1) — the client-lookup logic is copied from the matters dry run (not fixed)
+
+`TrustPositionDatasetHandler` resolves a client reference with a copy of `MattersDatasetHandler`'s logic: the
+lookup maps built in `loadContext` (`TrustPositionDatasetHandler.java` client loop over
+`customers.findTakeOnDedupCandidates()`, vs `MattersDatasetHandler.java:199-210`) and the cascade itself
+(`resolveClientOrError`, email → previous-system id via `TakeOnRowRepository.clientBySourceRef` filtered to live
+clients → a single live client's ID number, with the `CLIENT_AMBIGUOUS` / `CLIENT_UNRESOLVED` errors, vs
+`MattersDatasetHandler.java:329-353`). The two copies already differ in small ways (the trust rows give one
+`clientRef` column, the matters rows three; the trust copy records `clientResolvedBy` as `email` /
+`previousSystemId` / `idNumber`). A change to the D-157 cascade (for example a new live-client rule) must be made
+twice, and 658A (debtor balances) would add a third copy.
+
+Proposal: extract a shared `TakeOnClientResolver` in `takeon.dataset` (the lookup maps, built once per run in
+`loadContext`, and one `resolve(reference, kinds)` returning the client id and how it resolved, or the
+error code and text), used by the matters and trust handlers — **before 658A adds a third copy**. Behaviour-neutral
+refactor; pinned by the existing `MattersTakeOnIntegrationTest` and `TrustPositionValidationIntegrationTest` cases.

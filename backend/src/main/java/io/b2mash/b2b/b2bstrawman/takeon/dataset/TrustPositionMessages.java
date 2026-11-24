@@ -3,15 +3,15 @@ package io.b2mash.b2b.b2bstrawman.takeon.dataset;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * Every user-facing sentence of the trust position dry run (Phase 93 657B), in one place: the
- * §17.10 X3 block and flag texts and the §17.3.9 account-check texts verbatim, and the product copy
- * X3 does not give (D-185; re-checked with all legal copy before release, RG-10). Amounts are the
+ * §17.10 X3 block, flag and row texts and the month-end check verbatim, and the product copy X3
+ * does not give (D-185; re-checked with all legal copy before release, RG-10). Amounts are the
  * house en-ZA rand ({@link IntegrityMessages#rand}, U+00A0 thousands separator), a negative shown
  * as {@code R-1 250,00} (§17.4.4); a difference quoted in a sentence is its magnitude. Dates are
- * {@code d MMMM yyyy}.
+ * {@code d MMMM yyyy}. The account checks' own codes and texts live beside the checks, in {@link
+ * io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TrustTakeOnPreconditions.Messages}.
  */
 public final class TrustPositionMessages {
 
@@ -19,14 +19,6 @@ public final class TrustPositionMessages {
 
   // --- Codes ---
 
-  public static final String ACCOUNT_NOT_BANKING = "ACCOUNT_NOT_BANKING";
-  public static final String ACCOUNT_CLOSED = "ACCOUNT_CLOSED";
-  public static final String ACCOUNT_OPENED_AFTER_CUTOVER = "ACCOUNT_OPENED_AFTER_CUTOVER";
-  public static final String ACCOUNT_HAS_EARLIER_ENTRIES = "ACCOUNT_HAS_EARLIER_ENTRIES";
-  public static final String ACCOUNT_RECONCILED = "ACCOUNT_RECONCILED";
-  public static final String ACCOUNT_ALREADY_TAKEN_ON = "ACCOUNT_ALREADY_TAKEN_ON";
-  public static final String INVESTMENT_TAKEN_ON_AT_OTHER_DATE =
-      "INVESTMENT_TAKEN_ON_AT_OTHER_DATE";
   public static final String CUTOVER_NOT_MONTH_END = "CUTOVER_NOT_MONTH_END";
 
   public static final String CLIENT_IN_DEBIT = "CLIENT_IN_DEBIT";
@@ -58,6 +50,7 @@ public final class TrustPositionMessages {
   public static final String FIRM_INVESTMENT_HAS_CLIENT = "FIRM_INVESTMENT_HAS_CLIENT";
   public static final String CONFIRMATION_MISMATCH = "CONFIRMATION_MISMATCH";
   public static final String INVESTMENT_IN_TRANSIT = "INVESTMENT_IN_TRANSIT";
+  public static final String ROW_REDACTED = "ROW_REDACTED";
 
   // --- Formatting ---
 
@@ -73,50 +66,11 @@ public final class TrustPositionMessages {
     return IntegrityMessages.date(date);
   }
 
-  // --- Account checks (§17.3.9, verbatim) ---
-
-  public static final String ACCOUNT_NOT_BANKING_MESSAGE =
-      "Choose the trust banking account to take on. Investment accounts are taken on through their"
-          + " investment rows.";
-
-  public static String accountClosed(String accountName) {
-    return "%s is closed. Take on only into open trust accounts.".formatted(accountName);
-  }
-
-  public static String openedAfterCutover(LocalDate openedDate, LocalDate cutover) {
-    return ("The account's opened date (%s) is after the cutover date (%s). Change the opened date"
-            + " in Trust accounting before taking on.")
-        .formatted(date(openedDate), date(cutover));
-  }
-
-  public static final String HAS_EARLIER_ENTRIES_MESSAGE =
-      "This account already has transactions dated on or before the cutover date. A take-on must be"
-          + " the first entry.";
-
-  public static final String RECONCILED_MESSAGE =
-      "This account already has a completed reconciliation.";
-
-  public static String alreadyTakenOn(UUID batchId) {
-    return "This account has already been taken on (batch %s).".formatted(batchId);
-  }
-
-  public static String investmentTakenOnAtOtherDate(String accountName, LocalDate takenOnAt) {
-    return "%s was taken on at %s; take this account on at the same date."
-        .formatted(accountName, date(takenOnAt));
-  }
+  // --- The month-end check the dry run makes (§17.3.9, verbatim) ---
 
   public static final String CUTOVER_NOT_MONTH_END_MESSAGE =
       "The cutover date is not a month end. Confirm a mid-month cutover, and reconcile the previous"
           + " system to this date.";
-
-  /**
-   * An account check on a named investment account whose §17.3.9 sentence does not name the account
-   * ("This account …"): prefixed with the account's name (D-185), so the message shown above the
-   * table of the banking account's batch says which account it means.
-   */
-  public static String onInvestmentAccount(String accountName, String message) {
-    return message.contains(accountName) ? message : accountName + ": " + message;
-  }
 
   // --- Hard blocks (§17.10 X3, verbatim) ---
 
@@ -258,6 +212,11 @@ public final class TrustPositionMessages {
             rands(principal.add(fundAmount)),
             rands(balancePerConfirmation));
   }
+
+  /** D-192: a row whose client was anonymised after the upload. */
+  public static final String ROW_REDACTED_MESSAGE =
+      "This row's values were removed when its client's personal information was anonymised."
+          + " Upload a corrected file without it.";
 
   public static String investmentsListed(BigDecimal listed, BigDecimal invested) {
     return ("The investments listed total %s; the total invested per the institutions'"

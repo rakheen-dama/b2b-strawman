@@ -56,6 +56,15 @@ public enum TakeOnDataset {
     };
   }
 
+  /**
+   * The batch is committed whole or not at all (D-191): any error — on a row or across rows (an
+   * account check) — stops the commit, like a block. Every other dataset commits its valid rows and
+   * skips its error rows.
+   */
+  public boolean commitsWhole() {
+    return this == TRUST_POSITION;
+  }
+
   /** Every dataset but the trust position takes exactly one file (section MAIN). */
   public boolean singleSource() {
     return this != TRUST_POSITION;

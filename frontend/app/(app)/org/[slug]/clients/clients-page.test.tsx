@@ -280,23 +280,57 @@ describe("ClientsPage — table", () => {
     expect(rowNames()).toEqual(["Bravo", "Charlie", "Alpha"]);
   });
 
-  it("FICA review due (655B, C-3): unrated first, then next review date — until a column is picked", async () => {
-    const review = (id: string, name: string, ficaNextReviewDate: string | null) =>
-      makeRow({ id, name, ficaStatus: "ATTESTED_REVIEW", ficaNextReviewDate });
-    mockApiGet.mockResolvedValue([
-      review("a", "Alpha", "2026-03-01"),
-      review("b", "Zulu", null),
-      review("c", "Bravo", "2025-06-30"),
-    ]);
+  it("FICA review due (655B, C-3, D-153): keeps the server's order until a column is picked", async () => {
+    // The backend orders the queue (unrated first, then next review date). The page never
+    // re-sorts it — not even when the rows carry no next review date (all null here) — so the
+    // order is the server's, not alphabetical.
+    const review = (id: string, name: string) =>
+      makeRow({ id, name, ficaStatus: "ATTESTED_REVIEW", ficaNextReviewDate: null });
+    mockApiGet.mockResolvedValue([review("z", "Zulu"), review("a", "Alpha"), review("m", "Mike")]);
     await renderPage({ view: "system:fica-review-due" });
-    expect(rowNames()).toEqual(["Zulu", "Bravo", "Alpha"]);
+    expect(rowNames()).toEqual(["Zulu", "Alpha", "Mike"]);
+    // A search narrows the queue without re-ordering it.
+    cleanup();
+    await renderPage({ view: "system:fica-review-due", search: "u" });
+    expect(rowNames()).toEqual(["Zulu"]);
     cleanup();
     await renderPage({ view: "system:fica-review-due", sortBy: "name", sortDir: "asc" });
-    expect(rowNames()).toEqual(["Alpha", "Bravo", "Zulu"]);
+    expect(rowNames()).toEqual(["Alpha", "Mike", "Zulu"]);
     cleanup();
     // Any other view keeps the default name order.
     await renderPage({ view: "system:fica-outstanding" });
-    expect(rowNames()).toEqual(["Alpha", "Bravo", "Zulu"]);
+    expect(rowNames()).toEqual(["Alpha", "Mike", "Zulu"]);
+  });
+
+  it("FICA review due (D-153): no header claims the sort; the first click sorts ascending", async () => {
+    mockApiGet.mockResolvedValue([makeRow({ ficaStatus: "ATTESTED_REVIEW" })]);
+    await renderPage({ view: "system:fica-review-due" });
+    expect(tableProps[0].sort).toEqual({ key: null, dir: "asc" });
+    const client = screen.getByRole("columnheader", { name: /Client/ });
+    expect(client).toHaveAttribute("aria-sort", "none");
+    expect(within(client).getByRole("link")).toHaveAttribute(
+      "href",
+      "/org/acme/clients?view=system%3Afica-review-due&sortBy=name&sortDir=asc"
+    );
+    screen
+      .getAllByRole("columnheader")
+      .forEach((th) => expect(th.getAttribute("aria-sort") ?? "none").toBe("none"));
+
+    // Outside the queue the default name sort is active, as before.
+    cleanup();
+    tableProps.length = 0;
+    await renderPage();
+    expect(screen.getByRole("columnheader", { name: /Client/ })).toHaveAttribute(
+      "aria-sort",
+      "ascending"
+    );
+  });
+
+  it("FICA review due without CUSTOMER_MANAGEMENT (D-152): permission denied, no list read", async () => {
+    asRole("member");
+    await renderPage({ view: "system:fica-review-due" });
+    expect(screen.getByText("You don't have access to Clients")).toBeInTheDocument();
+    expect(mockApiGet).not.toHaveBeenCalled();
   });
 
   it("filters by ?search= over name, email and phone, keeping the count in step", async () => {

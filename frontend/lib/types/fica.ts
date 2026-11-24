@@ -1,4 +1,4 @@
-// FICA status projection from GET /api/clients/{clientId}/fica-status
+// FICA status projection from GET /api/clients/{clientId}/fica-status (CUSTOMER_MANAGEMENT, D-152)
 // (GAP-L-46; checklist-first since Phase 88, ADR-348; attestations since Phase 93 655B, ADR-388).
 //
 // Derived server-side, in this order: an onboarding checklist IN_PROGRESS, the newest COMPLETED
@@ -12,6 +12,15 @@ export type FicaOnboardingStatus =
   | "DONE"
   | "ATTESTED"
   | "ATTESTED_REVIEW";
+
+/**
+ * §17.10 X3 wording for the two attested statuses — the one source for every FICA badge (client
+ * list cell + CSV, hero tile, matter FicaStatusCard, dashboard widget, attestation card).
+ */
+export const FICA_ATTESTED_STATUS_LABEL = {
+  ATTESTED: "Verified in prior system (attested)",
+  ATTESTED_REVIEW: "Review due (attested)",
+} as const satisfies Partial<Record<FicaOnboardingStatus, string>>;
 
 /** Why an attested client is due for review (FD-30). Wire order = this declaration order. */
 export type FicaReviewReason =
@@ -47,11 +56,11 @@ export interface FicaStatus {
   /** Onboarding checklist instance id, set when the checklist decided the status. */
   checklistInstanceId: string | null;
   /**
-   * Set for ATTESTED_REVIEW (never null; empty otherwise). Also empty for a caller without
-   * CUSTOMER_MANAGEMENT (D-148: the detail is hidden, the status is not).
+   * Set for ATTESTED_REVIEW (never null; empty otherwise). The endpoint needs CUSTOMER_MANAGEMENT
+   * (D-152: 403 otherwise), so a caller who gets a response sees the full detail.
    */
   reviewReasons: FicaReviewReason[];
-  /** The active attestation that decided the status; null otherwise or when hidden (D-148). */
+  /** The active attestation that decided the status; null otherwise. */
   attestationId: string | null;
 }
 

@@ -71,15 +71,28 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
         </div>
       )}
 
-      {/* Section 2: General Settings */}
-      <ComplianceSettingsForm
-        slug={slug}
-        dormancyThresholdDays={settings.dormancyThresholdDays ?? 365}
-        dataRequestDeadlineDays={settings.dataRequestDeadlineDays ?? 30}
-        ficaReviewMonthsLow={settings.ficaReviewMonthsLow ?? 36}
-        ficaReviewMonthsMedium={settings.ficaReviewMonthsMedium ?? 24}
-        ficaReviewMonthsHigh={settings.ficaReviewMonthsHigh ?? 12}
-      />
+      {/* Section 2: General Settings — saves every field at once, so (like the retention period)
+          it renders only with the stored values: fallbacks would overwrite the firm's real
+          dormancy, deadline and FICA review intervals unseen. */}
+      {settingsLoaded ? (
+        <ComplianceSettingsForm
+          slug={slug}
+          dormancyThresholdDays={settings.dormancyThresholdDays ?? 365}
+          dataRequestDeadlineDays={settings.dataRequestDeadlineDays ?? 30}
+          ficaReviewMonthsLow={settings.ficaReviewMonthsLow ?? 36}
+          ficaReviewMonthsMedium={settings.ficaReviewMonthsMedium ?? 24}
+          ficaReviewMonthsHigh={settings.ficaReviewMonthsHigh ?? 12}
+        />
+      ) : (
+        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+            General Settings
+          </h2>
+          <p role="alert" className="mt-1 text-sm text-red-600 dark:text-red-400">
+            {"Couldn't load the current compliance settings. Reload the page to change them."}
+          </p>
+        </div>
+      )}
 
       {/* Section 3: Retention Policies */}
       <RetentionPolicyTable key={JSON.stringify(policies)} policies={policies} slug={slug} />

@@ -24,10 +24,20 @@ Recommended: (b) in 655B before merge, cheap and contained to `toRow` + the cont
 `ficaReviewReasons: []` and `ficaRiskRating` / `ficaNextReviewDate` / `ficaRecordsLocation` null on `GET /api/clients`,
 and `reviewReasons: []` / `attestationId: null` on `fica-status`; owner/admin (and any role granted the capability)
 see them. Proven for the seeded Member role and a custom role without the capability in
-`FicaReviewQueueIntegrationTest.withoutClientManagement*` (both red before the change). **What remains out of scope**
-is only the pre-existing exposure: both endpoints stay ungated, so any member still sees every client's FICA status
-(`NOT_STARTED` … `ATTESTED_REVIEW`) and can filter the list by `ficaStatus` (including `REVIEW`, whose order is
-server-side) — option (a), a permissions decision for the founder (D-140).
+`FicaReviewQueueIntegrationTest.withoutClientManagement*` (both red before the change).
+
+**Resolved for `fica-status` and the review queue (D-152, option (a) for those two reads, review round 1):**
+`GET /api/clients/{clientId}/fica-status` carries `@RequiresCapability("CUSTOMER_MANAGEMENT")` and
+`GET /api/clients?ficaStatus=REVIEW` returns 403 without it, as §17.4.3 / §17.10 X1 rule; the frontend hides the
+client hero FICA tile and the matter FICA card for callers without the capability (a 403 renders nothing). Proven in
+`FicaReviewQueueIntegrationTest.ficaStatusIs403WithoutClientManagement` / `withoutClientManagementTheReviewQueueIs403`
+(seeded Member + a custom role without the capability; owner/admin 200).
+
+**What remains out of scope** is only the pre-existing ungated client list: `GET /api/clients` (and its
+`OUTSTANDING` / `DONE` filters) still answers any member, so the list's status column (`ficaStatus`, `NOT_STARTED` …
+`ATTESTED_REVIEW`) reaches every member through the API, with the attestation detail blanked (D-148). In the UI the
+Clients page itself already needs CUSTOMER_MANAGEMENT. Gating the list endpoint is a permissions decision for the
+founder (D-140 remainder).
 
 ## F-655B-2 — a PEP/sanctions screening match is not a review reason (legal question for RG-3)
 
@@ -37,3 +47,11 @@ imported client recorded as "Screened — match" with no other gap projects `ATT
 due diligence, so the legal reviewer at RG-3 should rule whether `SCREENED_MATCH` must be a sixth reason. Not changed
 here (D-141); pinned by `FicaStatusProjectorTest.Attestation.screeningMatchAloneIsNotAReviewReason` so the ruling has a
 single place to flip.
+
+## F-655B-3 — the two new interval-validation tests do not assert the 400 body (deferred, CodeRabbit minor)
+
+CodeRabbit (review round 1 on #1851, `OrgSettingsIntegrationTest.java:358`): the two new
+`PATCH /api/settings/compliance` tests that send an out-of-range FICA review interval assert only the 400 status, not
+the validation error body (which field, which bound). Deferred per the founder ruling that Minor findings are
+follow-ups, not extra review rounds (memory `feedback_only_high_medium_in_pr`). Follow-up: assert the ProblemDetail
+`detail` / field errors in both tests.

@@ -60,6 +60,7 @@ export interface ClientHeroData {
   debtor: WidgetResult<DebtorDetailResponse>;
   /** absent when the module is off, without VIEW_TRUST, or when no trust account exists. */
   trustBalance: WidgetResult<ClientTrustBalance>;
+  /** absent without CUSTOMER_MANAGEMENT (admin/owner pass) or on a 403/404 — tile omitted. */
   ficaStatus: WidgetResult<FicaStatus>;
 }
 
@@ -115,7 +116,10 @@ export async function loadClientHeroData(
     settle(trustEnabled && hasCapability(caps, "VIEW_TRUST"), "client trust balance", () =>
       readPrimaryLedger(clientId)
     ),
-    settle(true, "client FICA status", () => getClientFicaStatus(clientId)),
+    // D-152: fica-status needs CUSTOMER_MANAGEMENT (403 otherwise) — absent → tile omitted.
+    settle(hasCapability(caps, "CUSTOMER_MANAGEMENT"), "client FICA status", () =>
+      getClientFicaStatus(clientId)
+    ),
   ]);
   return {
     openMatterCount: neverAbsent(openMatterCount),
@@ -170,7 +174,6 @@ function ficaHint(fica: FicaStatus): string | undefined {
     return `${fica.checklistInstanceId ? "Completed" : "Verified"} ${formatDateInSA(fica.lastVerifiedAt)}`;
   }
   if (fica.status === "ATTESTED_REVIEW") {
-    // Empty when the caller cannot see the detail (D-148) → no hint.
     return ficaReviewReasonLabels(fica.reviewReasons).join(", ") || undefined;
   }
   return undefined;

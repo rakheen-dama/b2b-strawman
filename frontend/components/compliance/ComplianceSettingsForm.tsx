@@ -20,9 +20,14 @@ interface ComplianceSettingsFormProps {
 const MIN_REVIEW_MONTHS = 1;
 const MAX_REVIEW_MONTHS = 120;
 
-function clampMonths(raw: string): number {
-  const n = parseInt(raw) || MIN_REVIEW_MONTHS;
-  return Math.min(MAX_REVIEW_MONTHS, Math.max(MIN_REVIEW_MONTHS, n));
+const REVIEW_MONTHS_ERROR = `Enter a whole number of months from ${MIN_REVIEW_MONTHS} to ${MAX_REVIEW_MONTHS}.`;
+
+/** A whole number of months within 1–120, else null (blank, decimals and out-of-range refused). */
+function parseReviewMonths(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  const n = Number(trimmed);
+  return n >= MIN_REVIEW_MONTHS && n <= MAX_REVIEW_MONTHS ? n : null;
 }
 
 const REVIEW_INTERVAL_FIELDS = [
@@ -43,26 +48,44 @@ export function ComplianceSettingsForm({
 }: ComplianceSettingsFormProps) {
   const [dormancy, setDormancy] = useState(dormancyThresholdDays);
   const [deadline, setDeadline] = useState(dataRequestDeadlineDays);
-  const [reviewMonths, setReviewMonths] = useState<Record<ReviewIntervalKey, number>>({
-    low: ficaReviewMonthsLow,
-    medium: ficaReviewMonthsMedium,
-    high: ficaReviewMonthsHigh,
+  // The raw text of each interval input, so it can be cleared and retyped; validated on blur and
+  // on save (never snapped while typing).
+  const [reviewMonths, setReviewMonths] = useState<Record<ReviewIntervalKey, string>>({
+    low: String(ficaReviewMonthsLow),
+    medium: String(ficaReviewMonthsMedium),
+    high: String(ficaReviewMonthsHigh),
+  });
+  const [reviewChecked, setReviewChecked] = useState<Record<ReviewIntervalKey, boolean>>({
+    low: false,
+    medium: false,
+    high: false,
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
 
+  const reviewInvalid = (key: ReviewIntervalKey) =>
+    reviewChecked[key] && parseReviewMonths(reviewMonths[key]) === null;
+
   async function handleSave() {
-    setSaving(true);
     setMessage(null);
     setIsError(false);
+    const low = parseReviewMonths(reviewMonths.low);
+    const medium = parseReviewMonths(reviewMonths.medium);
+    const high = parseReviewMonths(reviewMonths.high);
+    if (low === null || medium === null || high === null) {
+      // Show every invalid interval's message; nothing is sent.
+      setReviewChecked({ low: true, medium: true, high: true });
+      return;
+    }
+    setSaving(true);
 
     const result = await updateComplianceSettings(slug, {
       dormancyThresholdDays: dormancy,
       dataRequestDeadlineDays: deadline,
-      ficaReviewMonthsLow: reviewMonths.low,
-      ficaReviewMonthsMedium: reviewMonths.medium,
-      ficaReviewMonthsHigh: reviewMonths.high,
+      ficaReviewMonthsLow: low,
+      ficaReviewMonthsMedium: medium,
+      ficaReviewMonthsHigh: high,
     });
 
     if (result.success) {
@@ -144,14 +167,31 @@ export function ComplianceSettingsForm({
                 id={`fica-review-months-${key}`}
                 data-testid={`fica-review-months-${key}`}
                 type="number"
+                inputMode="numeric"
                 min={MIN_REVIEW_MONTHS}
                 max={MAX_REVIEW_MONTHS}
+                step={1}
                 value={reviewMonths[key]}
-                onChange={(e) =>
-                  setReviewMonths((prev) => ({ ...prev, [key]: clampMonths(e.target.value) }))
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setReviewMonths((prev) => ({ ...prev, [key]: value }));
+                }}
+                onBlur={() => setReviewChecked((prev) => ({ ...prev, [key]: true }))}
+                aria-invalid={reviewInvalid(key) || undefined}
+                aria-describedby={
+                  reviewInvalid(key) ? `fica-review-months-${key}-error` : undefined
                 }
                 className="mt-1 w-full"
               />
+              {reviewInvalid(key) && (
+                <p
+                  id={`fica-review-months-${key}-error`}
+                  className="mt-1 text-xs text-red-600 dark:text-red-400"
+                  data-testid={`fica-review-months-${key}-error`}
+                >
+                  {REVIEW_MONTHS_ERROR}
+                </p>
+              )}
             </div>
           ))}
         </div>

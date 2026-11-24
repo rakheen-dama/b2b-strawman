@@ -55,8 +55,8 @@ describe("ComplianceSettingsForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("clamps a review interval to 1–120 months", () => {
-    render(
+  function renderForm() {
+    return render(
       <ComplianceSettingsForm
         slug="acme"
         dormancyThresholdDays={365}
@@ -66,11 +66,63 @@ describe("ComplianceSettingsForm", () => {
         ficaReviewMonthsHigh={12}
       />
     );
+  }
+
+  it("a review interval can be cleared and retyped (no snapping while typing)", async () => {
+    const user = userEvent.setup();
+    renderForm();
     const high = screen.getByLabelText("High risk (months)");
-    fireEvent.change(high, { target: { value: "500" } });
-    expect(high).toHaveValue(120);
-    fireEvent.change(high, { target: { value: "0" } });
-    expect(high).toHaveValue(1);
+    await user.clear(high);
+    expect(high).toHaveValue(null);
+    await user.type(high, "6");
+    expect(high).toHaveValue(6);
+    await user.tab();
+    expect(screen.queryByTestId("fica-review-months-high-error")).not.toBeInTheDocument();
+  });
+
+  it("a cleared interval shows the inline message on blur", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const low = screen.getByLabelText("Low risk (months)");
+    await user.clear(low);
+    await user.tab();
+    expect(screen.getByTestId("fica-review-months-low-error")).toHaveTextContent(
+      "Enter a whole number of months from 1 to 120."
+    );
+    expect(low).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it.each(["0", "121"])("refuses %s months: inline message, nothing saved", async (value) => {
+    const { updateComplianceSettings } =
+      await import("@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions");
+    vi.mocked(updateComplianceSettings).mockClear();
+    const user = userEvent.setup();
+    renderForm();
+    fireEvent.change(screen.getByLabelText("Medium risk (months)"), { target: { value } });
+    await user.click(screen.getByRole("button", { name: /Save Settings/i }));
+    expect(updateComplianceSettings).not.toHaveBeenCalled();
+    expect(screen.getByTestId("fica-review-months-medium-error")).toHaveTextContent(
+      "Enter a whole number of months from 1 to 120."
+    );
+  });
+
+  it("the boundaries 1 and 120 are valid and saved as numbers", async () => {
+    const { updateComplianceSettings } =
+      await import("@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions");
+    vi.mocked(updateComplianceSettings).mockClear();
+    const user = userEvent.setup();
+    renderForm();
+    fireEvent.change(screen.getByLabelText("Low risk (months)"), { target: { value: "120" } });
+    fireEvent.change(screen.getByLabelText("High risk (months)"), { target: { value: "1" } });
+    await user.click(screen.getByRole("button", { name: /Save Settings/i }));
+    expect(updateComplianceSettings).toHaveBeenCalledWith("acme", {
+      dormancyThresholdDays: 365,
+      dataRequestDeadlineDays: 30,
+      ficaReviewMonthsLow: 120,
+      ficaReviewMonthsMedium: 24,
+      ficaReviewMonthsHigh: 1,
+    });
+    expect(screen.queryByText("Enter a whole number of months from 1 to 120.")).toBeNull();
   });
 
   it("renders save button", () => {

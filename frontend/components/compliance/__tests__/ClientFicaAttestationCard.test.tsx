@@ -142,5 +142,36 @@ describe("ClientFicaAttestationCard (655B)", () => {
     render(<ClientFicaAttestationCard attestation={ATTESTATION} ficaStatus={null} />);
     expect(screen.queryByTestId("fica-attestation-status")).not.toBeInTheDocument();
     expect(screen.queryByTestId("fica-attestation-review-reasons")).not.toBeInTheDocument();
+    expect(screen.getByTestId("fica-attestation-note")).toHaveTextContent(
+      /^This attestation records CDD done in the previous system\.$/
+    );
+  });
+
+  it("DONE by a Kazi checklist: never says the client is not verified in Kazi", () => {
+    render(
+      <ClientFicaAttestationCard
+        attestation={ATTESTATION}
+        ficaStatus={status({
+          status: "DONE",
+          lastVerifiedAt: "2026-11-21T10:00:00Z",
+          checklistInstanceId: "55555555-5555-5555-5555-555555555555",
+          attestationId: null,
+        })}
+      />
+    );
+
+    const card = screen.getByTestId("client-fica-attestation-card");
+    expect(card).not.toHaveTextContent("not verified in Kazi");
+    expect(screen.getByTestId("fica-attestation-note")).toHaveTextContent(
+      "This attestation records CDD done in the previous system."
+    );
+    expect(screen.queryByTestId("fica-attestation-status")).not.toBeInTheDocument();
+  });
+
+  it("while the attestation decides: the note says CDD was done elsewhere, not in Kazi", () => {
+    render(<ClientFicaAttestationCard attestation={ATTESTATION} ficaStatus={status()} />);
+    expect(screen.getByTestId("fica-attestation-note")).toHaveTextContent(
+      "CDD was done in the previous system. This client is not verified in Kazi."
+    );
   });
 });

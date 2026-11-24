@@ -31,6 +31,8 @@ import {
 } from "@/lib/api/information-requests";
 import { getAiProfile } from "@/lib/api/ai";
 import type { MyCapabilitiesResponse } from "@/lib/api/capabilities";
+import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
+import { settle } from "@/lib/settle";
 import type { SetupStep } from "@/components/setup/types";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import {
@@ -81,7 +83,11 @@ export interface MatterPageData {
   tasks: Task[];
   customers: Client[];
   projectRequests: InformationRequestResponse[];
-  ficaStatus: FicaStatus | null;
+  /**
+   * The primary client's FICA status for the Overview card: absent (card hidden) without a client,
+   * without CUSTOMER_MANAGEMENT or on a 403/404 (D-152); error → the card's "Status unavailable".
+   */
+  ficaStatus: WidgetResult<FicaStatus>;
   timeSummary: MatterTimeSummary;
   timeSummaryByTask: TaskTimeSummary[];
   timeSummaryByMember: MemberTimeSummary[] | null;
@@ -223,19 +229,14 @@ export async function loadMatterPageData({
     }
   }
 
-  // FICA onboarding status for the matter's primary customer (GAP-L-46).
-  // Surfaces on the Overview tab as a small status tile. Fetch is
-  // non-fatal — when the endpoint is unreachable or the profile
-  // doesn't carry a FICA template pack, the card renders a soft
-  // "Status unavailable" state rather than breaking the page.
-  let ficaStatus: FicaStatus | null = null;
-  if (customers.length > 0) {
-    try {
-      ficaStatus = await getClientFicaStatus(customers[0].id);
-    } catch {
-      ficaStatus = null;
-    }
-  }
+  // FICA onboarding status for the matter's primary client (GAP-L-46), the Overview tab's status
+  // card. fica-status needs CUSTOMER_MANAGEMENT (D-152): without it — or on a 403/404 — the card
+  // is hidden, never an error; any other failure renders its soft "Status unavailable" state.
+  const ficaStatus = await settle(
+    customers.length > 0 && hasCapability(caps, "CUSTOMER_MANAGEMENT"),
+    "matter client FICA status",
+    () => getClientFicaStatus(customers[0].id)
+  );
 
   // Time summary data for the "Time" tab
   let timeSummary: MatterTimeSummary = {

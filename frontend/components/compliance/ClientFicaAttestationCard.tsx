@@ -17,9 +17,10 @@ import {
  * `GET /api/clients/{clientId}/fica-attestation` (CUSTOMER_MANAGEMENT; the page renders the card
  * only when that read succeeds). Presentational and server-safe (no hooks).
  *
- * `ficaStatus` is the client's projected FICA status: the badge and the review reasons show only
- * while the attestation decides it (ATTESTED / ATTESTED_REVIEW). Once a Kazi onboarding checklist
- * or FICA request decides (FD-29), the card stays as the record but carries no badge.
+ * `ficaStatus` is the client's projected FICA status: the badge, the review reasons and the "not
+ * verified in Kazi" note show only while the attestation decides it (ATTESTED / ATTESTED_REVIEW).
+ * Once a Kazi onboarding checklist or FICA request decides (FD-29), or the status is unknown, the
+ * card stays as the record with a neutral note and no badge.
  */
 interface ClientFicaAttestationCardProps {
   attestation: ClientFicaAttestation;
@@ -88,8 +89,12 @@ export function ClientFicaAttestationCard({
             </Badge>
           )}
         </div>
-        <p className="text-muted-foreground text-sm">
-          CDD was done in the previous system. This client is not verified in Kazi.
+        {/* "Not verified in Kazi" only while the attestation decides the status: once a Kazi
+            checklist or request decides (FD-29), that sentence would contradict it. */}
+        <p className="text-muted-foreground text-sm" data-testid="fica-attestation-note">
+          {decides
+            ? "CDD was done in the previous system. This client is not verified in Kazi."
+            : "This attestation records CDD done in the previous system."}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

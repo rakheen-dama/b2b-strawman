@@ -7,6 +7,7 @@
  */
 import type { ClientListRow, ClientType, FicaOnboardingStatus, LifecycleStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { FICA_ATTESTED_STATUS_LABEL } from "@/lib/types/fica";
 import type { ViewSelection } from "@/lib/constants/system-views";
 
 /** Table column ids = sort keys = saved-view `columns` values (§12.6.4 order). */
@@ -25,10 +26,22 @@ export const CLIENT_COLUMNS = [
 
 export type ClientColumnId = (typeof CLIENT_COLUMNS)[number]["id"];
 export type SortDir = "asc" | "desc";
+/** The table's sort state. `key: null` = no column is the sort (the server order shows). */
 export interface ClientSort {
-  key: ClientColumnId;
+  key: ClientColumnId | null;
   dir: SortDir;
 }
+
+/** A column sort the page applies itself (`sortClientRows`). */
+export interface ClientColumnSort extends ClientSort {
+  key: ClientColumnId;
+}
+
+/**
+ * The FICA review queue's server order is on screen (§17.3.5, D-153): no column header is active
+ * (`aria-sort` none), and the first header click sorts that column ascending.
+ */
+export const SERVER_ORDER_SORT: ClientSort = { key: null, dir: "asc" };
 
 /** Prefix of a custom-field column id in a saved view's `columns` (`cf:<slug>`). */
 export const CUSTOM_FIELD_COLUMN_PREFIX = "cf:";
@@ -60,8 +73,7 @@ export const FICA_STATUS_LABEL: Record<FicaOnboardingStatus, string> = {
   DONE: "Done",
   IN_PROGRESS: "In progress",
   NOT_STARTED: "Not started",
-  ATTESTED: "Verified in prior system (attested)",
-  ATTESTED_REVIEW: "Review due (attested)",
+  ...FICA_ATTESTED_STATUS_LABEL,
 };
 
 /** Lifecycle order used for sorting (the order a client moves through). */
@@ -86,7 +98,7 @@ export function isLifecycleStatus(value: string | null | undefined): value is Li
 export function parseClientSort(
   rawSortBy: string | null | undefined,
   rawSortDir: string | null | undefined
-): ClientSort {
+): ClientColumnSort {
   if (isClientColumnId(rawSortBy) && !UNSORTABLE_CLIENT_COLUMNS.has(rawSortBy)) {
     return { key: rawSortBy, dir: rawSortDir === "desc" ? "desc" : "asc" };
   }
@@ -157,25 +169,6 @@ export function sortClientRows(
     if (vb === null) return -1;
     const cmp = compareValues(va, vb);
     return cmp !== 0 ? cmp * sign : compareTieBreak(a, b);
-  });
-}
-
-/**
- * The FICA review queue's default order (§17.3.5, C-3 — the backend's REVIEW order, which the page's
- * own sort would otherwise replace): no next review date first (unrated), then next review date
- * ascending, then name, then id. Returns a new array.
- */
-export function sortByFicaReview(rows: readonly ClientListRow[]): ClientListRow[] {
-  return [...rows].sort((a, b) => {
-    const da = a.ficaNextReviewDate ?? null;
-    const db = b.ficaNextReviewDate ?? null;
-    if (da !== db) {
-      if (da === null) return -1;
-      if (db === null) return 1;
-      // "YYYY-MM-DD" compares lexically.
-      return da < db ? -1 : 1;
-    }
-    return compareTieBreak(a, b);
   });
 }
 

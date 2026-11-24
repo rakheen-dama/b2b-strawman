@@ -109,7 +109,8 @@ export interface KPIDashboardProps {
   customerId: string | null;
   setupStatus: MatterSetupStatus | null;
   setupSteps: SetupStep[];
-  ficaStatus: FicaStatus | null;
+  /** absent → no FICA card (no client, no CUSTOMER_MANAGEMENT, D-152); error → "Status unavailable". */
+  ficaStatus: WidgetResult<FicaStatus>;
   retentionClockStartedAt: string | null;
   retentionEndsOn: string | null;
   trustEnabled: boolean;
@@ -341,8 +342,13 @@ export async function KPIDashboard({
         ))}
       </div>
 
-      {/* FICA status card (when customer is linked) */}
-      {customerId && <FicaStatusCard ficaStatus={ficaStatus} slug={slug} />}
+      {/* FICA status card (a client is linked and the caller may read its FICA status) */}
+      {customerId && ficaStatus.state !== "absent" && (
+        <FicaStatusCard
+          ficaStatus={ficaStatus.state === "ok" ? ficaStatus.data : null}
+          slug={slug}
+        />
+      )}
 
       {/* Retention card (self-gates on projectStatus) */}
       <RetentionCard

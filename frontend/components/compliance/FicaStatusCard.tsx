@@ -3,7 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { ShieldCheck } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { ficaReviewReasonLabels, type FicaStatus } from "@/lib/types/fica";
+import {
+  FICA_ATTESTED_STATUS_LABEL,
+  ficaReviewReasonLabels,
+  type FicaStatus,
+} from "@/lib/types/fica";
 
 /**
  * FICA onboarding status tile (GAP-L-46; checklist-first since Phase 88, ADR-348).
@@ -36,9 +40,9 @@ const STATUS_BADGE: Record<
   DONE: { label: "Done", variant: "success" },
   IN_PROGRESS: { label: "In Progress", variant: "warning" },
   NOT_STARTED: { label: "Not Started", variant: "neutral" },
-  // §17.10 X3 wording (Phase 93 655B).
-  ATTESTED: { label: "Verified in prior system (attested)", variant: "success" },
-  ATTESTED_REVIEW: { label: "Review due (attested)", variant: "warning" },
+  // §17.10 X3 wording (Phase 93 655B), from the shared label source.
+  ATTESTED: { label: FICA_ATTESTED_STATUS_LABEL.ATTESTED, variant: "success" },
+  ATTESTED_REVIEW: { label: FICA_ATTESTED_STATUS_LABEL.ATTESTED_REVIEW, variant: "warning" },
 };
 
 export function FicaStatusCard({ ficaStatus, slug }: FicaStatusCardProps) {

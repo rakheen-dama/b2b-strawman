@@ -4,7 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
-import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestation;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjector;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService.FicaAttestationSummary;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService.FicaRead;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -173,14 +174,22 @@ public class CustomerService {
    * Counts and currency are never redacted. {@code hasTrustBalance} without trust visibility
    * returns no rows (filtering by a redacted column would leak it). The FICA attestation detail
    * ({@code ficaReviewReasons} → empty, {@code ficaRiskRating} / {@code ficaNextReviewDate} /
-   * {@code ficaRecordsLocation} → null) needs CUSTOMER_MANAGEMENT (D-148); {@code ficaStatus}, the
-   * {@code ficaStatus} filters and the review-queue order are the same for every caller.
+   * {@code ficaRecordsLocation} → null) needs CUSTOMER_MANAGEMENT (D-148); {@code ficaStatus} and
+   * the {@code OUTSTANDING} / {@code DONE} filters are the same for every caller. The review queue
+   * ({@code ficaStatus=REVIEW}) needs CUSTOMER_MANAGEMENT itself (§17.10 X1, D-152).
    *
    * @throws InvalidStateException (400) when {@code ficaStatus} is not OUTSTANDING, DONE or REVIEW
+   * @throws ForbiddenException (403) for {@code ficaStatus=REVIEW} without CUSTOMER_MANAGEMENT
    */
   @Transactional(readOnly = true)
   public List<ClientListRow> listClientRows(ClientListQuery q, ActorContext actor) {
     String ficaFilter = parseFicaFilter(q.ficaStatus()); // 400 before any query
+    boolean seesFicaDetail = ClientFicaAttestationService.callerSeesFicaAttestationDetail();
+    // The review queue is attestation detail (§17.10 X1, D-152): 403 before any query.
+    if (FICA_FILTER_REVIEW.equals(ficaFilter) && !seesFicaDetail) {
+      throw new ForbiddenException(
+          "Insufficient permissions", "You do not have access to the FICA review queue");
+    }
     ClientBase base = selectBase(q);
     List<Customer> clients = base.clients();
 
@@ -235,12 +244,10 @@ public class CustomerService {
     if (ficaFilter != null) {
       clients = clients.stream().filter(c -> matchesFica(fica.get(c.getId()), ficaFilter)).toList();
     }
-    // The review queue is ordered on the unredacted attestation, before any row is built, so the
-    // order is the same for a caller whose rows have the attestation detail blanked (D-148).
+    // Only a caller who sees the attestation detail reaches the review queue (D-152).
     if (FICA_FILTER_REVIEW.equals(ficaFilter)) {
       clients = clients.stream().sorted(ficaReviewOrder(fica)).toList();
     }
-    boolean seesFicaDetail = InformationRequestService.callerSeesFicaAttestationDetail();
     if (clients.isEmpty()) {
       return List.of();
     }
@@ -290,7 +297,7 @@ public class CustomerService {
               FicaRead read = fica.get(c.getId());
               return read == null || read.attestation() == null
                   ? null
-                  : read.attestation().getNextReviewDate();
+                  : read.attestation().nextReviewDate();
             },
             Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Customer::getName, String.CASE_INSENSITIVE_ORDER)
@@ -404,7 +411,7 @@ public class CustomerService {
               .setScale(2, RoundingMode.HALF_UP);
     }
     var ficaStatus = fica == null ? null : fica.status();
-    ClientFicaAttestation attestation = fica == null ? null : fica.attestation();
+    FicaAttestationSummary attestation = fica == null ? null : fica.attestation();
     return new ClientListRow(
         c.getId(),
         c.getName(),
@@ -418,9 +425,9 @@ public class CustomerService {
         ficaStatus == null ? FicaStatusProjector.NOT_STARTED : ficaStatus.status(),
         ficaStatus == null ? null : ficaStatus.lastVerifiedAt(),
         ficaStatus == null ? List.of() : ficaStatus.reviewReasons(),
-        attestation == null ? null : attestation.getRiskRating().name(),
-        attestation == null ? null : attestation.getNextReviewDate(),
-        attestation == null ? null : attestation.getCddRecordsLocation(),
+        attestation == null ? null : attestation.riskRating(),
+        attestation == null ? null : attestation.nextReviewDate(),
+        attestation == null ? null : attestation.recordsLocation(),
         outstanding,
         agg == null || agg.getOutstandingFeeNoteCount() == null
             ? 0

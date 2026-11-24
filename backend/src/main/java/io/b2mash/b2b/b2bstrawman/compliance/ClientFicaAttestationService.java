@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.DataRequestSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -224,6 +225,23 @@ public class ClientFicaAttestationService {
         signOff == null ? null : signOff.getRoleName(),
         signOff == null ? null : signOff.getStatementVersion(),
         a.getAttestedAt());
+  }
+
+  /**
+   * The capability behind every FICA attestation read: {@code GET
+   * /api/clients/{clientId}/fica-attestation}, {@code GET /api/clients/{clientId}/fica-status} and
+   * the {@code ficaStatus=REVIEW} client list (§17.10 X1, D-152).
+   */
+  public static final String FICA_ATTESTATION_CAPABILITY = "CUSTOMER_MANAGEMENT";
+
+  /**
+   * Whether the current caller may see FICA attestation detail — on the client list (the rows'
+   * review reasons, risk rating, next review date and CDD records location, D-148) and the review
+   * queue ({@code ficaStatus=REVIEW}, D-152). Owner/admin hold the capability through their system
+   * roles; the seeded Member role does not; custom roles only by grant.
+   */
+  public static boolean callerSeesFicaAttestationDetail() {
+    return RequestScopes.hasCapability(FICA_ATTESTATION_CAPABILITY);
   }
 
   /** The active attestations of many clients in one query (for list projections, 655B). */

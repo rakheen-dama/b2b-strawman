@@ -57,9 +57,15 @@ const CLIENT = "c-1";
 const OPTS = { trustEnabled: true, chasePage: 0 };
 const ADMIN: HomeCaps = { capabilities: [], isAdmin: true, isOwner: false };
 const OWNER: HomeCaps = { capabilities: [], isAdmin: false, isOwner: true };
-/** The built-in member role (tenant V1 baseline): VIEW_TRUST, no INVOICING. */
+/** The built-in member role (tenant V1 baseline): VIEW_TRUST, no INVOICING, no CUSTOMER_MANAGEMENT. */
 const MEMBER: HomeCaps = {
   capabilities: ["VIEW_LEGAL", "VIEW_TRUST", "MANAGE_DISBURSEMENTS"],
+  isAdmin: false,
+  isOwner: false,
+};
+/** A custom role granted CUSTOMER_MANAGEMENT (and nothing financial). */
+const CLIENT_MANAGER: HomeCaps = {
+  capabilities: ["CUSTOMER_MANAGEMENT"],
   isAdmin: false,
   isOwner: false,
 };
@@ -256,7 +262,7 @@ describe("client hero tiles (642B)", () => {
     it("no INVOICING (member): omitted, the debtor never read, Chase history hidden", async () => {
       const data = await loadClientHeroData(CLIENT, MEMBER, OPTS);
 
-      expect(ids(buildClientHeroTiles(data, "ZAR"))).toEqual(["openMatters", "trust", "fica"]);
+      expect(ids(buildClientHeroTiles(data, "ZAR"))).toEqual(["openMatters", "trust"]);
       expect(mockDebtor).not.toHaveBeenCalled();
       expect(chaseHistory(data)).toBeNull();
     });
@@ -339,7 +345,11 @@ describe("client hero tiles (642B)", () => {
     });
 
     it("VIEW_TRUST absent → omitted without a request", async () => {
-      const tiles = await tilesFor({ capabilities: ["INVOICING"], isAdmin: false, isOwner: false });
+      const tiles = await tilesFor({
+        capabilities: ["INVOICING", "CUSTOMER_MANAGEMENT"],
+        isAdmin: false,
+        isOwner: false,
+      });
 
       expect(ids(tiles)).toEqual(["openMatters", "outstanding", "fica"]);
       expect(mockAccounts).not.toHaveBeenCalled();
@@ -390,7 +400,7 @@ describe("client hero tiles (642B)", () => {
         lastVerifiedAt: null,
         checklistInstanceId: null,
       });
-      const fica = tile(await tilesFor(MEMBER), "fica");
+      const fica = tile(await tilesFor(CLIENT_MANAGER), "fica");
 
       const value = renderNode(fica.value);
       expect(value).toHaveTextContent(new RegExp(`^${label}$`));
@@ -431,17 +441,31 @@ describe("client hero tiles (642B)", () => {
       expect(fica.hint).toBe("Not risk-rated, Not screened");
     });
 
-    it("ATTESTED_REVIEW with the detail hidden (D-148): no hint", async () => {
+    it("ATTESTED_REVIEW without reasons: no hint", async () => {
       mockFica.mockResolvedValue({
         ...FICA,
         status: "ATTESTED_REVIEW",
         lastVerifiedAt: null,
         checklistInstanceId: null,
       });
-      const fica = tile(await tilesFor(MEMBER), "fica");
+      const fica = tile(await tilesFor(CLIENT_MANAGER), "fica");
 
       expect(renderNode(fica.value)).toHaveTextContent(/^Review due \(attested\)$/);
       expect(fica.hint).toBeUndefined();
+    });
+
+    it("no CUSTOMER_MANAGEMENT (D-152): omitted without a request", async () => {
+      const tiles = await tilesFor(MEMBER);
+
+      expect(ids(tiles)).not.toContain("fica");
+      expect(mockFica).not.toHaveBeenCalled();
+    });
+
+    it("fica-status 403 (capability revoked meanwhile) → omitted, never an error", async () => {
+      mockFica.mockRejectedValue(new MockApiError(403, "Forbidden"));
+      const tiles = await tilesFor(CLIENT_MANAGER);
+
+      expect(ids(tiles)).not.toContain("fica");
     });
 
     it("read failed → state error", async () => {

@@ -12,7 +12,6 @@ import {
   savedViewLifecycle,
   savedViewShowIncomplete,
   searchClientRows,
-  sortByFicaReview,
   sortClientRows,
 } from "@/lib/clients-list";
 import {
@@ -328,27 +327,6 @@ describe("buildClientListParams", () => {
       view: saved.id,
       ficaStatus: "REVIEW",
     });
-  });
-});
-
-describe("sortByFicaReview (655B, C-3)", () => {
-  it("unrated (no next review date) first, then next review date ascending, then name, then id", () => {
-    const rows = [
-      row({ id: "late", name: "Alpha", ficaNextReviewDate: "2027-03-01" }),
-      row({ id: "unrated-b", name: "Zulu", ficaNextReviewDate: null }),
-      row({ id: "early", name: "Mike", ficaNextReviewDate: "2025-01-15" }),
-      row({ id: "unrated-a", name: "Bravo", ficaNextReviewDate: null }),
-      row({ id: "early-2", name: "Mike", ficaNextReviewDate: "2025-01-15" }),
-    ];
-    const input = [...rows];
-    expect(ids(sortByFicaReview(rows))).toEqual([
-      "unrated-a",
-      "unrated-b",
-      "early",
-      "early-2",
-      "late",
-    ]);
-    expect(rows).toEqual(input);
   });
 });
 

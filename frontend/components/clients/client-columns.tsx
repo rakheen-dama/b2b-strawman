@@ -350,8 +350,8 @@ export interface ClientColumnOptions {
   customFieldNames: Readonly<Record<string, string>>;
   /** `false` for a saved view's own column choice: no column is hidden by priority. */
   hideLowPriorityColumns: boolean;
-  /** The active sort column: never hidden by priority. */
-  sortKey: ClientColumnId;
+  /** The active sort column (null = server order): never hidden by priority. */
+  sortKey: ClientColumnId | null;
 }
 
 /** The DataTable columns for the resolved column ids, in order, plus the trailing row menu. */

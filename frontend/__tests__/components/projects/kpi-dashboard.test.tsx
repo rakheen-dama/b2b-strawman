@@ -49,7 +49,9 @@ vi.mock("@/components/dashboard/completion-progress-bar", () => ({
 }));
 
 vi.mock("@/components/compliance/FicaStatusCard", () => ({
-  FicaStatusCard: () => <div data-testid="fica-status-card" />,
+  FicaStatusCard: ({ ficaStatus }: { ficaStatus: { status: string } | null }) => (
+    <div data-testid="fica-status-card" data-status={ficaStatus?.status ?? "unknown"} />
+  ),
 }));
 
 // The retention card's firm-period note reads the firm setting (Phase 88 U17, ADR-354).
@@ -122,7 +124,7 @@ const defaultProps = {
   customerId: "cust-1",
   setupStatus: null,
   setupSteps: [],
-  ficaStatus: null,
+  ficaStatus: ABSENT,
   retentionClockStartedAt: null,
   retentionEndsOn: null,
   trustEnabled: false,
@@ -337,6 +339,35 @@ describe("KPIDashboard", () => {
   });
 
   // Test 6: Setup bar hidden when all steps complete
+  it("FICA card (D-152): hidden when absent, 'unknown' on a failed read, the status when ok", async () => {
+    render(await KPIDashboard(defaultProps));
+    expect(screen.queryByTestId("fica-status-card")).not.toBeInTheDocument();
+    cleanup();
+
+    render(await KPIDashboard({ ...defaultProps, ficaStatus: { state: "error" } }));
+    expect(screen.getByTestId("fica-status-card")).toHaveAttribute("data-status", "unknown");
+    cleanup();
+
+    render(
+      await KPIDashboard({
+        ...defaultProps,
+        ficaStatus: {
+          state: "ok",
+          data: {
+            clientId: "cust-1",
+            status: "DONE",
+            lastVerifiedAt: "2026-05-01T08:00:00Z",
+            requestId: null,
+            checklistInstanceId: "chk-1",
+            reviewReasons: [],
+            attestationId: null,
+          },
+        },
+      })
+    );
+    expect(screen.getByTestId("fica-status-card")).toHaveAttribute("data-status", "DONE");
+  });
+
   it("hides setup bar when all steps are complete", async () => {
     const jsx = await KPIDashboard({
       ...defaultProps,

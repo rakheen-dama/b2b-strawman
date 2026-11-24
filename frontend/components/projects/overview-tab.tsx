@@ -20,7 +20,7 @@ interface OverviewTabProps {
   slug: string;
   setupStatus: MatterSetupStatus | null;
   setupSteps: SetupStep[];
-  ficaStatus: FicaStatus | null;
+  ficaStatus: WidgetResult<FicaStatus>;
   retentionClockStartedAt: string | null;
   retentionEndsOn: string | null;
   trustEnabled: boolean;

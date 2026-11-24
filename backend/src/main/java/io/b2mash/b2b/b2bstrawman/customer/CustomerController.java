@@ -271,12 +271,13 @@ public class CustomerController {
    * {status: NOT_STARTED|IN_PROGRESS|DONE|ATTESTED|ATTESTED_REVIEW, lastVerifiedAt, requestId,
    * checklistInstanceId, reviewReasons, attestationId}} — {@code checklistInstanceId} when the
    * checklist decided, {@code requestId} when a request did, {@code attestationId} when the
-   * attestation did. No KYC-adapter coupling. Ungated: {@code reviewReasons} and {@code
-   * attestationId} are blanked for a caller without {@code CUSTOMER_MANAGEMENT} (D-148).
+   * attestation did. No KYC-adapter coupling. {@code CUSTOMER_MANAGEMENT}, as §17.4.3 / §17.10 X1
+   * rule (D-152): 403 for every other caller.
    */
   @GetMapping("/{clientId}/fica-status")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID clientId) {
-    return ResponseEntity.ok(informationRequestService.getFicaStatusForCaller(clientId));
+    return ResponseEntity.ok(informationRequestService.getFicaStatus(clientId));
   }
 
   /**

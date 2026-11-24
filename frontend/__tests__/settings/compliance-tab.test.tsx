@@ -131,14 +131,31 @@ describe("renderComplianceTab — matter retention period (Phase 88 U17)", () =>
 
     render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    const alerts = screen.getAllByRole("alert");
+    expect(alerts[0]).toHaveTextContent(
       "Couldn't load the current matter retention period. Reload the page to change it."
     );
     expect(screen.getByRole("heading", { name: "Matter retention" })).toBeInTheDocument();
     expect(screen.queryByTestId("matter-retention-form-mount")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save retention period" })).not.toBeInTheDocument();
     expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
-    // The sibling sections keep their existing fallback behaviour.
+    // 655B: General Settings (dormancy, deadline, FICA review intervals) saves every field, so it
+    // is not offered on fallback values either.
+    expect(screen.queryByTestId("compliance-settings-form-mount")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "General Settings" })).toBeInTheDocument();
+    expect(alerts[1]).toHaveTextContent(
+      "Couldn't load the current compliance settings. Reload the page to change them."
+    );
+    // The retention policies section keeps its existing behaviour.
+    expect(screen.getByTestId("retention-policy-table-mount")).toBeInTheDocument();
+  });
+
+  it("settings loaded: General Settings mounts (no load error)", async () => {
+    mockCaps.mockResolvedValue(ADMIN);
+
+    render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
+
     expect(screen.getByTestId("compliance-settings-form-mount")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

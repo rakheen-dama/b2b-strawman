@@ -26,6 +26,9 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +55,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * {@link TakeOnTestDrain}); the Kazi clients are created and onboarded through the API. Own org;
  * every list assertion is scoped to this class's ids.
  *
- * <p>Fixture dates sit years away from today so "review date passed" never flips during the phase:
- * LOW 36 / MEDIUM 24 / HIGH 12 months (the defaults, FD-7) from the CDD date.
+ * <p>Fixture CDD dates are derived from the firm's today ({@code LocalDate.now(clock)}, the clock
+ * the projection reads), so "review date passed" applies to the overdue client only, on any run
+ * date: LOW 36 / MEDIUM 24 / HIGH 12 months (the defaults, FD-7) from the CDD date.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -73,20 +77,30 @@ class FicaReviewQueueIntegrationTest {
   @Autowired private JdbcTemplate jdbc;
   @Autowired private TakeOnCommitService commitService;
   @Autowired private TakeOnDrainJobHandler drain;
+  @Autowired private Clock clock;
+
+  /** The take-on file's date format (dd/MM/yyyy). */
+  private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   private String schema;
   private UUID ownerId;
   private String onboardingTemplateId;
   private UUID batchId;
 
+  // CDD dates relative to today (set in setup); the expected next review dates follow from them.
+  private LocalDate recentCdd; // today − 1 month: LOW → recentCdd + 36 months
+  private LocalDate boCdd; // today − 3 months: MEDIUM → boCdd + 24 months
+  private LocalDate mediumCdd; // today − 1 month: MEDIUM → mediumCdd + 24 months
+  private LocalDate overdueCdd; // today − 6 years: HIGH → overdueCdd + 12 months (passed)
+
   // Imported (take-on) clients
-  private UUID clean; // LOW 2026-02-01 → 2029-02-01, nothing outstanding → ATTESTED
+  private UUID clean; // LOW recentCdd, nothing outstanding → ATTESTED
   private UUID unrated; // no rating → UNRATED, no review date
-  private UUID boOutstanding; // MEDIUM 2026-06-01 → 2028-06-01, BO outstanding
-  private UUID mediumLater; // MEDIUM 2026-09-01 → 2028-09-01, BO outstanding
-  private UUID notScreened; // LOW 2026-02-01 → 2029-02-01, not screened
-  private UUID reviewPassed; // HIGH 2020-02-01 → 2021-02-01 (passed)
-  private UUID sofOutstanding; // LOW 2026-02-01 → 2029-02-01, source of funds via batch default
+  private UUID boOutstanding; // MEDIUM boCdd, BO outstanding
+  private UUID mediumLater; // MEDIUM mediumCdd (reviewed later than boOutstanding), BO outstanding
+  private UUID notScreened; // LOW recentCdd, not screened
+  private UUID reviewPassed; // HIGH overdueCdd (review date passed)
+  private UUID sofOutstanding; // LOW recentCdd, source of funds via batch default
   private UUID checklistLater; // UNRATED; a Kazi onboarding checklist runs on it (FD-29)
 
   // Kazi clients
@@ -95,6 +109,11 @@ class FicaReviewQueueIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
+    LocalDate today = LocalDate.now(clock);
+    recentCdd = today.minusMonths(1);
+    boCdd = today.minusMonths(3);
+    mediumCdd = today.minusMonths(1);
+    overdueCdd = today.minusYears(6);
     schema =
         provisioningService
             .provisionTenant(ORG_ID, "FICA Review Queue Attorneys", "legal-za")
@@ -110,7 +129,7 @@ class FicaReviewQueueIntegrationTest {
             ownerJwt(),
             csv(
                 row("Clean Client", "clean@example.test")
-                    .cddDate("01/02/2026")
+                    .cddDate(fileDate(recentCdd))
                     .records("Box Q-CLEAN")
                     .ref("Q-CLEAN"),
                 row("Unrated Client", "unrated@example.test")
@@ -119,24 +138,24 @@ class FicaReviewQueueIntegrationTest {
                     .ref("Q-UNRATED"),
                 row("Owner Unknown", "bo@example.test")
                     .rating("Medium")
-                    .cddDate("01/06/2026")
+                    .cddDate(fileDate(boCdd))
                     .bo("Outstanding")
                     .records("Box Q-BO")
                     .ref("Q-BO"),
                 row("Medium Later", "medium@example.test")
                     .rating("Medium")
-                    .cddDate("01/09/2026")
+                    .cddDate(fileDate(mediumCdd))
                     .bo("Outstanding")
                     .records("Box Q-MED")
                     .ref("Q-MED"),
                 row("Never Screened", "ns@example.test")
-                    .cddDate("01/02/2026")
+                    .cddDate(fileDate(recentCdd))
                     .screening("Not screened", "")
                     .records("Box Q-NS")
                     .ref("Q-NS"),
                 row("Overdue Review", "overdue@example.test")
                     .rating("High")
-                    .cddDate("01/02/2020")
+                    .cddDate(fileDate(overdueCdd))
                     .records("Box Q-PASSED")
                     .ref("Q-PASSED"),
                 row("Checklist Later", "checklist@example.test")
@@ -161,7 +180,7 @@ class FicaReviewQueueIntegrationTest {
             ownerJwt(),
             csv(
                 row("Funds Unknown", "sof@example.test")
-                    .cddDate("01/02/2026")
+                    .cddDate(fileDate(recentCdd))
                     .records("Box Q-SOF")
                     .ref("Q-SOF")),
             mapping(Map.of("sourceOfFundsStatus", "OUTSTANDING")));
@@ -215,10 +234,10 @@ class FicaReviewQueueIntegrationTest {
     assertThat(rows.stream().map(r -> UUID.fromString((String) r.get("id"))).toList())
         .containsExactly(
             unrated, // no review date (UNRATED) first
-            reviewPassed, // 2021-02-01
-            boOutstanding, // 2028-06-01
-            mediumLater, // 2028-09-01
-            sofOutstanding, // 2029-02-01, "Funds Unknown" …
+            reviewPassed, // overdueCdd + 12 months (passed)
+            boOutstanding, // boCdd + 24 months
+            mediumLater, // mediumCdd + 24 months
+            sofOutstanding, // recentCdd + 36 months, "Funds Unknown" …
             notScreened); // … before "Never Screened" (name breaks the date tie)
     assertThat(rows).allSatisfy(r -> assertThat(r.get("ficaStatus")).isEqualTo("ATTESTED_REVIEW"));
 
@@ -228,22 +247,26 @@ class FicaReviewQueueIntegrationTest {
         byId.get(reviewPassed.toString()),
         List.of("REVIEW_DATE_PASSED"),
         "HIGH",
-        "2021-02-01",
+        next(overdueCdd, 12),
         "Box Q-PASSED");
     assertRow(
         byId.get(boOutstanding.toString()),
         List.of("BENEFICIAL_OWNERSHIP_OUTSTANDING"),
         "MEDIUM",
-        "2028-06-01",
+        next(boCdd, 24),
         "Box Q-BO");
     assertRow(
         byId.get(sofOutstanding.toString()),
         List.of("SOURCE_OF_FUNDS_OUTSTANDING"),
         "LOW",
-        "2029-02-01",
+        next(recentCdd, 36),
         "Box Q-SOF");
     assertRow(
-        byId.get(notScreened.toString()), List.of("NOT_SCREENED"), "LOW", "2029-02-01", "Box Q-NS");
+        byId.get(notScreened.toString()),
+        List.of("NOT_SCREENED"),
+        "LOW",
+        next(recentCdd, 36),
+        "Box Q-NS");
   }
 
   @Test
@@ -278,70 +301,89 @@ class FicaReviewQueueIntegrationTest {
             uiOnboarding);
     var cleanRow =
         rows.stream().filter(r -> clean.toString().equals(r.get("id"))).findFirst().orElseThrow();
-    assertRow(cleanRow, List.of(), "LOW", "2029-02-01", "Box Q-CLEAN");
+    assertRow(cleanRow, List.of(), "LOW", next(recentCdd, 36), "Box Q-CLEAN");
     assertThat(cleanRow.get("ficaStatus")).isEqualTo("ATTESTED");
     assertThat(cleanRow.get("ficaLastVerifiedAt")).isNull();
   }
 
-  // --- attestation detail needs CUSTOMER_MANAGEMENT on the ungated reads (D-148, F-655B-1) ---
+  // --- CUSTOMER_MANAGEMENT: the review queue and fica-status are gated (§17.10 X1, D-152); the
+  // ungated list keeps the status but blanks the attestation detail (D-148, F-655B-1) ---
 
   @Test
-  void withoutClientManagementTheListKeepsStatusAndOrderButBlanksAttestationDetail()
-      throws Exception {
-    var own =
-        Set.of(
-            unrated, boOutstanding, mediumLater, notScreened, reviewPassed, sofOutstanding, clean);
-    var ownerOrder = ids(listRows("REVIEW", own, ownerJwt()));
+  void withoutClientManagementTheReviewQueueIs403() throws Exception {
     for (var caller :
         List.of(
             TestJwtFactory.memberJwt(ORG_ID, MEMBER),
             TestJwtFactory.customRoleJwt(ORG_ID, NO_CLIENTS))) {
-      var review = listRows("REVIEW", own, caller);
-      // the review queue (filter + server-side order) is the same as the owner's …
-      assertThat(ids(review)).isNotEmpty().isEqualTo(ownerOrder);
-      assertThat(review)
-          .allSatisfy(r -> assertThat(r.get("ficaStatus")).isEqualTo("ATTESTED_REVIEW"))
-          // … but every row's attestation detail is blank
-          .allSatisfy(r -> assertRow(r, List.of(), null, null, null));
+      mockMvc
+          .perform(get("/api/clients?ficaStatus=REVIEW").with(caller))
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.status").value(403))
+          .andExpect(jsonPath("$.title").value("Insufficient permissions"));
+      // case-insensitive, like the filter itself
+      mockMvc
+          .perform(get("/api/clients?ficaStatus=review").with(caller))
+          .andExpect(status().isForbidden());
+    }
+    // owner and admin (CUSTOMER_MANAGEMENT through their system roles) get the queue
+    for (var caller : List.of(ownerJwt(), TestJwtFactory.adminJwt(ORG_ID, ADMIN))) {
+      assertThat(ids(listRows("REVIEW", Set.of(boOutstanding), caller)))
+          .containsExactly(boOutstanding);
+    }
+  }
 
+  @Test
+  void withoutClientManagementTheListKeepsStatusButBlanksAttestationDetail() throws Exception {
+    var own = Set.of(unrated, boOutstanding, reviewPassed, clean);
+    for (var caller :
+        List.of(
+            TestJwtFactory.memberJwt(ORG_ID, MEMBER),
+            TestJwtFactory.customRoleJwt(ORG_ID, NO_CLIENTS))) {
+      // the unfiltered list: every row's status stays, its attestation detail is blank
+      var rows = listRows(null, own, caller);
+      assertThat(ids(rows)).containsExactlyInAnyOrderElementsOf(own);
+      var statusById =
+          rows.stream()
+              .collect(Collectors.toMap(r -> (String) r.get("id"), r -> r.get("ficaStatus")));
+      assertThat(statusById)
+          .containsEntry(unrated.toString(), "ATTESTED_REVIEW")
+          .containsEntry(boOutstanding.toString(), "ATTESTED_REVIEW")
+          .containsEntry(reviewPassed.toString(), "ATTESTED_REVIEW")
+          .containsEntry(clean.toString(), "ATTESTED");
+      assertThat(rows).allSatisfy(r -> assertRow(r, List.of(), null, null, null));
+
+      // the OUTSTANDING / DONE filters stay open, with the detail blanked the same way
       var done = listRows("DONE", Set.of(clean), caller);
       assertThat(done).hasSize(1);
       assertThat(done.getFirst().get("ficaStatus")).isEqualTo("ATTESTED");
       assertRow(done.getFirst(), List.of(), null, null, null);
+      var outstanding = listRows("OUTSTANDING", Set.of(boOutstanding), caller);
+      assertThat(outstanding).hasSize(1);
+      assertRow(outstanding.getFirst(), List.of(), null, null, null);
     }
     // the admin holds CUSTOMER_MANAGEMENT through the system role and sees the detail
-    var adminRow =
-        listRows("REVIEW", Set.of(boOutstanding), TestJwtFactory.adminJwt(ORG_ID, ADMIN));
+    var adminRow = listRows(null, Set.of(boOutstanding), TestJwtFactory.adminJwt(ORG_ID, ADMIN));
     assertRow(
         adminRow.getFirst(),
         List.of("BENEFICIAL_OWNERSHIP_OUTSTANDING"),
         "MEDIUM",
-        "2028-06-01",
+        next(boCdd, 24),
         "Box Q-BO");
   }
 
   @Test
-  void withoutClientManagementFicaStatusKeepsStatusButBlanksReasonsAndAttestationId()
-      throws Exception {
+  void ficaStatusIs403WithoutClientManagement() throws Exception {
     for (var caller :
         List.of(
             TestJwtFactory.memberJwt(ORG_ID, MEMBER),
             TestJwtFactory.customRoleJwt(ORG_ID, NO_CLIENTS))) {
-      mockMvc
-          .perform(get("/api/clients/{id}/fica-status", reviewPassed).with(caller))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.clientId").value(reviewPassed.toString()))
-          .andExpect(jsonPath("$.status").value("ATTESTED_REVIEW"))
-          .andExpect(jsonPath("$.reviewReasons").isArray())
-          .andExpect(jsonPath("$.reviewReasons").isEmpty())
-          .andExpect(jsonPath("$.attestationId").doesNotExist());
-      mockMvc
-          .perform(get("/api/clients/{id}/fica-status", clean).with(caller))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("ATTESTED"))
-          .andExpect(jsonPath("$.attestationId").doesNotExist());
+      for (UUID client : List.of(reviewPassed, clean, uiProspect)) {
+        mockMvc
+            .perform(get("/api/clients/{id}/fica-status", client).with(caller))
+            .andExpect(status().isForbidden());
+      }
     }
-    // owner and admin (CUSTOMER_MANAGEMENT) see the detail
+    // owner and admin (CUSTOMER_MANAGEMENT) get the full status
     for (var caller : List.of(ownerJwt(), TestJwtFactory.adminJwt(ORG_ID, ADMIN))) {
       mockMvc
           .perform(get("/api/clients/{id}/fica-status", reviewPassed).with(caller))
@@ -460,7 +502,7 @@ class FicaReviewQueueIntegrationTest {
         .andExpect(jsonPath("$.customerId").doesNotExist())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
         .andExpect(jsonPath("$.takeOnBatchId").value(batchId.toString()))
-        .andExpect(jsonPath("$.cddCompletedDate").value("2026-06-01"))
+        .andExpect(jsonPath("$.cddCompletedDate").value(boCdd.toString()))
         .andExpect(jsonPath("$.lastReviewDate").doesNotExist())
         .andExpect(jsonPath("$.riskRating").value("MEDIUM"))
         .andExpect(jsonPath("$.ficaClientType").value("NATURAL_PERSON"))
@@ -470,7 +512,7 @@ class FicaReviewQueueIntegrationTest {
         .andExpect(jsonPath("$.sourceOfFundsStatus").value("NOT_REQUIRED"))
         .andExpect(jsonPath("$.cddRecordsLocation").value("Box Q-BO"))
         .andExpect(jsonPath("$.sourceSystemRef").value("Q-BO"))
-        .andExpect(jsonPath("$.nextReviewDate").value("2028-06-01"))
+        .andExpect(jsonPath("$.nextReviewDate").value(next(boCdd, 24)))
         .andExpect(jsonPath("$.attestedBy").value(ownerId.toString()))
         .andExpect(jsonPath("$.attestedByName").value("Queue Owner"))
         .andExpect(jsonPath("$.attestedByRole").value(roleName))
@@ -511,7 +553,7 @@ class FicaReviewQueueIntegrationTest {
               ownerJwt(),
               csv(
                   row("Later Low", "later.low@example.test")
-                      .cddDate("01/02/2026")
+                      .cddDate(fileDate(recentCdd))
                       .records("Box Q-LATER")
                       .ref("Q-LATER")),
               mapping());
@@ -520,10 +562,10 @@ class FicaReviewQueueIntegrationTest {
 
       mockMvc
           .perform(get("/api/clients/{id}/fica-attestation", laterLow).with(ownerJwt()))
-          .andExpect(jsonPath("$.nextReviewDate").value("2031-02-01")); // 60 months
+          .andExpect(jsonPath("$.nextReviewDate").value(next(recentCdd, 60))); // 60 months
       mockMvc
           .perform(get("/api/clients/{id}/fica-attestation", clean).with(ownerJwt()))
-          .andExpect(jsonPath("$.nextReviewDate").value("2029-02-01")); // stored, unchanged
+          .andExpect(jsonPath("$.nextReviewDate").value(next(recentCdd, 36))); // stored, unchanged
     } finally {
       patchCompliance("{\"ficaReviewMonthsLow\":36}");
     }
@@ -531,7 +573,20 @@ class FicaReviewQueueIntegrationTest {
 
   // --- helpers ---
 
-  /** {@code GET /api/clients?ficaStatus=…}, in response order, kept to {@code only} when given. */
+  /** A CDD date as the take-on file writes it. */
+  private static String fileDate(LocalDate date) {
+    return date.format(FILE_DATE);
+  }
+
+  /** The expected next review date: {@code cdd + months} (ISO), the service's own arithmetic. */
+  private static String next(LocalDate cdd, int months) {
+    return cdd.plusMonths(months).toString();
+  }
+
+  /**
+   * {@code GET /api/clients?ficaStatus=…} ({@code null} = unfiltered), in response order, kept to
+   * {@code only} when given.
+   */
   private List<Map<String, Object>> listRows(String ficaStatus, Set<UUID> only) throws Exception {
     return listRows(ficaStatus, only, ownerJwt());
   }
@@ -541,7 +596,9 @@ class FicaReviewQueueIntegrationTest {
       String ficaStatus, Set<UUID> only, JwtRequestPostProcessor caller) throws Exception {
     String json =
         mockMvc
-            .perform(get("/api/clients?ficaStatus=" + ficaStatus).with(caller))
+            .perform(
+                get(ficaStatus == null ? "/api/clients" : "/api/clients?ficaStatus=" + ficaStatus)
+                    .with(caller))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()

@@ -19,6 +19,20 @@ public final class TakeOnStorageKeys {
     return "take-on/%s/%s/".formatted(tenantSchema, batchId);
   }
 
+  /**
+   * 657D (§17.2.7, §17.6.1): a take-on report file — {@code
+   * take-on/{tenantSchema}/{batchId}/report/{reportId}/take-on-report.{pdf|csv}}. Never deleted (a
+   * trust record).
+   */
+  public static String reportKey(
+      String tenantSchema, UUID batchId, UUID reportId, String extension) {
+    return batchPrefix(tenantSchema, batchId)
+        + "report/"
+        + reportId
+        + "/take-on-report."
+        + extension;
+  }
+
   public static String sourceKey(String tenantSchema, UUID batchId, String sanitisedFileName) {
     return batchPrefix(tenantSchema, batchId) + UUID.randomUUID() + "/" + sanitisedFileName;
   }

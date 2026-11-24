@@ -311,6 +311,13 @@ class TakeOnTenantIsolationIntegrationTest {
     mockMvc
         .perform(get("/api/take-on/reports/" + reportId).with(ownerA()))
         .andExpect(status().isOk());
+    // 657D: nor can B download A's report files, or ask for them to be rendered
+    for (String format : List.of("pdf", "csv")) {
+      TakeOnTestApi.reportFile(mockMvc, ownerB(), reportId, format)
+          .andExpect(status().isNotFound());
+      TakeOnTestApi.reportFile(mockMvc, ownerA(), reportId, format).andExpect(status().isOk());
+    }
+    TakeOnTestApi.renderReport(mockMvc, ownerB(), reportId).andExpect(status().isNotFound());
   }
 
   private int mattersWithReference(String schema, String reference) {

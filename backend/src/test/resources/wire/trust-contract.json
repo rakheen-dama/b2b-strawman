@@ -204,6 +204,9 @@
     }, {
       "name" : "lines",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse>"
+    }, {
+      "name" : "warnings",
+      "type" : "java.util.List<java.lang.String>"
     } ],
     "ClientLedgerCardResponse" : [ {
       "name" : "id",
@@ -808,6 +811,50 @@
       "type" : "java.time.LocalDate"
     }, {
       "name" : "takeOnCutoverDate",
+      "type" : "java.time.LocalDate"
+    } ],
+    "TrustBalanceTrendPoint" : [ {
+      "name" : "month",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "periodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "cashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgerTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "partial",
+      "type" : "boolean"
+    } ],
+    "TrustBalanceTrendResponse" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "accountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "asOf",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "openingCashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "openingClientLedgerTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "months",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendPoint>"
+    }, {
+      "name" : "accounts",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$TrustAccountRef>"
+    }, {
+      "name" : "takenOnAt",
       "type" : "java.time.LocalDate"
     } ],
     "TrustIntegrityReport" : [ {

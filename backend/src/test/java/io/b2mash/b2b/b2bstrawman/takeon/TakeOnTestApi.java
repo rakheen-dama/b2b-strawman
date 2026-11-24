@@ -284,6 +284,18 @@ public final class TakeOnTestApi {
     return mockMvc.perform(get("/api/take-on/reports/" + reportId).with(jwt));
   }
 
+  /** 657D: {@code GET /api/take-on/reports/{id}/pdf|csv}. */
+  public static ResultActions reportFile(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID reportId, String format) throws Exception {
+    return mockMvc.perform(get("/api/take-on/reports/" + reportId + "/" + format).with(jwt));
+  }
+
+  /** 657D: "Try again" — {@code POST /api/take-on/reports/{id}/render}. */
+  public static ResultActions renderReport(MockMvc mockMvc, RequestPostProcessor jwt, UUID reportId)
+      throws Exception {
+    return mockMvc.perform(post("/api/take-on/reports/" + reportId + "/render").with(jwt));
+  }
+
   /** A validated batch: its id and the hash every attestation and commit binds to. */
   public record Validated(UUID batchId, String hash, String json) {}
 

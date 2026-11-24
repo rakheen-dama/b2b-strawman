@@ -228,6 +228,10 @@ class TakeOnAuditNoPiiIntegrationTest {
     world.drain();
     assertThat((String) JsonPath.read(world.batchJson(batch.batchId()), "$.status"))
         .isEqualTo("COMPLETED");
+    // 657D: both report files downloaded (takeon.report.downloaded — report id and format)
+    UUID reportId = UUID.fromString(JsonPath.read(world.batchJson(batch.batchId()), "$.reportId"));
+    TakeOnTestApi.reportFile(mockMvc, owner(), reportId, "pdf").andExpect(status().isOk());
+    TakeOnTestApi.reportFile(mockMvc, owner(), reportId, "csv").andExpect(status().isOk());
 
     var rows =
         jdbc.queryForList(
@@ -243,6 +247,7 @@ class TakeOnAuditNoPiiIntegrationTest {
             "takeon.batch.sign_off_revoked",
             "takeon.batch.commit_requested",
             "takeon.report.generated",
+            "takeon.report.downloaded",
             "takeon.batch.committed");
     var canaries = List.of("TCANARY", "TCANARY-PREV", "12345.67", "R 12 345,67", "12 345,67");
     for (var row : rows) {

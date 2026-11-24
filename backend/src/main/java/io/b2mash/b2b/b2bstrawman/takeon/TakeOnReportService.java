@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.takeon;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot.AccountHeader;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot.FirmHeader;
@@ -23,19 +26,35 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The take-on report (Phase 93 657C, §17.3.12, ADR-391, FD-15): written once by the trust commit
  * ({@link #snapshot}, inside its transaction, after the self-check, so it describes exactly the
  * position posted), and read as JSON by {@code TakeOnReportController} ({@code VIEW_TRUST}, the
  * gate of the monthly lists — never {@code ReportingController}, P-12). Audits {@code
- * takeon.report.generated}. The PDF and CSV are 657D's.
+ * takeon.report.generated}.
+ *
+ * <p>657D (§17.3.12, §17.4.2): the report's PDF and CSV ({@link TakeOnReportRenderer}, rendered by
+ * the drain) are downloaded through {@link #download} — streamed from S3, never presigned, each
+ * download audited {@code takeon.report.downloaded} in a transaction of its own (FU-12); 202 +
+ * {@code Retry-After} while a file is being rendered, 409 {@code REPORT_RENDER_FAILED} once the
+ * render gave up; {@link #retryRender} ("Try again") resets the attempts and enqueues the drain.
+ * Every report response carries {@code files { pdf, csv }}, each {@code READY | RENDERING |
+ * FAILED}.
  */
 @Service
 public class TakeOnReportService {
@@ -47,7 +66,8 @@ public class TakeOnReportService {
       UUID trustAccountId,
       LocalDate cutoverDate,
       Instant generatedAt,
-      String generatedByName) {}
+      String generatedByName,
+      TakeOnReportFiles files) {}
 
   /** The report as JSON: the stored snapshot ({@link TakeOnReportSnapshot}) and its SHA-256. */
   public record TakeOnReportResponse(
@@ -57,7 +77,28 @@ public class TakeOnReportService {
       LocalDate cutoverDate,
       String snapshotSha256,
       Instant generatedAt,
-      Map<String, Object> snapshot) {}
+      Map<String, Object> snapshot,
+      TakeOnReportFiles files) {}
+
+  /** 657D: the state of the report's two files. */
+  public record TakeOnReportFiles(TakeOnReportFileState pdf, TakeOnReportFileState csv) {}
+
+  /**
+   * 657D: one file — {@code READY} (rendered: its SHA-256, size and render time), {@code RENDERING}
+   * (not yet; the drain renders it) or {@code FAILED} (the render gave up after five attempts; "Try
+   * again" resets it).
+   */
+  public record TakeOnReportFileState(
+      String status, String sha256, Long fileSize, Instant renderedAt) {}
+
+  /** 657D: a downloaded report file. */
+  public record TakeOnReportDownload(byte[] bytes, String contentType, String fileName) {}
+
+  public static final String FILE_READY = "READY";
+  public static final String FILE_RENDERING = "RENDERING";
+  public static final String FILE_FAILED = "FAILED";
+
+  private static final Logger log = LoggerFactory.getLogger(TakeOnReportService.class);
 
   private final TakeOnReportRepository reports;
   private final TakeOnSourceRepository sources;
@@ -66,6 +107,11 @@ public class TakeOnReportService {
   private final OrganizationRepository organizations;
   private final MemberNameResolver memberNames;
   private final TakeOnAudit audit;
+  private final TakeOnReportFileRepository reportFiles;
+  private final TakeOnReportRenderRepository renders;
+  private final StorageService storage;
+  private final JobEnqueuer jobEnqueuer;
+  private final TransactionTemplate tx;
   private final Clock clock;
 
   public TakeOnReportService(
@@ -76,6 +122,11 @@ public class TakeOnReportService {
       OrganizationRepository organizations,
       MemberNameResolver memberNames,
       TakeOnAudit audit,
+      TakeOnReportFileRepository reportFiles,
+      TakeOnReportRenderRepository renders,
+      StorageService storage,
+      JobEnqueuer jobEnqueuer,
+      PlatformTransactionManager transactionManager,
       Clock clock) {
     this.reports = reports;
     this.sources = sources;
@@ -84,6 +135,11 @@ public class TakeOnReportService {
     this.organizations = organizations;
     this.memberNames = memberNames;
     this.audit = audit;
+    this.reportFiles = reportFiles;
+    this.renders = renders;
+    this.storage = storage;
+    this.jobEnqueuer = jobEnqueuer;
+    this.tx = new TransactionTemplate(transactionManager);
     this.clock = clock;
   }
 
@@ -97,6 +153,8 @@ public class TakeOnReportService {
             ? reports.findAllByOrderByGeneratedAtDesc()
             : reports.findByTrustAccountIdOrderByCutoverDateDesc(trustAccountId);
     var names = memberNames.resolveNames(found.stream().map(TakeOnReport::getGeneratedBy).toList());
+    var ids = found.stream().map(TakeOnReport::getId).toList();
+    var fileStates = files(ids);
     return found.stream()
         .map(
             r ->
@@ -106,17 +164,83 @@ public class TakeOnReportService {
                     r.getTrustAccountId(),
                     r.getCutoverDate(),
                     r.getGeneratedAt(),
-                    names.get(r.getGeneratedBy())))
+                    names.get(r.getGeneratedBy()),
+                    fileStates.get(r.getId())))
         .toList();
   }
 
   /** {@code GET /api/take-on/reports/{reportId}}: the snapshot as stored. */
   @Transactional(readOnly = true)
   public TakeOnReportResponse get(UUID reportId) {
-    var report =
-        reports
-            .findById(reportId)
-            .orElseThrow(() -> new ResourceNotFoundException("Take-on report", reportId));
+    return response(load(reportId));
+  }
+
+  /**
+   * 657D: {@code GET /api/take-on/reports/{reportId}/pdf|csv} — the stored file, streamed from S3
+   * (never presigned), then audited {@code takeon.report.downloaded} in a transaction of its own.
+   * 404 for an unknown report; 202 + {@code Retry-After} while the file is not rendered; 409 {@code
+   * REPORT_RENDER_FAILED} once its render gave up. Not transactional: each read is its own short
+   * transaction and the audit row is written after them (FU-12).
+   */
+  public TakeOnReportDownload download(UUID reportId, TakeOnReportFile.Format format) {
+    var report = load(reportId);
+    var file = reportFiles.findByReportIdAndFormat(reportId, format);
+    if (file.isEmpty()) {
+      boolean failed = renders.findById(reportId).map(TakeOnReportRender::isFailed).orElse(false);
+      throw failed ? TakeOnProblems.reportRenderFailed() : TakeOnProblems.reportRendering();
+    }
+    byte[] bytes = storage.download(file.get().getS3Key());
+    audit.reportDownloaded(report, format);
+    return new TakeOnReportDownload(bytes, format.contentType(), fileName(report, format));
+  }
+
+  /**
+   * 657D (A-14): "Try again" — {@code POST /api/take-on/reports/{reportId}/render}. Resets the
+   * render's attempts and {@code failed_at} (its own transaction), then enqueues {@code
+   * take_on_drain} in a second one, as {@code TakeOnCommitFacade} does (a failed enqueue is logged:
+   * the sweep enqueues it within a minute). A report whose files are both ready is left as it is.
+   * Returns the report, its missing files now {@code RENDERING}.
+   */
+  public TakeOnReportResponse retryRender(UUID reportId) {
+    Boolean missing =
+        tx.execute(
+            status -> {
+              load(reportId);
+              if (reportFiles.findByReportId(reportId).size()
+                  == TakeOnReportFile.Format.values().length) {
+                return false;
+              }
+              renders.ensureExists(reportId);
+              var render = renders.findById(reportId).orElseThrow();
+              render.reset();
+              renders.saveAndFlush(render);
+              return true;
+            });
+    if (Boolean.TRUE.equals(missing)) {
+      try {
+        jobEnqueuer.enqueue(
+            TakeOnDrainJobHandler.JOB_TYPE,
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            RequestScopes.getShardIdOrDefault(),
+            null);
+      } catch (RuntimeException e) {
+        log.warn(
+            "take_on_drain enqueue failed for report={} — the sweep will enqueue it ({})",
+            reportId,
+            e.getClass().getSimpleName());
+      }
+    }
+    return tx.execute(status -> response(load(reportId)));
+  }
+
+  private TakeOnReport load(UUID reportId) {
+    return reports
+        .findById(reportId)
+        .orElseThrow(() -> new ResourceNotFoundException("Take-on report", reportId));
+  }
+
+  private TakeOnReportResponse response(TakeOnReport report) {
     return new TakeOnReportResponse(
         report.getId(),
         report.getBatchId(),
@@ -124,7 +248,62 @@ public class TakeOnReportService {
         report.getCutoverDate(),
         report.getSnapshotSha256(),
         report.getGeneratedAt(),
-        report.getSnapshot());
+        report.getSnapshot(),
+        files(List.of(report.getId())).get(report.getId()));
+  }
+
+  /** The file states of {@code reportIds} (two batched reads). */
+  private Map<UUID, TakeOnReportFiles> files(Collection<UUID> reportIds) {
+    if (reportIds.isEmpty()) {
+      return Map.of();
+    }
+    var rendered =
+        reportFiles.findByReportIdIn(reportIds).stream()
+            .collect(Collectors.groupingBy(TakeOnReportFile::getReportId));
+    var failed =
+        renders.findByReportIdIn(reportIds).stream()
+            .filter(TakeOnReportRender::isFailed)
+            .map(TakeOnReportRender::getReportId)
+            .collect(Collectors.toSet());
+    return reportIds.stream()
+        .distinct()
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                id -> {
+                  var byFormat =
+                      rendered.getOrDefault(id, List.of()).stream()
+                          .collect(
+                              Collectors.toMap(TakeOnReportFile::getFormat, Function.identity()));
+                  boolean gaveUp = failed.contains(id);
+                  return new TakeOnReportFiles(
+                      state(byFormat.get(TakeOnReportFile.Format.PDF), gaveUp),
+                      state(byFormat.get(TakeOnReportFile.Format.CSV), gaveUp));
+                }));
+  }
+
+  private static TakeOnReportFileState state(TakeOnReportFile file, boolean gaveUp) {
+    if (file != null) {
+      return new TakeOnReportFileState(
+          FILE_READY, file.getSha256(), file.getFileSize(), file.getRenderedAt());
+    }
+    return new TakeOnReportFileState(gaveUp ? FILE_FAILED : FILE_RENDERING, null, null, null);
+  }
+
+  /** {@code take-on-report-{account}-{cutover}.pdf|csv}, the account name as a safe slug. */
+  static String fileName(TakeOnReport report, TakeOnReportFile.Format format) {
+    Object account = report.getSnapshot().get("account");
+    String name =
+        account instanceof Map<?, ?> a && a.get("name") instanceof String n ? n : "trust-account";
+    String slug =
+        name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("(^-+|-+$)", "");
+    if (slug.isEmpty()) {
+      slug = "trust-account";
+    }
+    if (slug.length() > 60) {
+      slug = slug.substring(0, 60).replaceAll("-+$", "");
+    }
+    return "take-on-report-" + slug + "-" + report.getCutoverDate() + "." + format.extension();
   }
 
   // --- the snapshot (the trust commit's transaction) ---

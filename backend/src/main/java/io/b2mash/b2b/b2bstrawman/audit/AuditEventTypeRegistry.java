@@ -369,6 +369,7 @@ public class AuditEventTypeRegistry {
                 AuditEventGroup.DATA),
             // DATA — the trust take-on sign-off and the take-on report (Phase 93 657C, §17.6.4).
             // Additive keys (pin 98 → 100). Details are ids and the statement version only.
+            // 657D: the report file download (pin 100 → 101), report id and format only.
             new AuditEventTypeMetadata(
                 "takeon.batch.signed_off",
                 "Trust take-on signed off",
@@ -378,6 +379,11 @@ public class AuditEventTypeRegistry {
                 "takeon.report.generated",
                 "Trust take-on report generated",
                 AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.report.downloaded",
+                "Trust take-on report downloaded",
+                AuditSeverity.NOTICE,
                 AuditEventGroup.DATA),
             // DATA — data protection
             new AuditEventTypeMetadata(

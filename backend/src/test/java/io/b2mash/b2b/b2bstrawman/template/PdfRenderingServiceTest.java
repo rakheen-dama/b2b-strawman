@@ -152,6 +152,27 @@ class PdfRenderingServiceTest {
                 }));
   }
 
+  /**
+   * Phase 93 657D (A-17): {@code htmlToPdf(html, documentDate)} is byte-stable — two renders of the
+   * same HTML are identical — and the document's creation date is the given instant.
+   */
+  @Test
+  void htmlToPdf_withADocumentDate_isByteStable_andDatedByIt() throws IOException {
+    var html =
+        "<html><head><meta charset=\"UTF-8\"/></head><body><h1>Trust take-on report</h1>"
+            + "<p>R403 500,00</p></body></html>";
+    var at = java.time.Instant.parse("2026-10-31T13:45:00Z");
+    byte[] first = pdfRenderingService.htmlToPdf(html, at);
+    Thread.yield();
+    byte[] second = pdfRenderingService.htmlToPdf(html, at);
+    assertThat(second).isEqualTo(first);
+    try (var doc = Loader.loadPDF(first)) {
+      assertThat(doc.getDocumentInformation().getCreationDate().toInstant()).isEqualTo(at);
+      assertThat(new PDFTextStripper().getText(doc)).contains("Trust take-on report");
+    }
+    assertThat(pdfRenderingService.htmlToPdf(html, at.plusSeconds(60))).isNotEqualTo(first);
+  }
+
   @Test
   void generatesPdfWithNonZeroBytes() {
     runInTenant(

@@ -288,10 +288,11 @@ class AuditEventTypeRegistryTest {
     // takeon.portal_contacts.created, customer.fica_attested (Phase 93 655A) = 96.
     // + 2 takeon.go_live.acknowledged/.withdrawn (Phase 93 656A) = 98.
     // + 2 takeon.batch.signed_off, takeon.report.generated (Phase 93 657C) = 100.
+    // + 1 takeon.report.downloaded (Phase 93 657D) = 101.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(100);
+    assertThat(registry.entries()).hasSize(101);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -339,7 +340,8 @@ class AuditEventTypeRegistryTest {
             "takeon.go_live.acknowledged",
             "takeon.go_live.withdrawn",
             "takeon.batch.signed_off",
-            "takeon.report.generated")
+            "takeon.report.generated",
+            "takeon.report.downloaded")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -397,6 +399,12 @@ class AuditEventTypeRegistryTest {
       assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
       assertThat(resolved.label()).startsWith("Trust take-on ");
     }
+    // 657D: the take-on report file download (reading a trust record, as a raw file download)
+    var reportDownloaded = registry.resolve("takeon.report.downloaded");
+    assertThat(reportDownloaded.eventType()).isEqualTo("takeon.report.downloaded");
+    assertThat(reportDownloaded.group()).isEqualTo(AuditEventGroup.DATA);
+    assertThat(reportDownloaded.severity()).isEqualTo(AuditSeverity.NOTICE);
+    assertThat(reportDownloaded.label()).isEqualTo("Trust take-on report downloaded");
     var downloaded = registry.resolve("takeon.file.downloaded");
     assertThat(downloaded.group()).isEqualTo(AuditEventGroup.DATA);
     assertThat(downloaded.severity()).isEqualTo(AuditSeverity.NOTICE);
@@ -405,8 +413,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(100);
-    assertThat(registry.entriesMatching(null)).hasSize(100);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(101);
+    assertThat(registry.entriesMatching(null)).hasSize(101);
   }
 
   @Test

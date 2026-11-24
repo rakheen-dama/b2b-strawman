@@ -249,6 +249,16 @@ class TrustBalanceTrendIntegrationTest {
     creditorBooks.assertFirmBalanced(); // harness rule of use
   }
 
+  /** 657D (§17.3.15): an account never taken on keeps its full window and no takenOnAt. */
+  @Test
+  void anAccountNotTakenOn_keepsEveryRequestedMonth_andHasNoTakenOnAt() throws Exception {
+    mockMvc
+        .perform(get(URL).param("months", "24").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.months", hasSize(24)))
+        .andExpect(jsonPath("$.takenOnAt").value(org.hamcrest.Matchers.nullValue()));
+  }
+
   @Test
   void defaultWindowIsTwelveSaMonthsOldestFirstWithPartialCurrentMonth() throws Exception {
     var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);

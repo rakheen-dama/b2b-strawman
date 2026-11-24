@@ -1,13 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import com.openhtmltopdf.pdfboxout.PdfBoxRenderer;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +22,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jsoup.nodes.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -319,6 +324,30 @@ public class PdfRenderingService {
       builder.toStream(outputStream);
       builder.run();
       return outputStream.toByteArray();
+    } catch (IOException e) {
+      throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
+    }
+  }
+
+  /**
+   * As {@link #htmlToPdf(String)}, but byte-stable (Phase 93 657D, A-17): the document's creation
+   * and modification dates are {@code documentDate} and the trailer {@code /ID} is derived from it
+   * (never from the wall clock), so the same HTML rendered twice yields the same bytes — a take-on
+   * report file re-rendered from its immutable snapshot has the same SHA-256.
+   */
+  public byte[] htmlToPdf(String html, Instant documentDate) {
+    var builder = new PdfRendererBuilder();
+    builder.withHtmlContent(sanitizeForXhtml(html), null);
+    try (PdfBoxRenderer renderer = builder.buildPdfRenderer();
+        PDDocument document = renderer.createPDFKeepOpen()) {
+      var date = GregorianCalendar.from(documentDate.atZone(KaziTime.ZONE));
+      var info = document.getDocumentInformation();
+      info.setCreationDate(date);
+      info.setModificationDate(date);
+      document.setDocumentId(documentDate.toEpochMilli());
+      var out = new ByteArrayOutputStream();
+      document.save(out);
+      return out.toByteArray();
     } catch (IOException e) {
       throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
     }

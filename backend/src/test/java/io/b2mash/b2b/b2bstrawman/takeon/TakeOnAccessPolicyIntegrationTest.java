@@ -303,6 +303,16 @@ class TakeOnAccessPolicyIntegrationTest {
         .andExpect(status().isNotFound());
     denied(TakeOnTestApi.reports(mockMvc, trustManager(), null));
     denied(TakeOnTestApi.report(mockMvc, trustManager(), UUID.randomUUID()));
+    // 657D: the PDF, the CSV and "Try again" are VIEW_TRUST too
+    for (String format : List.of("pdf", "csv")) {
+      TakeOnTestApi.reportFile(mockMvc, trustReader(), UUID.randomUUID(), format)
+          .andExpect(status().isNotFound());
+      denied(TakeOnTestApi.reportFile(mockMvc, trustManager(), UUID.randomUUID(), format));
+      denied(TakeOnTestApi.reportFile(mockMvc, clientsOnly(), UUID.randomUUID(), format));
+    }
+    TakeOnTestApi.renderReport(mockMvc, trustReader(), UUID.randomUUID())
+        .andExpect(status().isNotFound());
+    denied(TakeOnTestApi.renderReport(mockMvc, trustManager(), UUID.randomUUID()));
     denied(TakeOnTestApi.reports(mockMvc, clientsOnly(), null));
     denied(TakeOnTestApi.signOffQueue(mockMvc, trustViewer())); // SIGN_OFF_TRUST_TAKE_ON only
   }

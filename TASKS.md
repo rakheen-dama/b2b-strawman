@@ -746,7 +746,7 @@
 | 654 | Mapping and Dry-Run Validation (E2) | built inside 653A | 653 | — | — (in 653A) | |
 | 655 | Clients With FICA Attestation — Commit Engine, Entry Path, Attestation, Review Queue (E3) | Backend + Frontend (together) | 653A | L | 655A, 655B (2 verifies) | **Done** (PR #1850, PR #1851) |
 | 656 | Matters + Go-Live Checklist (E4; E7 checklist) | Backend + Frontend (together) | 655A | M | 656A (1 verify) || **Done** (PR #1852) |
-| 657 | Trust Opening Position — Registry, Validation and Blocks, Sign-Off and Commit, Report and First Reconciliation (E5) | Backend + Frontend + Portal test | 653A; 656A for 657B | XL | 657A, 657B, 657C, 657D (4 verifies) | 657A **Done** (PR #1847); 657B–657D open |
+| 657 | Trust Opening Position — Registry, Validation and Blocks, Sign-Off and Commit, Report and First Reconciliation (E5) | Backend + Frontend + Portal test | 653A; 656A for 657B | XL | 657A, 657B, 657C, 657D (4 verifies) | 657A **Done** (PR #1847); 657B **Done** (PR #1853); 657C–657D open |
 | 658 | Debtor Opening Balances — Quiet Issue (E6) | Backend + Frontend (together) | 655A, 656A | M | 658A (1 verify) | |
 | 659 | Frontend Wizard and Go-Live Checklist (E7) | spread across the dataset slices | — | — | — (in 653A, 655A, 656A, 657B–657D, 658A) | |
 | 660 | QA Capstone — Observed End to End (E8) | e2e + QA / Docs | every slice merged | L | 660A (0 verifies; +1 per defect-fix PR) | |

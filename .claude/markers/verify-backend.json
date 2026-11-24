@@ -1,7 +1,7 @@
 {
-  "commit": "f5c9478ed",
-  "command": "cd backend && bash scripts/verify.sh (worktree-epic-656A, PR #1852)",
+  "commit": "43a8b9bdc",
+  "command": "cd backend && ./mvnw spotless:check && ./mvnw clean && bash scripts/verify.sh -q (worktree-epic-657B, PR #1853)",
   "exit": 0,
-  "ts": "2026-11-24T05:03:03Z",
-  "summary": "PR #1852 @f5c9478ed — 8005 <testcase> / 0 failures / 0 errors / 55 skipped (surefire+failsafe XML), BUILD SUCCESS 29:30 min; Backend CI pass @f5c9478ed (29m48s)"
+  "ts": "2026-11-24T07:49:59Z",
+  "summary": "PR #1853 @43a8b9bdc (code identical to head dbf36a290, docs-only delta) — 8044 <testcase> / 0 failures / 0 errors / 55 skipped (surefire XML, 913 files), exit 0, 30 min"
 }

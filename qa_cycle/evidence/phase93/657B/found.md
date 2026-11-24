@@ -93,3 +93,14 @@ surplus (money held above creditors, itself a sign that a creditor group is miss
 difference. A reader could take "R 50 000,00" as the size of a deficit. Options for the spec: show the difference only
 when `inDeficit` (R0,00 otherwise), or show the deficit as `max(0, trustCreditors − moneyHeld)`, or keep as is and
 label it. Copy / product decision — not a money or posting defect (nothing posts in 657B).
+
+---
+
+## CodeRabbit later round (07:32 UTC, @`dbf36a290`) — triaged once, deferred (one-round rule, founder 2026-11-18)
+
+None is Critical / security / tenant / data-corruption / wrong-money. PR reply: https://github.com/rakheen-dama/b2b-strawman/pull/1853#issuecomment-7125501148
+
+- **F-657B-4** (LOW) `takeon/dataset/TrustPositionDatasetHandler.java:327` — an Excel error cell on `matterRef` gets `CELL_ERROR` but not the `CLIENT_MATTER_REQUIRED` block (the `receivedDate` path keeps both, CR-1). The row is in error, so the batch still cannot commit (D-191); the statutory text appears once the cell is corrected. Fix: add the block beside `CELL_ERROR`, as the date path does, and note it in D-189.
+- **F-657B-5** (LOW) `verticals/legal/trustaccounting/takeon/TrustTakeOnPreconditions.java:191` — the investment-account prefix is skipped when `message.contains(accountName)`, so an account whose name is a word of the message (e.g. "This") loses its prefix. Display only. Fix: prefix by construction, not substring match.
+- **F-657B-6** (LOW–MEDIUM, UI edge) `frontend/components/take-on/validation-step.tsx:168` — leaving the Validation step while a position save is in flight unmounts the shared in-flight state (CR-4 fix); on return, a second save from the pre-save figures can race the first and the later response wins. Nothing posts in 657B; the indicator shows whichever figures were saved. Fix candidate: lift the in-flight state into `TakeOnWizard`, or disable step navigation during a save. Natural home: 657C, which edits the wizard.
+- **F-657B-7** (LOW, evidence) `qa_cycle/evidence/phase93/657B/obs/obs.cjs:11` — imports `@playwright/test` by an absolute path; replaying from another checkout needs that path changed.

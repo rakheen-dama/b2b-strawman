@@ -90,19 +90,20 @@ public class OrgRoleService {
         role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
     effective = new HashSet<>(effective);
 
-    for (String override : overrides) {
-      String capName = override.substring(1);
-      if (!Capability.ALL_NAMES.contains(capName)) {
-        continue; // skip invalid overrides for forward-compatibility
-      }
-      if (override.startsWith("+")) {
-        effective.add(capName);
-      } else if (override.startsWith("-")) {
-        effective.remove(capName);
-      }
-    }
-
+    // order-independent: every "+" first, then every "-" — so "-" wins on a contradictory pair
+    // (stored before the validation refused one), whatever the set's iteration order
+    effective.addAll(overrideCapabilities(overrides, "+"));
+    effective.removeAll(overrideCapabilities(overrides, "-"));
     return effective;
+  }
+
+  /** The known capabilities named by the {@code sign}-prefixed overrides (unknown ones skipped). */
+  private static Set<String> overrideCapabilities(Set<String> overrides, String sign) {
+    return overrides.stream()
+        .filter(o -> o.length() > 1 && o.startsWith(sign))
+        .map(o -> o.substring(1))
+        .filter(Capability.ALL_NAMES::contains) // forward-compatibility
+        .collect(Collectors.toSet());
   }
 
   @Transactional(readOnly = true)
@@ -322,6 +323,20 @@ public class OrgRoleService {
             "Invalid capability override",
             "Unknown capability: '" + capName + "'. Valid values: " + Capability.ALL_NAMES);
       }
+    }
+
+    // malformed for anyone: one override set adding and removing the same capability
+    var contradictory =
+        overrideCapabilities(overrides, "+").stream()
+            .filter(overrideCapabilities(overrides, "-")::contains)
+            .sorted()
+            .toList();
+    if (!contradictory.isEmpty()) {
+      throw new InvalidStateException(
+          "Contradictory capability override",
+          "An override cannot both add and remove the same capability: "
+              + String.join(", ", contradictory)
+              + ".");
     }
 
     requireOwnerForNewOwnerOnlyCapabilities(member, role, overrides);

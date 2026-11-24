@@ -283,3 +283,45 @@ The first build attempt printed its complete output, including the route table, 
 | format:check | exit 0, clean | `review2-gate-format.txt` |
 | build (`timeout 900`) | exit 0 | `review2-gate-build.txt` |
 | vitest | exit 0: **503 files, 4927 passed, 2 skipped** (4929) | `review2-gate-test.txt` |
+
+---
+
+## G. Review round 3 (security delta review on 664d22a9b, HIGH)
+
+**Finding:** `assignRole` accepted an override set holding both `+X` and `-X`. `effectiveCapabilities` applied overrides in set-iteration order (last wins). The round-1 gain check evaluated the **request's** set, while the member's capabilities resolve from the set **reloaded** from `member_capability_overrides`. If the two iterate differently, the check could see "nothing gained" while the stored overrides grant X. Round 1 introduced this: before it, any `+OWNER_ONLY` from a non-owner was refused outright.
+
+**Resolution sites:** a grep across `backend/src/main` for `resolveCapabilities`, `effectiveCapabilities`, `capabilityOverrides` and `startsWith("+")` found **one** implementation, `OrgRoleService.effectiveCapabilities(role, overrides)`. It sits behind `resolveCapabilities` (MemberFilter, `GET …/capabilities`) and the gain check. `TakeOnValueParser`'s `startsWith("+")` is unrelated.
+
+**Fix** (`backend/.../orgrole/OrgRoleService.java`):
+1. **Validation:** `assignRole` refuses an override set naming the same capability with both signs. The response is 400 `InvalidStateException` with title "Contradictory capability override" and detail "An override cannot both add and remove the same capability: X." It applies to owners and non-owners alike, after the format checks and before the owner-only gain check.
+2. **Order-independent resolution:** `effectiveCapabilities` adds every `+` override, then removes every `-` override (`overrideCapabilities(overrides, sign)`), so `-` wins whatever the iteration order. Stored data that already holds both therefore resolves without X. This matches the frontend's `isEffectivelyEnabled`, which checks `-` before `+`.
+
+**Tests:**
+
+| Test | Red (`review3-backend-red.txt`, on 664d22a9b) | Green |
+|---|---|---|
+| (a) `ContradictoryOverrideIntegrationTest.anAdminCannotSendAContradictoryOverridePair`: admin, Bookkeeper member, `["+MANAGE_COMPLIANCE_DESTRUCTIVE","-MANAGE_COMPLIANCE_DESTRUCTIVE", +11 fillers]` (13 elements: the request HashSet resizes to 32 buckets, so `-` iterates last and the old gain check saw nothing gained) | `expected: 400 but was: 200`, the pair was accepted. The member did **not** end up holding the capability in this run: the stored set resolved the same way. Making the two sets iterate differently was not shown here. | 400 with ProblemDetail status, title and detail |
+| (c) `theOwnerCannotSendAContradictoryOverridePairEither`: owner, `["+INVOICING","-INVOICING"]` | `expected: 400 but was: 200` | 400 |
+| (b1) `storedOverridesHoldingBothSignsResolveWithTheMinusWinning`: both `±SIGN_OFF_TRUST_TAKE_ON` rows inserted with JDBC; read through `/api/me/capabilities` (what MemberFilter binds) and the owner's view | `["INVOICING", "SIGN_OFF_TRUST_TAKE_ON"]`: granted | SIGN_OFF absent in both views |
+| (b2) `OrgRoleServiceTest.resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder`: a `LinkedHashSet` in both orders | one order resolved INVOICING (last wins) | neither order holds SIGN_OFF or INVOICING |
+
+The new class has its own tenant because the FR-4 test class's tenant is at `max-members: 10`.
+
+**Green backend** (`review3-backend-green.txt`, `review3-targeted-per-class.txt`, list in `review3-targeted-classes.txt`): every class in `orgrole/`, `member/`, `invitation/` and `architecture/`; every class referencing invitations, `capabilityOverrides`, `setCapabilityOverrides`, `resolveCapabilities`, `MemberFilter` or `/api/me/capabilities`; and the take-on race test. **65 classes / 594 tests, 0 failures, 0 errors.**
+
+**Frontend:**
+- **The bug:** unchecking a capability that the role holds and that also carries a stored, redundant `+X` sent `["+X","-X"]`.
+- **The fix:** `member-detail-panel.tsx` `toggleCapability` flips the effective state and keeps at most one override per capability: none when the new state is the role default, else `+X` or `-X`.
+- **Vitest:** two tests (`review3-frontend-red.txt`: 26 tests, 2 failed).
+  - Uncheck now sends `["-INVOICING"]`. It was `["+INVOICING","-INVOICING"]`.
+  - Re-check restores `[]`. It was `["+INVOICING"]`.
+- **Invite form:** its overrides start empty and the role's capabilities are fixed there, so it cannot reach that state. It also does not send overrides at all.
+
+**Full frontend gate** (node 20.11.1, `/opt/homebrew/bin/pnpm`):
+
+| Step | Result | Output |
+|---|---|---|
+| lint | exit 0: 0 errors, 77 warnings | `review3-gate-lint.txt` |
+| format:check | exit 0, clean | `review3-gate-format.txt` |
+| build (`timeout 900`) | exit 0 | `review3-gate-build.txt` |
+| vitest | exit 0: **503 files, 4929 passed, 2 skipped** (4931) | `review3-gate-test.txt` |

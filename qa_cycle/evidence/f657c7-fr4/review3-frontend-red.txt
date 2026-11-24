@@ -1,0 +1,327 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-f657c7-fr4/frontend
+
+ ❯ __tests__/owner-only-capability-grants.test.tsx (26 tests | 2 failed) 3186ms
+     × unchecking a role capability that also has a stored +X sends only -X 1067ms
+     × re-checking it restores the role default (no override) 1100ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — never a contradictory override pair > unchecking a role capability that also has a stored +X sends only -X
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'acme', 'm1', …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "acme",
+    "m1",
+    "role-bookkeeper",
+    [
++     "+INVOICING",
+      "-INVOICING",
+    ],
+  ]
+
+
+Number of calls: 1
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-slot[39m=[32m"sheet-overlay"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-_r_72_"[39m
+      [33maria-labelledby[39m=[32m"radix-_r_71_"[39m
+      [33mclass[39m=[32m"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full border-l flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md"[39m
+      [33mdata-slot[39m=[32m"sheet-content"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-_r_70_"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<h2[39m
+        [33mclass[39m=[32m"text-foreground font-semibold sr-only"[39m
+        [33mdata-slot[39m=[32m"sheet-title"[39m
+        [33mid[39m=[32m"radix-_r_71_"[39m
+      [36m>[39m
+        [0mMember Detail[0m
+      [36m</h2>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-muted-foreground text-sm sr-only"[39m
+        [33mdata-slot[39m=[32m"sheet-description"[39m
+        [33mid[39m=[32m"radix-_r_72_"[39m
+      [36m>[39m
+        [0mMember role and capability management.[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0 flex-1"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-base leading-snug font-semibold text-slate-950 dark:text-slate-50"[39m
+          [36m>[39m
+            [0mThandi[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-0.5 text-sm text-slate-500 dark:text-slate-400"[39m
+          [36m>[39m
+            [0mthandi@test.com[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"Close"[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 size-9 shrink-0"[39m
+          [33mdata-size[39m=[32m"icon"[39m
+          [33mdata-slot[39m=[32m"sheet-close"[39m
+          [33mdata-variant[39m=[32m"ghost"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x size-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2 block text-sm font-medium"[39m
+          [33mdata-slot[39m=[32m"label"[39m
+        [36m>[39m
+          [0mRole[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-controls[39m=[32m"radix-_r_73_"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"select-trigger"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mdata-slot[39m=[32m"select-value"[39m
+  ...
+ ❯ __tests__/owner-only-capability-grants.test.tsx:500:36
+    498|     await user.click(screen.getByRole("button", { name: "Save" }));
+    499|     await waitFor(() =>
+    500|       expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", …
+       |                                    ^
+    501|         "-INVOICING",
+    502|       ])
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — never a contradictory override pair > re-checking it restores the role default (no override)
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'acme', 'm1', 'role-bookkeeper', [] ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "acme",
+    "m1",
+    "role-bookkeeper",
+-   [],
++   [
++     "+INVOICING",
++   ],
+  ]
+
+
+Number of calls: 1
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-slot[39m=[32m"sheet-overlay"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-_r_79_"[39m
+      [33maria-labelledby[39m=[32m"radix-_r_78_"[39m
+      [33mclass[39m=[32m"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full border-l flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md"[39m
+      [33mdata-slot[39m=[32m"sheet-content"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-_r_77_"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<h2[39m
+        [33mclass[39m=[32m"text-foreground font-semibold sr-only"[39m
+        [33mdata-slot[39m=[32m"sheet-title"[39m
+        [33mid[39m=[32m"radix-_r_78_"[39m
+      [36m>[39m
+        [0mMember Detail[0m
+      [36m</h2>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-muted-foreground text-sm sr-only"[39m
+        [33mdata-slot[39m=[32m"sheet-description"[39m
+        [33mid[39m=[32m"radix-_r_79_"[39m
+      [36m>[39m
+        [0mMember role and capability management.[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0 flex-1"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-base leading-snug font-semibold text-slate-950 dark:text-slate-50"[39m
+          [36m>[39m
+            [0mThandi[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-0.5 text-sm text-slate-500 dark:text-slate-400"[39m
+          [36m>[39m
+            [0mthandi@test.com[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"Close"[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 size-9 shrink-0"[39m
+          [33mdata-size[39m=[32m"icon"[39m
+          [33mdata-slot[39m=[32m"sheet-close"[39m
+          [33mdata-variant[39m=[32m"ghost"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x size-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2 block text-sm font-medium"[39m
+          [33mdata-slot[39m=[32m"label"[39m
+        [36m>[39m
+          [0mRole[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-controls[39m=[32m"radix-_r_7a_"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"select-trigger"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mdata-slot[39m=[32m"select-value"[39m
+  ...
+ ❯ __tests__/owner-only-capability-grants.test.tsx:518:36
+    516|     await user.click(screen.getByRole("button", { name: "Save" }));
+    517|     await waitFor(() =>
+    518|       expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", …
+       |                                    ^
+    519|     );
+    520|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 24 passed (26)
+   Start at  18:52:20
+   Duration  4.18s (transform 184ms, setup 106ms, import 558ms, tests 3.19s, environment 212ms)
+

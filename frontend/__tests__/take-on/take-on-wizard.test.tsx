@@ -39,6 +39,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions
 import { TakeOnWizard } from "@/components/take-on/take-on-wizard";
 import { UploadStep } from "@/components/take-on/upload-step";
 import type { TakeOnBatch, TakeOnDatasetCatalogue, TakeOnPreview, TakeOnSource } from "@/lib/types";
+import { TRUST_CATALOGUE, trustBatch, trustSource, trustSummaryWith } from "./fixtures";
 
 const CLIENTS: TakeOnDatasetCatalogue = {
   dataset: "CLIENTS",
@@ -144,6 +145,8 @@ function batch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
     signOffs: [],
     attestationStatement: null,
     summary: null,
+    midMonthAcknowledged: false,
+    position: null,
     ...overrides,
   };
 }
@@ -777,5 +780,134 @@ describe("TakeOnWizard — clients commit steps (655A)", () => {
       "Duplicate — skipped",
       "Failed",
     ]);
+  });
+});
+
+describe("TakeOnWizard — trust position (657B)", () => {
+  const DEFICIT =
+    "The trust creditors (R713\u00a0500,00) exceed the trust money held (R703\u00a0500,00) by R10\u00a0000,00 at the cutover date. This is a trust deficit (Rules 54.14.8 and 54.14.10). Take-on cannot continue until it is resolved in the previous system.";
+  const EQ2 =
+    "The trust creditors (R413\u00a0500,00) do not equal the cashbook balance at cutover (R403\u00a0500,00): difference R10\u00a0000,00. Every creditor group must be included and must agree to the cent.";
+
+  it("lists the four trust sections on the upload step, one source each, without a cutover-date row", async () => {
+    const user = userEvent.setup();
+    renderWizard(
+      trustBatch({ sources: [trustSource("CLIENT_LEDGER", { fileName: "ledgers.csv" })] }),
+      TRUST_CATALOGUE
+    );
+    await user.click(screen.getByTestId("take-on-step-upload"));
+    const ledger = screen.getByTestId("take-on-trust-section-client-ledger");
+    expect(ledger).toHaveTextContent("Client and matter balances");
+    expect(ledger).toHaveTextContent("ledgers.csv");
+    expect(ledger).toHaveAttribute("data-uploaded", "true");
+    for (const [kebab, label] of [
+      ["unidentified-deposits", "Unidentified deposits"],
+      ["investments", "Investments"],
+      ["outstanding-items", "Items outstanding at cutover"],
+    ]) {
+      const row = screen.getByTestId(`take-on-trust-section-${kebab}`);
+      expect(row).toHaveTextContent(label);
+      expect(row).toHaveTextContent("Not uploaded");
+    }
+    // The position form on Validation owns the trust cutover date (OP-5).
+    expect(screen.queryByTestId("take-on-cutover-date")).not.toBeInTheDocument();
+  });
+
+  it("puts the position form and the indicator on Validation, without the generic block banner", () => {
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+    expect(screen.getByTestId("take-on-position-form")).toBeInTheDocument();
+    expect(screen.getByTestId("take-on-equation")).toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-trust-block-banner")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-block-banner")).not.toBeInTheDocument();
+    // The over-one-year flag by its label, never the raw code.
+    expect(screen.getByTestId("take-on-trust-flags")).toHaveTextContent(
+      "Unidentified deposit older than one year"
+    );
+    expect(screen.queryByText("UNIDENTIFIED_OVER_ONE_YEAR")).not.toBeInTheDocument();
+  });
+
+  it("shows the statutory blocks verbatim, the deficit first, with no control to override them", () => {
+    renderWizard(
+      trustBatch({
+        counts: { ...trustBatch().counts, valid: 8, blocks: 3 },
+        summary: trustSummaryWith({
+          blocks: [
+            { code: "TRUST_DEFICIT", message: DEFICIT },
+            { code: "CONTROL_TOTAL_EQ2", message: EQ2 },
+          ],
+        }),
+      }),
+      TRUST_CATALOGUE
+    );
+    const banner = screen.getByTestId("take-on-trust-block-banner");
+    expect(banner).toHaveAttribute("role", "alert");
+    expect(banner).toHaveTextContent("Statutory block — cannot be overridden");
+    expect(screen.getByTestId("take-on-trust-block-0").textContent).toBe(DEFICIT);
+    expect(screen.getByTestId("take-on-trust-block-1").textContent).toBe(EQ2);
+    // 3 blocks = 2 batch-level + 1 row (D-184).
+    expect(screen.getByTestId("take-on-trust-row-blocks")).toHaveTextContent(
+      "1 row holds a statutory block"
+    );
+    expect(within(banner).queryByRole("button")).not.toBeInTheDocument();
+    expect(within(banner).queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-block-banner")).not.toBeInTheDocument();
+  });
+
+  it("shows the account errors above the table and no indicator when an account check failed", async () => {
+    const closed = "Trust Account G is closed. Take on only into open trust accounts.";
+    renderWizard(
+      trustBatch({
+        summary: trustSummaryWith({
+          accountErrors: [{ code: "ACCOUNT_CLOSED", message: closed }],
+          flags: [],
+          equation: null,
+        }),
+      }),
+      TRUST_CATALOGUE
+    );
+    expect(screen.getByTestId("take-on-account-errors")).toHaveTextContent(closed);
+    expect(screen.queryByTestId("take-on-equation")).not.toBeInTheDocument();
+    const errors = screen.getByTestId("take-on-account-errors");
+    const filters = screen.getByTestId("take-on-row-filters");
+    expect(errors.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await waitFor(() => expect(actions.fetchTakeOnRows).toHaveBeenCalled());
+  });
+
+  it("shows trust row values by their labels and hides the resolved ids", async () => {
+    actions.fetchTakeOnRows.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          {
+            id: "row-t1",
+            section: "OUTSTANDING_ITEMS",
+            rowNumber: 2,
+            sourceRef: null,
+            status: "VALIDATED",
+            block: false,
+            values: {
+              kind: "DEPOSIT_IN_TRANSIT",
+              reference: "EFT B-0001",
+              clientRef: "client.b@example.com",
+              clientId: "4b1d7c3e-0000-0000-0000-000000000001",
+              clientResolvedBy: "email",
+              matterId: "4b1d7c3e-0000-0000-0000-000000000002",
+            },
+            errors: [],
+            warnings: [],
+            duplicateOfId: null,
+            failureReason: null,
+            resultEntityId: null,
+          },
+        ],
+        page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+      },
+    });
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+    const row = await screen.findByTestId("take-on-row-2");
+    expect(row).toHaveTextContent("Item type: Deposit in transit");
+    expect(row).toHaveTextContent("Client matched by: Client email");
+    expect(row).not.toHaveTextContent("DEPOSIT_IN_TRANSIT");
+    expect(row).not.toHaveTextContent("4b1d7c3e");
   });
 });

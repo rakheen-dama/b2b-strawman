@@ -6,6 +6,8 @@ import type {
   TakeOnGoLiveItemKey,
   TakeOnSignOff,
   TakeOnSource,
+  TakeOnTrustEquation,
+  TakeOnTrustSummary,
   TakeOnValidationSummary,
 } from "@/lib/types";
 
@@ -142,6 +144,8 @@ export function clientsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
     signOffs: [],
     attestationStatement: { version: "FICA-ATTEST-v1", text: ATTEST_TEXT },
     summary: CLIENTS_SUMMARY,
+    midMonthAcknowledged: false,
+    position: null,
     ...overrides,
   };
 }
@@ -220,6 +224,8 @@ export function mattersBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
     allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "COMMIT", "CANCEL"],
     attestationStatement: null,
     summary: null,
+    midMonthAcknowledged: false,
+    position: null,
     ...overrides,
   };
 }
@@ -254,4 +260,195 @@ export function goLiveItems(
       note: ack?.note ?? null,
     };
   });
+}
+
+// ---- 657B: the trust opening position ----
+
+const field = (
+  key: string,
+  label: string,
+  type: TakeOnField["type"],
+  required: boolean,
+  allowedValues: string[] | null = null
+): TakeOnField => ({ key, label, type, required, maxLength: null, allowedValues });
+
+/** The trust catalogue (backend TakeOnFieldCatalogue.TRUST_SECTIONS, X3 section labels). */
+export const TRUST_CATALOGUE: TakeOnDatasetCatalogue = {
+  dataset: "TRUST_POSITION",
+  label: "Trust opening position",
+  requiresCutoverDate: true,
+  requiresTrustAccount: true,
+  customFieldEntityType: null,
+  sections: [
+    {
+      section: "CLIENT_LEDGER",
+      label: "Client and matter balances",
+      fields: [
+        field("clientRef", "Client reference", "TEXT", true),
+        field("matterRef", "Matter reference", "TEXT", true),
+        field("balance", "Balance at cutover", "AMOUNT", true),
+        field("sourceRef", "Previous system ID", "TEXT", false),
+      ],
+    },
+    {
+      section: "UNIDENTIFIED_DEPOSITS",
+      label: "Unidentified deposits",
+      fields: [
+        field("receivedDate", "Date received", "DATE", true),
+        field("amount", "Amount", "AMOUNT", true),
+        field("bankReference", "Bank reference", "TEXT", false),
+        field("description", "Description", "TEXT", false),
+      ],
+    },
+    {
+      section: "INVESTMENTS",
+      label: "Investments",
+      fields: [
+        field("investmentAccount", "Investment account (number or name)", "TEXT", true),
+        field("basis", "Basis", "ENUM", true, ["CLIENT_INSTRUCTION", "FIRM_DISCRETION"]),
+        field("principal", "Principal at cutover", "AMOUNT", true),
+        field("endorsementConfirmed", "Endorsed under section 86(4)", "BOOLEAN", false),
+        field("balancePerConfirmation", "Balance per confirmation", "AMOUNT", true),
+      ],
+    },
+    {
+      section: "OUTSTANDING_ITEMS",
+      label: "Items outstanding at cutover",
+      fields: [
+        field("kind", "Item type", "ENUM", true, [
+          "DEPOSIT_IN_TRANSIT",
+          "UNPRESENTED_PAYMENT",
+          "INVESTMENT_IN_TRANSIT",
+        ]),
+        field("originalDate", "Original date", "DATE", true),
+        field("amount", "Amount", "AMOUNT", true),
+        field("reference", "Reference", "TEXT", true),
+        field("clientRef", "Client reference", "TEXT", true),
+        field("matterRef", "Matter reference", "TEXT", true),
+      ],
+    },
+  ],
+  completedBatches: 0,
+};
+
+/** §17.3.13's expected `summary.equation` (A.4): every difference "0.00". */
+export const TRUST_EQUATION_17313: TakeOnTrustEquation = {
+  eq1: {
+    bankBalance: "418500.00",
+    plusOutstandingDeposits: "5000.00",
+    lessOutstandingPayments: "20000.00",
+    adjustedBank: "403500.00",
+    cashbook: "403500.00",
+    difference: "0.00",
+    holds: true,
+  },
+  itemsTie: {
+    listedDeposits: "5000.00",
+    listedPayments: "20000.00",
+    outstandingDeposits: "5000.00",
+    outstandingPayments: "20000.00",
+    difference: "0.00",
+    holds: true,
+  },
+  eq2: {
+    clientLedgers: "499500.00",
+    fundLedger: "1250.00",
+    unidentified: "2750.00",
+    placedInSection86_3: "-100000.00",
+    creditors: "403500.00",
+    cashbook: "403500.00",
+    difference: "0.00",
+    holds: true,
+  },
+  investments: {
+    perConfirmations: "300000.00",
+    listed: "300000.00",
+    difference: "0.00",
+    holds: true,
+  },
+  deficit: {
+    trustCreditors: "703500.00",
+    moneyHeld: "703500.00",
+    difference: "0.00",
+    inDeficit: false,
+  },
+};
+
+/** §17.3.13's expected trust summary (A.4). */
+export const TRUST_SUMMARY_17313: TakeOnTrustSummary = {
+  accountErrors: [],
+  blocks: [],
+  warnings: [],
+  flags: ["UNIDENTIFIED_OVER_ONE_YEAR"],
+  equation: TRUST_EQUATION_17313,
+};
+
+/** The §17.3.13 summary with parts replaced (an equation row, blocks, account errors…). */
+export function trustSummaryWith(
+  overrides: Partial<Omit<TakeOnTrustSummary, "equation">> & {
+    equation?: Partial<TakeOnTrustEquation> | null;
+  } = {}
+): TakeOnTrustSummary {
+  const { equation, ...rest } = overrides;
+  return {
+    ...TRUST_SUMMARY_17313,
+    ...rest,
+    equation: equation === null ? null : { ...TRUST_EQUATION_17313, ...equation },
+  };
+}
+
+/** A trust source for one section. */
+export function trustSource(
+  section: TakeOnSource["section"],
+  overrides: Partial<TakeOnSource> = {}
+): TakeOnSource {
+  return clientsSource({
+    id: `src-${section.toLowerCase()}`,
+    section,
+    fileName: `${section.toLowerCase()}.csv`,
+    rowCount: 3,
+    mapping: { targets: {}, customFields: {}, parked: [], defaults: {} },
+    ...overrides,
+  });
+}
+
+/** A validated §17.3.13 trust batch at 31 October 2026, every difference R0,00, no block. */
+export function trustBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
+  return {
+    ...clientsBatch(),
+    id: "batch-657b",
+    dataset: "TRUST_POSITION",
+    cutoverDate: "2026-10-31",
+    trustAccountId: "acc-g",
+    sources: [
+      trustSource("CLIENT_LEDGER"),
+      trustSource("UNIDENTIFIED_DEPOSITS", { rowCount: 2 }),
+      trustSource("INVESTMENTS", { rowCount: 2 }),
+      trustSource("OUTSTANDING_ITEMS", { rowCount: 2 }),
+    ],
+    counts: {
+      total: 9,
+      valid: 9,
+      error: 0,
+      duplicate: 0,
+      blocks: 0,
+      created: 0,
+      skipped: 0,
+      failed: 0,
+    },
+    // No trust committer in 657B: no COMMIT, no sign-off yet (657C).
+    allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "CANCEL"],
+    attestationStatement: null,
+    summary: TRUST_SUMMARY_17313,
+    midMonthAcknowledged: false,
+    position: {
+      bankBalance: 418500,
+      outstandingDepositsTotal: 5000,
+      outstandingPaymentsTotal: 20000,
+      cashbookBalance: 403500,
+      fundLedgerBalance: 1250,
+      investedTotal: 300000,
+    },
+    ...overrides,
+  };
 }

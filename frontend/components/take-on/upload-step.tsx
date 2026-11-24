@@ -35,6 +35,7 @@ import {
   type TakeOnBatch,
   type TakeOnDatasetCatalogue,
   type TakeOnSection,
+  type TakeOnSource,
   type TakeOnUploadResult,
 } from "@/lib/types";
 import { TakeOnError, TakeOnFileInput, TakeOnWarnings } from "./take-on-feedback";
@@ -265,9 +266,11 @@ interface TakeOnFilesPanelProps {
 }
 
 /**
- * The upload step of an existing batch: its files (one per trust section), "Add file" while a
- * section is left (ADD_SOURCE), "Remove" (REMOVE_SOURCE), and the cutover date of a trust or
- * debtor take-on. Controls follow the batch's allowedActions.
+ * The upload step of an existing batch: its files, "Add file" while a section is left
+ * (ADD_SOURCE), "Remove" (REMOVE_SOURCE), and the cutover date of a debtor take-on. A trust
+ * take-on lists its four sections as a checklist, one source each (657B); its cutover date is
+ * entered with the reconciled position on the Validation step (OP-5, D-190). Controls follow the
+ * batch's allowedActions.
  */
 export function TakeOnFilesPanel({ batch, dataset, onBatchChange, onNext }: TakeOnFilesPanelProps) {
   const isTrust = dataset.requiresTrustAccount;
@@ -332,49 +335,68 @@ export function TakeOnFilesPanel({ batch, dataset, onBatchChange, onNext }: Take
   return (
     <div className="space-y-6" data-testid="take-on-files">
       <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
-        {batch.sources.length === 0 && (
+        {isTrust
+          ? dataset.sections.map(({ section }) => {
+              const src = batch.sources.find((s) => s.section === section);
+              return (
+                <li
+                  key={section}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  data-testid={`take-on-trust-section-${takeOnKebab(section)}`}
+                  data-uploaded={src ? "true" : "false"}
+                >
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                      {TAKE_ON_SECTION_LABEL[section]}
+                    </p>
+                    {src ? (
+                      <SourceLine
+                        src={src}
+                        withFileName
+                        testId={`take-on-source-${takeOnKebab(section)}`}
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Not uploaded</p>
+                    )}
+                  </div>
+                  {src && allowed.has("REMOVE_SOURCE") && (
+                    <RemoveButton
+                      section={section}
+                      disabled={busy}
+                      onClick={() => remove(src.id)}
+                    />
+                  )}
+                </li>
+              );
+            })
+          : null}
+        {!isTrust && batch.sources.length === 0 && (
           <li className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
             No file yet. Upload the file from your previous system.
           </li>
         )}
-        {batch.sources.map((src) => (
-          <li
-            key={src.id}
-            className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-            data-testid={`take-on-source-${takeOnKebab(src.section)}`}
-          >
-            <div className="min-w-0 space-y-0.5">
-              <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                {isTrust ? `${TAKE_ON_SECTION_LABEL[src.section]} — ` : ""}
-                {src.fileName}
-              </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                <span className="font-mono tabular-nums">{src.rowCount}</span> rows read
-                {src.malformedCount > 0 && (
-                  <>
-                    {" · "}
-                    <span className="font-mono tabular-nums">{src.malformedCount}</span> rows with a
-                    problem
-                  </>
-                )}
-                {src.mapped ? " · columns mapped" : " · columns not mapped yet"}
-                {src.purged ? " · file deleted" : ""}
-              </p>
-            </div>
-            {allowed.has("REMOVE_SOURCE") && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={busy}
-                onClick={() => remove(src.id)}
-                data-testid={`take-on-remove-source-${takeOnKebab(src.section)}`}
-              >
-                Remove
-              </Button>
-            )}
-          </li>
-        ))}
+        {!isTrust &&
+          batch.sources.map((src) => (
+            <li
+              key={src.id}
+              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              data-testid={`take-on-source-${takeOnKebab(src.section)}`}
+            >
+              <div className="min-w-0 space-y-0.5">
+                <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                  {src.fileName}
+                </p>
+                <SourceLine src={src} />
+              </div>
+              {allowed.has("REMOVE_SOURCE") && (
+                <RemoveButton
+                  section={src.section}
+                  disabled={busy}
+                  onClick={() => remove(src.id)}
+                />
+              )}
+            </li>
+          ))}
       </ul>
 
       {allowed.has("ADD_SOURCE") && (
@@ -421,7 +443,7 @@ export function TakeOnFilesPanel({ batch, dataset, onBatchChange, onNext }: Take
 
       <TakeOnWarnings warnings={warnings} />
 
-      {dataset.requiresCutoverDate && open && (
+      {dataset.requiresCutoverDate && !isTrust && open && (
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
             <label
@@ -464,5 +486,54 @@ export function TakeOnFilesPanel({ batch, dataset, onBatchChange, onNext }: Take
         Next
       </Button>
     </div>
+  );
+}
+
+/** A source's file line: the rows read, any rows with a problem, mapped or not, purged. */
+function SourceLine({
+  src,
+  withFileName = false,
+  testId,
+}: {
+  src: TakeOnSource;
+  withFileName?: boolean;
+  testId?: string;
+}) {
+  return (
+    <p className="text-xs text-slate-600 dark:text-slate-400" data-testid={testId}>
+      {withFileName && <span className="text-slate-950 dark:text-slate-50">{src.fileName} · </span>}
+      <span className="font-mono tabular-nums">{src.rowCount}</span> rows read
+      {src.malformedCount > 0 && (
+        <>
+          {" · "}
+          <span className="font-mono tabular-nums">{src.malformedCount}</span> rows with a problem
+        </>
+      )}
+      {src.mapped ? " · columns mapped" : " · columns not mapped yet"}
+      {src.purged ? " · file deleted" : ""}
+    </p>
+  );
+}
+
+function RemoveButton({
+  section,
+  disabled,
+  onClick,
+}: {
+  section: TakeOnSection;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={disabled}
+      onClick={onClick}
+      data-testid={`take-on-remove-source-${takeOnKebab(section)}`}
+    >
+      Remove
+    </Button>
   );
 }

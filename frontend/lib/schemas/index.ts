@@ -107,5 +107,12 @@ export {
   takeOnUploadSchema,
   takeOnSheetSchema,
   takeOnMappingSchema,
+  takeOnTrustPositionSchema,
+  normaliseTakeOnAmount,
+  takeOnAmountValue,
 } from "./take-on";
-export type { TakeOnUploadFormData, TakeOnSheetFormData } from "./take-on";
+export type {
+  TakeOnUploadFormData,
+  TakeOnSheetFormData,
+  TakeOnTrustPositionFormData,
+} from "./take-on";

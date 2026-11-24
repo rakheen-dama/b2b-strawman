@@ -127,6 +127,8 @@ const BATCH: TakeOnBatch = {
   signOffs: [],
   attestationStatement: null,
   summary: null,
+  midMonthAcknowledged: false,
+  position: null,
 };
 
 function routeGets(batch: () => Promise<unknown>) {

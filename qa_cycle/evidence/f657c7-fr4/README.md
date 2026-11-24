@@ -229,7 +229,7 @@ The first build attempt printed its complete output, including the route table, 
 - **Inviting into a custom role:** the invitation is accepted (201), but at sign-in no system role matches the custom slug, the invitee is never created, and the invitee gets a 500 (mock-auth path; see C).
   - This is a functional defect, not an escalation.
   - The Keycloak sign-in path needs checking too: if it resolves custom slugs, an owner-only custom role invited by an admin would become a real escalation. C did not block that route; **review round 1 (E) does**: `createInvitation` refuses a non-owner inviting into a role holding an owner-only capability. The functional defect (custom-role invitees never created on the JIT path) is still open.
-- **`updateRole` concurrent-update race** (security review, PR #1856): `OrgRole` has no `@Version`, so two concurrent role updates can overwrite each other's capability set. The fix needs a migration. Separate item; not touched.
+- ~~`updateRole` concurrent-update race~~: fixed in review round 2 (section F) with row locks, no migration.
 
 ---
 
@@ -254,3 +254,32 @@ The first build attempt printed its complete output, including the route table, 
 | format:check | exit 0, clean | `review1-gate-format.txt` |
 | build (`timeout 900`) | exit 0 | `review1-gate-build.txt` |
 | vitest | exit 0: **503 files, 4922 passed, 2 skipped** (4924) | `review1-gate-test.txt` |
+
+---
+
+## F. Review round 2 (CodeRabbit first review of PR #1856)
+
+| # | Finding | Fix | Tests |
+|---|---|---|---|
+| 1 | **MAJOR** (security): `updateRole` computed the "added" capabilities from a plain read and wrote the whole list back. An owner's removal between the admin's read and save was therefore undone. `assignRole` had the same window. | No migration. `OrgRoleRepository.findByIdForUpdate` and `MemberRepository.findByIdForUpdate` (`@Lock(PESSIMISTIC_WRITE)`, `SELECT … FOR UPDATE`) are now taken first in `updateRole` and `assignRole`, in the same transaction. A concurrent change waits and lands after. | New `OwnerOnlyGrantRaceIntegrationTest` (spy on `AuditService.log` pauses the admin after its read and entity change, before its flush; the owner runs; then release). **Red** (`review2-race-red.txt`, 2/2 failed): updateRole → `["INVOICING", "SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"]`, the owner's removal undone; assignRole (admin moves a Partner member to a second SIGN_OFF role while the owner moves them to Bookkeeper) → effective `["SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"]`. **Green** (`review2-race-green.txt`): 2/2, each about 3 s (the owner's request waited on the lock). |
+| 2 | Minor: the role dialog would not let an admin uncheck an existing owner-only capability. | For a non-owner an owner-only box is disabled only while **unchecked**. Unchecking is allowed; checking (granting) is not. The hint and `aria-describedby` stay on every owner-only box for a non-owner. | Admin unchecks SIGN_OFF on Partner → payload `["VIEW_TRUST"]`, and the box is then disabled (red: "Received element is not enabled"). Admin cannot check an unchecked owner-only box. The round-1 "keeps unchanged" test is replaced. |
+| 3 | Minor: the member panel overrides had the same problem. | Same rule against the effective state: a non-owner may drop a `+X` or add a `-X` for an inherited X (box checked → enabled). They may not add a `+X` or drop an existing `-X` (box unchecked → disabled). | Adds `-SIGN_OFF` for the inherited capability → saved overrides `["-SIGN_OFF_TRUST_TAKE_ON"]` (red). Drops `+SIGN_OFF` → `[]` (red). Cannot add `+X` (pass). Cannot drop `-X` (pass). |
+| 4 | Minor (test): the take-on race test skipped its joins when an assertion failed inside `try`. | Both worker threads are declared outside the `try`, and both are joined (with timeouts) in `finally`, before `@AfterEach` resets the spy. | Green, 1/1. |
+| 5 | Minor (test): the 409 assertion checked only the code. | It now parses the ProblemDetail: status 409, code `TAKE_ON_CONCURRENT_CHANGE`, title "Take-on batch changed", detail "This take-on batch was changed at the same time. Try again." | Green, 1/1. |
+
+**Observed while building test 1:** an override-only edit with the role unchanged is **not** a race. Hibernate writes no `members` row (the entity is not dirty), and it writes the overrides collection as a diff, so the owner's concurrent `-SIGN_OFF` survived. The member race needs a role change, which is what the committed test uses.
+
+**Unit stubs:** `OrgRoleServiceTest` and `MemberFilterCacheEvictionTest` were updated for the new finders.
+
+**Red frontend:** `review2-frontend-red.txt` (24 tests, 3 failed).
+
+**Green backend** (`review2-backend-green.txt`, `review2-targeted-per-class.txt`, `review2-targeted-classes.txt`): every class in `orgrole/`, `member/`, `invitation/` and `architecture/`, every class referencing invitations, and `TakeOnRevalidationAnonymisationRaceIntegrationTest`. **31 classes / 226 tests, 0 failures, 0 errors.**
+
+**Full frontend gate** (node 20.11.1, `/opt/homebrew/bin/pnpm`):
+
+| Step | Result | Output |
+|---|---|---|
+| lint | exit 0: 0 errors, 77 warnings | `review2-gate-lint.txt` |
+| format:check | exit 0, clean | `review2-gate-format.txt` |
+| build (`timeout 900`) | exit 0 | `review2-gate-build.txt` |
+| vitest | exit 0: **503 files, 4927 passed, 2 skipped** (4929) | `review2-gate-test.txt` |

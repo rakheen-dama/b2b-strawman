@@ -28,12 +28,16 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /**
  * Task C (FR-4 follow-through): an invitation grants its role when the invitee first signs in
- * ({@code MemberFilter.lazyCreateMember}: the pending invitation's role slug → the member's system
+ * ({@code MemberFilter.lazyCreateMember}: the pending invitation's stored role → the member's
  * role). {@code POST /api/invitations} needs only {@code TEAM_OVERSIGHT}, which an admin holds.
  * Enforced at the invitation ({@code InvitationService.createInvitation}): the system Owner role is
  * never invited into (by anyone); the system Admin role only by the owner; a role holding an
  * owner-only capability only by the owner (route 3, review round 1). Invitations carry no
  * capability overrides, so there is no {@code +CAP} route.
+ *
+ * <p>A custom role is applied by the invitation's stored role id, never re-resolved from its slug
+ * (custom-role invite fix, plan option A), so the allowed invitations are signed in too and land on
+ * the exact role invited into.
  *
  * <p>The Owner/Admin cases invite as an ADMIN, then sign the invitee in (a JWT carrying the invited
  * email) and read what they got ({@code GET /api/me/capabilities}) before checking the invitation
@@ -100,9 +104,8 @@ class InvitationRoleEscalationIntegrationTest {
         "Only owners can assign the Admin system role");
   }
 
-  // (3) a custom role holding an owner-only capability (review round 1, defence in depth: on the
-  // JIT sign-in path such an invitation grants nothing, but the Keycloak sync path resolves any
-  // role slug — so the owner-only rule applies at the invitation itself)
+  // (3) a custom role holding an owner-only capability (review round 1): the invitee is granted the
+  // invitation's role at first sign-in, so the owner-only rule applies at the invitation itself
 
   @Test
   void anAdminCannotInviteIntoARoleHoldingAnOwnerOnlyCapability() throws Exception {
@@ -117,6 +120,7 @@ class InvitationRoleEscalationIntegrationTest {
   // what stays open
 
   @Test
+  @SuppressWarnings("unchecked")
   void anAdminStillInvitesIntoTheMemberRoleAndOrdinaryRoles() throws Exception {
     invite(admin(), "ies_new_member@test.com", roleId("member")).andExpect(status().isCreated());
     String bookkeeper =
@@ -131,9 +135,20 @@ class InvitationRoleEscalationIntegrationTest {
                                 + " \"capabilities\": [\"INVOICING\"]}"))
                 .andReturn());
     invite(admin(), "ies_new_bookkeeper@test.com", bookkeeper).andExpect(status().isCreated());
+
+    // the invitees sign in on the roles they were invited into
+    String member = signIn("user_ies_new_member", "ies_new_member@test.com");
+    assertThat((String) JsonPath.read(member, "$.role")).isEqualTo("Member");
+    String me = signIn("user_ies_new_bookkeeper", "ies_new_bookkeeper@test.com");
+    assertThat((String) JsonPath.read(me, "$.role"))
+        .as("bookkeeper: %s", me)
+        .isEqualTo("Bookkeeper Invite");
+    assertThat((List<String>) JsonPath.read(me, "$.capabilities")).containsExactly("INVOICING");
+    assertThat((Boolean) JsonPath.read(me, "$.isAdmin")).isFalse();
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void theOwnerStillInvitesIntoTheAdminRoleAndAPartnerRole() throws Exception {
     invite(owner(), "ies_owner_admin@test.com", roleId("admin")).andExpect(status().isCreated());
     String me = signIn("user_ies_owner_admin", "ies_owner_admin@test.com");
@@ -141,6 +156,15 @@ class InvitationRoleEscalationIntegrationTest {
 
     invite(owner(), "ies_owner_partner@test.com", partnerRole("Partner Invite B"))
         .andExpect(status().isCreated());
+    // a role holding an owner-only capability, invited by the owner, lands with that role
+    String partner = signIn("user_ies_owner_partner", "ies_owner_partner@test.com");
+    assertThat((String) JsonPath.read(partner, "$.role"))
+        .as("partner: %s", partner)
+        .isEqualTo("Partner Invite B");
+    assertThat((List<String>) JsonPath.read(partner, "$.capabilities"))
+        .containsExactlyInAnyOrder("SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST");
+    assertThat((Boolean) JsonPath.read(partner, "$.isOwner")).isFalse();
+    assertThat((Boolean) JsonPath.read(partner, "$.isAdmin")).isFalse();
   }
 
   // --- helpers ---

@@ -1,0 +1,1480 @@
+{
+  "accounts": [
+    {
+      "id": "17e51f19-f94d-442d-813b-46c54e012ac1",
+      "accountName": "Mathebula & Partners Trust Account",
+      "accountType": "GENERAL",
+      "investmentBasis": null,
+      "isPrimary": true,
+      "status": "ACTIVE",
+      "openedDate": "2026-11-24",
+      "accountNumber": "0123456789"
+    },
+    {
+      "id": "18dedb7c-da9b-4d0b-856e-6deae5ede393",
+      "accountName": "OBS 657C s86(3) investment I3",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "FIRM_DISCRETION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6573001"
+    },
+    {
+      "id": "1409b6d7-fb85-4f2d-ac46-3d14e1a66d9f",
+      "accountName": "OBS 657C s86(4) investment I4",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "CLIENT_INSTRUCTION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6574001"
+    }
+  ],
+  "consoleErrors": {
+    "accounts": [],
+    "clients": [],
+    "matters": [],
+    "trust": [],
+    "signoff": [],
+    "commit": [],
+    "ledgers": [],
+    "deposit": [],
+    "portal": [
+      "[console.error @portal] Failed to load resource: the server responded with a status of 401 ()"
+    ]
+  },
+  "clientsBatch": "b6829255-6f25-40de-bd72-2de5d26ba58d",
+  "clients": {
+    "cards": {
+      "total": 3,
+      "valid": 3,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "results": {
+      "created": "Created 3",
+      "failed": "Failed 0"
+    },
+    "portal": "3 portal contacts created"
+  },
+  "mattersBatch": "abf6b45e-6f3a-4f3a-abfb-86fb5c1afe03",
+  "matters": {
+    "cards": {
+      "total": 3,
+      "valid": 3,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "results": {
+      "created": "Created 3",
+      "failed": "Failed 0"
+    }
+  },
+  "trustBatch": "66688d87-456f-4dca-af19-308d6c939950",
+  "mapping": {
+    "client-ledger": {
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference",
+      "balance": "Balance at cutover",
+      "sourceRef": "Previous system ID"
+    },
+    "investments": {
+      "investmentAccount": "Investment account (number or name)",
+      "basis": "Basis",
+      "institution": "Institution",
+      "accountNumber": "Account number",
+      "principal": "Principal at cutover",
+      "interestRate": "Interest rate",
+      "depositDate": "Original deposit date",
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference",
+      "instructionReference": "Instruction reference",
+      "instructionDate": "Instruction date",
+      "endorsementConfirmed": "Endorsed under section 86(4)",
+      "accruedInterest": "Accrued interest not capitalised",
+      "fundAmount": "Legal Practitioners' Fidelity Fund amount held",
+      "balancePerConfirmation": "Balance per confirmation"
+    },
+    "outstanding-items": {
+      "kind": "Item type",
+      "originalDate": "Original date",
+      "amount": "Amount",
+      "reference": "Reference",
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference"
+    },
+    "unidentified-deposits": {
+      "receivedDate": "Date received",
+      "amount": "Amount",
+      "bankReference": "Bank reference",
+      "description": "Description"
+    }
+  },
+  "trust": {
+    "validated": {
+      "status": "Validated",
+      "cards": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0
+      },
+      "banner": null,
+      "accountErrors": null,
+      "equation": {
+        "eq1": {
+          "holds": "true",
+          "difference": "Difference R 0,00"
+        },
+        "items": {
+          "holds": "true",
+          "difference": "Difference R 0,00"
+        },
+        "eq2": {
+          "holds": "true",
+          "difference": "Difference R 0,00"
+        },
+        "investments": {
+          "holds": "true",
+          "difference": "Difference R 0,00"
+        },
+        "deficit": {
+          "holds": "true",
+          "difference": "Difference R 0,00"
+        }
+      },
+      "flags": "Flags Unidentified deposit older than one year",
+      "api": {
+        "http": 200,
+        "status": "VALIDATED",
+        "allowedActions": [
+          "REMOVE_SOURCE",
+          "MAP",
+          "REVALIDATE",
+          "CANCEL"
+        ],
+        "counts": {
+          "total": 9,
+          "valid": 9,
+          "error": 0,
+          "duplicate": 0,
+          "blocks": 0,
+          "created": 0,
+          "skipped": 0,
+          "failed": 0
+        },
+        "validatedAt": "2026-11-24T10:50:43.099361Z",
+        "cutoverDate": "2026-11-24",
+        "position": {
+          "bankBalance": 418500,
+          "outstandingDepositsTotal": 5000,
+          "outstandingPaymentsTotal": 20000,
+          "cashbookBalance": 403500,
+          "fundLedgerBalance": 1250,
+          "investedTotal": 300000
+        },
+        "midMonthAcknowledged": true,
+        "signOffs": [],
+        "reportId": null,
+        "trustAccountName": "Mathebula & Partners Trust Account",
+        "lastError": null
+      }
+    },
+    "bobSignOffStep": {
+      "statusText": "A partner or director signs off this take-on from their Home page.",
+      "statusExact": true,
+      "panelCount": 0,
+      "acceptCount": 0,
+      "submitCount": 0,
+      "commitCount": 0,
+      "revokeCount": 0,
+      "checkboxes": 0,
+      "stepButtons": [],
+      "signLikeButtons": [],
+      "api": {
+        "http": 200,
+        "status": "VALIDATED",
+        "allowedActions": [
+          "REMOVE_SOURCE",
+          "MAP",
+          "REVALIDATE",
+          "CANCEL"
+        ],
+        "counts": {
+          "total": 9,
+          "valid": 9,
+          "error": 0,
+          "duplicate": 0,
+          "blocks": 0,
+          "created": 0,
+          "skipped": 0,
+          "failed": 0
+        },
+        "validatedAt": "2026-11-24T10:50:43.099361Z",
+        "cutoverDate": "2026-11-24",
+        "position": {
+          "bankBalance": 418500,
+          "outstandingDepositsTotal": 5000,
+          "outstandingPaymentsTotal": 20000,
+          "cashbookBalance": 403500,
+          "fundLedgerBalance": 1250,
+          "investedTotal": 300000
+        },
+        "midMonthAcknowledged": true,
+        "signOffs": [],
+        "reportId": null,
+        "trustAccountName": "Mathebula & Partners Trust Account",
+        "lastError": null
+      },
+      "bobHomeWidget": 0,
+      "bobHomeHasText": false
+    }
+  },
+  "signoff": {
+    "widgetText": "Trust take-on awaiting your sign-off Mathebula & Partners Trust Account at 24 November 2026 Prepared by Bob Admin · validated 24 Nov 2026, 12:50",
+    "itemVisible": true,
+    "itemText": "Mathebula & Partners Trust Account at 24 November 2026 Prepared by Bob Admin · validated 24 Nov 2026, 12:50",
+    "title": "Sign off the trust take-on of Mathebula & Partners Trust Account at 24 November 2026",
+    "account": "Mathebula & Partners Trust Account",
+    "cutover": "24 November 2026 (a mid-month cutover)",
+    "preparedBy": "Bob Admin, validated 24 Nov 2026, 12:50",
+    "position": {
+      "bankBalance": "R 418 500,00",
+      "outstandingDepositsTotal": "R 5 000,00",
+      "outstandingPaymentsTotal": "R 20 000,00",
+      "cashbookBalance": "R 403 500,00",
+      "fundLedgerBalance": "R 1 250,00",
+      "investedTotal": "R 300 000,00"
+    },
+    "blocks": null,
+    "accountErrors": null,
+    "equation": {
+      "eq1": {
+        "holds": "true",
+        "difference": "Difference R 0,00"
+      },
+      "items": {
+        "holds": "true",
+        "difference": "Difference R 0,00"
+      },
+      "eq2": {
+        "holds": "true",
+        "difference": "Difference R 0,00"
+      },
+      "investments": {
+        "holds": "true",
+        "difference": "Difference R 0,00"
+      },
+      "deficit": {
+        "holds": "true",
+        "difference": "Difference R 0,00"
+      }
+    },
+    "flags": "Flags Unidentified deposit older than one year",
+    "rows": [
+      "2 | Client and matter balances | A · A1 | R 300 000,00 | Valid | ",
+      "3 | Client and matter balances | B · B1 | R 150 000,00 | Valid | ",
+      "4 | Client and matter balances | C · C1 | R 49 500,00 | Valid | ",
+      "2 | Investments | 6573001 | R 100 000,00 | Valid | ",
+      "3 | Investments | A · A1 | R 200 000,00 | Valid | ",
+      "2 | Items outstanding at cutover | B · B1 | R 5 000,00 | Valid | ",
+      "3 | Items outstanding at cutover | A · A1 | R 20 000,00 | Valid | ",
+      "2 | Unidentified deposits | ACB CREDIT UNKNOWN | R 2 000,00 | Valid | This deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3 | Unidentified deposits | EFT 7781 | R 750,00 | Valid | "
+    ],
+    "declaration": "I am a partner or director of E2E Test Organization responsible for its trust accounting records (Rule 54.19). I have reviewed this take-on of Mathebula & Partners Trust Account at 24 November 2026. The trust creditors listed agree, to the cent, with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.",
+    "declarationVersion": "TAKEON-SIGNOFF-v1",
+    "submitDisabledBeforeAccept": true,
+    "apiBefore": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "SIGN_OFF",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T10:50:43.099361Z",
+      "cutoverDate": "2026-11-24",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": true,
+      "signOffs": [],
+      "reportId": null,
+      "trustAccountName": "Mathebula & Partners Trust Account",
+      "lastError": null
+    },
+    "reviewApi": {
+      "http": 200,
+      "declaration": {
+        "version": "TAKEON-SIGNOFF-v1",
+        "text": "I am a partner or director of E2E Test Organization responsible for its trust accounting records (Rule 54.19). I have reviewed this take-on of Mathebula & Partners Trust Account at 24 November 2026. The trust creditors listed agree, to the cent, with the reconciled trust position in the previous system at that date, and no trust creditor is in debit."
+      },
+      "allowedActions": [
+        "SIGN_OFF"
+      ],
+      "status": "VALIDATED"
+    },
+    "declarationEqualsServer": true,
+    "submitEnabledAfterAccept": true,
+    "live": "Signed off by you (Owner) on 24 Nov 2026, 12:51. Withdraw my sign-off",
+    "withdrawVisible": true,
+    "withdrawText": "Withdraw my sign-off",
+    "apiAfter": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "COMMIT",
+        "WITHDRAW_SIGN_OFF",
+        "REVOKE_SIGN_OFF",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T10:50:43.099361Z",
+      "cutoverDate": "2026-11-24",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": true,
+      "signOffs": [
+        {
+          "id": "0660d126-912b-4806-96fa-417a1a638d78",
+          "kind": "TRUST_SIGN_OFF",
+          "memberName": "Alice Owner",
+          "roleName": "Owner",
+          "statementVersion": "TAKEON-SIGNOFF-v1",
+          "signedAt": "2026-11-24T10:51:00.679943Z"
+        }
+      ],
+      "reportId": null,
+      "trustAccountName": "Mathebula & Partners Trust Account",
+      "lastError": null
+    },
+    "widgetAfterClose": "Trust take-on awaiting your sign-off Nothing else is awaiting your sign-off."
+  },
+  "commit": {
+    "mailBefore": {
+      "at": "2026-11-24T10:51:05.974Z",
+      "total": 2,
+      "latest": {
+        "id": "ZuxqAvb3XvvQSz4RVnZmwF",
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T10:49:25.323Z"
+      }
+    },
+    "statusText": "Signed off by Alice Owner (Owner) on 24 Nov 2026, 12:51. Withdraw sign-off",
+    "revokeVisible": true,
+    "panelCount": 0,
+    "apiBefore": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "COMMIT",
+        "REVOKE_SIGN_OFF",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T10:50:43.099361Z",
+      "cutoverDate": "2026-11-24",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": true,
+      "signOffs": [
+        {
+          "id": "0660d126-912b-4806-96fa-417a1a638d78",
+          "kind": "TRUST_SIGN_OFF",
+          "memberName": "Alice Owner",
+          "roleName": "Owner",
+          "statementVersion": "TAKEON-SIGNOFF-v1",
+          "signedAt": "2026-11-24T10:51:00.679943Z"
+        }
+      ],
+      "reportId": null,
+      "trustAccountName": "Mathebula & Partners Trust Account",
+      "lastError": null
+    },
+    "dialogTitle": "Commit trust opening position take-on?",
+    "dialogBody": "9 records will be created. This cannot be undone.",
+    "trustSentence": "The opening position of Mathebula & Partners Trust Account at 24 November 2026 will be posted and the account will not accept entries dated on or before that date.",
+    "trustSentenceExact": true,
+    "commitClickedAt": "2026-11-24T10:51:08.575Z",
+    "resultsAt": "2026-11-24T10:51:12.932Z",
+    "results": {
+      "created": "Created 9",
+      "skipped": "Skipped 0",
+      "failed": "Failed 0",
+      "completedAt": "Completed 24 Nov 2026, 12:51"
+    },
+    "report": {
+      "visible": true,
+      "header": "Mathebula & Partners Trust Account at 24 November 2026 · generated 24 Nov 2026, 12:51",
+      "position": [
+        {
+          "id": "take-on-report-position-bankBalance",
+          "cells": [
+            "Bank statement balance",
+            "R 418 500,00",
+            "R 418 500,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-outstandingDeposits",
+          "cells": [
+            "Outstanding deposits",
+            "R 5 000,00",
+            "R 5 000,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-outstandingPayments",
+          "cells": [
+            "Outstanding payments",
+            "R 20 000,00",
+            "R 20 000,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-adjustedBank",
+          "cells": [
+            "Adjusted bank balance",
+            "R 403 500,00",
+            "R 403 500,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-cashbook",
+          "cells": [
+            "Cashbook balance",
+            "R 403 500,00",
+            "R 403 500,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-fundLedger",
+          "cells": [
+            "Legal Practitioners' Fidelity Fund interest and charges ledger",
+            "R 1 250,00",
+            "R 1 250,00",
+            "R 0,00"
+          ]
+        },
+        {
+          "id": "take-on-report-position-investedTotal",
+          "cells": [
+            "Total invested",
+            "R 300 000,00",
+            "R 300 000,00",
+            "R 0,00"
+          ]
+        }
+      ],
+      "creditors": "Trust creditors at cutover Client ledgers (3) R 499 500,00 Fund interest and charges ledger (1) R 1 250,00 Unidentified deposits (2) R 2 750,00 Other trust accounts (1) -R 100 000,00 Trust creditors R 403 500,00",
+      "signOff": "Sign-off Signed off by Alice Owner (Owner) on 24 Nov 2026, 12:51. Prepared by Bob Admin.",
+      "flags": "Flags Mid-month cutover Unidentified deposit older than one year",
+      "error": null
+    },
+    "apiAfter": {
+      "http": 200,
+      "status": "COMPLETED",
+      "allowedActions": [
+        "DOWNLOAD_RESULT"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 9,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T10:50:43.099361Z",
+      "cutoverDate": "2026-11-24",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": true,
+      "signOffs": [
+        {
+          "id": "0660d126-912b-4806-96fa-417a1a638d78",
+          "kind": "TRUST_SIGN_OFF",
+          "memberName": "Alice Owner",
+          "roleName": "Owner",
+          "statementVersion": "TAKEON-SIGNOFF-v1",
+          "signedAt": "2026-11-24T10:51:00.679943Z"
+        }
+      ],
+      "reportId": "f18cd71d-2185-4494-82ae-4313e606fa2e",
+      "trustAccountName": "Mathebula & Partners Trust Account",
+      "lastError": null
+    },
+    "reportApi": {
+      "http": 200,
+      "generatedAt": "2026-11-24T10:51:09.595725Z",
+      "differences": {
+        "cashbook": "0.00",
+        "fundLedger": "0.00",
+        "bankBalance": "0.00",
+        "adjustedBank": "0.00",
+        "investedTotal": "0.00",
+        "outstandingDeposits": "0.00",
+        "outstandingPayments": "0.00"
+      },
+      "previousSystem": {
+        "cashbook": "403500.00",
+        "fundLedger": "1250.00",
+        "bankBalance": "418500.00",
+        "adjustedBank": "403500.00",
+        "investedTotal": "300000.00",
+        "outstandingDeposits": "5000.00",
+        "outstandingPayments": "20000.00"
+      },
+      "kazi": {
+        "cashbook": "403500.00",
+        "fundLedger": "1250.00",
+        "bankBalance": "418500.00",
+        "adjustedBank": "403500.00",
+        "investedTotal": "300000.00",
+        "outstandingDeposits": "5000.00",
+        "outstandingPayments": "20000.00"
+      },
+      "signOff": {
+        "role": "Owner",
+        "notes": [],
+        "signedAt": "2026-11-24T10:51:00.679943Z",
+        "signedBy": "Alice Owner",
+        "preparedBy": "Bob Admin",
+        "samePerson": false,
+        "statementText": "I am a partner or director of E2E Test Organization responsible for its trust accounting records (Rule 54.19). I have reviewed this take-on of Mathebula & Partners Trust Account at 24 November 2026. The trust creditors listed agree, to the cent, with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.",
+        "statementVersion": "TAKEON-SIGNOFF-v1"
+      },
+      "flags": [
+        "MID_MONTH_CUTOVER",
+        "UNIDENTIFIED_OVER_ONE_YEAR"
+      ],
+      "creditorTotal": "403500.00"
+    },
+    "mailAfter": {
+      "at": "2026-11-24T10:51:24.164Z",
+      "total": 2,
+      "latest": {
+        "id": "ZuxqAvb3XvvQSz4RVnZmwF",
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T10:49:25.323Z"
+      }
+    }
+  },
+  "ledgers": {
+    "run": "P",
+    "accounts": [
+      {
+        "id": "17e51f19-f94d-442d-813b-46c54e012ac1",
+        "name": "Mathebula & Partners Trust Account",
+        "primary": true,
+        "takeOnCutoverDate": "2026-11-24"
+      },
+      {
+        "id": "18dedb7c-da9b-4d0b-856e-6deae5ede393",
+        "name": "OBS 657C s86(3) investment I3",
+        "primary": false,
+        "takeOnCutoverDate": "2026-11-24"
+      },
+      {
+        "id": "1409b6d7-fb85-4f2d-ac46-3d14e1a66d9f",
+        "name": "OBS 657C s86(4) investment I4",
+        "primary": false,
+        "takeOnCutoverDate": "2026-11-24"
+      }
+    ],
+    "apiClientLedgers": {
+      "content": [
+        {
+          "id": "39dae5ed-c823-48b8-86e3-0f99845ed9f3",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "clientName": "Amahle Zulu",
+          "balance": 300000,
+          "totalDeposits": 0,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0,
+          "broughtForward": 300000,
+          "investedBalance": 200000,
+          "lastTransactionDate": "2026-11-24",
+          "createdAt": "2026-11-24T10:51:09.080152Z",
+          "updatedAt": "2026-11-24T10:51:09.080152Z"
+        },
+        {
+          "id": "21c0f652-f455-4d98-aaac-c69fdee03bd4",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "clientId": "63947282-af23-403c-8ba1-bd7d737cafd8",
+          "clientName": "Bongani Nkosi",
+          "balance": 150000,
+          "totalDeposits": 0,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0,
+          "broughtForward": 150000,
+          "investedBalance": 0,
+          "lastTransactionDate": "2026-11-24",
+          "createdAt": "2026-11-24T10:51:09.080152Z",
+          "updatedAt": "2026-11-24T10:51:09.080152Z"
+        },
+        {
+          "id": "62e90c32-cd07-426a-929a-f9ae948a29a9",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "clientId": "4d664093-318d-401d-a1bf-2a273a7edd4c",
+          "clientName": "Chantal Pillay",
+          "balance": 49500,
+          "totalDeposits": 0,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0,
+          "broughtForward": 49500,
+          "investedBalance": 0,
+          "lastTransactionDate": "2026-11-24",
+          "createdAt": "2026-11-24T10:51:09.080152Z",
+          "updatedAt": "2026-11-24T10:51:09.080152Z"
+        }
+      ],
+      "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 3,
+        "totalPages": 1
+      }
+    },
+    "apiCreditors": [
+      {
+        "id": "9dba3d5f-dfaf-4e34-8ccc-42a0b9a31b8b",
+        "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+        "accountType": "FUND_INTEREST_AND_CHARGES",
+        "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+        "balance": 1250,
+        "inDebit": false,
+        "asAt": "2026-11-24"
+      },
+      {
+        "id": "90d5ba53-9a46-4604-ae1c-fd1fa8a9098d",
+        "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+        "accountType": "UNIDENTIFIED_DEPOSITS",
+        "name": "Unidentified deposits",
+        "balance": 2750,
+        "inDebit": false,
+        "asAt": "2026-11-24"
+      }
+    ],
+    "apiTotal": {
+      "balance": 499500,
+      "creditorBreakdown": {
+        "clientLedgers": 499500,
+        "investmentCreditors": 0,
+        "fundInterestAndCharges": 1250,
+        "unidentifiedDeposits": 2750,
+        "otherNonClient": 0,
+        "interAccount": -100000,
+        "total": 403500
+      }
+    },
+    "apiUnidentified": {
+      "content": [
+        {
+          "id": "7b1846e0-1764-4a57-9c62-3babe4d7fa03",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "receivedDate": "2025-06-15",
+          "bankDescription": "Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN)",
+          "bankReference": "ACB CREDIT UNKNOWN",
+          "amount": 2000,
+          "status": "HELD",
+          "ageDays": 527,
+          "olderThanOneYear": true,
+          "allocatedClientId": null,
+          "allocatedClientName": null,
+          "allocatedMatterId": null,
+          "allocatedMatterName": null,
+          "resolutionTransactionId": null,
+          "resolutionStatus": null,
+          "resolvedDate": null,
+          "bankStatementLineId": null,
+          "notes": null
+        },
+        {
+          "id": "a07e2740-de0a-42b2-acc7-554ccb10c70a",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "receivedDate": "2026-09-03",
+          "bankDescription": "Unidentified deposit brought forward — take-on (ref EFT 7781)",
+          "bankReference": "EFT 7781",
+          "amount": 750,
+          "status": "HELD",
+          "ageDays": 82,
+          "olderThanOneYear": false,
+          "allocatedClientId": null,
+          "allocatedClientName": null,
+          "allocatedMatterId": null,
+          "allocatedMatterName": null,
+          "resolutionTransactionId": null,
+          "resolutionStatus": null,
+          "resolvedDate": null,
+          "bankStatementLineId": null,
+          "notes": null
+        }
+      ],
+      "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 2,
+        "totalPages": 1
+      }
+    },
+    "apiTxns": {
+      "content": [
+        {
+          "id": "335a8be9-04e6-451b-9406-b0d0d7643f1f",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_PAY_OFFSET",
+          "typeLabel": "Take-on offset — payment not yet presented",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 20000,
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "matterId": "e8acba32-7beb-4322-8d40-1de798411e65",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-OI-3",
+          "description": "Take-on offset — payment not yet presented",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.375722Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.375764Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "39ddcd61-86b0-4710-923e-99749c6a3761",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_PAY_UNPRES",
+          "typeLabel": "Payment not yet presented at take-on",
+          "direction": "OUT",
+          "ledger": "CLIENT",
+          "amount": 20000,
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "matterId": "e8acba32-7beb-4322-8d40-1de798411e65",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "PAY-778",
+          "description": "Payment not yet presented at take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.375123Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.375175Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "7a0c499a-b4e2-44a3-898a-849c1a620e5e",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_DEP_OFFSET",
+          "typeLabel": "Take-on offset — deposit not yet cleared",
+          "direction": "OUT",
+          "ledger": "CLIENT",
+          "amount": 5000,
+          "clientId": "63947282-af23-403c-8ba1-bd7d737cafd8",
+          "matterId": "c4e9d114-b025-44d6-bb9c-dc396d09356c",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-OI-2",
+          "description": "Take-on offset — deposit not yet cleared",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.374520Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.374553Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "4dc50fb1-576a-48d6-aad2-d0ead947ce84",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_DEP_TRANSIT",
+          "typeLabel": "Deposit not yet cleared at take-on",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 5000,
+          "clientId": "63947282-af23-403c-8ba1-bd7d737cafd8",
+          "matterId": "c4e9d114-b025-44d6-bb9c-dc396d09356c",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "EFT B-0001",
+          "description": "Deposit not yet cleared at take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.373962Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.373996Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "39337d71-2b19-4104-aaaa-3a6b1cac3cf7",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_FUND",
+          "typeLabel": "Fund ledger brought forward — take-on",
+          "direction": "IN",
+          "ledger": "NON_CLIENT",
+          "amount": 1250,
+          "clientId": null,
+          "matterId": null,
+          "creditorAccountId": "9dba3d5f-dfaf-4e34-8ccc-42a0b9a31b8b",
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-FUND",
+          "description": "Fund ledger brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.373349Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.373401Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "21c8d555-b0a5-47e8-a7cf-3fa531a486dd",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_CLIENT",
+          "typeLabel": "Balance brought forward — take-on",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 49500,
+          "clientId": "4d664093-318d-401d-a1bf-2a273a7edd4c",
+          "matterId": "56495f74-8fd7-4445-8e14-1dcb519edb5a",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-CL-4",
+          "description": "Balance brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.371706Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.371792Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "a5518e06-26da-4882-b507-26ee9d798a56",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_CLIENT",
+          "typeLabel": "Balance brought forward — take-on",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 150000,
+          "clientId": "63947282-af23-403c-8ba1-bd7d737cafd8",
+          "matterId": "c4e9d114-b025-44d6-bb9c-dc396d09356c",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-CL-3",
+          "description": "Balance brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.371114Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.371164Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "3090db4c-0b40-4d80-ac8d-98e8db416a93",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_CLIENT",
+          "typeLabel": "Balance brought forward — take-on",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 300000,
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "matterId": "e8acba32-7beb-4322-8d40-1de798411e65",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-CL-2",
+          "description": "Balance brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.370346Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.370404Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "08e4bed9-6a38-40e4-99d1-25a7f1506b61",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_FIRM_INV_OUT",
+          "typeLabel": "Placed in section 86(3) investment — brought forward",
+          "direction": "OUT",
+          "ledger": "INTER_ACCOUNT",
+          "amount": 100000,
+          "clientId": null,
+          "matterId": null,
+          "creditorAccountId": null,
+          "investmentId": "f7aa3186-68eb-4b00-bb29-0fff7312a144",
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-IN-2",
+          "description": "Placed in section 86(3) investment — brought forward",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.362816Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.362889Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "34ed0ee6-ce06-4cf7-84fb-fc49551acc3b",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_UNIDENTIFIED",
+          "typeLabel": "Unidentified deposit brought forward — take-on",
+          "direction": "IN",
+          "ledger": "NON_CLIENT",
+          "amount": 750,
+          "clientId": null,
+          "matterId": null,
+          "creditorAccountId": "90d5ba53-9a46-4604-ae1c-fd1fa8a9098d",
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "EFT 7781",
+          "description": "Unidentified deposit brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.356100Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.356227Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        },
+        {
+          "id": "3ba23db5-2042-4b1e-8498-fcdab2bb95df",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "transactionType": "TAKEON_UNIDENTIFIED",
+          "typeLabel": "Unidentified deposit brought forward — take-on",
+          "direction": "IN",
+          "ledger": "NON_CLIENT",
+          "amount": 2000,
+          "clientId": null,
+          "matterId": null,
+          "creditorAccountId": "90d5ba53-9a46-4604-ae1c-fd1fa8a9098d",
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "ACB CREDIT UNKNOWN",
+          "description": "Unidentified deposit brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.349495Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.349876Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        }
+      ],
+      "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 11,
+        "totalPages": 1
+      }
+    },
+    "apiTxnsI3": {
+      "content": [
+        {
+          "id": "377eb7ec-8c17-4b0d-8ae9-98844c681b1d",
+          "trustAccountId": "18dedb7c-da9b-4d0b-856e-6deae5ede393",
+          "transactionType": "TAKEON_FIRM_INV_IN",
+          "typeLabel": "Section 86(3) investment brought forward — take-on",
+          "direction": "IN",
+          "ledger": "INTER_ACCOUNT",
+          "amount": 100000,
+          "clientId": null,
+          "matterId": null,
+          "creditorAccountId": null,
+          "investmentId": "f7aa3186-68eb-4b00-bb29-0fff7312a144",
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-IN-2",
+          "description": "Section 86(3) investment brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.363584Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.363634Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        }
+      ],
+      "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 1,
+        "totalPages": 1
+      }
+    },
+    "apiTxnsI4": {
+      "content": [
+        {
+          "id": "a046472d-dce1-402d-a5f6-d6d2f4a50b30",
+          "trustAccountId": "1409b6d7-fb85-4f2d-ac46-3d14e1a66d9f",
+          "transactionType": "TAKEON_INVESTMENT",
+          "typeLabel": "Section 86(4) investment brought forward — take-on",
+          "direction": "IN",
+          "ledger": "CLIENT_INVESTMENT",
+          "amount": 200000,
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "matterId": "e8acba32-7beb-4322-8d40-1de798411e65",
+          "creditorAccountId": null,
+          "investmentId": "1a3fa795-fa50-4f80-87b6-19568ee51526",
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "TAKEON-IN-3",
+          "description": "Section 86(4) investment brought forward — take-on",
+          "transactionDate": "2026-11-24",
+          "status": "APPROVED",
+          "postedAt": "2026-11-24T10:51:09.368661Z",
+          "approvedBy": "d0075544-a8f4-45e8-b23d-7e399537db38",
+          "approvedAt": "2026-11-24T10:51:00.679943Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "7d9839b6-724e-42b0-a0e9-d9edee3c3bc6",
+          "createdAt": "2026-11-24T10:51:09.368748Z",
+          "runningBalance": null,
+          "chargeRecoverable": null,
+          "chargeVatAmount": null
+        }
+      ],
+      "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 1,
+        "totalPages": 1
+      }
+    },
+    "apiIntegrity": {
+      "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+      "asAt": "2026-11-24",
+      "position": {
+        "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+        "asAt": "2026-11-24",
+        "cashbook": 403500,
+        "clientLedgers": 499500,
+        "investmentCreditors": 0,
+        "fundLedger": 1250,
+        "unidentifiedDeposits": 2750,
+        "otherNonClient": 0,
+        "interAccount": -100000,
+        "creditorTotal": 403500,
+        "difference": 0
+      },
+      "bank": null,
+      "balanced": true,
+      "flags": [
+        {
+          "code": "UNIDENTIFIED_OVER_ONE_YEAR",
+          "severity": "WARNING",
+          "message": "1 unidentified deposit of R2 000,00 has been held for more than a year.",
+          "amount": 2000,
+          "subjects": [
+            {
+              "kind": "UNIDENTIFIED_DEPOSIT",
+              "id": "7b1846e0-1764-4a57-9c62-3babe4d7fa03",
+              "name": "Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN)",
+              "amount": 2000
+            }
+          ]
+        }
+      ],
+      "lastCompletedReconciliationId": null,
+      "lastReconciledThrough": null
+    },
+    "apiInvestments": {
+      "content": [
+        {
+          "id": "1a3fa795-fa50-4f80-87b6-19568ee51526",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "investmentAccountId": "1409b6d7-fb85-4f2d-ac46-3d14e1a66d9f",
+          "investmentAccountName": "OBS 657C s86(4) investment I4",
+          "clientId": "98c903ff-2f1e-492e-98c3-aec6d1ac1895",
+          "clientName": "Amahle Zulu",
+          "matterId": "e8acba32-7beb-4322-8d40-1de798411e65",
+          "institution": "Investec",
+          "accountNumber": "0002",
+          "principal": 200000,
+          "interestRate": 0.075,
+          "depositDate": "2026-04-01",
+          "maturityDate": null,
+          "grossInterest": 0,
+          "fundShare": 0,
+          "netInterest": 0,
+          "balance": 200000,
+          "status": "ACTIVE",
+          "awaitingApproval": false,
+          "withdrawalDate": null,
+          "withdrawalAmount": null,
+          "depositTransactionId": "a046472d-dce1-402d-a5f6-d6d2f4a50b30",
+          "withdrawalTransactionId": null,
+          "notes": null,
+          "investmentBasis": "CLIENT_INSTRUCTION",
+          "createdAt": "2026-11-24T10:51:09.363994Z",
+          "updatedAt": "2026-11-24T10:51:09.376451Z"
+        },
+        {
+          "id": "f7aa3186-68eb-4b00-bb29-0fff7312a144",
+          "trustAccountId": "17e51f19-f94d-442d-813b-46c54e012ac1",
+          "investmentAccountId": "18dedb7c-da9b-4d0b-856e-6deae5ede393",
+          "investmentAccountName": "OBS 657C s86(3) investment I3",
+          "clientId": null,
+          "clientName": null,
+          "matterId": null,
+          "institution": "Investec",
+          "accountNumber": "0001",
+          "principal": 100000,
+          "interestRate": 0.0725,
+          "depositDate": "2026-03-01",
+          "maturityDate": null,
+          "grossInterest": 0,
+          "fundShare": 0,
+          "netInterest": 0,
+          "balance": 100000,
+          "status": "ACTIVE",
+          "awaitingApproval": false,
+          "withdrawalDate": null,
+          "withdrawalAmount": null,
+          "depositTransactionId": "377eb7ec-8c17-4b0d-8ae9-98844c681b1d",
+          "withdrawalTransactionId": null,
+          "notes": null,
+          "investmentBasis": "FIRM_DISCRETION",
+          "createdAt": "2026-11-24T10:51:09.357314Z",
+          "updatedAt": "2026-11-24T10:51:09.364251Z"
+        }
+      ],
+      "page": {
+        "size": 20,
+        "number": 0,
+        "totalElements": 2,
+        "totalPages": 1
+      }
+    },
+    "uiDashboard": "Trust Accounting LSSA-compliant trust account management for client funds Client Ledgers Record Transaction Trust Balance R 403 500,00 Mathebula & Partners Trust Account cashbook balance Trust creditors R 403 500,00 (agrees with the cashbook) Active Clients 3 Clients with trust balances Pending Approvals 0 Transactions awaiting approval Reconciliation Not yet reconciled No reconciliation records found Cashbook R 703 500,00 All trust accounts Client ledgers R 499 500,00 Money held for clients Other trust creditors R 4 000,00 Fund interest and charges, and unidentified deposits Invested R 200 000,00 Section 86(4) investments for clients Trust integrity As at 24 Nov 2026, all trust accounts Books balance Warning Mathebula & Partners Trust Account: Unidentified deposit held over a year R 2 000,00 1 unidentified deposit of R2 000,00 has been held for more than a year. Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN) R 2 000,00 Trust balance trend Month-end balances as currently recorded (ZAR) Cashbook Trust creditors Dec 2025 Jan 2026 Feb 2026 Mar 2026 Apr 2026 May 2026 Jun 2026 Jul 2026 Aug 2026 Sep 2026 Oct 2026 Nov 2026 R 0 R 150 k R 300 k R 450 k R 600 k Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 403 500,00 in Nov 2026 (to date), peak R 403 500,00 in Nov 2026 (to date); Trust creditors from R 0,00 in Dec 2025 to R 403 500,00 in Nov 2026 (to date), peak R 403 500,00 in Nov 2026 (to date). View as table Recent Transactions Last 10 transactions across all client ledgers View all Recent trust transactions DATE REFERENCE TYPE AMOUNT STATUS 24 Nov 2026 TAKEON-OI-3 Take-on offset — payment not yet presented R 20 000,00 APPROVED 24 Nov 2026 PAY-778 Payment not yet presented at take-on R 20 000,00 APPROVED 24 Nov 2026 TAKEON-OI-2 Take-on offset — deposit not yet cleared R 5 000,00 APPROVED 24 Nov 2026 EFT B-0001 Deposit not yet cleared at take-on R 5 000,00 APPROVED 24 Nov 2026 TAKEON-FUND Fund ledger brought forward — take-on R 1 250,00 APPROVED 24 Nov 2026 TAKEON-CL-4 Balance brought forward — take-on R 49 500,00 APPROVED 24 Nov 2026 TAKEON-CL-3 Balance brought forward — take-on R 150 000,00 APPROVED 24 Nov 2026 TAKEON-CL-2 Balance brought forward — take-on R 300 000,00 APPROVED 24 Nov 2026 TAKEON-IN-2 Placed in section 86(3) investment — brought forward R 100 000,00 APPROVED 24 Nov 2026 EFT 7781 Unidentified deposit brought forward — take-on R 750,00 APPROVED",
+    "uiClientLedgers": "Client Ledgers Trust account balances by client Non-zero balances only Search Client Balances 3 clients found Client Name Trust Balance Total Deposits Total Payments Total Fee Transfers Total Refunds Last Transaction Amahle Zulu R 300 000,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026 Bongani Nkosi R 150 000,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026 Chantal Pillay R 49 500,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026",
+    "uiClientLedgerRows": [
+      "Amahle Zulu R 300 000,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026",
+      "Bongani Nkosi R 150 000,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026",
+      "Chantal Pillay R 49 500,00 R 0,00 R 0,00 R 0,00 R 0,00 24 Nov 2026"
+    ],
+    "uiClientA": "Back to Client Ledgers Amahle Zulu Client ledger detail and transaction history Trust Balance R 300 000,00 Plus R 200 000,00 invested (section 86(4)) — R 500 000,00 held in trust in total Ledger totals Brought forward at take-on R 300 000,00 +Deposits R 0,00 − less Payments R 0,00 − less Fee transfers R 0,00 − less Refunds R 0,00 =General balance R 300 000,00 +Invested (section 86(4)) R 200 000,00 =Total held in trust R 500 000,00 Generate Statement Select a date range and generate a PDF statement for this client From To Print Statement Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Deposit identified and allocated Placed in section 86(4) investment Investment capital received Section 86(4) investment interest Investment withdrawn Investment returned to trust From To Transaction History 3 transactions found Date Reference Type Amount Status Running Balance 24 Nov 2026 TAKEON-OI-3 Take-on offset — payment not yet presented R 20 000,00 APPROVED R 300 000,00 24 Nov 2026 PAY-778 Payment not yet presented at take-on R 20 000,00 APPROVED R 280 000,00 24 Nov 2026 TAKEON-CL-2 Balance brought forward — take-on R 300 000,00 APPROVED R 300 000,00",
+    "uiClientARows": [
+      "24 Nov 2026 TAKEON-OI-3 Take-on offset — payment not yet presented R 20 000,00 APPROVED R 300 000,00",
+      "24 Nov 2026 PAY-778 Payment not yet presented at take-on R 20 000,00 APPROVED R 280 000,00",
+      "24 Nov 2026 TAKEON-CL-2 Balance brought forward — take-on R 300 000,00 APPROVED R 300 000,00"
+    ],
+    "uiOtherCreditors": "Other trust creditors Trust money held for creditors who are not clients: the Legal Practitioners' Fidelity Fund's interest and charges, and deposits not yet identified Legal Practitioners' Fidelity Fund — interest and charges R 1 250,00 Interest received for the Fund, less bank charges Unidentified deposits R 2 750,00 Deposits whose owner is not yet known Legal Practitioners' Fidelity Fund — interest and charges Interest received, transfers to the Fund, bank charges and refunds, newest first, with the running balance Legal Practitioners' Fidelity Fund ledger DATE REFERENCE DESCRIPTION TYPE AMOUNT BANK CHARGE RUNNING BALANCE 24 Nov 2026 TAKEON-FUND Fund ledger brought forward — take-on Fund ledger brought forward — take-on R 1 250,00 — R 1 250,00 Interest and charges at source Gross interest and charges for 2026 that the bank swept to the Fund or showed only net. They are not in the cashbook, change no balance and are reported on the Rule 54.28 schedule. Previous year Next year Record memo No memos for 2026. Record one when the bank swept interest or charges at source. Unidentified deposits Bank credits whose owner is not yet known, oldest first, with their age Unidentified deposits RECEIVED DESCRIPTION AMOUNT AGE STATUS ACTIONS 15 Jun 2025 Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN) ACB CREDIT UNKNOWN R 2 000,00 527 days Over one year Held Allocate Pay to the Fund 03 Sept 2026 Unidentified deposit brought forward — take-on (ref EFT 7781) EFT 7781 R 750,00 82 days Held Allocate Pay to the Fund",
+    "uiFundCard": "Legal Practitioners' Fidelity Fund — interest and charges R 1 250,00 Interest received for the Fund, less bank charges",
+    "uiUnidentifiedCard": "Unidentified deposits R 2 750,00 Deposits whose owner is not yet known",
+    "uiUnidentifiedRows": [
+      "15 Jun 2025 Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN) ACB CREDIT UNKNOWN R 2 000,00 527 days Over one year Held Allocate Pay to the Fund",
+      "03 Sept 2026 Unidentified deposit brought forward — take-on (ref EFT 7781) EFT 7781 R 750,00 82 days Held Allocate Pay to the Fund"
+    ],
+    "uiFundRows": [
+      "24 Nov 2026 TAKEON-FUND Fund ledger brought forward — take-on Fund ledger brought forward — take-on R 1 250,00 — R 1 250,00"
+    ],
+    "uiTransactions": "Transactions Trust account transaction history Record Transaction Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Interest received for the Legal Practitioners' Fidelity Fund Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Bank charge refunded from the business account Unidentified deposit Unidentified deposit allocated Deposit identified and allocated Unidentified deposit paid to the Fund Placed in section 86(4) investment Investment capital received Section 86(4) investment interest Fund share of section 86(4) interest (5%) Investment withdrawn Investment returned to trust Placed in section 86(3) investment Section 86(3) investment capital received Section 86(3) investment withdrawn Section 86(3) investment returned to trust From To Client ID Matter ID Transaction History 11 transactions found Date Reference Type Amount Status Actions 24 Nov 2026 TAKEON-OI-3 Take-on offset — payment not yet presented R 20 000,00 APPROVED 24 Nov 2026 PAY-778 Payment not yet presented at take-on R 20 000,00 APPROVED Reverse 24 Nov 2026 TAKEON-OI-2 Take-on offset — deposit not yet cleared R 5 000,00 APPROVED 24 Nov 2026 EFT B-0001 Deposit not yet cleared at take-on R 5 000,00 APPROVED Reverse 24 Nov 2026 TAKEON-FUND Fund ledger brought forward — take-on R 1 250,00 APPROVED 24 Nov 2026 TAKEON-CL-4 Balance brought forward — take-on R 49 500,00 APPROVED 24 Nov 2026 TAKEON-CL-3 Balance brought forward — take-on R 150 000,00 APPROVED 24 Nov 2026 TAKEON-CL-2 Balance brought forward — take-on R 300 000,00 APPROVED 24 Nov 2026 TAKEON-IN-2 Placed in section 86(3) investment — brought forward R 100 000,00 APPROVED 24 Nov 2026 EFT 7781 Unidentified deposit brought forward — take-on R 750,00 APPROVED 24 Nov 2026 ACB CREDIT UNKNOWN Unidentified deposit brought forward — take-on R 2 000,00 APPROVED",
+    "uiTransactionRows": [
+      "24 Nov 2026 TAKEON-OI-3 Take-on offset — payment not yet presented R 20 000,00 APPROVED",
+      "24 Nov 2026 PAY-778 Payment not yet presented at take-on R 20 000,00 APPROVED Reverse",
+      "24 Nov 2026 TAKEON-OI-2 Take-on offset — deposit not yet cleared R 5 000,00 APPROVED",
+      "24 Nov 2026 EFT B-0001 Deposit not yet cleared at take-on R 5 000,00 APPROVED Reverse",
+      "24 Nov 2026 TAKEON-FUND Fund ledger brought forward — take-on R 1 250,00 APPROVED",
+      "24 Nov 2026 TAKEON-CL-4 Balance brought forward — take-on R 49 500,00 APPROVED",
+      "24 Nov 2026 TAKEON-CL-3 Balance brought forward — take-on R 150 000,00 APPROVED",
+      "24 Nov 2026 TAKEON-CL-2 Balance brought forward — take-on R 300 000,00 APPROVED",
+      "24 Nov 2026 TAKEON-IN-2 Placed in section 86(3) investment — brought forward R 100 000,00 APPROVED",
+      "24 Nov 2026 EFT 7781 Unidentified deposit brought forward — take-on R 750,00 APPROVED",
+      "24 Nov 2026 ACB CREDIT UNKNOWN Unidentified deposit brought forward — take-on R 2 000,00 APPROVED"
+    ],
+    "uiInvestments": "Investments Trust investment register and maturity tracking Place Investment Investment Register 2 investments found All Client Investment account Rate Term Principal Balance Status Actions Amahle Zulu Section 86(4) OBS 657C s86(4) investment I4 Investec 0002 7.50% LPFF share 5% (statutory) 01 Apr 2026 Call deposit R 200 000,00 Gross interest R 0,00 Fund 5% R 0,00 Net interest R 0,00 R 200 000,00 Active Record interest Interest entries Withdraw Firm (section 86(3)) Section 86(3) OBS 657C s86(3) investment I3 Investec 0001 7.25% LPFF share Arrangement 01 Mar 2026 Call deposit R 100 000,00 Interest is the Fund's — record it from the investment account's statement R 100 000,00 Active Withdraw",
+    "uiInvestmentRows": [
+      "Amahle Zulu Section 86(4) OBS 657C s86(4) investment I4 Investec 0002 7.50% LPFF share 5% (statutory) 01 Apr 2026 Call deposit R 200 000,00 Gross interest R 0,00 Fund 5% R 0,00 Net interest R 0,00 R 200 000,00 Active Record interest Interest entries Withdraw",
+      "Firm (section 86(3)) Section 86(3) OBS 657C s86(3) investment I3 Investec 0001 7.25% LPFF share Arrangement 01 Mar 2026 Call deposit R 100 000,00 Interest is the Fund's — record it from the investment account's statement R 100 000,00 Active Withdraw"
+    ]
+  },
+  "deposit": {
+    "attempts": [
+      {
+        "date": "2026-11-24",
+        "ref": "OBS657C-BACKDATED-2026-11-24",
+        "error": "This account was taken on at 24 November 2026. Entries on or before that date belong in the previous system's books.",
+        "dialogStillOpen": true
+      },
+      {
+        "date": "2026-11-20",
+        "ref": "OBS657C-BACKDATED-2026-11-20",
+        "error": "This account was taken on at 24 November 2026. Entries on or before that date belong in the previous system's books.",
+        "dialogStillOpen": true
+      }
+    ],
+    "backdatedRowsInApi": 0
+  },
+  "portal": {
+    "magicLinkShown": true,
+    "afterExchangeUrl": "http://localhost:3002/matters",
+    "afterExchangeText": "Skip to content E2E Test Organization Amahle Zulu Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Your matters All Active Past Transfer of Erf 101 Brooklyn Active Transfer from the previous system 0 documents 1 minute ago Powered by Kazi",
+    "localStorageJwt": true,
+    "trustUrl": "http://localhost:3002/trust/e8acba32-7beb-4322-8d40-1de798411e65",
+    "trustText": "Back to trust Held in trust R 500 000,00 In the firm's trust account R 300 000,00 Invested on your instruction (section 86(4)) R 200 000,00 As of 24 Nov 2026 Transfer of Erf 101 Brooklyn Transactions Date Type Description Amount Running balance 24 Nov 2026 Balance brought forward — take-on Balance brought forward — take-on R 300 000,00 R 300 000,00 Statements No statement documents yet",
+    "broughtForwardCount": 2
+  }
+}

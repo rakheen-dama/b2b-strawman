@@ -1,0 +1,40 @@
+
+> portal@0.1.0 dev /Users/rakheendama/Projects/2026/worktree-epic-657C/portal
+> next dev --port 3002
+
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.113:3002
+✓ Ready in 456ms
+✓ Running next.config.ts took 125ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+ GET /login 200 in 1703ms (next.js: 1541ms, application-code: 162ms)
+ GET /login 200 in 100ms (next.js: 68ms, application-code: 32ms)
+ GET /trust/b5a3e0af-b837-48de-a738-af7443f63f92 200 in 990ms (next.js: 906ms, application-code: 85ms)
+ GET /trust/b5a3e0af-b837-48de-a738-af7443f63f92 200 in 38ms (next.js: 5ms, application-code: 33ms)
+ GET /login 200 in 22ms (next.js: 2.0ms, application-code: 20ms)
+ GET /trust/90c5086c-b9ad-49db-a8d0-6c225f8fcdc5 200 in 26ms (next.js: 3ms, application-code: 22ms)
+ GET /trust/90c5086c-b9ad-49db-a8d0-6c225f8fcdc5 200 in 26ms (next.js: 2ms, application-code: 24ms)
+ GET /login?orgId=e2e-test-org 200 in 56ms (next.js: 16ms, application-code: 40ms)
+ GET /auth/exchange?token=kEhnOoh9oRXXAylhMgD04nvKvWFQQX96sXampsbTNLQ&orgId=e2e-test-org 200 in 239ms (next.js: 191ms, application-code: 48ms)
+ GET /login?orgId=e2e-test-org 200 in 49ms (next.js: 14ms, application-code: 36ms)
+ GET /auth/exchange?token=8IXVuYgEahC8Wt-fP55UGdZdx4ZKITP1IunkFT5mv2o&orgId=e2e-test-org 200 in 27ms (next.js: 3ms, application-code: 24ms)
+ GET /trust 200 in 236ms (next.js: 203ms, application-code: 33ms)
+ GET /trust/4155ad29-622a-427c-94f5-fc0669c775f7 200 in 19ms (next.js: 6ms, application-code: 13ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /login?orgId=e2e-test-org 200 in 114ms (next.js: 74ms, application-code: 40ms)
+ GET /auth/exchange?token=aLOQhFauKEyVeGjjsSYjYvk8SCjCa1-WSBhWOo1f-7w&orgId=e2e-test-org 200 in 35ms (next.js: 14ms, application-code: 21ms)
+ GET /matters 200 in 400ms (next.js: 383ms, application-code: 16ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /trust 200 in 24ms (next.js: 3ms, application-code: 21ms)
+ GET /trust/e8acba32-7beb-4322-8d40-1de798411e65 200 in 15ms (next.js: 5ms, application-code: 10ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[?25h

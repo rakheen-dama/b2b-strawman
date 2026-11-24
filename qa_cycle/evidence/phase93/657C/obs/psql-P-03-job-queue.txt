@@ -1,0 +1,8 @@
+select job_type, status, claimed_by, claimed_at, completed_at, retry_count, error_message, created_at from public.job_queue where job_type = 'take_on_drain' order by created_at
+   job_type    |  status   |  claimed_by  |          claimed_at           |         completed_at          | retry_count | error_message |          created_at           
+---------------+-----------+--------------+-------------------------------+-------------------------------+-------------+---------------+-------------------------------
+ take_on_drain | COMPLETED | 63e8dd8aca04 | 2026-11-24 10:50:10.532319+00 | 2026-11-24 10:50:10.610195+00 |           0 |               | 2026-11-24 10:50:08.901912+00
+ take_on_drain | COMPLETED | 63e8dd8aca04 | 2026-11-24 10:50:16.653001+00 | 2026-11-24 10:50:16.710554+00 |           0 |               | 2026-11-24 10:50:16.044683+00
+ take_on_drain | COMPLETED | 63e8dd8aca04 | 2026-11-24 10:51:09.061689+00 | 2026-11-24 10:51:09.651525+00 |           0 |               | 2026-11-24 10:51:08.640604+00
+(3 rows)
+

@@ -41,6 +41,13 @@
   /* Tenant brand colour — overridable via inline style on <html>.
      Defaults to teal-500 so unbranded orgs see the standard accent. */
   --brand-color: var(--teal-500);
+
+  /* PROTOTYPE 661A (never merged): Kazi-tuned teal steps, starting values of architecture
+     §18.2.1 (hue 183–190). Consumed only by the candidate blocks at the end of this file. */
+  --kazi-teal-50: oklch(96.5% 0.022 183);
+  --kazi-teal-100: oklch(92.5% 0.04 183);
+  --kazi-teal-700: oklch(50% 0.11 184);
+  --kazi-teal-950: oklch(28% 0.05 190);
 }
 
 .dark {
@@ -71,4 +78,79 @@
     100% 14px,
     100% 14px;
   background-attachment: local, local, scroll, scroll;
+}
+
+/* ==== PROTOTYPE 661A — light-scheme candidates (branch phase91/p1-scheme-prototype, NEVER
+   merged). Selected by data-scheme-candidate on <html>, set by the throwaway ?scheme= handler
+   in components/shell/app-sidebar.tsx. Values = architecture §18.2.1 candidate table. Light only:
+   :not(.dark) never matches in dark mode. Specificity (0,3,0) beats :root and .dark. ==== */
+
+/* A — light rail, inset canvas (A1 slate-900 primary, A2 teal-700 primary) */
+:root:not(.dark)[data-scheme-candidate="a1"],
+:root:not(.dark)[data-scheme-candidate="a2"] {
+  --sidebar: oklch(96.5% 0.005 260);
+  --sidebar-foreground: var(--slate-700);
+  --sidebar-accent: var(--kazi-teal-100);
+  --sidebar-accent-foreground: var(--kazi-teal-950);
+  --sidebar-primary: var(--kazi-teal-700);
+  --sidebar-primary-foreground: oklch(100% 0 0);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --background: oklch(99.6% 0.002 260);
+  --primary: var(--slate-900);
+  --primary-foreground: oklch(100% 0 0);
+  --accent: var(--kazi-teal-700);
+  --accent-foreground: oklch(100% 0 0);
+  --button-accent: var(--kazi-teal-700);
+  --button-accent-foreground: oklch(100% 0 0);
+}
+
+:root:not(.dark)[data-scheme-candidate="a2"] {
+  --primary: var(--kazi-teal-700);
+  --primary-foreground: oklch(100% 0 0);
+}
+
+/* B — tinted slate-teal rail, white canvas, white active pill */
+:root:not(.dark)[data-scheme-candidate="b"] {
+  --sidebar: oklch(94% 0.016 215);
+  --sidebar-foreground: var(--slate-900);
+  --sidebar-accent: oklch(100% 0 0);
+  --sidebar-accent-foreground: var(--slate-900);
+  --sidebar-primary: var(--kazi-teal-700);
+  --sidebar-primary-foreground: oklch(100% 0 0);
+  --sidebar-border: oklch(88% 0.016 215);
+  --sidebar-ring: var(--ring);
+  --background: oklch(99.6% 0.002 260);
+  --primary: var(--slate-900);
+  --primary-foreground: oklch(100% 0 0);
+  --accent: var(--kazi-teal-700);
+  --accent-foreground: oklch(100% 0 0);
+  --button-accent: var(--kazi-teal-700);
+  --button-accent-foreground: oklch(100% 0 0);
+}
+
+/* C — deep ink-teal rail, white text, teal-700 primary (canvas unchanged) */
+:root:not(.dark)[data-scheme-candidate="c"] {
+  --sidebar: oklch(28% 0.05 195);
+  --sidebar-foreground: oklch(100% 0 0);
+  --sidebar-accent: oklch(100% 0 0 / 8%);
+  --sidebar-accent-foreground: oklch(100% 0 0);
+  --sidebar-primary: var(--teal-500);
+  --sidebar-primary-foreground: var(--slate-950);
+  --sidebar-border: oklch(100% 0 0 / 10%);
+  --sidebar-ring: var(--teal-500);
+  --primary: var(--kazi-teal-700);
+  --primary-foreground: oklch(100% 0 0);
+  --accent: var(--kazi-teal-700);
+  --accent-foreground: oklch(100% 0 0);
+  --button-accent: var(--kazi-teal-700);
+  --button-accent-foreground: oklch(100% 0 0);
+}
+
+/* A's shell structure (§18.2.1 last row): the inset card (SidebarInset, bg-background) paints the
+   work surface, so <main id="main-content"> drops its own fill. Structural, so not light-only —
+   mirrors what 661B would ship for A (variant="inset" is a prop, not a token). */
+:root[data-scheme-candidate="a1"] #main-content,
+:root[data-scheme-candidate="a2"] #main-content {
+  background-color: transparent;
 }

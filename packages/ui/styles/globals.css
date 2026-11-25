@@ -159,6 +159,10 @@
   --muted-foreground: var(--slate-600);
   --accent: var(--teal-600);
   --accent-foreground: oklch(100% 0 0);
+  /* PROTOTYPE 661A (never merged): Button variant="accent" fill, decoupled from the themed
+     --accent. Today's values; only the firm light scheme candidates override them. */
+  --button-accent: var(--teal-600);
+  --button-accent-foreground: oklch(100% 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(91.5% 0.008 260);
   --input: oklch(91.5% 0.008 260);
@@ -231,6 +235,8 @@
   --muted-foreground: var(--slate-400);
   --accent: var(--teal-500);
   --accent-foreground: oklch(100% 0 0);
+  --button-accent: var(--teal-600);
+  --button-accent-foreground: oklch(100% 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(28.5% 0.014 260);
   --input: oklch(28.5% 0.014 260);

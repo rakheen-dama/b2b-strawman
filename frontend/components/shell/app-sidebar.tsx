@@ -197,8 +197,35 @@ export function AppSidebar({
     };
   }, [brandColor]);
 
+  // PROTOTYPE 661A (phase91/p1-scheme-prototype, NEVER merged): ?scheme=a1|a2|b|c sets
+  // data-scheme-candidate on <html> (persisted per browser so client navigation keeps it);
+  // ?scheme=today (or any other value) clears it. A1/A2 also switch the Sidebar to "inset".
+  const [schemeCandidate, setSchemeCandidate] = useState<string | null>(null);
+  useEffect(() => {
+    const KEY = "kazi-scheme-candidate";
+    const VALID = ["a1", "a2", "b", "c"];
+    const q = new URLSearchParams(window.location.search).get("scheme");
+    let value: string | null = q !== null && VALID.includes(q) ? q : null;
+    try {
+      if (q !== null) {
+        if (value) window.localStorage.setItem(KEY, value);
+        else window.localStorage.removeItem(KEY);
+      } else {
+        const stored = window.localStorage.getItem(KEY);
+        value = stored && VALID.includes(stored) ? stored : null;
+      }
+    } catch {
+      // storage unavailable: the query parameter alone decides
+    }
+    if (value) document.documentElement.setAttribute("data-scheme-candidate", value);
+    else document.documentElement.removeAttribute("data-scheme-candidate");
+    setSchemeCandidate(value);
+  }, [pathname]);
+  const sidebarVariant = schemeCandidate === "a1" || schemeCandidate === "a2" ? "inset" : "sidebar";
+
   return (
     <Sidebar
+      variant={sidebarVariant}
       collapsible="icon"
       className="border-sidebar-border"
       mobileTitle="Kazi"

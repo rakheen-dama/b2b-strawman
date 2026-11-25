@@ -1,0 +1,337 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend
+
+ ❯ __tests__/server-action-body-limit.test.tsx (3 tests | 3 failed) 54ms
+     × is 3 MB 4ms
+     × refuses a statement over 3 MB in the browser, without calling the action 44ms
+     × states the 3 MB limit and sends a statement of exactly 3 MB 5ms
+ ❯ __tests__/take-on/take-on-wizard.test.tsx (35 tests | 2 failed) 1707ms
+     × refuses a file over 3 MB before calling the action 20ms
+     × accepts a file of exactly 3 MB and states the 3 MB limit 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/server-action-body-limit.test.tsx > server-action body limit (FR-3) > is 3 MB
+AssertionError: expected '11mb' to be '3mb' // Object.is equality
+
+Expected: "3mb"
+Received: "11mb"
+
+ ❯ __tests__/server-action-body-limit.test.tsx:22:67
+     20| describe("server-action body limit (FR-3)", () => {
+     21|   it("is 3 MB", () => {
+     22|     expect(nextConfig.experimental?.serverActions?.bodySizeLimit).toBe…
+       |                                                                   ^
+     23|   });
+     24| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  __tests__/server-action-body-limit.test.tsx > bank statement upload size (FR-3) > refuses a statement over 3 MB in the browser, without calling the action
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  File exceeds the 3 MB limit (3.1 MB)[39m
+Received:
+[31m  Cannot read properties of undefined (reading 'success')[39m
+ ❯ __tests__/server-action-body-limit.test.tsx:38:48
+     36|     );
+     37|     await user.upload(screen.getByTestId("file-input"), fileOf("big.cs…
+     38|     expect(screen.getByTestId("upload-error")).toHaveTextContent(
+       |                                                ^
+     39|       "File exceeds the 3 MB limit (3.1 MB)"
+     40|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  __tests__/server-action-body-limit.test.tsx > bank statement upload size (FR-3) > states the 3 MB limit and sends a statement of exactly 3 MB
+TestingLibraryElementError: Unable to find an element with the text: /up to 3 MB/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-800/80"[39m
+      [33mdata-slot[39m=[32m"card"[39m
+      [33mdata-testid[39m=[32m"bank-statement-upload"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6"[39m
+        [33mdata-slot[39m=[32m"card-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"leading-none font-semibold"[39m
+          [33mdata-slot[39m=[32m"card-title"[39m
+        [36m>[39m
+          [0mUpload Bank Statement[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-muted-foreground text-sm"[39m
+          [33mdata-slot[39m=[32m"card-description"[39m
+        [36m>[39m
+          [0mUpload a CSV bank statement file to begin reconciliation[0m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"px-6 space-y-4"[39m
+        [33mdata-slot[39m=[32m"card-content"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33maccept[39m=[32m".csv"[39m
+            [33mclass[39m=[32m"hidden"[39m
+            [33mdata-testid[39m=[32m"file-input"[39m
+            [33mtype[39m=[32m"file"[39m
+          [36m/>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border border-slate-200 bg-background hover:bg-slate-100 hover:text-foreground dark:border-slate-800 dark:hover:bg-slate-800 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5"[39m
+            [33mdata-size[39m=[32m"sm"[39m
+            [33mdata-slot[39m=[32m"button"[39m
+            [33mdata-variant[39m=[32m"outline"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-upload mr-1.5 size-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 3v12"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m17 8-5-5-5 5"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [0mChoose CSV File[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/server-action-body-limit.test.tsx:54:19
+     52|       />
+     53|     );
+     54|     expect(screen.getByText(/up to 3 MB/)).toBeInTheDocument();
+       |                   ^
+     55|     await user.upload(screen.getByTestId("file-input"), fileOf("ok.csv…
+     56|     expect(uploadAction).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  __tests__/take-on/take-on-wizard.test.tsx > UploadStep — client-side refusals > refuses a file over 3 MB before calling the action
+TestingLibraryElementError: Unable to find an element by: [data-testid="take-on-upload-error"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<form[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+      [33mdata-testid[39m=[32m"take-on-upload-form"[39m
+      [33mnovalidate[39m=[32m""[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+        [33mdata-slot[39m=[32m"form-item"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+          [33mdata-slot[39m=[32m"label"[39m
+          [33mfor[39m=[32m"_r_21_-form-item"[39m
+        [36m>[39m
+          [0mBatch name (optional)[0m
+        [36m</label>[39m
+        [36m<input[39m
+          [33maria-describedby[39m=[32m"_r_21_-form-item-description"[39m
+          [33maria-invalid[39m=[32m"false"[39m
+          [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+          [33mdata-slot[39m=[32m"form-control"[39m
+          [33mdata-testid[39m=[32m"take-on-batch-name"[39m
+          [33mid[39m=[32m"_r_21_-form-item"[39m
+          [33mmaxlength[39m=[32m"200"[39m
+          [33mname[39m=[32m"name"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-medium text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mFile[0m
+        [36m</p>[39m
+        [36m<input[39m
+          [33maccept[39m=[32m".csv,.xlsx"[39m
+          [33maria-label[39m=[32m"File from the previous system (.csv or .xlsx)"[39m
+          [33mclass[39m=[32m"block w-full text-sm text-slate-700 file:mr-3 file:rounded-md file:border file:border-slate-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-50 dark:text-slate-300 dark:file:border-slate-700 dark:file:bg-slate-900 dark:file:text-slate-200"[39m
+          [33mdata-testid[39m=[32m"take-on-file-input"[39m
+          [33mtype[39m=[32m"file"[39m
+        [36m/>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-xs text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mA .csv or .xlsx file of up to 10 MB, exported from your previous system.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex gap-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-teal-600 text-white hover:bg-teal-600/90 rounded-full h-9 px-4 py-2 has-[>svg]:px-3"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-testid[39m=[32m"take-on-upload-submit"[39m
+          [33mdata-variant[39m=[32m"accent"[39m
+          [33mtype[39m=[32m"submit"[39m
+        [36m>[39m
+          [0mUpload[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 h-9 px-4 py-2 has-[>svg]:px-3"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-testid[39m=[32m"take-on-upload-close"[39m
+          [33mdata-variant[39m=[32m"ghost"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mClose[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</form>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/take-on/take-on-wizard.test.tsx:303:19
+    301|       fileOf("clients.csv", 3_000_001, "text/csv")
+    302|     );
+    303|     expect(screen.getByTestId("take-on-upload-error")).toHaveTextConte…
+       |                   ^
+    304|       "File exceeds the 3 MB limit (3.1 MB)"
+    305|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  __tests__/take-on/take-on-wizard.test.tsx > UploadStep — client-side refusals > accepts a file of exactly 3 MB and states the 3 MB limit
+TestingLibraryElementError: Unable to find an element with the text: /A \.csv or \.xlsx file of up to 3 MB/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<form[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+      [33mdata-testid[39m=[32m"take-on-upload-form"[39m
+      [33mnovalidate[39m=[32m""[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+        [33mdata-slot[39m=[32m"form-item"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+          [33mdata-slot[39m=[32m"label"[39m
+          [33mfor[39m=[32m"_r_22_-form-item"[39m
+        [36m>[39m
+          [0mBatch name (optional)[0m
+        [36m</label>[39m
+        [36m<input[39m
+          [33maria-describedby[39m=[32m"_r_22_-form-item-description"[39m
+          [33maria-invalid[39m=[32m"false"[39m
+          [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+          [33mdata-slot[39m=[32m"form-control"[39m
+          [33mdata-testid[39m=[32m"take-on-batch-name"[39m
+          [33mid[39m=[32m"_r_22_-form-item"[39m
+          [33mmaxlength[39m=[32m"200"[39m
+          [33mname[39m=[32m"name"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm font-medium text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mFile[0m
+        [36m</p>[39m
+        [36m<input[39m
+          [33maccept[39m=[32m".csv,.xlsx"[39m
+          [33maria-label[39m=[32m"File from the previous system (.csv or .xlsx)"[39m
+          [33mclass[39m=[32m"block w-full text-sm text-slate-700 file:mr-3 file:rounded-md file:border file:border-slate-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-50 dark:text-slate-300 dark:file:border-slate-700 dark:file:bg-slate-900 dark:file:text-slate-200"[39m
+          [33mdata-testid[39m=[32m"take-on-file-input"[39m
+          [33mtype[39m=[32m"file"[39m
+        [36m/>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-xs text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mA .csv or .xlsx file of up to 10 MB, exported from your previous system.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex gap-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-teal-600 text-white hover:bg-teal-600/90 rounded-full h-9 px-4 py-2 has-[>svg]:px-3"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-testid[39m=[32m"take-on-upload-submit"[39m
+          [33mdata-variant[39m=[32m"accent"[39m
+          [33mdisabled[39m=[32m""[39m
+          [33mtype[39m=[32m"submit"[39m
+        [36m>[39m
+          [0mUpload[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 h-9 px-4 py-2 has-[>svg]:px-3"[39m
+          [33mdata-size[39m=[32m"default"[39m
+          [33mdata-slot[39m=[32m"button"[39m
+          [33mdata-testid[39m=[32m"take-on-upload-close"[39m
+          [33mdata-variant[39m=[32m"ghost"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mClose[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</form>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/take-on/take-on-wizard.test.tsx:313:19
+    311|     const user = userEvent.setup({ applyAccept: false });
+    312|     render(withSWR(<UploadStep dataset={CLIENTS} onUploaded={vi.fn()} …
+    313|     expect(screen.getByText(/A \.csv or \.xlsx file of up to 3 MB/)).t…
+       |                   ^
+    314|     await user.upload(
+    315|       screen.getByTestId("take-on-file-input"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 33 passed (38)
+   Start at  17:49:08
+   Duration  3.17s (transform 664ms, setup 185ms, import 1.58s, tests 1.76s, environment 359ms)
+

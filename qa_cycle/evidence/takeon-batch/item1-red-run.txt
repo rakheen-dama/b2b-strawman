@@ -1,0 +1,594 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+15:46:08.822 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-takeon-batch/backend/target/test-classes/archunit.properties
+15:46:08.939 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.takeon.ClientsTakeOnIntegrationTest]: ClientsTakeOnIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+15:46:09.179 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.takeon.ClientsTakeOnIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"159", Idempotency-Key:"118d0b20-9fc1-43ab-b05d-2ec88e5e4c9d"]
+             Body = {"clerkOrgId":"org_clients_takeon_test","clerkUserId":"user_cto_owner","email":"cto_owner@test.com","name":"Clients Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/c314c4b4-c6fb-40df-a0d7-6d80eba388c2", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"c314c4b4-c6fb-40df-a0d7-6d80eba388c2","clerkUserId":"user_cto_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/c314c4b4-c6fb-40df-a0d7-6d80eba388c2
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"163", Idempotency-Key:"17943bb1-9dbd-4e3e-afca-5ec95b432c0a"]
+             Body = {"clerkOrgId":"org_clients_takeon_test","clerkUserId":"user_cto_clients","email":"cto_clients@test.com","name":"Clients Only","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/6678c089-773d-44d3-9fae-d5f658c0d7cf", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"6678c089-773d-44d3-9fae-d5f658c0d7cf","clerkUserId":"user_cto_clients","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/6678c089-773d-44d3-9fae-d5f658c0d7cf
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"108", Idempotency-Key:"269519b5-8e43-4cab-9de0-50e70ddb45bb"]
+             Body = {"name":"Clients take-on","description":"Test role","capabilities":["MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/5347807c-d40c-4114-b528-136649b6312a", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"5347807c-d40c-4114-b528-136649b6312a","name":"Clients take-on","slug":"clients-take-on","description":"Test role","capabilities":["MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-25T15:46:39.632707Z","updatedAt":"2026-11-25T15:46:39.632707Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/5347807c-d40c-4114-b528-136649b6312a
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/6678c089-773d-44d3-9fae-d5f658c0d7cf/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"77", Idempotency-Key:"271f5061-b875-4192-ac48-dda6dd6b6e1f"]
+             Body = {"orgRoleId":"5347807c-d40c-4114-b528-136649b6312a","capabilityOverrides":[]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"6678c089-773d-44d3-9fae-d5f658c0d7cf","roleName":"Clients take-on","roleCapabilities":["MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT"],"overrides":[],"effectiveCapabilities":["MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches
+       Parameters = {dataset=[CLIENTS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"88868d2b-943c-46bc-a1dc-820cee10233c"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#createBatch(MultipartFile, TakeOnDataset, TakeOnSection, UUID, String)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202","dataset":"CLIENTS","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.323251Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-25T15:46:40.320341Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null},"sourceId":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","headers":["Client name","Email","Client type","CDD completed date","Beneficial ownership","Screening","Screening date","Records","Rating","Tax number","ID number","Address","City","Country","Previous ID","Branch"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = /api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202/sources/e9b68850-5c75-4b2a-a67b-a48447a1fba6/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"441", Idempotency-Key:"55446413-1f5a-4a77-a533-d65656f97b05"]
+             Body = {"parked":["Branch"],"targets":{"screeningDate":"Screening date","email":"Email","idNumber":"ID number","taxNumber":"Tax number","cddRecordsLocation":"Records","cddCompletedDate":"CDD completed date","sourceRef":"Previous ID","addressLine1":"Address","country":"Country","ficaClientType":"Client type","beneficialOwnershipStatus":"Beneficial ownership","name":"Client name","city":"City","riskRating":"Rating","screeningStatus":"Screening"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202","dataset":"CLIENTS","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"screeningDate":"Screening date","email":"Email","idNumber":"ID number","taxNumber":"Tax number","cddRecordsLocation":"Records","cddCompletedDate":"CDD completed date","sourceRef":"Previous ID","addressLine1":"Address","country":"Country","ficaClientType":"Client type","beneficialOwnershipStatus":"Beneficial ownership","name":"Client name","city":"City","riskRating":"Rating","screeningStatus":"Screening"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.323251Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-25T15:46:40.320341Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202/validate
+       Parameters = {}
+          Headers = [Idempotency-Key:"9beb3c89-51d4-465e-a712-bbdb6bec586b"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#validate(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.323251Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"063567e2230e50a867b04600b51786011064827468c7adab124e79dd9ef4cba4","validatedAt":"2026-11-25T15:46:40.450005Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","ATTEST","CANCEL"],"createdAt":"2026-11-25T15:46:40.320341Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#getBatch(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.323251Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"063567e2230e50a867b04600b51786011064827468c7adab124e79dd9ef4cba4","validatedAt":"2026-11-25T15:46:40.450005Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","ATTEST","CANCEL"],"createdAt":"2026-11-25T15:46:40.320341Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202/attestation
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"135", Idempotency-Key:"477a8c9b-1e81-431f-b1e3-2752180a286d"]
+             Body = {"statementVersion":"FICA-ATTEST-v1","defaults":{},"validationHash":"063567e2230e50a867b04600b51786011064827468c7adab124e79dd9ef4cba4"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#attest(UUID, TakeOnAttestationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"ea6f3c0c-b3ae-4cb0-b528-a3b636ef1202","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"e9b68850-5c75-4b2a-a67b-a48447a1fba6","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.323251Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"063567e2230e50a867b04600b51786011064827468c7adab124e79dd9ef4cba4","validatedAt":"2026-11-25T15:46:40.450005Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","REVOKE_ATTESTATION","CANCEL"],"createdAt":"2026-11-25T15:46:40.320341Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[{"id":"4c58ebdf-ac3f-4bad-ba31-99cc0fb8361b","kind":"FICA_ATTESTATION","memberName":"Clients Owner","roleName":"Owner","statementVersion":"FICA-ATTEST-v1","signedAt":"2026-11-25T15:46:40.491941Z"}],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/clients/98542d90-3b61-4436-af4d-281008d314cd
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"64", Idempotency-Key:"8c79e933-bb4a-4872-924f-e8206a083d85"]
+             Body = {"name":"Reserved Holder","email":"reserved.moved@example.test"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.customer.CustomerController
+           Method = io.b2mash.b2b.b2bstrawman.customer.CustomerController#updateCustomer(UUID, UpdateClientRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"98542d90-3b61-4436-af4d-281008d314cd","name":"Reserved Holder","email":"reserved.moved@example.test","phone":null,"idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"c314c4b4-c6fb-40df-a0d7-6d80eba388c2","createdByName":"Clients Owner","createdAt":"2026-11-25T15:46:40.544318Z","updatedAt":"2026-11-25T15:46:40.606231Z","customFields":{},"appliedFieldGroups":["d94baa8a-000b-49b7-a615-841c0f9f70d7"],"tags":[],"lifecycleStatus":"ACTIVE","clientType":"INDIVIDUAL","lifecycleStatusChangedAt":"2026-11-25T15:46:40.544296Z","registrationNumber":null,"addressLine1":null,"addressLine2":null,"city":null,"stateProvince":null,"postalCode":null,"country":null,"taxNumber":null,"contactName":null,"contactEmail":null,"contactPhone":null,"entityType":null,"financialYearEnd":null,"collectionsExempt":false}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches
+       Parameters = {dataset=[CLIENTS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"2d8a8f31-dada-4816-b2eb-a4732f198256"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#createBatch(MultipartFile, TakeOnDataset, TakeOnSection, UUID, String)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"8bcfc810-3d18-4e80-a4bb-984b8f9ed62f","dataset":"CLIENTS","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"4041f1f6-e574-486d-a367-dac8099f03bd","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.630915Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-25T15:46:40.630507Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null},"sourceId":"4041f1f6-e574-486d-a367-dac8099f03bd","headers":["Client name","Email","Client type","CDD completed date","Beneficial ownership","Screening","Screening date","Records","Rating","Tax number","ID number","Address","City","Country","Previous ID","Branch"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = /api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f/sources/4041f1f6-e574-486d-a367-dac8099f03bd/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"441", Idempotency-Key:"e2504acd-dad1-4c70-a5d2-4632cc061702"]
+             Body = {"parked":["Branch"],"targets":{"screeningDate":"Screening date","email":"Email","idNumber":"ID number","taxNumber":"Tax number","cddRecordsLocation":"Records","cddCompletedDate":"CDD completed date","sourceRef":"Previous ID","addressLine1":"Address","country":"Country","ficaClientType":"Client type","beneficialOwnershipStatus":"Beneficial ownership","name":"Client name","city":"City","riskRating":"Rating","screeningStatus":"Screening"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"8bcfc810-3d18-4e80-a4bb-984b8f9ed62f","dataset":"CLIENTS","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"4041f1f6-e574-486d-a367-dac8099f03bd","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"screeningDate":"Screening date","email":"Email","idNumber":"ID number","taxNumber":"Tax number","cddRecordsLocation":"Records","cddCompletedDate":"CDD completed date","sourceRef":"Previous ID","addressLine1":"Address","country":"Country","ficaClientType":"Client type","beneficialOwnershipStatus":"Beneficial ownership","name":"Client name","city":"City","riskRating":"Rating","screeningStatus":"Screening"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.630915Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-25T15:46:40.630507Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f/validate
+       Parameters = {}
+          Headers = [Idempotency-Key:"a4674073-89ef-49e1-9097-10f14efba781"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#validate(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"8bcfc810-3d18-4e80-a4bb-984b8f9ed62f","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"4041f1f6-e574-486d-a367-dac8099f03bd","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.630915Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"f8cbd2c084f6c51e431205fffe250471d77313040ba79572230de540b73cb79c","validatedAt":"2026-11-25T15:46:40.664900Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","ATTEST","CANCEL"],"createdAt":"2026-11-25T15:46:40.630507Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#getBatch(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"8bcfc810-3d18-4e80-a4bb-984b8f9ed62f","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"4041f1f6-e574-486d-a367-dac8099f03bd","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.630915Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"f8cbd2c084f6c51e431205fffe250471d77313040ba79572230de540b73cb79c","validatedAt":"2026-11-25T15:46:40.664900Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","ATTEST","CANCEL"],"createdAt":"2026-11-25T15:46:40.630507Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/8bcfc810-3d18-4e80-a4bb-984b8f9ed62f/attestation
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"135", Idempotency-Key:"a96c88d7-bb37-4601-b0df-8280f3b8b8b5"]
+             Body = {"statementVersion":"FICA-ATTEST-v1","defaults":{},"validationHash":"f8cbd2c084f6c51e431205fffe250471d77313040ba79572230de540b73cb79c"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#attest(UUID, TakeOnAttestationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"8bcfc810-3d18-4e80-a4bb-984b8f9ed62f","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"4041f1f6-e574-486d-a367-dac8099f03bd","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":333,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":1,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-25T15:46:40.630915Z"}],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"f8cbd2c084f6c51e431205fffe250471d77313040ba79572230de540b73cb79c","validatedAt":"2026-11-25T15:46:40.664900Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","REVOKE_ATTESTATION","CANCEL"],"createdAt":"2026-11-25T15:46:40.630507Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[{"id":"249dcad9-b615-4a26-9b9d-b63ea7cc0263","kind":"FICA_ATTESTATION","memberName":"Clients Owner","roleName":"Owner","statementVersion":"FICA-ATTEST-v1","signedAt":"2026-11-25T15:46:40.690878Z"}],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Clients Take-on Attorneys in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":1},"ficaClientType":{"NATURAL_PERSON":1},"screeningStatus":{"SCREENED_CLEAR":1},"sourceOfFundsStatus":{"NOT_REQUIRED":1},"beneficialOwnershipStatus":{"NOT_APPLICABLE":1}},"clients":1},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 31.93 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.takeon.ClientsTakeOnIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.takeon.ClientsTakeOnIntegrationTest.anEmailAnEarlierClientWasTakenOnWith_failsTheRowWithTheSpecificReason -- Time elapsed: 1.133 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Another client was taken on with this email address in an earlier take-on. The address stays reserved for take-on, even if that client's email has since changed in Kazi. Take this client on with a different email address, or add them in Kazi directly."
+ but was: "This row could not be committed. Correct it in the previous system, then take it on in a new batch."
+	at io.b2mash.b2b.b2bstrawman.takeon.ClientsTakeOnIntegrationTest.anEmailAnEarlierClientWasTakenOnWith_failsTheRowWithTheSpecificReason(ClientsTakeOnIntegrationTest.java:1298)
+
+[ERROR] Failures: 
+[ERROR]   ClientsTakeOnIntegrationTest.anEmailAnEarlierClientWasTakenOnWith_failsTheRowWithTheSpecificReason:1298 
+expected: "Another client was taken on with this email address in an earlier take-on. The address stays reserved for take-on, even if that client's email has since changed in Kazi. Take this client on with a different email address, or add them in Kazi directly."
+ but was: "This row could not be committed. Correct it in the previous system, then take it on in a new batch."
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-takeon-batch/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

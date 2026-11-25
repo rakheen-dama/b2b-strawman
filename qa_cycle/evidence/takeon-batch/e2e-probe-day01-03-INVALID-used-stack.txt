@@ -1,0 +1,355 @@
+
+Running 51 tests using 1 worker
+
+  ✘   1 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR (6.1s)
+  -   2 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Create client Sipho Ndlovu (Individual)
+  -   3 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:130:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Transition Sipho to ONBOARDING
+  -   4 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:136:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE
+  -   5 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:197:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Create Litigation matter for Sipho from template
+  -   6 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:222:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Add Carol to the Sipho matter team (Team tab)
+  -   7 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:248:7 › Day 1 — Sipho Ndlovu Onboarding › Day 5 — Alice: Matter header shows case number, court and opposing party
+  ✘   8 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR (6.1s)
+  -   9 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:308:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) and start onboarding
+  -  10 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:322:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Commercial matter for Apex from template
+  -  11 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:339:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Moroka Family Trust — CLEAR
+  -  12 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:344:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Moroka Family Trust (Trust) and start onboarding
+  -  13 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:355:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Deceased Estate matter for Moroka from template
+  ✘  14 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR (5.9s)
+  -  15 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:382:7 › Day 3 — QuickCollect Services Onboarding › Bob: Create client QuickCollect Services (Company) and start onboarding
+  -  16 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:394:7 › Day 3 — QuickCollect Services Onboarding › Alice: Create initial Collections matter for QuickCollect from template
+  -  17 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:413:7 › Day 3 — QuickCollect Services Onboarding › Alice: Verify 4 clients on client list
+  ✘  18 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR (5.8s)
+  -  19 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Create client Sipho Ndlovu (Individual)
+  -  20 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:130:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Transition Sipho to ONBOARDING
+  -  21 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:136:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE
+  -  22 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:197:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Create Litigation matter for Sipho from template
+  -  23 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:222:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Add Carol to the Sipho matter team (Team tab)
+  -  24 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:248:7 › Day 1 — Sipho Ndlovu Onboarding › Day 5 — Alice: Matter header shows case number, court and opposing party
+  ✘  25 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR (6.1s)
+  -  26 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:308:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) and start onboarding
+  -  27 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:322:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Commercial matter for Apex from template
+  -  28 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:339:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Moroka Family Trust — CLEAR
+  -  29 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:344:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Moroka Family Trust (Trust) and start onboarding
+  -  30 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:355:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Deceased Estate matter for Moroka from template
+  ✘  31 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR (6.7s)
+  -  32 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:382:7 › Day 3 — QuickCollect Services Onboarding › Bob: Create client QuickCollect Services (Company) and start onboarding
+  -  33 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:394:7 › Day 3 — QuickCollect Services Onboarding › Alice: Create initial Collections matter for QuickCollect from template
+  -  34 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:413:7 › Day 3 — QuickCollect Services Onboarding › Alice: Verify 4 clients on client list
+  ✘  35 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR (5.8s)
+  -  36 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Create client Sipho Ndlovu (Individual)
+  -  37 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:130:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Transition Sipho to ONBOARDING
+  -  38 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:136:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE
+  -  39 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:197:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Create Litigation matter for Sipho from template
+  -  40 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:222:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Add Carol to the Sipho matter team (Team tab)
+  -  41 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:248:7 › Day 1 — Sipho Ndlovu Onboarding › Day 5 — Alice: Matter header shows case number, court and opposing party
+  ✘  42 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR (5.8s)
+  -  43 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:308:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) and start onboarding
+  -  44 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:322:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Commercial matter for Apex from template
+  -  45 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:339:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Moroka Family Trust — CLEAR
+  -  46 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:344:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Moroka Family Trust (Trust) and start onboarding
+  -  47 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:355:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Deceased Estate matter for Moroka from template
+  ✘  48 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR (6.1s)
+  -  49 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:382:7 › Day 3 — QuickCollect Services Onboarding › Bob: Create client QuickCollect Services (Company) and start onboarding
+  -  50 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:394:7 › Day 3 — QuickCollect Services Onboarding › Alice: Create initial Collections matter for QuickCollect from template
+  -  51 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:413:7 › Day 3 — QuickCollect Services Onboarding › Alice: Verify 4 clients on client list
+
+
+  1) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:102:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium/error-context.md
+
+  2) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:305:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium/error-context.md
+
+  3) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:379:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium/error-context.md
+
+  4) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:102:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium-repeat1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium-repeat1/error-context.md
+
+  5) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:305:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium-repeat1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium-repeat1/error-context.md
+
+  6) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:379:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium-repeat1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium-repeat1/error-context.md
+
+  7) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:102:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium-repeat2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-1-57402-ck-for-Sipho-Ndlovu-—-CLEAR-chromium-repeat2/error-context.md
+
+  8) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:305:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium-repeat2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-2-0534c-k-for-Apex-Holdings-—-CLEAR-chromium-repeat2/error-context.md
+
+  9) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:379:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium-repeat2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-01-03-onboarding-Day-3-bb543-ickCollect-Services-—-CLEAR-chromium-repeat2/error-context.md
+
+  9 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+  42 did not run

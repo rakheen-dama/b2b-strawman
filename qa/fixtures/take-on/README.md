@@ -23,8 +23,18 @@ evidence dir (`csv/`).
   the past, so no statement line is in the future (FU-6a).
 - The spec refuses to start within 30 minutes of SA midnight at a month end.
 
-Clients and matters carry fixed dates (CDD, review and due dates), all in the past or well in the
-future, so their outcomes do not depend on the run date.
+Clients and matters carry fixed dates (CDD, review and due dates). The import outcomes (cards,
+errors, attestation counts, commit) do not depend on the run date; **the FICA review reasons do.**
+A next review date on or before the SA run date adds "Review date passed" (`FicaStatusProjector`
+`reviewReasons`, last in the list), and a client whose only reason that is joins the review queue:
+
+- from **10 February 2027**, Refilwe Dube (C-012) shows "Not screened, Review date passed";
+- from **5 May 2027**, Mooi River Family Trust (C-018) joins the queue with "Review date passed"
+  (after Refilwe Dube, before Kgomotso Moloi), so the queue has six rows;
+- from **15 August 2027**, Kgomotso Moloi (C-013) and Karoo Freight (Pty) Ltd (C-006) reach their
+  next review on the same date (an unobserved tie order). The spec's expectation (`ficaQueueOn` in
+  `take-on.spec.ts`) follows the first two dates and refuses to run step 10 from this one: renew
+  the fixed CDD dates in `xlsx-src/clients-sheet.csv` (and rebuild `clients.xlsx`) before then.
 
 ## Files
 
@@ -76,7 +86,8 @@ File rows are numbered as the wizard numbers them (the header is row 1).
   created". No email.
 - **FICA review queue** (`/clients?view=system:fica-review-due`), Unrated first, then the next
   review date ascending: Naledi Khoza → Pieter Steyn → Refilwe Dube → Kgomotso Moloi → Highveld
-  Logistics (Pty) Ltd, each "Review due (attested)" with its one reason.
+  Logistics (Pty) Ltd, each "Review due (attested)" with exactly its one reason (for a run before
+  10 February 2027; see "Dates" for later runs).
 - **Dormancy:** "Check for Dormant Clients" → "No dormant clients detected."; all 18 ACTIVE.
 
 ## Matters (`matters.csv`) — expected outcome

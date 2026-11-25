@@ -13,7 +13,15 @@
 # Reproducible: fixed entry order, fixed timestamps (1 Jan 2026 00:00), entries stored (no deflate).
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
-mode="${1:-write}"
+# No argument rebuilds, `--check` verifies; anything else is refused before the workbook is touched
+case "$#:${1:-}" in
+  0:) mode=write ;;
+  1:--check) mode=--check ;;
+  *)
+    echo "usage: bash qa/fixtures/take-on/build-clients-xlsx.sh [--check]" >&2
+    exit 2
+    ;;
+esac
 
 python3 -I - "$here/xlsx-src/clients-sheet.csv" "$here/clients.xlsx" "$mode" <<'PY'
 import csv, io, sys, zipfile

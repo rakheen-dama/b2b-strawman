@@ -146,14 +146,47 @@ const POSITION = {
   invested: "300000.00",
 };
 
-/** The FICA review queue as designed: Unrated first, then next review date ascending (D-138). */
-const FICA_QUEUE = [
-  { name: "Naledi Khoza", reason: "Not risk-rated" },
-  { name: "Pieter Steyn", reason: "Review date passed" },
-  { name: "Refilwe Dube", reason: "Not screened" },
-  { name: "Kgomotso Moloi", reason: "Source of funds outstanding" },
-  { name: "Highveld Logistics (Pty) Ltd", reason: "Beneficial ownership outstanding" },
+/**
+ * The FICA review queue as designed: Unrated first, then next review date ascending (D-138).
+ * `reasons` are the attestation's own reasons in the product's order (`FicaReviewReason`
+ * declaration order); "Review date passed" is added (last) once `nextReview` is on or before the
+ * SA run date, so the expectation follows the run date (qa/fixtures/take-on/README.md "Dates").
+ * Mooi River Family Trust (C-018, MEDIUM, next 2027-05-05) has no reason of its own: it joins the
+ * queue on that date. Every expectation here holds until FICA_QUEUE_HORIZON, when Karoo Freight
+ * (C-006) joins on the same date as Kgomotso Moloi (an unobserved tie order): the step refuses to
+ * run from then (renew the fixture's fixed CDD dates).
+ */
+const FICA_QUEUE: { name: string; nextReview: string | null; reasons: string[] }[] = [
+  { name: "Naledi Khoza", nextReview: null, reasons: ["Not risk-rated"] },
+  { name: "Pieter Steyn", nextReview: "2023-03-01", reasons: [] },
+  { name: "Refilwe Dube", nextReview: "2027-02-10", reasons: ["Not screened"] },
+  { name: "Mooi River Family Trust", nextReview: "2027-05-05", reasons: [] },
+  { name: "Kgomotso Moloi", nextReview: "2027-08-15", reasons: ["Source of funds outstanding"] },
+  {
+    name: "Highveld Logistics (Pty) Ltd",
+    nextReview: "2028-04-01",
+    reasons: ["Beneficial ownership outstanding"],
+  },
 ];
+const FICA_QUEUE_HORIZON = "2027-08-15";
+
+/** The queue on SA date `today`: each client's full reason list, clients with none left out. */
+function ficaQueueOn(today: string): { name: string; reasons: string }[] {
+  if (today >= FICA_QUEUE_HORIZON) {
+    throw new Error(
+      `FICA queue fixture expired on ${FICA_QUEUE_HORIZON} (run date ${today}): renew the fixed CDD dates`
+    );
+  }
+  return FICA_QUEUE.map((q) => ({
+    name: q.name,
+    reasons: [
+      ...q.reasons,
+      ...(q.nextReview && q.nextReview <= today ? ["Review date passed"] : []),
+    ],
+  }))
+    .filter((q) => q.reasons.length > 0)
+    .map((q) => ({ name: q.name, reasons: q.reasons.join(", ") }));
+}
 
 /** The 18 clients the take-on creates (file rows 2–19). */
 const CREATED_CLIENTS = [
@@ -569,12 +602,22 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     await bob.getByTestId("take-on-step-validation").click();
     await expect(bob.getByTestId("take-on-row-status-16")).toHaveText("Error", { timeout: 30_000 });
     await expect(bob.getByTestId("take-on-row-status-2")).toHaveText("Created");
-    // … and linked to their clients, by previous-system ID, email and ID number (client → Matters)
+    // … and linked to their clients, by previous-system ID, email and ID number (client → Matters):
+    // all 15 created matters (matters.csv rows 2–15 and 17), on the 13 clients that own them
     for (const [client, matters] of [
       ["Amahle Zulu", ["Transfer of Erf 101 Brooklyn", "Bond registration Erf 101 Brooklyn"]],
       ["Bongani Nkosi", ["Estate late S Nkosi", "Estate duty objection"]],
-      ["Johan Pretorius", ["Labour dispute CCMA"]],
-      ["Ayesha Patel", ["Sale of Erf 88 Umhlanga"]],
+      ["Chantal Pillay", ["Supply contract claim"]],
+      ["Thandiwe Mokoena", ["Transfer of Erf 77 Waterkloof"]],
+      ["Johan Pretorius", ["Labour dispute CCMA"]], // by email
+      ["Karoo Freight (Pty) Ltd", ["Freight contract review"]],
+      ["Ayesha Patel", ["Sale of Erf 88 Umhlanga"]], // by ID number
+      ["Naledi Khoza", ["Will drafting"]],
+      ["Pieter Steyn", ["Road accident claim"]],
+      ["Refilwe Dube", ["Liquor licence renewal"]],
+      ["Kgomotso Moloi", ["Farm lease agreement"]],
+      ["Karabo Sithole", ["Antenuptial contract"]],
+      ["Mooi River Family Trust", ["Trust deed amendment"]],
     ] as const) {
       await openClient(bob, client);
       await openGroupedTab(bob, "work", "matters");
@@ -762,12 +805,16 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
       `I am a partner or director of ${FIRM} responsible for its trust accounting records (Rule 54.19). I have reviewed this take-on of ${G.name} at ${D.cLong}. The trust creditors listed agree, to the cent, with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.`
     );
     await sheet.getByTestId("takeon-signoff-accept").click();
+    // R-3: the sign-off sends no email (its own reading, so the commit check in step 8 still
+    // names the action that sent one)
+    const before = await mailpitTotal();
     await sheet.getByTestId("takeon-signoff-submit").click();
     // D-212: the sheet stays open after signing
     await expect(sheet.getByTestId("takeon-signoff-live")).toContainText(
       /Signed off by you \(Owner\) on .+\./,
       { timeout: 60_000 }
     );
+    await expectMailpitUnchanged(before, "trust sign-off");
     await expect(sheet.getByTestId("takeon-signoff-withdraw")).toBeVisible();
     await evidenceShot(alice, "07-alice-signed");
     await alice.keyboard.press("Escape");
@@ -862,13 +909,16 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     await expect(alice.getByText("Clients — FICA review due").first()).toBeVisible({
       timeout: 60_000,
     });
+    const queue = ficaQueueOn(todayInSA());
+    logEvidence("[fica queue expected]", queue);
     const rows = alice.locator("main table tbody tr");
-    await expect(rows).toHaveCount(FICA_QUEUE.length, { timeout: 30_000 });
-    for (const [i, q] of FICA_QUEUE.entries()) {
+    await expect(rows).toHaveCount(queue.length, { timeout: 30_000 });
+    for (const [i, q] of queue.entries()) {
       const row = rows.nth(i);
       await expect(row.locator('a[href*="/clients/"]').first()).toHaveText(exactText(q.name));
       await expect(row.getByTestId("client-fica-status")).toHaveText("Review due (attested)");
-      await expect(row.getByTestId("client-fica-review-reasons")).toContainText(q.reason);
+      // the complete reason list, exactly (an extra reason fails)
+      await expect(row.getByTestId("client-fica-review-reasons")).toHaveText(exactText(q.reasons));
     }
     await evidenceShot(alice, "10-fica-review-queue");
   });
@@ -1167,13 +1217,23 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     const bf = alice.getByTestId("report-row-brought-forward");
     await expect(bf).toHaveCount(1);
     await expect(bf).toContainText("Balance brought forward — take-on");
-    // The amount (and the running balance) cell
-    await expect(
-      bf
-        .locator("td")
-        .filter({ hasText: randExact("403 500,00") })
-        .first()
-    ).toBeVisible();
+    // Each figure in its own column, found by its header (TrustReportPackSeeder
+    // trustReceiptsPaymentsDefinition: … Credit · Debit · Balance): the amount is the Credit, the
+    // Debit is nil, and the running balance opens at the same figure
+    const heads = (
+      await alice.locator("main table").first().locator("thead th").allTextContents()
+    ).map((h) => h.trim());
+    const cell = (header: string) => {
+      const i = heads.indexOf(header);
+      expect(
+        i,
+        `Receipts & Payments column "${header}" (headers ${heads.join(" | ")})`
+      ).toBeGreaterThanOrEqual(0);
+      return bf.locator("td").nth(i);
+    };
+    await expect(cell("Credit")).toHaveText(randExact("403 500,00"));
+    await expect(cell("Debit")).toHaveText(randExact("0,00"));
+    await expect(cell("Balance")).toHaveText(randExact("403 500,00"));
     await expect(alice.getByTestId("report-footnote-brought-forward")).toContainText(
       `The opening position taken on at ${D.cLong} is shown as one brought-forward line, not as receipts.`
     );

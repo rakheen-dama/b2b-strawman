@@ -1,0 +1,13 @@
+[2026-11-25T02:12:53Z] head bc0eea2f67d0ee23240cf67bfda02d09a1145b37
+[2026-11-25T02:12:53Z] stack A up
+[2026-11-25T02:14:35Z] stack A up rc=0
+[2026-11-25T02:16:40Z] A take-on rc=0
+[2026-11-25T02:16:40Z] stack B up
+[2026-11-25T02:17:19Z] stack B up rc=0
+[2026-11-25T02:20:33Z] B lifecycle rc=0
+[2026-11-25T02:22:33Z] B depth-ii rc=0
+[2026-11-25T02:22:33Z] stack C up
+[2026-11-25T02:23:13Z] stack C up rc=0
+[2026-11-25T02:23:24Z] portal ready after 2
+[2026-11-25T02:24:53Z] C exit-month rc=0
+[2026-11-25T02:24:53Z] DONE

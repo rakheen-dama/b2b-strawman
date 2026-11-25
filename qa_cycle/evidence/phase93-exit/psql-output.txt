@@ -1,9 +1,12 @@
-# Phase 93 exit — take-on read-only psql check (2026-11-25T02:05:12Z)
+# Phase 93 exit — take-on read-only psql check (2026-11-25T02:39:30Z)
 # container e2e-postgres, cutover 2026-09-30, first month end 2026-10-31
 ## schema
 tenant_7d218705360b
 ## flyway (tenant, latest)
 37|phase93 brought forward fee notes
+## cutover = 2026-09-30
+# G take_on_cutover_date = C|no batch with another cutover|batches at C
+t|t|2
 ## trust-accounts
 # name|type|primary|opened|take_on_cutover_date|status
 Mathebula & Partners Trust Account|GENERAL|t|2026-11-25||ACTIVE
@@ -57,8 +60,8 @@ PS-1006|SENT|3450.00|2026-08-31|2026-09-30
 2026-10-31|SERVICE FEE|-85.00|RECORDED|BANK_CHARGE
 ## take-on report files
 # format|file_size|sha256
-CSV|2219|1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4
-PDF|9641|bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df
+CSV|2219|7bf19c2bd32687b6f39948f8f44c23f624ca0236334bba0e5355a4c00e7a759e
+PDF|9639|181136031f4009e89f809502deed4ab919b68c7d848fc9f81dba6a131f72a5f9
 ## dormancy / collections
 collection_activities|0
 collections_enabled|f

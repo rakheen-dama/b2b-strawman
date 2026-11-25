@@ -4,10 +4,10 @@
     "c": "2026-09-30"
   },
   "downloads": {
-    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df",
-    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4",
-    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df",
-    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4"
+    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "181136031f4009e89f809502deed4ab919b68c7d848fc9f81dba6a131f72a5f9",
+    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "7bf19c2bd32687b6f39948f8f44c23f624ca0236334bba0e5355a4c00e7a759e",
+    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "181136031f4009e89f809502deed4ab919b68c7d848fc9f81dba6a131f72a5f9",
+    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "7bf19c2bd32687b6f39948f8f44c23f624ca0236334bba0e5355a4c00e7a759e"
   },
   "mailpit": {
     "clients commit": {
@@ -22,6 +22,10 @@
       "before": 2,
       "after": 2
     },
+    "trust sign-off": {
+      "before": 2,
+      "after": 2
+    },
     "trust commit": {
       "before": 2,
       "after": 2
@@ -33,8 +37,21 @@
     "first-month reconciliation": {
       "before": 2,
       "after": 2
+    },
+    "whole run": {
+      "before": 2,
+      "after": 2
     }
   },
-  "trustBatch": "04682907-06e6-4e9a-8eef-1270bc0c04d2",
-  "reportId": "b77d0623-2b2d-4821-97c5-db1721a8e3e5"
+  "mailpitStart": {
+    "at": "2026-11-25T02:36:10.741Z",
+    "total": 2,
+    "latest": {
+      "id": "KHWyDP29Rqdw8L2wPXZAKB",
+      "subject": "Information request REQ-0001 from E2E Test Organization",
+      "created": "2026-11-25T02:35:54.058Z"
+    }
+  },
+  "trustBatch": "ed04b963-403f-4c45-9b9f-972bec3db419",
+  "reportId": "e4d52ba1-f7fb-42d1-b77b-9fcfc5c98f96"
 }

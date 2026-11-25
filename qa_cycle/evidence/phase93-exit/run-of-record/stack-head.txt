@@ -1,1 +1,9 @@
-ef5579c29f715c172dfcab0032cf8989cc62c7fe
+e092ecf747dd7cd1a11a8eb2967b682283cddf61
+# HEAD when the stack was built (e2e-down.sh && e2e-up.sh, containers 2026-11-25 04:35:22 SAST) and the spec ran.
+# Product code = ef5579c29 (git diff ef5579c29 e092ecf74 outside frontend/e2e touches frontend/package.json only: the test:e2e:take-on script).
+# Working tree at run time (test / docs only, no product code; committed right after as the PR head):
+ M frontend/e2e/helpers/take-on.ts
+ M frontend/e2e/tests/legal-lifecycle/take-on.spec.ts
+ M qa/fixtures/take-on/README.md
+ M qa/fixtures/take-on/build-clients-xlsx.sh
+ M tasks/phase93-decisions.md

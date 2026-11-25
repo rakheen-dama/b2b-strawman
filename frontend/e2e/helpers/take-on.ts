@@ -41,6 +41,7 @@ import {
   evidenceDir as sharedEvidenceDir,
   exitMonth,
   type ExitMonth,
+  randExact,
 } from "./trust-balanced-month";
 
 /** The committed fixture set (660.1). */
@@ -442,7 +443,8 @@ export async function savePosition(page: Page, batchId: string): Promise<void> {
     .poll(
       async () => {
         const b = await getBatch(batchId);
-        return b.status === "VALIDATED" && b.validatedAt !== before;
+        // a non-empty, NEW timestamp: a stale (or cleared) validation must not satisfy the poll
+        return b.status === "VALIDATED" && !!b.validatedAt && b.validatedAt !== before;
       },
       { message: "the position save re-ran the dry run", timeout: 120_000 }
     )
@@ -452,7 +454,11 @@ export async function savePosition(page: Page, batchId: string): Promise<void> {
   await expect(page.getByTestId("take-on-cards")).toBeVisible({ timeout: 60_000 });
 }
 
-/** The live equation indicator row `id` (`eq1|items|eq2|investments|deficit`). */
+/**
+ * The live equation indicator row `id` (`eq1|items|eq2|investments|deficit`): agrees or not, and
+ * its difference is exactly "Difference R{difference}" (anchored: "10,00" never matches
+ * "R 10,000"; space / NBSP / narrow-NBSP renderings allowed, via `randExact`).
+ */
 export async function expectEquation(
   page: Page,
   id: "eq1" | "items" | "eq2" | "investments" | "deficit",
@@ -463,7 +469,9 @@ export async function expectEquation(
     "data-holds",
     String(holds)
   );
-  await expect(page.getByTestId(`take-on-equation-${id}-difference`)).toContainText(
-    new RegExp(`Difference R[\\s\\u00a0\\u202f]?${difference.replace(/ /g, "[\\s\\u00a0\\u202f]")}`)
+  // randExact(difference).source is `^<space>*<figure><space>*$`: put "Difference" after its `^`
+  const figure = randExact(difference).source.replace(/^\^/, "");
+  await expect(page.getByTestId(`take-on-equation-${id}-difference`)).toHaveText(
+    new RegExp(`^[\\s\\u00a0\\u202f]*Difference${figure}`)
   );
 }

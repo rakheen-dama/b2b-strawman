@@ -694,7 +694,7 @@ Migration **V37** (guide V35 → V36 → V37). Audit registry 101 → 102. Decis
 
 **Dependencies**: every other slice merged. **Scope**: e2e + QA / Docs. **Verifies: 0** (+1 per defect-fix PR, reproduce-first, outside the run order). **Estimated Effort**: L
 
-**Status**:
+**Status**: Built — PR #1858 (merge pending)
 
 ### Slices
 
@@ -727,3 +727,148 @@ Migration **V37** (guide V35 → V36 → V37). Audit registry 101 → 102. Decis
 ---
 
 ## Closure report
+
+Written by slice 660A (task 660.6) on 2026-11-25. Shorthands: `$X` = `qa_cycle/evidence/phase93-exit`, `$EV` = `qa_cycle/evidence/phase93`, dec = `tasks/phase93-decisions.md`.
+
+### C.1 Exit verdict
+
+**Verdict (2026-11-25): the exit bar (§17.3.13) is PASS, observed. The verdict is qualified: two 660.3 clauses are DEFERRED, one 660.3 clause is not possible in the UI, and two MEDIUM findings are open. It is not an unqualified PASS.** On a freshly created e2e stack, the browser observed the first post-cutover reconciliation. It balanced and was completed: bank = adjusted bank = cashbook = trust creditors R 403 477,40, both differences R 0,00. The statement opened at the cutover bank balance, and no flag `OPENING_DIFFERS_FROM_TAKE_ON` was raised. Every line was resolved by auto-match or by record-from-line, with no manual match, exclusion or adjustment. The clause "dormancy job actually triggered" is **DEFERRED** (G93-2), and so is "the CashDigest (triggered) shows the debtors" (G93-3). The product has no trigger for either, so neither counts as PASS. A client deposit or client payment in the first month on the taken-on account cannot be made in the UI (G93-1). The first month used an unidentified deposit and a Fund sweep instead (D-259); the fix is multi-account trust, the next phase (FR-1). G93-1 and F-660A-1 are open at MEDIUM. Each needs its own reproduce-first PR.
+
+| # | Exit-bar item (Epic 660 goal, 660.3) | Status | Evidence |
+|---|---|---|---|
+| 1 | The whole take-on observed in the browser on a fresh stack, from a fictional firm's exports | **Met.** Run of record **17 / 17 passed** in 2.7 min, the first attempt on stack A′ (containers created 2026-11-25 04:35:22 SAST) at the PR head (`e092ecf74` + the CodeRabbit round-1 spec edits, committed as the head; product code `ef5579c29`). The steps covered: clients from a two-sheet XLSX with the designed errors and duplicate, attest, commit; matters with the orphan refused and never committed, and all 15 others linked to their clients; trust with the debit block, then the control-total blocks, then clean; Alice's sign-off from Home; Bob's commit; report PDF and CSV byte-identical from two places; the FICA queue with exact reason lists; debtors issued quietly. The orchestrator's independent re-run at `bc0eea2f6` passed 16 / 16 (2.1 min, stack A) | `$X/README.md`, `$X/run-of-record/`, `$X/suites/runs/A-take-on*.txt` |
+| 2 | **First post-cutover month reconciled and balanced; statement opening = cutover balance; no manual adjustment** (§17.3.13) | **PASS, observed.** Step 15 (Alice) gave: "Lines imported: 6"; "Auto-matched 2 lines" (the two cutover items); 4 lines recorded from their lines; balanced; Complete → "October 2026 list locked — R 403 477,40 agrees with the cashbook and the adjusted bank balance."; flags exactly `UNIDENTIFIED_OVER_ONE_YEAR`. Read-only psql: Σ cashbook_effect = Σ ledger_effect = 403 477,40 over 15 rows; reconciliation 2026-10-31 COMPLETED, difference 0.00, notes null; monthly list difference 0.00 | `$X/screenshots/15-*.png`, `$X/psql-output.txt` |
+| 3 | Mailpit count before = after every commit (R-3) | **Met.** 2 → 2 across the clients commit, the portal access, the matters commit, Alice's sign-off, the trust commit, the debtors commit and the reconciliation. The run as a whole was also 2 → 2 with the latest message unchanged (step 17) | `$X/run-of-record/evidence-log.txt`, `mailpit-final.txt` |
+| 4 | Collections silent | **Met.** "Enable collections reminders" off; `collections_enabled` false; `collection_activities` 0 | `$X/screenshots/12-collections-settings-off.png`, `$X/psql-output.txt` |
+| 5 | "The CashDigest (triggered) shows the debtors" | **DEFERRED, not PASS** (G93-3). No product trigger exists. Substitute observation: the Collections debtor book lists the six taken-on debtors in the bucket of each one's due date as of the run date | `$X/gap-report.md` G93-3; dec D-261 |
+| 6 | "The dormancy job triggered via `JobQueueAdminController` leaves imported clients ACTIVE" | **DEFERRED, not PASS** (G93-2). No product trigger exists. Substitute: "Check for Dormant Clients" → "No dormant clients detected." (backend: candidates=0); all 18 imported clients ACTIVE. The transition is proven by `ImportedClientDormancyIntegrationTest` (655A BE-VERIFY), not in the browser | `$X/gap-report.md` G93-2; dec D-260, D-135 |
+| 7 | "The first statement … one deposit, one payment" as a client's money on the taken-on account | **Not possible in the UI** (G93-1, MEDIUM). On a non-primary account, no UI posts a client deposit or payment. The first month used an unidentified deposit and the Fund sweep, both recorded from their lines (option B, D-259). Client movements are proven only by `FirstPostCutoverReconciliationIntegrationTest` (657D) | `$X/gap-report.md` G93-1; FR-1 |
+| 8 | The three legal Playwright suites green | **Met** (C.2). Each count is equal to its baseline | `$X/suites/README.md` |
+
+### C.2 Gates, suites and markers
+
+| Gate | 653.1 baseline | Latest slice floor | Exit (660A) |
+|---|---|---|---|
+| BE-VERIFY | 7 576 / 0 F / 0 E / 26 skipped | 8 175 / 0 / 0 / 55 @ `bc2c478ad` (658A) | **Not run by 660A.** The PR touches nothing under `backend/`, so there is no backend marker (conventions table). The 658A figure stands for `main` `ef5579c29` |
+| FE-GATE (`rm -rf .next`; lint, typecheck, format:check, test, build; node 20.11.1; idle machine) | vitest 487 files / 4 654 passed / 2 skipped | 506 / 4 960 / 2 @ `0d08e820f` (658A) | **all exit 0**: lint 0 errors (77 warnings, none in take-on files); vitest **506 files, 4 960 passed / 2 skipped / 0 failed**; build OK. Run on the final code (`/tmp/fe-660A-*.log`). The 658A trend-chart flake (F-658A-7) did not recur |
+| PORTAL-GATE | 51 files / 292 | 51 / 293 @ `b3bedb773` (657C) | not run: 660A does not touch `portal/` |
+| E2E take-on (new) | — | — | **17 / 17** (run of record, final head, stack A′); 16 / 16 (orchestrator, `bc0eea2f6`, stack A) |
+| E2E-LEGAL lifecycle | 105 | 105 | **105 passed** (3.2 min; stack B; `bc0eea2f6`) |
+| E2E-LEGAL depth-ii | not valid on `main`; reference 40 / 4 skipped | 40 / 4 | **40 passed / 4 skipped** (2.0 min; stack B; `bc0eea2f6`; the known `test.fixme` + 3 opt-in probes) |
+| E2E exit-month | not captured; 16 on every trust slice | 16 | **16 passed** (1.5 min; stack C; `bc0eea2f6`; portal on :3002) |
+
+Stacks B and C ran at `bc0eea2f6`. They remain valid for the final head because none of the files they share with this PR changed: `git diff bc0eea2f6..HEAD -- frontend/e2e/helpers/trust-balanced-month.ts frontend/e2e/helpers/mailpit.ts frontend/e2e/playwright.legal-lifecycle.config.ts frontend/e2e/playwright.legal-depth-ii.config.ts` prints nothing at the final head (`$X/suites/README.md`). The orchestrator owns the frontend verify marker for the head.
+
+### C.3 Migrations as landed
+
+All six are tenant migrations; there is no global migration (next free global **V8**, unchanged). Every slice took the next free number at build time (P-1). This file's guide numbers were one behind because Phase 92's `V31__phase92_trust_idempotency_keys.sql` landed first (#1841, `56bdc641e`).
+
+| Slice | Guide (this file) | Actual | File (`backend/src/main/resources/db/migration/tenant/`) | PR / merge |
+|---|---|---|---|---|
+| 653A | V31 | **V32** | `V32__phase93_take_on_core.sql` | #1846 `8a46d48fa` |
+| 657A | V32 | **V33** | `V33__phase93_trust_take_on.sql` | #1847 `63379d9bf` |
+| 655A | V33 | **V34** | `V34__phase93_client_take_on_fica.sql` | #1850 `e8479d366` |
+| 656A | V34 | **V35** | `V35__phase93_go_live_checklist.sql` | #1852 `d27195271` |
+| 657C | V35 | **V36** | `V36__phase93_take_on_reports.sql` | #1854 `df36ddbe1` |
+| 658A | V36 | **V37** | `V37__phase93_brought_forward_fee_notes.sql` | #1857 `7f3ba321f` |
+
+**Next free: tenant V38, global V8.** The run of record's tenant schema was at Flyway V37 (`$X/psql-output.txt`).
+
+### C.4 Audit registry as landed
+
+**102** entries (`AuditEventTypeRegistryTest` `hasSize(102)`, with the comment ledger). The path was 83 (653.1) → 89 (653A) → 96 (655A) → 98 (656A) → 100 (657C) → 101 (657D) → 102 (658A), exactly the P-18 plan. 655B and 657B added none, and neither did 660A.
+
+### C.5 Slice PRs
+
+Each SHA was checked with `git log --oneline -1 <sha>`.
+
+| Slice | PR | Merge |
+|---|---|---|
+| 653A | #1846 | `8a46d48fa` |
+| 657A | #1847 | `63379d9bf` |
+| 655A | #1850 | `e8479d366` |
+| 655B | #1851 | `5ef3d1fd3` |
+| 656A | #1852 | `d27195271` |
+| 657B | #1853 | `cb82e24e2` |
+| 657C | #1854 | `df36ddbe1` |
+| 657D | #1855 | `7d1bb319b` |
+| out of band: F-657C-7 + FR-4 (owner-only capabilities) | #1856 | `ba3958143` |
+| 658A | #1857 | `7f3ba321f` |
+| 660A | #1858 | merge pending |
+
+### C.6 Release gate RG-1..RG-13
+
+**None is signed off. All 13 remain open (release-gated).** No `qa_cycle/evidence/phase93/legal/` folder exists, so no RG-n.md has been written. None of these rows blocks building, merging or the runner. Each one blocks enabling the named slices for a real firm until the founder signs off on a Fable legal-adviser opinion with cited sources (see [Release gate](#release-gate--legal-sign-offs-before-a-real-firm)).
+
+| RG | Subject (short) | Release of | Status |
+|---|---|---|---|
+| RG-1 | Trust sign-off model, `TAKEON-SIGNOFF-v1` declaration | 657A, 657C | open |
+| RG-2 | `FICA-ATTEST-v1` text and who may attest | 655A | open |
+| RG-3 | FICA review model (intervals, supersession, five reasons) | 655A, 655B | open |
+| RG-4 | Mid-month cutover acknowledgement; report as the auditor's opening evidence | 657B, 657C, 657D | open |
+| RG-5 | Fund ledger in debit at cutover allowed and flagged | 657A, 657B | open |
+| RG-6 | Accrued s86(4) interest as a memo; capitalised Fund share as `TAKEON_FUND` | 657A, 657B, 657C | open |
+| RG-7 | s86(4) instruction reference, date and endorsement mandatory | 657B | open |
+| RG-8 | The client-in-debit block is never overridable | 657B | open (the behaviour was observed in the run of record, step 4; the legal sign-off is still open) |
+| RG-9 | Retention vs POPIA erasure | 653A, 655A | open |
+| RG-10 | A6: LPC Rules amendments and FIC Guidance Note 7B against every shipped legal text | 655A, 655B, 657B, 657C | open |
+| RG-11 | One VAT-inclusive brought-forward line | 658A | open |
+| RG-12 | Go-live checklist copy (Rule 54.9.2 / FIC s24(3)) | 656A | open |
+| RG-13 | Deficit block's reading of Rule 54.14.10 (Phase 92 F-6 open point) | 657B | open |
+
+Separately, **FR-1** (multi-account trust) gates releasing trust take-on to a firm with more than one trust account.
+
+### C.7 Carried to the backlog
+
+**Noted, not fixed (P-21, §17.1.5).** Not built. Each needs its own reproduce-first PR.
+
+| Item | Status |
+|---|---|
+| Dormancy of newly activated non-imported clients with no activity (hypothesis from reading the SQL) | open, not reproduced |
+| Receipts & Payments running balance starts at R0,00 for every range (a range over C opens at the brought-forward line, 657D) | open (Phase 92 follow-up candidate) |
+| PII in `customer.created` / `project.created` audit details on the normal UI path (take-on's own events are PII-free, `TakeOnAuditNoPiiIntegrationTest`) | open |
+| The `trust_account.updated` audit omission | open |
+
+**Founder-ruled follow-ups (after the phase).**
+
+| Ruling | Follow-up | Status |
+|---|---|---|
+| FR-1 | Multi-account trust: an account switcher across the trust screens, and posting to a non-primary account (G93-1) | next-phase candidate |
+| FR-2 | F-655A-3: the row failure reason names the reserved take-on email | small PR, open |
+| FR-3 | Server-action `bodySizeLimit` 3 MB, with the take-on upload limit aligned (UI copy and backend check) | small PR, open |
+| FR-7 | Hide the invite form's "Customize for this user" | invitation-fix PR, open |
+| FR-8 | Revoking a Kazi invitation revokes the Keycloak invite (with the custom-role invite fix, FR-9 as built) | invitation-fix PR, open |
+| FR-11 | F-658A-1: investigate and fix the Xero push enqueue on ordinary fee notes, reproduce-first | after 660A, open |
+
+**Test infrastructure (`$X/found.md`).** R-1 (give the shared e2e helpers an explicit evidence directory instead of the env-var routing) and R-2 (one Mailpit client with one default port). Both are LOW and edit shared helpers. Each gets its own PR.
+
+### C.8 Gap-report findings and their follow-up
+
+From `$X/gap-report.md` (final). Stacks B and C produced no finding. CodeRabbit round 1's eight sharpened assertions all passed on their first fresh stack, so the round found no product defect (D-265).
+
+| ID | Severity | Finding (one line) | Follow-up |
+|---|---|---|---|
+| G93-1 | MEDIUM | A trust position can be taken on only into a new non-primary account, and no UI posts a client deposit or payment there in the first month (F-657C-8) | FR-1, next phase; own reproduce-first PR(s) |
+| F-660A-1 | MEDIUM | "Continue to sign-off" is offered on a statutorily blocked trust batch, and its step says a partner signs from Home (`take-on-wizard.tsx:340`) | own reproduce-first PR (frontend; owner 657C). It flips `take-on.spec.ts:710` to `toHaveCount(0)` (D-264) |
+| G93-2 | LOW | The dormancy job has no product trigger | **DEFERRED**; own PR (a platform-admin "run job now" or equivalent) |
+| G93-3 | LOW | The CashDigest has no product trigger | **DEFERRED**; own PR |
+| F-660A-2 | LOW | Micrometer "maximum number of 'uri' tags" WARN in the run window | check the URI templating of the take-on / trust routes before filing |
+| carried | — | OBS-656A-1, OBS-658A-1, OBS-657C-1, OBS-657C-2, OBS-657B-1, OBS-657D-2, F-657C-3, F-658A-1, F-658A-7 / F-652E-8 | as recorded by their slices (gap report § B) |
+
+### C.9 Evidence paths
+
+| What | Path |
+|---|---|
+| The take-on run of record (17 / 17): README with every step and what it observed | `qa_cycle/evidence/phase93-exit/README.md` |
+| Run log, evidence log, state, stack provenance, run window, backend / frontend logs, Mailpit at the end | `qa_cycle/evidence/phase93-exit/run-of-record/` |
+| Screenshots, rendered fixtures and the first statement, report downloads and their SHA-256 | `qa_cycle/evidence/phase93-exit/screenshots/`, `csv/`, `downloads/`, `sha256-downloads.txt` |
+| Read-only database check (SELECT only) | `qa_cycle/evidence/phase93-exit/psql-check.sh`, `psql-output.txt` |
+| The four suites on fresh stacks (660.4) | `qa_cycle/evidence/phase93-exit/suites/README.md`, `suites/runs/` |
+| Gap report (660.5) | `qa_cycle/evidence/phase93-exit/gap-report.md` |
+| Deferred review items | `qa_cycle/evidence/phase93-exit/found.md` |
+| Fixtures and the expected figures written before the run | `qa/fixtures/take-on/README.md` |
+| Spec and helper | `frontend/e2e/tests/legal-lifecycle/take-on.spec.ts`, `frontend/e2e/helpers/take-on.ts` |
+| Per-slice evidence | `qa_cycle/evidence/phase93/<slice>/` |
+| Decisions (D-259..D-265 for 660A) and rulings | `tasks/phase93-decisions.md` |
+
+**Post-merge bookkeeping** is the orchestrator's: marking 660A and Epic 660 Done, the header status line, and the TASKS.md rows.

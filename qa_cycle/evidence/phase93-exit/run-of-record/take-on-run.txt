@@ -3,24 +3,26 @@
 > playwright test --config e2e/playwright.legal-lifecycle.config.ts --project take-on --reporter=list
 
 
-Running 16 tests using 1 worker
+Running 17 tests using 1 worker
 
-take-on: C = 2026-09-30 (30 September 2026); first month October 2026; evidence /tmp/660A/ev-final
-  ✓   1 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:344:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 0 · fresh stack: only the seeded primary trust account, no take-on batch, no fixture client (320ms)
-  ✓   2 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:364:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 1 · Bob adds G (General, not primary) and the s86(3) / s86(4) investment accounts (5.8s)
-  ✓   3 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:409:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 2 · clients from the two-sheet XLSX: sheet step, cards, every designed row, attest, commit (no email) (27.6s)
-  ✓   4 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:514:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 3 · matters: the orphan refused with its exact text and not committed; the others linked to their clients (24.0s)
-  ✓   5 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:589:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 4 · trust position with C-003 in debit: 2 statutory blocks, exact texts, nothing to override (5.9s)
-  ✓   6 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:678:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 5 · corrected client file, cashbook off by R10,00: EQ-1 and EQ-2 blocks, exact texts (2.2s)
-  ✓   7 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:713:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 6 · clean position: Validated, 0 blocks, every equation R 0,00, one flag; Bob is sent to the Home page sign-off (1.6s)
-  ✓   8 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:739:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 7 · Alice signs the take-on off from her Home page (TAKEON-SIGNOFF-v1) (3.8s)
-  ✓   9 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:777:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 8 · Bob commits: the trust sentence, the report summary (every difference R 0,00), no email (14.1s)
-  ✓  10 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:819:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 9 · the report files: PDF and CSV from the Results step and from Trust → Reports, byte-identical (995ms)
-  ✓  11 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:856:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 10 · FICA review queue: the Unrated client first, then by next review date; each with its reason (626ms)
-  ✓  12 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:873:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 11 · debtor opening balances: exact errors and warnings, commit from Validation, quiet SENT fee notes (18.9s)
-  ✓  13 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:960:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 12–13 · collections reminders off; the debtor book lists the taken-on debtors in their buckets (CashDigest DEFERRED) (800ms)
-  ✓  14 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:995:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 14 · dormancy check: no dormant clients; every imported client still Active (job run DEFERRED) (1.1s)
-  ✓  15 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1021:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 15 · first month on G: statement imported, cutover items auto-matched, deposit / payment / interest / fee recorded, balanced, list locked (13.9s)
-  ✓  16 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1158:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 16 · Receipts & Payments on G over C: one brought-forward line R 403 500,00 and its footnote (1.1s)
+take-on: C = 2026-09-30 (30 September 2026); first month October 2026; evidence /tmp/take-on-final
+  ✓   1 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:379:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 0 · fresh stack: only the seeded primary trust account, no take-on batch, no fixture client (256ms)
+  ✓   2 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:400:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 1 · Bob adds G (General, not primary) and the s86(3) / s86(4) investment accounts (6.1s)
+  ✓   3 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:445:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 2 · clients from the two-sheet XLSX: sheet step, cards, every designed row, attest, commit (no email) (29.2s)
+  ✓   4 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:550:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 3 · matters: the orphan refused with its exact text and not committed; the others linked to their clients (43.2s)
+  ✓   5 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:635:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 4 · trust position with C-003 in debit: 2 statutory blocks, exact texts, nothing to override (6.3s)
+  ✓   6 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:725:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 5 · corrected client file, cashbook off by R10,00: EQ-1 and EQ-2 blocks, exact texts (1.9s)
+  ✓   7 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:760:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 6 · clean position: Validated, 0 blocks, every equation R 0,00, one flag; Bob is sent to the Home page sign-off (1.6s)
+  ✓   8 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:786:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 7 · Alice signs the take-on off from her Home page (TAKEON-SIGNOFF-v1) (10.6s)
+  ✓   9 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:828:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 8 · Bob commits: the trust sentence, the report summary (every difference R 0,00), no email (13.8s)
+  ✓  10 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:870:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 9 · the report files: PDF and CSV from the Results step and from Trust → Reports, byte-identical (686ms)
+  ✓  11 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:907:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 10 · FICA review queue: the Unrated client first, then by next review date; each with its reason (730ms)
+  ✓  12 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:927:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 11 · debtor opening balances: exact errors and warnings, commit from Validation, quiet SENT fee notes (17.3s)
+  ✓  13 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1011:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 12–13 · collections reminders off; the debtor book lists the taken-on debtors in their buckets (CashDigest DEFERRED) (726ms)
+  ✓  14 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1049:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 14 · dormancy check: no dormant clients; every imported client still Active (job run DEFERRED) (1.3s)
+  ✓  15 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1075:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 15 · first month on G: statement imported, cutover items auto-matched, deposit / payment / interest / fee recorded, balanced, list locked (15.1s)
+  ✓  16 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1212:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 16 · Receipts & Payments on G over C: one brought-forward line R 403 500,00 and its footnote (1.1s)
+  ✓  17 [take-on] › e2e/tests/legal-lifecycle/take-on.spec.ts:1244:7 › Phase 93 exit — the take-on, observed end to end (660.3) › 17 · Mailpit over the whole run: total and latest message unchanged since step 0 (R-3) (8.0s)
 
-  16 passed (2.1m)
+  17 passed (2.7m)
+exit=0

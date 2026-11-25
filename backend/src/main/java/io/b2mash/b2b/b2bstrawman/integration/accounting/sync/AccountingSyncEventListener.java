@@ -109,7 +109,9 @@ public class AccountingSyncEventListener {
         event.getOrgId(),
         () -> {
           try {
-            syncService.enqueueCustomerPush(event.getCustomerId(), SyncTrigger.EVENT);
+            requiresNewTransactionTemplate.executeWithoutResult(
+                status ->
+                    syncService.enqueueCustomerPush(event.getCustomerId(), SyncTrigger.EVENT));
           } catch (Exception e) {
             log.warn(
                 "Failed to enqueue customer push for created customer {}: {}",
@@ -127,7 +129,9 @@ public class AccountingSyncEventListener {
         event.getOrgId(),
         () -> {
           try {
-            syncService.enqueueCustomerPush(event.getCustomerId(), SyncTrigger.EVENT);
+            requiresNewTransactionTemplate.executeWithoutResult(
+                status ->
+                    syncService.enqueueCustomerPush(event.getCustomerId(), SyncTrigger.EVENT));
           } catch (Exception e) {
             log.warn(
                 "Failed to enqueue customer push for updated customer {}: {}",

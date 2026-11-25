@@ -57,7 +57,7 @@ function UserFooterUI({
         </div>
         <div className="min-w-0 group-data-[collapsible=icon]:hidden">
           <p className="text-sidebar-foreground truncate text-sm font-medium">{name}</p>
-          <p className="text-sidebar-foreground/60 truncate text-xs">{email}</p>
+          <p className="text-sidebar-muted-foreground truncate text-xs">{email}</p>
         </div>
       </div>
     </>

@@ -97,7 +97,7 @@ function AppSidebarZone({ zone, slug, separated, onNavigate }: AppSidebarZonePro
         <SidebarGroup className="py-1">
           <SidebarGroupLabel
             asChild
-            className="text-sidebar-foreground/50 hover:text-sidebar-foreground w-full justify-between text-[11px] tracking-widest uppercase group-data-[collapsible=icon]:hidden"
+            className="text-sidebar-label-foreground hover:text-sidebar-foreground w-full justify-between text-[11px] tracking-widest uppercase group-data-[collapsible=icon]:hidden"
           >
             <CollapsibleTrigger>
               {zone.label}
@@ -223,7 +223,8 @@ export function AppSidebar({
         </div>
         <SidebarSeparator className="mx-4 group-data-[collapsible=icon]:hidden" />
         {/* The brand colour is an accent bar, never the name's text colour: a dark brand colour
-            (#1B3A4B) on the slate-950 rail was illegible (G-A3, Phase 88 628B). */}
+            (#1B3A4B) on the old slate-950 rail was illegible (G-A3, Phase 88 628B). It stays
+            decorative on the light firm rail (ADR-392), where a pale brand colour reads faintly. */}
         <div className="flex items-center gap-2 px-4 py-3 group-data-[collapsible=icon]:hidden">
           <span
             aria-hidden="true"
@@ -244,7 +245,7 @@ export function AppSidebar({
               aria-label="Search, Command K"
               tooltip="Search..."
               onClick={() => setOpen(true)}
-              className="border-sidebar-border bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-foreground border text-xs"
+              className="border-sidebar-border bg-sidebar-accent text-sidebar-muted-foreground hover:text-sidebar-foreground border text-xs"
             >
               <Search />
               <span className="group-data-[collapsible=icon]:hidden">Search...</span>

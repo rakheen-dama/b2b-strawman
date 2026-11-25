@@ -11,7 +11,8 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
         soft: "bg-slate-950/10 text-slate-950 hover:bg-slate-950/15 rounded-full dark:bg-white/8 dark:text-white dark:hover:bg-white/12",
-        accent: "bg-teal-600 text-white hover:bg-teal-600/90 rounded-full",
+        accent:
+          "bg-(--button-accent) text-(--button-accent-foreground) hover:bg-(--button-accent)/90 rounded-full",
         destructive:
           "bg-red-600 text-white hover:bg-red-600/90 rounded-full focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:

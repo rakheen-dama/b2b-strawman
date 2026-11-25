@@ -123,7 +123,10 @@ export default async function OrgLayout({
               <Breadcrumbs> and the page {children} sit inside it. */}
           <BreadcrumbLabelProvider>
             <CommandPaletteProvider slug={slug}>
-              <SidebarProvider defaultOpen={sidebarState !== "false"}>
+              {/* data-app-shell="firm" scopes the Phase 91 light scheme (ADR-392): globals.css
+                  matches :root:not(.dark):has([data-app-shell="firm"]). SidebarProvider spreads
+                  it onto div[data-slot=sidebar-wrapper] (P-16). */}
+              <SidebarProvider defaultOpen={sidebarState !== "false"} data-app-shell="firm">
                 <AppSidebar
                   slug={slug}
                   orgName={orgName}
@@ -139,7 +142,9 @@ export default async function OrgLayout({
                     box. */}
                 <SidebarInset className="min-w-0">
                   <AppHeader slug={slug} orgName={orgName} />
-                  <main id="main-content" className="bg-background min-w-0 flex-1">
+                  {/* No background of its own: SidebarInset paints bg-background (in the firm light
+                      scheme it is the rounded inset card, ADR-392; in dark the same colour). */}
+                  <main id="main-content" className="min-w-0 flex-1">
                     <SubscriptionProvider billingResponse={billingData}>
                       <SubscriptionBanner billingResponse={billingData} slug={slug} />
                       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">

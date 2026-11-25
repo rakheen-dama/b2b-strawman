@@ -23,6 +23,8 @@ Logs sit next to this file as `.txt` copies (the original `*.log` files are giti
 | 8 | `46ff637f1` | fix: look the Keycloak invitation up exhaustively on revoke (FR-8 review finding) |
 | 9 | `235933c7f` | test: a refused invitation revoke shows its reason (FR-8 review, red) |
 | 10 | `9c991301a` | fix: show why an invitation revoke was refused (FR-8 review) |
+| 11 | `ec49d7c48` | test: revoke always wins, a revoked invitee is refused at sign-in (red) |
+| 12 | `740309943` | fix: revoke always wins, refuse a revoked invitee at first sign-in |
 
 SHAs 1–8 are from before the coordinator rebased the branch onto `origin/main` (PR #1859); 9–10 sit on the rebased head `d58626acb`.
 
@@ -102,7 +104,8 @@ This fix detects that case and refuses it (below).
 - Steps:
   1. `findInvitationIdsByEmail(kcOrgId, email)` finds every Keycloak invitation for this exact email (see the review fix below).
   2. Each one is deleted with `revokeInvitation(kcOrgId, id)`.
-  3. If none is found, check membership explicitly: `findUserByEmail` plus the paged `listOrgMemberIds`.
+  3. **Superseded by the "revoke always wins" ruling (section below):** steps 3a/3b were removed. None found now always means the Kazi revoke succeeds.
+     The original design, kept here for the record, checked membership explicitly with `findUserByEmail` plus the paged `listOrgMemberIds`:
      - **Member** → **409** `"Invitation already accepted"`: "'x' has already accepted the invitation email and joins with the invited role on their first sign-in, so it can no longer be revoked. Remove them from the team once they appear." The Kazi invitation stays PENDING, so they join with the invited role, not as Member.
      - **Not a member** → Keycloak holds no invitation record, so no link can work. This happens, for example, when the best-effort invite-user call failed at creation. The Kazi revoke proceeds, with a WARN log.
 
@@ -162,6 +165,61 @@ This fix detects that case and refuses it (below).
   - cleared on the next attempt
   - the success path refreshes to the empty state with no alert
 
+## Ruling 2026-11-25: "revoke always wins" (replaces FR-9)
+
+**Why.** The Keycloak-stack OBS found that Kazi has no firm-level "remove member" feature. So the 409 "Invitation already accepted … Remove them from
+the team once they appear" left a revoked person able to join.
+
+**Red** (`fix5-red.txt`, `fix5-fe-red.txt`, on `fd42dfa6d` + tests, commit `ec49d7c48`):
+- Backend, 3 of 13 failed:
+  - `InvitationRevokeAlwaysWinsIntegrationTest.revokeAfterTheLinkWasUsed_succeeds_andTheirFirstRequestIsRefused`: `Status expected:<403> but was:<200>`. The revoked person was created as Member.
+  - `…theRefusalMatchesTheEmailExactlyAsTheInvitationLookupDoes`: `403 expected, 200`.
+  - `InvitationServiceTest.revokeInvitation_noLiveKeycloakInvitation_revokesInKazi_withoutTouchingMembership`: `NeverWantedButInvoked`. The membership check still ran.
+- Frontend, 1 of 24 failed: `home-matrix` "a revoked invitee (403 Access revoked) sees the refusal". There was no `access-revoked` element, because Home showed the "Setting up your workspace" spinner.
+
+**Fix** (commit `740309943`)
+- **Revoke** (`InvitationService.revokeInKeycloak`):
+  - The 409 path and its membership check are removed.
+  - The exhaustive lookup and the delete of every live Keycloak invitation are unchanged.
+  - When no Keycloak invitation remains (the link was used, or invite-user failed), the Kazi revoke succeeds and logs at INFO.
+  - A Keycloak error still refuses the revoke: 400 "Invitation not revoked", rolled back. It fails closed.
+- **Decision: Kazi does not remove the person from the Keycloak organisation.**
+  - `KeycloakAdminClient.removeOrgMember` exists, but Keycloak 26.5's `JpaOrganizationProvider.removeMember` **deletes the whole user account** when the member is *managed*.
+  - A person who registered through the invite link is managed (`RegistrationUserCreation.addManagedMember`). Removing them would delete their login, including access to any other firm.
+  - Kazi's sign-in block is the authority.
+- **Sign-in** (`MemberFilter.lazyCreateMember`):
+  - The refusal applies when there is no pending invitation and the latest invitation for the email is REVOKED.
+  - The check is the new `InvitationService.isLatestInvitationRevoked`, backed by `PendingInvitationRepository.findFirstByEmailOrderByCreatedAtDesc`. It normalises the email with lower-case + trim, exactly like `findPendingByEmail`.
+  - When it applies, no member row is created. The filter writes a `ForbiddenException`'s ProblemDetail itself, the `SubscriptionGuardFilter` pattern, because a filter runs before `@ControllerAdvice`: **403**, title `"Access revoked"`, detail `"Your invitation to this firm was revoked. Ask the firm to invite you again."`, content type `application/problem+json`.
+  - The refusal is not cached, so a re-invite (a newer PENDING invitation, checked first) works on the next request.
+  - Unchanged: existing members (who never reach the lazy-create path), the founder rule, the expired-only path and the no-invitation default-Member path.
+- **Frontend** (`app/(app)/org/[slug]/dashboard/page.tsx`):
+  - Home is where sign-in lands (`/dashboard` → `/org/{slug}/dashboard`).
+  - Home previously treated every 403 on capabilities as "Setting up your workspace" and kept polling.
+  - Now a 403 whose ProblemDetail title is "Access revoked" renders that title and detail (`role="alert"`, `data-testid="access-revoked"`).
+  - The org layout already degrades quietly on failed loads, so the page renders and nothing crashes.
+- **`pending-invitations` alert test**: now uses the Keycloak-error detail. The "already accepted" message no longer exists.
+
+**Green**
+- `fix5-green.txt`: InvitationRevokeAlwaysWinsIntegrationTest 5/5, InvitationServiceTest 8/8, MemberFilterInvitationTest 9/9, MemberFilterCacheEvictionTest 3/3.
+- `fix5-fe-green.txt`: home-matrix + pending-invitations 24/24.
+
+**Targeted backend sweep 2** (`targeted-backend-2.txt`, HEAD `740309943`). Same scope as the first sweep plus the two new classes: 99 classes, **998 test cases,
+0 failures, 0 errors, 14 skipped**. The skipped tests are the `@Disabled` `AcceptanceControllerIntegrationTest`. The count is 995 + 5 new − 2 replaced.
+
+**Frontend gate** (re-run on `740309943`, no verify live):
+- lint: 0 errors (76 warnings, none new)
+- format: clean
+- build: exit 0
+- `pnpm test`: **506 files, 4964 passed, 2 skipped**
+
+**PR-body facts (PR #1859)**
+- Revoke always succeeds once no live Keycloak invitation remains. The only refusal left is a Keycloak error (400 "Invitation not revoked").
+- A revoked person is refused at first sign-in with 403 "Access revoked". No member row is created.
+- A re-invite wins. Existing members are unaffected.
+- No Keycloak org removal (account-deletion hazard).
+- New test class `InvitationRevokeAlwaysWinsIntegrationTest`.
+
 ## Fix 3: FR-7, hide "Customize for this user" in the invite form
 
 **Red** (`fix3-red.txt`): 3 failures in 38 tests.
@@ -201,7 +259,7 @@ This fix detects that case and refuses it (below).
 | `pnpm lint` | exit 0: 0 errors (warnings only, none new) | `frontend-gate-lint.txt` |
 | `pnpm format:check` | exit 0: all files Prettier-clean | `frontend-gate-format.txt` |
 | `timeout 900 pnpm build` | exit 0 | `frontend-gate-build.txt` |
-| `pnpm test` | exit 0: **506 files, 4963 passed, 2 skipped** (re-run 2026-11-25 on `9c991301a`, after the revoke-alert fix, with no verify live) | `frontend-gate-test.txt` |
+| `pnpm test` | exit 0: **506 files, 4964 passed, 2 skipped** (latest run on `740309943`; see the ruling section) | `frontend-gate-test.txt` |
 
 The warnings in the changed files all pre-date this branch: unused `ApiError`/`mapBffInvitation` in `invitation-actions.ts`, and the React Compiler
 skip on `form.watch` in `invite-member-form.tsx`.
@@ -211,7 +269,7 @@ skip on `form.watch` in `invite-member-form.tsx`.
 - A Keycloak dev-stack E2E/OBS run, because the mock UI cannot invite (`invitation-actions.ts` is a no-op in mock mode). It needs to cover:
   - a custom-role invite → register from Mailpit → lands as Partner with no 500 (plan §4);
   - revoke → the old Mailpit link shows Keycloak's "invitation expired or no longer valid" page;
-  - revoke after the link was used → 409.
+  - revoke after the link was used → revoke succeeds, and the person's sign-in shows "Access revoked" (ruling below).
 - A review pass on the diff.
 
 ## Process notes (honesty)
@@ -228,6 +286,9 @@ skip on `form.watch` in `invite-member-form.tsx`.
 2. **Old revoked/accepted invitations still block deleting a role.** The database link means a role stays undeletable after it has ever been offered, and the attempt fails with an error page (500).
    - This fix only turns the *pending* case into a clear message.
    - A small follow-up could change the database rule. That would need a migration, so it is out of scope here.
-3. **A person whose invitation is revoked after they already used the link** is now refused with "already accepted".
-   - They will join with the invited role, and the firm must then remove them from the Team page.
-   - A stricter option: Kazi refuses to create anyone whose latest invitation was revoked. That is about 1 h of work and changes sign-in behaviour, so it needs a ruling.
+3. ~~A person whose invitation is revoked after they already used the link~~: **ruled 2026-11-25, "revoke always wins"**, built (section below).
+4. **Revoked people stay in the Keycloak organisation.** Kazi refuses them, but Keycloak still lists them as org members. Removing them would delete
+   the whole Keycloak account of anyone who registered through the link. If a clean-up is wanted, it needs its own ruling — for example a Keycloak
+   attribute or group instead of org removal.
+5. **Pages other than Home.** A revoked person sees the "Access revoked" notice on Home, which is where sign-in lands. If they open another page
+   directly, that page's own error screen shows instead, because the layout degrades quietly and those pages were not changed.

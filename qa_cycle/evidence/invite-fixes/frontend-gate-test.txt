@@ -727,7 +727,7 @@ Emitted 'error' event on ClientRequest instance at:
 Node.js v20.11.1
 
  Test Files  506 passed (506)
-      Tests  4963 passed | 2 skipped (4965)
-   Start at  05:59:24
-   Duration  126.67s (transform 36.86s, setup 72.51s, import 387.65s, tests 309.62s, environment 234.12s)
+      Tests  4964 passed | 2 skipped (4966)
+   Start at  08:25:03
+   Duration  108.46s (transform 33.06s, setup 58.74s, import 348.89s, tests 271.27s, environment 186.86s)
 

@@ -1,0 +1,361 @@
+06:14:26.258 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/test-classes/archunit.properties
+06:14:26.388 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest]: InvitationRevokeAlwaysWinsIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+06:14:26.613 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"a90ed670-4a5b-4445-a321-3c04216059b7","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_COMPLIANCE","OVERRIDE_MATTER_CLOSURE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","VIEW_TRUST","AI_MANAGE"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"},{"id":"43a0525e-1bb0-4caf-b91e-a6f42e8b1ca5","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","VIEW_TRUST","AI_MANAGE"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"},{"id":"a08c24e5-ed13-4a12-a4e8-4658384be150","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"83", Idempotency-Key:"2c004a61-5564-4e49-aa58-8bd602e7124a"]
+             Body = {"email": "raw_used@test.com", "orgRoleId": "a08c24e5-ed13-4a12-a4e8-4658384be150"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/992a7312-4c40-4928-8e5f-8b28dc5c5cdc", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"992a7312-4c40-4928-8e5f-8b28dc5c5cdc","email":"raw_used@test.com","roleName":"Member","roleSlug":"member","invitedByName":"Raw Owner","status":"PENDING","expiresAt":"2026-12-02T06:14:42.000810Z","createdAt":"2026-11-25T06:14:42.000933Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/992a7312-4c40-4928-8e5f-8b28dc5c5cdc
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/invitations/992a7312-4c40-4928-8e5f-8b28dc5c5cdc
+       Parameters = {}
+          Headers = [Idempotency-Key:"016ddd50-2691-4698-983d-16f0a2b367de"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#revokeInvitation(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 204
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = null
+             Body = 
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"0fc77349-de3c-447c-bee7-bf1d11b99010"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"a90ed670-4a5b-4445-a321-3c04216059b7","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_COMPLIANCE","OVERRIDE_MATTER_CLOSURE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","VIEW_TRUST","AI_MANAGE"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"},{"id":"43a0525e-1bb0-4caf-b91e-a6f42e8b1ca5","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","VIEW_TRUST","AI_MANAGE"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"},{"id":"a08c24e5-ed13-4a12-a4e8-4658384be150","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":2,"createdAt":"2026-11-25T06:14:40.166371Z","updatedAt":"2026-11-25T06:14:40.166371Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"84", Idempotency-Key:"095047a5-2792-4a28-91cd-56628a47e5a9"]
+             Body = {"email": "raw_mixed@test.com", "orgRoleId": "a08c24e5-ed13-4a12-a4e8-4658384be150"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/e7f1373c-ef00-4296-a632-38b550eff381", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"e7f1373c-ef00-4296-a632-38b550eff381","email":"raw_mixed@test.com","roleName":"Member","roleSlug":"member","invitedByName":"Raw Owner","status":"PENDING","expiresAt":"2026-12-02T06:14:42.052666Z","createdAt":"2026-11-25T06:14:42.052772Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/e7f1373c-ef00-4296-a632-38b550eff381
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/invitations/e7f1373c-ef00-4296-a632-38b550eff381
+       Parameters = {}
+          Headers = [Idempotency-Key:"164a42cf-5b55-469d-b05a-6adb596091f2"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#revokeInvitation(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 204
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = null
+             Body = 
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"e8577c67-f81c-4f52-a498-8b5740391b58"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 5, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 15.82 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.revokeAfterTheLinkWasUsed_succeeds_andTheirFirstRequestIsRefused -- Time elapsed: 0.052 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.revokeAfterTheLinkWasUsed_succeeds_andTheirFirstRequestIsRefused(InvitationRevokeAlwaysWinsIntegrationTest.java:102)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.theRefusalMatchesTheEmailExactlyAsTheInvitationLookupDoes -- Time elapsed: 0.038 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.theRefusalMatchesTheEmailExactlyAsTheInvitationLookupDoes(InvitationRevokeAlwaysWinsIntegrationTest.java:119)
+
+[ERROR] Tests run: 8, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5.737 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_noLiveKeycloakInvitation_revokesInKazi_withoutTouchingMembership -- Time elapsed: 0.019 s <<< FAILURE!
+org.mockito.exceptions.verification.NeverWantedButInvoked: 
+
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.findUserByEmail(
+    <any>
+);
+Never wanted here:
+-> at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.findUserByEmail(KeycloakAdminClient.java:392)
+But invoked here:
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.revokeInKeycloak(InvitationService.java:213) with arguments: [kc-revoke4@example.com]
+
+	at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.findUserByEmail(KeycloakAdminClient.java:392)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_noLiveKeycloakInvitation_revokesInKazi_withoutTouchingMembership(InvitationServiceTest.java:207)
+
+[ERROR] Failures: 
+[ERROR]   InvitationRevokeAlwaysWinsIntegrationTest.revokeAfterTheLinkWasUsed_succeeds_andTheirFirstRequestIsRefused:102 Status expected:<403> but was:<200>
+[ERROR]   InvitationRevokeAlwaysWinsIntegrationTest.theRefusalMatchesTheEmailExactlyAsTheInvitationLookupDoes:119 Status expected:<403> but was:<200>
+[ERROR]   InvitationServiceTest.revokeInvitation_noLiveKeycloakInvitation_revokesInKazi_withoutTouchingMembership:207 
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.findUserByEmail(
+    <any>
+);
+Never wanted here:
+-> at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.findUserByEmail(KeycloakAdminClient.java:392)
+But invoked here:
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.revokeInKeycloak(InvitationService.java:213) with arguments: [kc-revoke4@example.com]
+
+[ERROR] Tests run: 13, Failures: 3, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

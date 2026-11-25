@@ -69,6 +69,8 @@ interface RenderOptions {
   groups?: string[];
   /** Rendered inside the provider; stands in for a focused editor that handles a key itself. */
   extra?: React.ReactNode;
+  /** `data-app-shell` on the SidebarProvider, as the org layout sets it (ADR-392). */
+  appShell?: string;
 }
 
 function sidebarTree({
@@ -80,6 +82,7 @@ function sidebarTree({
   brandColor,
   groups,
   extra,
+  appShell,
 }: RenderOptions = {}) {
   return (
     <OrgProfileProvider verticalProfile={null} enabledModules={modules} terminologyNamespace={null}>
@@ -89,7 +92,7 @@ function sidebarTree({
         isAdmin={isAdmin}
         isOwner={isOwner}
       >
-        <SidebarProvider defaultOpen={defaultOpen}>
+        <SidebarProvider defaultOpen={defaultOpen} data-app-shell={appShell}>
           <AppSidebar
             slug="test-org"
             orgName="Mathebula & Partners"
@@ -460,5 +463,26 @@ describe("AppSidebar — header and footer", () => {
 
     unmount();
     expect(document.documentElement.style.getPropertyValue("--brand-color")).toBe("");
+  });
+});
+
+describe("AppSidebar — firm shell scope (ADR-392, FD-1 option c)", () => {
+  it('SidebarProvider forwards data-app-shell to div[data-slot="sidebar-wrapper"] (P-16)', () => {
+    renderSidebar({ appShell: "firm" });
+    expect(document.querySelector('[data-slot="sidebar-wrapper"]')).toHaveAttribute(
+      "data-app-shell",
+      "firm"
+    );
+  });
+
+  it("keeps the default sidebar variant in both rail states (the inset is light-only CSS)", async () => {
+    const user = userEvent.setup();
+    renderSidebar({ appShell: "firm" });
+    const sidebar = () => document.querySelector('[data-slot="sidebar"]');
+    expect(sidebar()).toHaveAttribute("data-variant", "sidebar");
+
+    await user.click(screen.getByRole("button", { name: "Toggle menu" }));
+    expect(sidebarState()).toBe("collapsed");
+    expect(sidebar()).toHaveAttribute("data-variant", "sidebar");
   });
 });

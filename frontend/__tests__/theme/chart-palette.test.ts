@@ -24,7 +24,7 @@ import {
 // pinned to the validated hexes; the validator's thresholds (the contract) are then re-run on them,
 // so a retune either keeps the validated palette or fails here.
 
-const { light, dark } = loadThemes();
+const { light, dark, firmLight } = loadThemes();
 type Mode = "light" | "dark";
 const THEMES: [Mode, TokenMap][] = [
   ["light", light],
@@ -144,3 +144,24 @@ describe("lib/chart-theme.ts", () => {
     }
   });
 });
+
+// Phase 91 / 661B (ADR-392, architecture §18.8.3): chart-1..5 against the canvas as well as the
+// card. The firm light canvas equals the card (A1). The non-firm light canvas (97.2 %, marketing
+// and pre-org routes, which render no chart) is not asserted: chart-4 amber is 2.96:1 there
+// (F-661A-5, pre-existing, backlog).
+const CANVAS_THEMES: [string, TokenMap][] = [
+  ["firm light", firmLight],
+  ["dark", dark],
+];
+for (const [mode, vars] of CANVAS_THEMES) {
+  describe(`${mode} — --chart-1..5 ≥ 3:1 on the canvas and the card`, () => {
+    it.each(["--background", "--card"])("on %s", (surface) => {
+      for (const i of [1, 2, 3, 4, 5]) {
+        expect(
+          contrastRatio(tokenHex(`--chart-${i}`, vars), tokenHex(surface, vars)),
+          `--chart-${i}`
+        ).toBeGreaterThanOrEqual(3);
+      }
+    });
+  });
+}

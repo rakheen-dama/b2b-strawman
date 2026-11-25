@@ -35,10 +35,14 @@ export function parseOklch(value: string): Oklch | null {
   return { L, C: parseFloat(m[3]), H: parseFloat(m[4]), alpha };
 }
 
-/** Custom-property declarations of every top-level `selector { … }` block (comments stripped). */
-export function readBlock(css: string, selector: ":root" | ".dark"): TokenMap {
+/** The firm shell's light scheme block (ADR-392): `frontend/app/globals.css`, light only. */
+export const FIRM_LIGHT_SELECTOR = ':root:not(.dark):has([data-app-shell="firm"])';
+
+/** Custom-property declarations of every top-level `selector { … }` block (comments stripped).
+ *  The selector must start a line and match exactly (`:root` does not match `:root:not(…)`). */
+export function readBlock(css: string, selector: string): TokenMap {
   const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const escaped = selector.replace(".", "\\.");
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const out: TokenMap = {};
   for (const block of clean.matchAll(new RegExp(`(?:^|\\n)${escaped}\\s*\\{([^}]*)\\}`, "g"))) {
     for (const decl of block[1].matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
@@ -55,20 +59,28 @@ export const APP_CSS = path.resolve(FRONTEND_ROOT, "app/globals.css");
 export interface Themes {
   light: TokenMap;
   dark: TokenMap;
+  /** Light inside the firm shell: light + the scoped firm block (ADR-392). */
+  firmLight: TokenMap;
   /** The raw blocks, for "defined in both :root and .dark" checks. */
   shared: { root: TokenMap; dark: TokenMap };
-  app: { root: TokenMap; dark: TokenMap };
+  app: { root: TokenMap; dark: TokenMap; firmLight: TokenMap };
 }
 
-/** The cascade as the browser sees it on <html>: light = :root; dark = :root + .dark. */
+/** The cascade as the browser sees it on <html>: light = :root; dark = :root + .dark;
+ *  firm light = :root + the scoped firm block (it never matches under .dark). */
 export function loadThemes(): Themes {
   const sharedCss = fs.readFileSync(SHARED_CSS, "utf8");
   const appCss = fs.readFileSync(APP_CSS, "utf8");
   const shared = { root: readBlock(sharedCss, ":root"), dark: readBlock(sharedCss, ".dark") };
-  const app = { root: readBlock(appCss, ":root"), dark: readBlock(appCss, ".dark") };
+  const app = {
+    root: readBlock(appCss, ":root"),
+    dark: readBlock(appCss, ".dark"),
+    firmLight: readBlock(appCss, FIRM_LIGHT_SELECTOR),
+  };
   const light = { ...shared.root, ...app.root };
   const dark = { ...light, ...shared.dark, ...app.dark };
-  return { light, dark, shared, app };
+  const firmLight = { ...light, ...app.firmLight };
+  return { light, dark, firmLight, shared, app };
 }
 
 /** Resolve `var(--x)` chains and `color-mix(in oklab|oklch, var(--a) N%, var(--b))` to OKLCH. */
@@ -163,6 +175,27 @@ export function oklchToHex(o: Oklch): string {
 /** A token's resolved colour as sRGB hex (alpha ignored). */
 export const tokenHex = (name: string, vars: TokenMap): string =>
   oklchToHex(resolveColor(name, vars));
+
+/** `fgHex` painted at `alpha` over the opaque `bgHex`, blended in gamma-encoded sRGB per 8-bit
+ *  channel (how browsers composite; the 661A AA script's method). */
+export function compositeHex(fgHex: string, alpha: number, bgHex: string): string {
+  if (alpha >= 1) return fgHex;
+  const ch = (h: string, i: number) => parseInt(h.slice(1 + 2 * i, 3 + 2 * i), 16);
+  return (
+    "#" +
+    [0, 1, 2]
+      .map((i) =>
+        Math.round(alpha * ch(fgHex, i) + (1 - alpha) * ch(bgHex, i))
+          .toString(16)
+          .padStart(2, "0")
+      )
+      .join("")
+  );
+}
+
+/** A token's colour as painted over an opaque background (its OKLCH alpha applied). */
+export const paintedHex = (name: string, vars: TokenMap, bgHex: string): string =>
+  compositeHex(tokenHex(name, vars), resolveColor(name, vars).alpha, bgHex);
 
 export function hexToLinear(hex: string): [number, number, number] {
   const h = hex.replace(/^#/, "");

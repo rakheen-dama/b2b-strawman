@@ -1,0 +1,16 @@
+level counts in OBS window (from step 1 start): {'INFO': 61}
+"Member context not available" occurrences: 0
+2026-11-25T04:30:26.123191Z INFO InvitationService Triggered Keycloak invitation for email=obs-partner-1795580847@example.com
+2026-11-25T04:30:26.123827Z INFO InvitationService Created invitation for email=obs-partner-1795580847@example.com with role=partner-obs
+2026-11-25T04:30:53.586118Z INFO MemberFilter Found pending invitation for email obs-partner-1795580847@example.com with role partner-obs
+2026-11-25T04:30:53.627560Z INFO InvitationService Marked invitation id=52530224-8b17-4649-9a9d-2cfbf1d11cce as accepted
+2026-11-25T04:30:53.630973Z INFO MemberFilter Lazy-created member 482f9e9d-d5d0-431b-b001-e6a256940b15 for user b5b0ab58-6858-4dcd-afb3-9283c432ba24 in tenant tenant_5039f2d497cf
+2026-11-25T04:34:43.048598Z INFO InvitationService Triggered Keycloak invitation for email=obs-revoke-a-1795580847@example.com
+2026-11-25T04:34:43.049010Z INFO InvitationService Created invitation for email=obs-revoke-a-1795580847@example.com with role=member
+2026-11-25T04:34:48.645651Z INFO InvitationService Revoked 1 Keycloak invitation(s) for email=obs-revoke-a-1795580847@example.com
+2026-11-25T04:34:48.649797Z INFO InvitationService Revoked invitation id=30129bdf-6b69-48aa-b0cd-e828be1661b3 for email=obs-revoke-a-1795580847@example.com
+2026-11-25T04:37:13.057761Z INFO InvitationService Triggered Keycloak invitation for email=obs-revoke-b-1795580847@example.com
+2026-11-25T04:37:13.058887Z INFO InvitationService Created invitation for email=obs-revoke-b-1795580847@example.com with role=partner-obs
+2026-11-25T04:39:30.243946Z INFO MemberFilter Found pending invitation for email obs-revoke-b-1795580847@example.com with role partner-obs
+2026-11-25T04:39:30.294676Z INFO InvitationService Marked invitation id=6b2234d7-6cef-4787-9430-ef5d27ff3b7d as accepted
+2026-11-25T04:39:30.307315Z INFO MemberFilter Lazy-created member 9e49adc0-f8fa-4b02-91fc-ebbfd0b4d07e for user ac35f07e-181c-4dfa-b1c2-2d336572c009 in tenant tenant_5039f2d497cf

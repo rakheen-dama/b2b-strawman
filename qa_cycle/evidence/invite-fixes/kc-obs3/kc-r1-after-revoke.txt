@@ -1,0 +1,2 @@
+kc user 7e4b5b44-d17d-47c3-8795-7f8edb4c7a20
+{'id': '7e4b5b44-d17d-47c3-8795-7f8edb4c7a20', 'email': 'obs-revoke-d-1795594678@example.com', 'membershipType': 'MANAGED'}

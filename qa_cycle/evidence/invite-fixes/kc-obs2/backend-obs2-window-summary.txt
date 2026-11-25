@@ -1,0 +1,4 @@
+OBS2 window (from step 3 re-check) levels: {'INFO': 47, 'WARN': 16, 'ERROR': 1}
+2026-11-25T07:29:58.154265Z ERROR KeycloakAdminClient Keycloak Admin API error: 409 CONFLICT — {"errorMessage":"User already a member of the organization"}
+2026-11-25T07:29:58.166608Z WARN InvitationService Failed to send Keycloak invitation for email=obs-revoke-c-1795591208@example.com: 400 BAD_REQUEST, ProblemDetail[type='null', title='Keycloak error', status=400, detail='Keycloak Admin API error: 409', instance='null', properties='null']
+Member context not available: 0

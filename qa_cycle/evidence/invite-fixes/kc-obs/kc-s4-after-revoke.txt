@@ -1,0 +1,7 @@
+## GET organizations/fe76c0d4-2174-4001-ae58-af2175b0fb1d (alias)
+mathebula-partners Mathebula & Partners
+## GET invitations?email=obs-revoke-a-1795580847@example.com
+[]
+## GET users?email=obs-revoke-a-1795580847@example.com
+[]
+[]

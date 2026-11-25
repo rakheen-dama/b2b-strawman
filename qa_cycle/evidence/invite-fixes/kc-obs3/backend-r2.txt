@@ -1,0 +1,2 @@
+2026-11-25T08:48:37.616981Z INFO InvitationService Triggered Keycloak invitation for email=obs-fresh-1795594678@example.com
+2026-11-25T08:48:37.617815Z INFO InvitationService Created invitation for email=obs-fresh-1795594678@example.com with role=member

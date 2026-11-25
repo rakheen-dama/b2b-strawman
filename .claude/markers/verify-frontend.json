@@ -1,7 +1,7 @@
 {
-  "commit": "73edaa9f5",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node v20.11.1, orchestrator, worktree-epic-660A)",
+  "commit": "3199e4fbc",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-invite-fixes, PR #1859, CodeRabbit round)",
   "exit": 0,
-  "ts": "2026-11-25T03:02:56Z",
-  "summary": "660A @ 73edaa9f5 (frontend = e2e spec/helper/README/config/package.json only): lint 0 errors (77 pre-existing warnings), typecheck 0, format:check 0, build 0; vitest 506 files / 4960 passed / 2 skipped. E2E on fresh stacks: take-on 17 passed (2 with DEFERRED sub-checks: CashDigest, dormancy job — G93-2/G93-3) @73edaa9f5 (orchestrator independent re-run, 2.6m); legal-lifecycle 105, legal-depth-ii 40 passed/4 skipped, exit-month 16 @bc0eea2f6 (shared helpers/configs unchanged to head)."
+  "ts": "2026-11-25T08:50:00Z",
+  "summary": "PR #1859 @3199e4fbc \u2014 lint 0 errors, format clean, build ok, vitest 506 files / 4968 passed / 2 skipped (first run: 6 load-induced timeouts in 4 untouched files at load ~121; re-run green)"
 }

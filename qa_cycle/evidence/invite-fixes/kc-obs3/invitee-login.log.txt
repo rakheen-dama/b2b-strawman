@@ -1,0 +1,60 @@
+[2026-11-25T08:46:40.374Z] [net:invitee] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T08:46:40.642Z] [net:invitee] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=NKspLXlgcXdlapKQMaT5XTuj57DzyyjL58AOOFmCel8%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=aHtw9YTTsoslAe6hYTqa5XZ86FXik25JzPvRMJ8dSPA&code_challenge=HIqJxEZ0I8exbXgc13QEzkrZdD-pBngRT8KuP0bG6wk&code_challenge_method=S256 
+[2026-11-25T08:46:42.934Z] [net:invitee] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=NKspLXlgcXdlapKQMaT5XTuj57DzyyjL58AOOFmCel8%3D&session_state=eB0rXkhbvnWtpG-38syV_YU0&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=5cf8de2b-0be9-0ac6-3745-03154d296e3b.eB0rXkhbvnWtpG-38syV_YU0.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T08:46:44.796Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"7e4b5b44-d17d-47c3-8795-7f8edb4c7a20","email":"obs-revoke-d-1795594678@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T08:47:17.458Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs3/r1-invitee-home.png
+[2026-11-25T08:47:17.459Z] home url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T08:47:17.461Z] access-revoked count 0
+[2026-11-25T08:47:17.464Z] home text Skip to content
+Kazi
+Mathebula & Partners
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+FEES
+TRUST
+FIRM
+Notifications
+LR
+Late Revoke
+obs-revoke-d-1795594678@example.com
+Toggle menu
+Mathebula & Partners
+Home
+Search
+⌘K
+LR
+Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Home
+What needs you today
+Today's diary
+Open diary
+Nothing in the diary today
+My tasks
+Open my work
+Nothing assigned to you.
+Tasks assigned to you on a matter appear here.
+My unbilled time
+0m
+No unbilled time. Billable time you record stays here until it is on a fee note.
+Open timesheet
+Matter Health
+No matters yet
+Create a matter to start tracking health status.
+Recent Activity
+No recent activity
+Activity will appear as your team works on matters.
+Command Palette
+Search pages and settings
+[2026-11-25T08:47:17.488Z] GET http://localhost:8443/bff/me 200 {"authenticated":true,"userId":"7e4b5b44-d17d-47c3-8795-7f8edb4c7a20","email":"obs-revoke-d-1795594678@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T08:47:17.513Z] GET http://localhost:8443/api/me/capabilities 200 {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"e68bf01a-9647-42f1-af31-f486d765fcdc"}

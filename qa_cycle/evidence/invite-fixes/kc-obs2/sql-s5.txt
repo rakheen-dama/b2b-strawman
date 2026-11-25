@@ -1,0 +1,43 @@
+BEGIN
+ members_rows 
+--------------
+            0
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                | status  
+--------------------------------------+-------------------------------------+---------
+ 4e2e88b2-aaa0-4cc6-89a1-f819a392c9d6 | obs-revoke-c-1795591208@example.com | PENDING
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                | status  
+--------------------------------------+-------------------------------------+---------
+ 4e2e88b2-aaa0-4cc6-89a1-f819a392c9d6 | obs-revoke-c-1795591208@example.com | REVOKED
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                |            clerk_user_id             | role_name 
+--------------------------------------+-------------------------------------+--------------------------------------+-----------
+ f5e818d2-05da-49e1-a467-e36767ab564b | obs-revoke-c-1795591208@example.com | e223d2a5-cf16-4d7e-b00d-3be8cb9835a7 | Member
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                |  role_name  |  status  |          created_at           |          accepted_at          
+--------------------------------------+-------------------------------------+-------------+----------+-------------------------------+-------------------------------
+ 4e2e88b2-aaa0-4cc6-89a1-f819a392c9d6 | obs-revoke-c-1795591208@example.com | Partner OBS | REVOKED  | 2026-11-25 07:25:21.532512+00 | 
+ bd4acfe5-d422-4e3f-9309-13738a5ae065 | obs-revoke-c-1795591208@example.com | Member      | ACCEPTED | 2026-11-25 07:29:57.934723+00 | 2026-11-25 07:30:03.557572+00
+(2 rows)
+
+COMMIT
+BEGIN
+                  id                  |                email                |          created_at           
+--------------------------------------+-------------------------------------+-------------------------------
+ f5e818d2-05da-49e1-a467-e36767ab564b | obs-revoke-c-1795591208@example.com | 2026-11-25 07:30:03.528425+00
+(1 row)
+
+COMMIT

@@ -1,0 +1,2 @@
+OBS3 window levels: {'INFO': 51}
+

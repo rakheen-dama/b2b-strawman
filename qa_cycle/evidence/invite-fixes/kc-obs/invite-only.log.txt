@@ -1,0 +1,64 @@
+[2026-11-25T04:36:08.896Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T04:36:09.011Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=V5myXZ7RM69dOp8McQT1DHrAvDw3eZbCgIUHYNTyozc%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=TbLdc_HhKw4z_q8LkMvcMhcJUhWVpKoN9Dabu_H3xkw&code_challenge=Yhs99PQFasyB0a6I-z87GAfWfdDq5acUZPq7ZSgDNsI&code_challenge_method=S256 
+[2026-11-25T04:36:11.646Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=V5myXZ7RM69dOp8McQT1DHrAvDw3eZbCgIUHYNTyozc%3D&session_state=98QedrfZkllXz8DoiXDVpQeh&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=c92db418-7776-fbd0-14f7-903fdd4ccfcb.98QedrfZkllXz8DoiXDVpQeh.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T04:36:12.628Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:36:41.842Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:36:42.092Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T04:36:42.312Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:37:12.650Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s5-invite-filled.png
+[2026-11-25T04:37:12.653Z] customise control present? 0
+[2026-11-25T04:37:16.787Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s5-invite-sent.png
+[2026-11-25T04:37:16.789Z] after invite body text: Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+4 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+4 members · 1 pending invitation
+Invitation sent to obs-revoke-b-1795580847@example.com.
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS
+[2026-11-25T04:37:18.398Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s5-pending-tab.png
+[2026-11-25T04:37:18.399Z] pending tab text: Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+4 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+4 members · 1 pending invitation
+Invitation sent to obs-revoke-b-1795580847@example.com.
+Members
+Pending Invitations
+EMAIL	ROLE	INVITED	ACTIONS
+obs-revoke-b-1795580847@example.com	org:partner-obs	25 Nov 2026	Revoke

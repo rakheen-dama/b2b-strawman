@@ -1,0 +1,65 @@
+[2026-11-25T04:27:28.870Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T04:27:30.111Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=9rvHzjzCbKlwY7mzUFfCwbFSFeesPWIotZwttrVl7ZU%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=3rDPHDsojccblpcSJZn34ttnl_nqMkRnWtlidF3TRns&code_challenge=uu7DeVMZ8m8wBqALmr0V-PKrJCvHD-NwBXSrIbLM-9E&code_challenge_method=S256 
+[2026-11-25T04:27:33.126Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=9rvHzjzCbKlwY7mzUFfCwbFSFeesPWIotZwttrVl7ZU%3D&session_state=tSWI1cQdohBU6ZG3WfD_i6ig&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=0a2efd3b-5da8-18b4-ad78-b6f2c850d680.tSWI1cQdohBU6ZG3WfD_i6ig.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T04:27:35.548Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:28:03.646Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:28:05.134Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T04:28:05.699Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:28:37.369Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s1-role-dialog-filled.png
+[2026-11-25T04:28:40.754Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s1-role-created.png
+[2026-11-25T04:28:40.758Z] Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Firm
+General
+Roles
+Audit trail
+Data protection
+Data requests
+Compliance
+Features
+Subscription
+Matters
+Documents
+Fees & Trust
+Connections
+General
+Roles
+Audit trail
+Data protection
+Data requests
+Compliance
+Features
+Subscription
+Roles & Permissions
+Manage system roles and create custom roles with granular permissions.
+System Roles
+Built-in roles that cannot be modified or deleted.
+Owner
+System
+No default capabilities
+1 member
+Admin
+System
+No default capabilities
+1 member
+Member
+System
+AI Execute
+GENERATE STATEMENT OF ACCOUNT
+VIEW LEGAL
+MANAGE DISBURSEMENTS
+View Trust
+1 member
+Custom Roles
+Create roles with specific capabilities for your team.
+New Role
+Partner OBS
+OBS PR #1859 custom role
+Edit Partner OBS
+Delete Partner OBS
+Matter Management
+Sign off trust take-on
+View Trust
+0 members
+Capability Reference

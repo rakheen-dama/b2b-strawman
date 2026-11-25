@@ -1,0 +1,7 @@
+BEGIN
+                  id                  |              email               | status  
+--------------------------------------+----------------------------------+---------
+ 3d2fd1ef-181e-4582-9c79-f085daea80e5 | obs-fresh-1795594678@example.com | PENDING
+(1 row)
+
+COMMIT

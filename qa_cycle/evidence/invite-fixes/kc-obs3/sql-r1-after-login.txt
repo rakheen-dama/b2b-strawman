@@ -1,0 +1,15 @@
+BEGIN
+                  id                  |                email                | role_name |          created_at           
+--------------------------------------+-------------------------------------+-----------+-------------------------------
+ e68bf01a-9647-42f1-af31-f486d765fcdc | obs-revoke-d-1795594678@example.com | Member    | 2026-11-25 08:46:43.643408+00
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |  role_name  |  status  |          accepted_at          
+--------------------------------------+-------------+----------+-------------------------------
+ cdf8ec81-ea4b-4abd-8b51-c8ec5703ca88 | Partner OBS | REVOKED  | 
+ 949d1af7-375e-4d01-bf23-d6856df25245 | Member      | ACCEPTED | 2026-11-25 08:46:43.729365+00
+(2 rows)
+
+COMMIT

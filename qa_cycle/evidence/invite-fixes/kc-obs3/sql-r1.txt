@@ -1,0 +1,14 @@
+BEGIN
+ members_rows 
+--------------
+            0
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                | status  
+--------------------------------------+-------------------------------------+---------
+ cdf8ec81-ea4b-4abd-8b51-c8ec5703ca88 | obs-revoke-d-1795594678@example.com | REVOKED
+(1 row)
+
+COMMIT

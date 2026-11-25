@@ -1,0 +1,113 @@
+[2026-11-25T08:39:37.997Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T08:39:38.412Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=_yOAsbi5NQE9tNNLAfShTy380Op9Y5ETC3VLfL4YQk0%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=lZ8eie1buGVmczc4AkLUzgqJYTON690zK39wOi2Iedo&code_challenge=aG_-W4ItXMexqkUkcUILg7eKBJ7-PCidP1xk2ymHxQA&code_challenge_method=S256 
+[2026-11-25T08:39:41.152Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=_yOAsbi5NQE9tNNLAfShTy380Op9Y5ETC3VLfL4YQk0%3D&session_state=UZOWb5sowywfn21USLBbdW9E&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=c2e2bd8f-affe-f70c-fa37-9981503653cd.UZOWb5sowywfn21USLBbdW9E.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T08:39:44.165Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T08:40:11.749Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T08:40:12.072Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs3/p0-owner-dashboard.png
+[2026-11-25T08:40:13.293Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T08:40:13.677Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T08:40:43.557Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs3/p0-team.png
+[2026-11-25T08:40:43.563Z] Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+7 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+7 members · 0 pending invitations
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS
+LR
+Late Revoke
+	obs-revoke-b-1795580847@example.com	
+Partner OBS
+PP
+Pat Partner
+	obs-partner2-1795591208@example.com	
+Partner OBS
+LR
+Late Revoke
+	obs-revoke-c-1795591208@example.com	
+Member
+[2026-11-25T08:40:45.329Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T08:40:45.705Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T08:41:15.616Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs3/p0-roles.png
+[2026-11-25T08:41:15.621Z] Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Firm
+General
+Roles
+Audit trail
+Data protection
+Data requests
+Compliance
+Features
+Subscription
+Matters
+Documents
+Fees & Trust
+Connections
+General
+Roles
+Audit trail
+Data protection
+Data requests
+Compliance
+Features
+Subscription
+Roles & Permissions
+Manage system roles and create custom roles with granular permissions.
+System Roles
+Built-in roles that cannot be modified or deleted.
+Owner
+System
+No default capabilities
+1 member
+Admin
+System
+No default capabilities
+1 member
+Member
+System
+AI Execute
+GENERATE STATEMENT OF ACCOUNT
+VIEW LEGAL
+MANAGE DISBURSEMENTS
+View Trust
+2 members
+Custom Roles
+Create roles with specific capabilities for your team.
+New Role
+Partner OBS
+OBS PR #1859 custom role
+Edit Partner OBS
+Delete Partner OBS
+Matter Management
+Sign off trust take-on
+View Trust
+3 members
+Capability Reference

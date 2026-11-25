@@ -1,0 +1,283 @@
+[2026-11-25T07:27:42.164Z] [net:invitee] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T07:27:42.506Z] [net:invitee] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=pluXaqiv-vE5IgR9PGhOqSg4xek-lqjryGoVMS3j3f8%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=qcsX8-IgY_KKQpbwEUbuK0Iyb5VOiHikFlIL97B3Wf0&code_challenge=qqm2n0HuiRHi4T7OVA4VcbZ6tSwVKKtE9dfEGHdaoDE&code_challenge_method=S256 
+[2026-11-25T07:27:44.599Z] [net:invitee] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=pluXaqiv-vE5IgR9PGhOqSg4xek-lqjryGoVMS3j3f8%3D&session_state=cxw0hT9o1BEnFNHBtsTlMFYW&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=8857b9e2-aa60-9cdb-431f-2de1fb8898ad.cxw0hT9o1BEnFNHBtsTlMFYW.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T07:27:45.288Z] [console:invitee] %c%s%c Failed to load org settings for Home: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?63:1401:15)
+    at Function.all (<anonymous>:1:21)
+[2026-11-25T07:27:45.289Z] [console:invitee] %c%s%c Failed to fetch capabilities, falling back to empty: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?63:1401:15)
+    at Function.allSett
+[2026-11-25T07:27:45.289Z] [console:invitee] %c%s%c Failed to fetch org settings, falling back to defaults: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?63:1401:15)
+    at Function.allS
+[2026-11-25T07:27:45.289Z] [console:invitee] %c%s%c Failed to fetch billing data, falling back to active: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?63:1401:15)
+    at Function.allSet
+[2026-11-25T07:27:45.403Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:27:46.013Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:27:46.014Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:27:51.181Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:27:51.182Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:06.388Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:28:06.390Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:18.980Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5b-invitee-home.png
+[2026-11-25T07:28:18.980Z] 5b home url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:28:18.985Z] 5b access-revoked count 1
+[2026-11-25T07:28:19.010Z] 5b access-revoked role alert text: Access revoked
+
+Your invitation to this firm was revoked. Ask the firm to invite you again.
+[2026-11-25T07:28:19.018Z] 5b home text Skip to content
+Kazi
+mathebula-partners
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+FIRM
+Notifications
+LR
+Late Revoke
+obs-revoke-c-1795591208@example.com
+Toggle menu
+mathebula-partners
+Home
+Search
+⌘K
+LR
+Access revoked
+Your invitation to this firm was revoked. Ask the firm to invite you again.
+Command Palette
+Search pages and settings
+[2026-11-25T07:28:19.058Z] 5b GET http://localhost:8443/bff/me 200 {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:28:19.099Z] 5b GET http://localhost:8443/api/me/capabilities 403 {"detail":"Your invitation to this firm was revoked. Ask the firm to invite you again.","status":403,"title":"Access revoked"}
+[2026-11-25T07:28:20.780Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:28:20.861Z] [console:invitee] %c%s%c Failed to fetch capabilities, falling back to empty: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?59:1401:15)
+    at Function.allSett
+[2026-11-25T07:28:20.862Z] [console:invitee] %c%s%c Failed to fetch org settings, falling back to defaults: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?59:1401:15)
+    at Function.allS
+[2026-11-25T07:28:20.862Z] [console:invitee] %c%s%c Failed to fetch billing data, falling back to active: background: #e6e6e6;background: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.25));color: #000000;color: light-dark(#000000, #ffffff);border-radius: 2px  Server   ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?59:1401:15)
+    at Function.allSet
+[2026-11-25T07:28:20.974Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:28:21.065Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:28:21.065Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:21.087Z] [console:invitee] %o
+
+%s ApiError: Your invitation to this firm was revoked. Ask the firm to invite you again.
+    at apiRequest (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/frontend_1upw8ax._.js?0:1401:15)
+    at  MattersPage (about://React/Server/file:///Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/.next/dev/server/chunks/ssr/_09q6x9o._.js?1:744:18)
+    at resolveErrorDev (http://localhost:3000/_next/static/chunks/1t7m_next_dist_c
+[2026-11-25T07:28:26.130Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:28:26.130Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:36.173Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:28:36.174Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:53.946Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5b-invitee-matters.png
+[2026-11-25T07:28:53.946Z] 5b matters url http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:28:53.948Z] 5b matters text Skip to content
+Kazi
+mathebula-partners
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+FIRM
+Notifications
+LR
+Late Revoke
+obs-revoke-c-1795591208@example.com
+Toggle menu
+mathebula-partners
+Matters
+Search
+⌘K
+LR
+Something went wrong
+Unable to load this page. Please try again.
+Try again
+Command Palette
+Search pages and settings
+[2026-11-25T07:28:54.047Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T07:28:54.200Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=sMyunLWdmeIvNgYKXYr4ErFeLr0RSYp6_5rJ42Ixpho%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=VJ6dsgcfa3rXMyLh67--NX0dWNGV_UN461P89bXCGg0&code_challenge=4wVrZp-ZAqqalbm3MUgRCzNZfjDIMkCmJOB6TI9WNbg&code_challenge_method=S256 
+[2026-11-25T07:28:56.291Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:28:56.291Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:28:56.757Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=sMyunLWdmeIvNgYKXYr4ErFeLr0RSYp6_5rJ42Ixpho%3D&session_state=bHNnA7zlPQjHckROC2M0irYK&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=13e43d56-7c33-4e45-c346-bf08962a70bb.bHNnA7zlPQjHckROC2M0irYK.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T07:28:57.862Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:29:26.968Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:29:27.243Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:29:27.496Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:29:36.369Z] [net:invitee] 5xx 500 http://localhost:3000/org/mathebula-partners/matters
+[2026-11-25T07:29:36.369Z] [console:invitee] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-11-25T07:29:57.727Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5c-invite-filled.png
+[2026-11-25T07:29:57.730Z] customise control present? 0
+[2026-11-25T07:30:01.833Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5c-invite-sent.png
+[2026-11-25T07:30:01.835Z] after invite body text: Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+6 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+6 members · 1 pending invitation
+Invitation sent to obs-revoke-c-1795591208@example.com.
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS
+LR
+Late Revoke
+	obs-revoke-b-1795580847@example.com	
+Partner OBS
+PP
+Pat Partner
+	obs-partner2-1795591208@example.com	
+Partner OBS
+[2026-11-25T07:30:03.422Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5c-pending-after-reinvite.png
+[2026-11-25T07:30:03.423Z] 5c pending text Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+6 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+6 members · 1 pending invitation
+Invitation sent to obs-revoke-c-1795591208@example.com.
+Members
+Pending Invitations
+EMAIL	ROLE	INVITED	ACTIONS
+obs-revoke-c-1795591208@example.com	Member	25 Nov 2026	Revoke
+[2026-11-25T07:30:03.757Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:30:04.228Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:30:04.228Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:30:04.461Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:30:38.429Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5c-invitee-home-after-reinvite.png
+[2026-11-25T07:30:38.429Z] 5c home url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T07:30:38.430Z] 5c access-revoked count 0
+[2026-11-25T07:30:38.432Z] 5c home text Skip to content
+Kazi
+Mathebula & Partners
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+FEES
+TRUST
+FIRM
+Notifications
+LR
+Late Revoke
+obs-revoke-c-1795591208@example.com
+Toggle menu
+Mathebula & Partners
+Home
+Search
+⌘K
+LR
+Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Home
+What needs you today
+Today's diary
+Open diary
+Nothing in the diary today
+My tasks
+Open my work
+Nothing assigned to you.
+Tasks assigned to you on a matter appear here.
+My unbilled time
+0m
+No unbilled time. Billable time you record stays here until it is on a fee note.
+Open timesheet
+Matter Health
+No matters yet
+Create a matter to start tracking health status.
+Recent Activity
+No recent activity
+Activity will appear as your team works on matters.
+Command Palette
+Search pages and settings
+[2026-11-25T07:30:38.441Z] 5c GET http://localhost:8443/bff/me 200 {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:30:38.466Z] 5c GET http://localhost:8443/api/me/capabilities 200 {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"f5e818d2-05da-49e1-a467-e36767ab564b"}
+[2026-11-25T07:30:38.685Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T07:30:38.906Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"e223d2a5-cf16-4d7e-b00d-3be8cb9835a7","email":"obs-revoke-c-1795591208@example.com","name":"Late Revoke","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T07:31:10.870Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs2/s5c-invitee-team.png
+[2026-11-25T07:31:10.872Z] 5c invitee team text Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+7 members
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS
+LR
+Late Revoke
+	obs-revoke-b-1795580847@example.com	
+Partner OBS
+PP
+Pat Partner
+	obs-partner2-1795591208@example.com	
+Partner OBS
+LR
+Late Revoke
+	obs-revoke-c-1795591208@example.com	
+Member

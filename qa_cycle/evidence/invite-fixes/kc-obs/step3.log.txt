@@ -1,0 +1,155 @@
+[2026-11-25T04:30:46.342Z] mailpit id FqyJVdGzpmF4q47LD93KXw subject Invitation to join the Mathebula & Partners organization from noreply@docteams.local to ["obs-partner-1795580847@example.com"]
+[2026-11-25T04:30:46.343Z] invite link http://localhost:3000/accept-invite?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3DeyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:47.047Z] nav -> http://localhost:3000/accept-invite?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3DeyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:47.258Z] nav -> http://localhost:3000/accept-invite?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3DeyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:47.486Z] nav -> http://localhost:3000/accept-invite/continue?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3DeyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:47.534Z] nav -> http://localhost:3000/accept-invite/continue?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3DeyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:47.767Z] nav -> http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?response_type=code&client_id=account&token=eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:52.278Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s3-link-landing.png
+[2026-11-25T04:30:52.278Z] landing url http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?response_type=code&client_id=account&token=eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1YTFlMThmOS0xOWZlLTQwMDktOTU4ZS0yMGQ5ZjllN2U3ZTAifQ.eyJleHAiOjE3OTU2MjQyMjUsImlhdCI6MTc5NTU4MTAyNSwianRpIjoiYzE1MGJlY2ItYmVjYS00ZTMwLTlhM2EtYmMwMzNlNDU2OTRkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL3JlYWxtcy9kb2N0ZWFtcyIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvZG9jdGVhbXMiLCJ0eXAiOiJPUkdJVlQiLCJhenAiOiJhY2NvdW50Iiwibm9uY2UiOiI0NjMyOTUyYy04MzkzLTQ2NmQtYjk1OC1kMGNlZTI5YWNlN2MiLCJlbWwiOiJvYnMtcGFydG5lci0xNzk1NTgwODQ3QGV4YW1wbGUuY29tIiwicmVkdXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FjY2VwdC1pbnZpdGUvY29tcGxldGUiLCJvcmdfaWQiOiJmZTc2YzBkNC0yMTc0LTQwMDEtYWU1OC1hZjIxNzViMGZiMWQifQ.ueaCkDqyoY2bTtt-GDeVgHrkzaCnGF_PO8dyte34X8lC95PNg6AUW9NamLkruG75598-a7MHZHOT03lWz1Ou_A
+[2026-11-25T04:30:52.283Z] landing text Kazi
+Create an account to join the Mathebula & Partners organization
+First name
+Last name
+Email
+Password
+Confirm password
+Register
+Already have an account? Sign In
+© 2026 Kazi
+[2026-11-25T04:30:52.407Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s3-kc-register-filled.png
+[2026-11-25T04:30:53.068Z] nav -> http://localhost:3000/accept-invite/complete?session_state=x5oMCE7kAiud3bTYcerV2kRt&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=bd49723d-7afb-fe92-2eaa-484e025cd442.x5oMCE7kAiud3bTYcerV2kRt.59957022-5ef4-4e3d-8381-c0da0d91aa84
+[2026-11-25T04:30:53.115Z] nav -> http://localhost:3000/accept-invite/complete?session_state=x5oMCE7kAiud3bTYcerV2kRt&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=bd49723d-7afb-fe92-2eaa-484e025cd442.x5oMCE7kAiud3bTYcerV2kRt.59957022-5ef4-4e3d-8381-c0da0d91aa84
+[2026-11-25T04:30:53.140Z] [net:invitee] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T04:30:53.243Z] [net:invitee] 302 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=DLZ9QFu3hPBBwHxl09S0Nx0POj2dY35QOFmngwjmXiM%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=zdO49a33M-5lE31Eab1Kqm3IQbTsxUYWT_wb25h3ssI&code_challenge=_B2i7w81-mm5cv6hLWLazqhanHlA02u0WarBOMq2sv4&code_challenge_method=S256 
+[2026-11-25T04:30:53.322Z] [net:invitee] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=DLZ9QFu3hPBBwHxl09S0Nx0POj2dY35QOFmngwjmXiM%3D&session_state=x5oMCE7kAiud3bTYcerV2kRt&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=45527a01-71b3-e842-147a-0e217973d3bd.x5oMCE7kAiud3bTYcerV2kRt.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T04:30:53.384Z] nav -> http://localhost:3000/dashboard
+[2026-11-25T04:30:53.473Z] nav -> http://localhost:3000/dashboard
+[2026-11-25T04:30:53.771Z] nav -> http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:30:54.059Z] nav -> http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:30:54.123Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"b5b0ab58-6858-4dcd-afb3-9283c432ba24","email":"obs-partner-1795580847@example.com","name":"Pat Partner","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:31:27.648Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s3-invitee-landing.png
+[2026-11-25T04:31:27.648Z] invitee landing url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:31:27.650Z] invitee landing text Skip to content
+Kazi
+Mathebula & Partners
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+FEES
+TRUST
+FIRM
+Notifications
+PP
+Pat Partner
+obs-partner-1795580847@example.com
+Toggle menu
+Mathebula & Partners
+Home
+Search
+⌘K
+PP
+Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Home
+What needs you today
+Today's diary
+Open diary
+Nothing in the diary today
+My tasks
+Open my work
+Nothing assigned to you.
+Tasks assigned to you on a matter appear here.
+My unbilled time
+0m
+No unbilled time. Billable time you record stays here until it is on a fee note.
+Open timesheet
+Matter Health
+No matters yet
+Create a matter to start tracking health status.
+Recent Activity
+No recent activity
+Activity will appear as your team works on matters.
+Command Palette
+Search pages and settings
+[2026-11-25T04:31:27.664Z] GET http://localhost:8443/bff/me 200 {"authenticated":true,"userId":"b5b0ab58-6858-4dcd-afb3-9283c432ba24","email":"obs-partner-1795580847@example.com","name":"Pat Partner","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:31:27.690Z] GET http://localhost:8443/api/me/capabilities 200 {"capabilities":["PROJECT_MANAGEMENT","SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"role":"Partner OBS","isAdmin":false,"isOwner":false,"memberId":"482f9e9d-d5d0-431b-b001-e6a256940b15"}
+[2026-11-25T04:31:27.859Z] nav -> http://localhost:3000/org/mathebula-partners/team
+[2026-11-25T04:31:27.866Z] [net:invitee] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T04:31:28.002Z] nav -> http://localhost:3000/org/mathebula-partners/team
+[2026-11-25T04:31:28.048Z] [net:invitee] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"b5b0ab58-6858-4dcd-afb3-9283c432ba24","email":"obs-partner-1795580847@example.com","name":"Pat Partner","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:32:00.068Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s3-invitee-team.png
+[2026-11-25T04:32:00.071Z] invitee team text Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+4 members
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS
+[2026-11-25T04:32:00.154Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T04:32:00.325Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=biQ_Shd_cLAg8CXX_1ovEeVEZFAEAA1BO-3QpgF81WY%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=gBKsM6l7_QFkXlyHC5adFHaayJ3bZ1s8kQTycsmaIts&code_challenge=Kg5jTEGaF-C5mILjO44jiEkN5wKftOvhHz0zouaXOSs&code_challenge_method=S256 
+[2026-11-25T04:32:02.501Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=biQ_Shd_cLAg8CXX_1ovEeVEZFAEAA1BO-3QpgF81WY%3D&session_state=3903l9OoSRc5I23x5gGglBWZ&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=b0027393-7ad5-2e7b-3e8e-422614637bc4.3903l9OoSRc5I23x5gGglBWZ.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T04:32:03.265Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:32:32.711Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:32:32.903Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T04:32:33.123Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:33:05.071Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s3-owner-team.png
+[2026-11-25T04:33:05.074Z] owner team text Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+4 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+4 members · 0 pending invitations
+Members
+Pending Invitations
+MEMBER	EMAIL	ROLE
+TM
+Thandi Mathebula
+	thandi@mathebula-test.local	
+Owner
+BN
+Bob Ndlovu
+	bob@mathebula-test.local	
+Admin
+CM
+Carol Mokoena
+	carol@mathebula-test.local	
+Member
+PP
+Pat Partner
+	obs-partner-1795580847@example.com	
+Partner OBS

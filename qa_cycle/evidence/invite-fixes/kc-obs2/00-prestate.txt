@@ -1,0 +1,1 @@
+pre-state Wed Nov 25 07:18:13 UTC 2026: no docker containers, no service ports; head fe4e3491dbf7a6f0b06b611231f1eac451ddb3df

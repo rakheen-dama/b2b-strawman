@@ -1,0 +1,10 @@
+levels {'WARN': 16, 'INFO': 16, 'ERROR': 1}
+Refused lines 15
+500/ERROR lines 1
+2026-11-25T07:27:45.092748Z WARN MemberFilter Refused member creation for user e223d2a5-cf16-4d7e-b00d-3be8cb9835a7 in tenant tenant_5039f2d497cf: Your invitation to this firm was revoked. Ask the firm to invite you again.
+2026-11-25T07:29:58.154265Z ERROR KeycloakAdminClient Keycloak Admin API error: 409 CONFLICT — {"errorMessage":"User already a member of the organization"}
+2026-11-25T07:29:58.166608Z WARN InvitationService Failed to send Keycloak invitation for email=obs-revoke-c-1795591208@example.com: 400 BAD_REQUEST, ProblemDetail[type='null', title='Keycloak error', status=400, detail='Keycloak Admin API error: 409', instance='null', properties='null']
+2026-11-25T07:29:58.166814Z INFO InvitationService Created invitation for email=obs-revoke-c-1795591208@example.com with role=member
+2026-11-25T07:30:03.512780Z INFO MemberFilter Found pending invitation for email obs-revoke-c-1795591208@example.com with role member
+2026-11-25T07:30:03.557758Z INFO InvitationService Marked invitation id=bd4acfe5-d422-4e3f-9309-13738a5ae065 as accepted
+2026-11-25T07:30:03.570259Z INFO MemberFilter Lazy-created member f5e818d2-05da-49e1-a467-e36767ab564b for user e223d2a5-cf16-4d7e-b00d-3be8cb9835a7 in tenant tenant_5039f2d497cf

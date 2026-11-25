@@ -1,0 +1,42 @@
+BEGIN
+                  id                  |                email                |             org_role_id              | status  
+--------------------------------------+-------------------------------------+--------------------------------------+---------
+ 6b2234d7-6cef-4787-9430-ef5d27ff3b7d | obs-revoke-b-1795580847@example.com | f4813c78-1da7-41e3-a056-6fb53074876b | PENDING
+(1 row)
+
+COMMIT
+BEGIN
+ members_rows 
+--------------
+            0
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                | status  
+--------------------------------------+-------------------------------------+---------
+ 6b2234d7-6cef-4787-9430-ef5d27ff3b7d | obs-revoke-b-1795580847@example.com | PENDING
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                | status  
+--------------------------------------+-------------------------------------+---------
+ 6b2234d7-6cef-4787-9430-ef5d27ff3b7d | obs-revoke-b-1795580847@example.com | PENDING
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                |    name     |             org_role_id              |  role_name  
+--------------------------------------+-------------------------------------+-------------+--------------------------------------+-------------
+ 9e49adc0-f8fa-4b02-91fc-ebbfd0b4d07e | obs-revoke-b-1795580847@example.com | Late Revoke | f4813c78-1da7-41e3-a056-6fb53074876b | Partner OBS
+(1 row)
+
+COMMIT
+BEGIN
+                  id                  |                email                |  status  |          accepted_at          
+--------------------------------------+-------------------------------------+----------+-------------------------------
+ 6b2234d7-6cef-4787-9430-ef5d27ff3b7d | obs-revoke-b-1795580847@example.com | ACCEPTED | 2026-11-25 04:39:30.294516+00
+(1 row)
+
+COMMIT

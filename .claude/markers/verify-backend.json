@@ -1,7 +1,7 @@
 {
-  "commit": "bc2c478ad",
-  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh -q",
+  "commit": "3199e4fbc",
+  "command": "cd backend && bash scripts/verify.sh -q (wt-invite-fixes, PR #1859)",
   "exit": 0,
-  "ts": "2026-11-24T20:53:13Z",
-  "summary": "PR #1857 (658A): 8175 testcases / 0 failures / 0 errors / 55 skipped (counted from 929 surefire XML <testcase> elements) — 34:55 min; worktree-epic-658A @ bc2c478ad09dae121eec024019aaeb0f2a8c5df5"
+  "ts": "2026-11-25T09:29:00Z",
+  "summary": "PR #1859 @3199e4fbc \u2014 8203 <testcase> / 0 failures / 0 errors (surefire XML)"
 }

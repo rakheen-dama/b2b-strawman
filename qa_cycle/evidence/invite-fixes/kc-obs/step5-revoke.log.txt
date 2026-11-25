@@ -1,0 +1,32 @@
+[2026-11-25T04:37:52.787Z] [net:owner] 302 GET http://localhost:8443/oauth2/authorization/keycloak 
+[2026-11-25T04:37:52.850Z] [net:owner] 200 GET http://localhost:8180/realms/docteams/protocol/openid-connect/auth?response_type=code&client_id=gateway-bff&scope=openid%20profile%20email%20organization&state=_WXRYaY9SDbbumbTnW02IY2NRGdVh9hezwGGOI5oCoQ%3D&redirect_uri=http://localhost:8443/login/oauth2/code/keycloak&nonce=_TmhTCk50-fWo11SAYLSz-NLhNiRPacfQFD2Ha59G1A&code_challenge=OtGIwbFJdryFjA5XnZ_ma0AiBpRRanNUsrOs594JVG4&code_challenge_method=S256 
+[2026-11-25T04:37:55.107Z] [net:owner] 302 GET http://localhost:8443/login/oauth2/code/keycloak?state=_WXRYaY9SDbbumbTnW02IY2NRGdVh9hezwGGOI5oCoQ%3D&session_state=ueRWXunvNXe5_2eaz1gB310M&iss=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams&code=856d125f-07ab-b2af-3f92-6d73d0f66ec7.ueRWXunvNXe5_2eaz1gB310M.361a426a-951d-4118-8711-232083ea7523 
+[2026-11-25T04:37:55.904Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:38:25.306Z] owner logged in, url http://localhost:3000/org/mathebula-partners/dashboard
+[2026-11-25T04:38:25.491Z] [net:owner] 200 GET http://localhost:8443/bff/me 
+[2026-11-25T04:38:25.703Z] [net:owner] 200 GET http://localhost:8443/bff/me {"authenticated":true,"userId":"91b3fe23-a333-4197-9b67-7a00915173fe","email":"thandi@mathebula-test.local","name":"Thandi Mathebula","picture":"","orgId":"mathebula-partners","orgSlug":"mathebula-partners","groups":[]}
+[2026-11-25T04:38:57.275Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s5-pending-before-revoke.png
+[2026-11-25T04:38:57.277Z] row count before 1
+[2026-11-25T04:39:01.387Z] screenshot /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/712ca3c2-7998-4251-9151-432aaba60bf8/scratchpad/inv/kc-obs/s5-revoke-refused.png
+[2026-11-25T04:39:01.388Z] alert count 1
+[2026-11-25T04:39:01.391Z] alert role alert text: 'obs-revoke-b-1795580847@example.com' has already accepted the invitation email and joins with the invited role on their first sign-in, so it can no longer be revoked. Remove them from the team once they appear.
+[2026-11-25T04:39:01.391Z] row count after 1
+[2026-11-25T04:39:01.393Z] pending after Trial ending soon
+Your trial ends in 1 day —
+contact your administrator
+Team
+4 members
+Invite a team member
+Email address
+Role
+Member
+Member
+Admin
+Partner OBS
+Send Invite
+4 members · 1 pending invitation
+Members
+Pending Invitations
+'obs-revoke-b-1795580847@example.com' has already accepted the invitation email and joins with the invited role on their first sign-in, so it can no longer be revoked. Remove them from the team once they appear.
+EMAIL	ROLE	INVITED	ACTIONS
+obs-revoke-b-1795580847@example.com	org:partner-obs	25 Nov 2026	Revoke

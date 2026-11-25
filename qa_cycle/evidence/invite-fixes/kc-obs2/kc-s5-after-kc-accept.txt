@@ -1,0 +1,5 @@
+kc user id: e223d2a5-cf16-4d7e-b00d-3be8cb9835a7
+## org member?
+{'id': 'e223d2a5-cf16-4d7e-b00d-3be8cb9835a7', 'email': 'obs-revoke-c-1795591208@example.com', 'membershipType': 'MANAGED'}
+## invitations?email
+[]

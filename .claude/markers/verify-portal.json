@@ -1,7 +1,7 @@
 {
-  "commit": "b3bedb773",
-  "command": "cd portal && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
+  "commit": "d62c5dc19",
+  "command": "cd portal && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20, clean worktree wt-661b-gate, PR #1863)",
   "exit": 0,
-  "ts": "2026-11-24T11:32:30Z",
-  "summary": "lint 0, typecheck 0, format:check 0, vitest 51 files / 293 passed, build 0"
+  "ts": "2026-11-25T21:12:55Z",
+  "summary": "PR #1863 @d62c5dc19 — lint 0, typecheck 0, format:check 0, vitest 51 files / 293 passed, build 0"
 }

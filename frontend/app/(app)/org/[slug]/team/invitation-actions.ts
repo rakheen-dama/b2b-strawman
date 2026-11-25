@@ -11,6 +11,17 @@ interface ActionResult {
   error?: string;
 }
 
+/**
+ * Why Keycloak sent no invitation email (backend PendingInvitationResponse.emailNotSentReason,
+ * create response only). ALREADY_HAS_LOGIN: the person is already in the firm's Keycloak
+ * organization (e.g. a revoked invitee) — the invitation admits them when they next sign in.
+ */
+export type EmailNotSentReason = "ALREADY_HAS_LOGIN";
+
+interface InviteResult extends ActionResult {
+  emailNotSentReason?: EmailNotSentReason;
+}
+
 // --- BFF invitation types ---
 
 /** Shape returned by the gateway's /bff/admin/invitations endpoint. */
@@ -77,13 +88,19 @@ async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
   orgRoleId?: string
-): Promise<ActionResult> {
+): Promise<InviteResult> {
   try {
     const resolvedRoleId = await resolveOrgRoleId(role, orgRoleId);
-    await api.post<unknown>("/api/invitations", {
-      email,
-      orgRoleId: resolvedRoleId,
-    });
+    const created = await api.post<{ emailNotSentReason?: string | null } | undefined>(
+      "/api/invitations",
+      {
+        email,
+        orgRoleId: resolvedRoleId,
+      }
+    );
+    if (created?.emailNotSentReason === "ALREADY_HAS_LOGIN") {
+      return { success: true, emailNotSentReason: "ALREADY_HAS_LOGIN" };
+    }
     return { success: true };
   } catch (err: unknown) {
     const message =
@@ -150,7 +167,7 @@ export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin",
   orgRoleId?: string
-): Promise<ActionResult> {
+): Promise<InviteResult> {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {

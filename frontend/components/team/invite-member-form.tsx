@@ -181,7 +181,14 @@ function InviteFormUI({
       onInviteSent();
       suppressRoleChangeClearRef.current = true;
       form.reset({ emailAddress: "", roleSelectValue: SYSTEM_MEMBER_VALUE });
-      setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
+      const email = values.emailAddress.trim();
+      // Fix 6: Keycloak sends no email to someone already in the firm's organization (e.g. a
+      // revoked invitee) — the invitation still admits them when they next sign in
+      setSuccess(
+        result.emailNotSentReason === "ALREADY_HAS_LOGIN"
+          ? `Invitation created for ${email}. They already have a login, so no email was sent \u2014 ask them to sign in to Kazi to join.`
+          : `Invitation sent to ${email}.`
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to send invitation.";
       setError(message);
@@ -324,7 +331,11 @@ function InviteFormUI({
 
       {/* Feedback messages */}
       {error && <p className="text-destructive text-sm">{error}</p>}
-      {success && <p className="text-sm text-emerald-600">{success}</p>}
+      {success && (
+        <p className="text-sm text-emerald-600" data-testid="invite-success">
+          {success}
+        </p>
+      )}
     </div>
   );
 }

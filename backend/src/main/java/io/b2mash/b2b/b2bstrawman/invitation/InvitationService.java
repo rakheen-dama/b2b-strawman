@@ -117,13 +117,22 @@ public class InvitationService {
             .build());
 
     // Trigger Keycloak invitation email (best-effort — failure doesn't roll back DB record)
+    String emailNotSentReason = null;
     if (keycloakAdminClient != null) {
       try {
         String orgId = RequestScopes.getOrgIdOrNull();
         if (orgId != null) {
           String kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
-          keycloakAdminClient.inviteMember(kcOrgId, email, orgRole.getSlug(), null);
-          log.info("Triggered Keycloak invitation for email={}", email);
+          var result = keycloakAdminClient.inviteMember(kcOrgId, email, orgRole.getSlug(), null);
+          if (result == KeycloakAdminClient.InviteResult.ALREADY_MEMBER) {
+            // Fix 6: e.g. a revoked invitee (still in the Keycloak org, "revoke always wins") —
+            // no email; this invitation admits them on their next Kazi request
+            emailNotSentReason = PendingInvitationResponse.ALREADY_HAS_LOGIN;
+            log.info(
+                "No Keycloak invitation email for email={}: already has a login in the org", email);
+          } else {
+            log.info("Triggered Keycloak invitation for email={}", email);
+          }
         }
       } catch (Exception e) {
         log.warn("Failed to send Keycloak invitation for email={}: {}", email, e.getMessage());
@@ -131,7 +140,7 @@ public class InvitationService {
     }
 
     log.info("Created invitation for email={} with role={}", email, orgRole.getSlug());
-    return PendingInvitationResponse.from(invitation);
+    return PendingInvitationResponse.from(invitation, emailNotSentReason);
   }
 
   @Transactional(readOnly = true)

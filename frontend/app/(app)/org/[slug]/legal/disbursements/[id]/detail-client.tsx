@@ -27,6 +27,7 @@ import {
 } from "@/components/legal/disbursement-write-off-dialog";
 import { useUnbilledDisbursementsSummaryCache } from "@/components/legal/unbilled-disbursements-summary";
 import { formatCurrency } from "@/lib/format";
+import { SERVER_ACTION_FILE_MAX_LABEL, fileTooLargeError } from "@/lib/server-action-upload";
 import {
   restoreDisbursementAction,
   submitForApprovalAction,
@@ -93,6 +94,12 @@ export function DisbursementDetailClient({
 
   const handleReceiptUpload = useCallback(
     async (file: File) => {
+      // FR-3: a file over the server-action limit would never reach the action — refuse it here
+      const tooLarge = fileTooLargeError(file.size);
+      if (tooLarge) {
+        setUploadError(tooLarge);
+        return;
+      }
       setUploadError(null);
       setIsUploading(true);
       try {
@@ -363,7 +370,10 @@ export function DisbursementDetailClient({
         <DialogContent data-testid="upload-receipt-dialog">
           <DialogHeader>
             <DialogTitle>Upload receipt</DialogTitle>
-            <DialogDescription>Attach a PDF or image of the supplier receipt.</DialogDescription>
+            <DialogDescription>
+              Attach a PDF or image of the supplier receipt, of up to {SERVER_ACTION_FILE_MAX_LABEL}
+              .
+            </DialogDescription>
           </DialogHeader>
           <Input
             type="file"

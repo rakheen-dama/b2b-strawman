@@ -264,8 +264,8 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
 | C (`#003030`) | **1.46** | 7.62 | [burgundy](c/brand-burgundy.png) · [gold](c/brand-gold.png) |
 | Dark (every candidate, `#0c0e12`) | 1.97 | 10.27 | — |
 
-- **Light rails (A, B):** a dark brand colour reads clearly; a pale gold all but disappears (1.6–1.7).
-- **Dark rails (C, and today):** the reverse. A dark burgundy disappears. This is the Phase 88 "dark brand on a dark rail" problem (628B), and C brings it back in light mode.
+- **Light rails (A, B):** a dark brand colour reads clearly; a pale gold reads faintly (1.6–1.7). The bar is still visible in every crop, carried by its hue.
+- **Dark rails (C, and today):** the reverse. A dark burgundy reads faintly. This is the Phase 88 "dark brand on a dark rail" problem (628B), and C brings it back in light mode.
 - **Whatever the pick, dark mode has the dark-rail behaviour**, because the dark rail is unchanged.
 - **The org name next to the bar carries the identity**, so a faint bar is a cosmetic loss, not a legibility one.
 
@@ -284,7 +284,7 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
 **A1: light rail, inset canvas, slate-900 primary (recommended).**
 
 - **The look:** the rail turns into a quiet grey-blue frame (`#f1f3f7`), and the work area becomes one raised white card with rounded corners and a soft shadow. This is the Linear / Vercel / admincn pattern. See `a1/home-1440-expanded.png` and `a1/matters-1440-collapsed.png`.
-- **Separating rail from work area:** the two differ in luminance by only **1.10:1**. The inset card's edge, radius and shadow do the separating. In the screenshots it reads clearly at 1440 and at 1024, and in both rail states.
+- **Separating rail from work area:** the two differ in luminance by only **1.10:1**. The inset card's edge, radius and shadow do the separating. In the screenshots the separation reads clearly at 1440 and at 1024, and in both rail states (but see the rail-height cost below).
 - **The active item:** a mint pill (`--kazi-teal-100`) with a teal-700 indicator bar (4.91:1).
 - **Buttons:** slate-900 primary buttons keep today's hierarchy. "New Matter" is dark and "New fee note" (accent) is teal, now at an AA-passing 5.46:1.
 - **Costs:**
@@ -292,11 +292,12 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
   - **The search pill uses the same mint fill as the active item**, so collapsed it reads like a second selected item. See `a1/fee-notes-1024-collapsed.png` (F-661A-2).
   - **The inset card is a component prop**, so it also appears in **dark** mode. That breaks the "dark pixel-identical" promise for A (F-661A-3).
   - **The card's 8 px margin costs 16 px of content width.** The matters DataTable at 1440 expanded starts scrolling one column earlier (F-661A-4).
+  - **It also costs 16 px of rail height.** The collapsed rail does not scroll, so at 1024×768 collapsed the current page's highlight low in the rail is cut in half (`a1/fee-notes-1024-collapsed.png`: the Fee notes item; today shows it whole). Today already hides the last FEES items at that height; A moves the cut up into the active item (F-661A-8).
   - **A gold brand bar nearly vanishes** (1.69).
 
 **A2: as A1, with teal-700 primary.**
 
-- **Same shell and same AA results as A1**, except the primary-button label at 5.46.
+- **Same shell, same AA results and the same costs as A1** (including F-661A-3 and F-661A-8), except the primary-button label at 5.46.
 - **More brand-forward:** "New Matter" and every default button become teal.
 - **It flattens the hierarchy.** Default and accent buttons are now the same colour (`#00776a`). The `default` "New Matter" in `a2/matters-*` and the `accent` "New fee note" in `a2/fee-notes-*` are indistinguishable; in A1 one is slate-900 and the other teal. On the fee-note detail header, which this matrix does not shoot, the accent "Approve" / "Send fee note" would no longer stand apart from the default action beside them (`invoice-header-actions.tsx:68,77,87`, per §18.2.1).
 - **The unmigrated long tail mixes colours.** The hard-coded slate-950 filter chips ("All", "Active") now sit next to teal primaries; see `a2/matters-1440-expanded.png`.
@@ -334,6 +335,8 @@ Details are in [`found.md`](found.md). None of these is fixed in 661A.
 | F-661A-4 | LOW | A's inset margin costs 16 px of content width. On the matters DataTable at 1440 expanded, the "Next in diary" column clips into horizontal scroll. Today already hides the row-actions column at that width. | 664B (DataTable F1/K-11) |
 | F-661A-5 | LOW, pre-existing | chart-4 amber at 2.96:1 on today's 97.2 % canvas (validator WARN). The palette was validated on the card only. | backlog (A/B clear it) |
 | F-661A-6 | INFO, pre-existing | A console error on the first dashboard load after mock sign-in: "MockAuthContextProvider: failed to fetch userinfo" (2 of the 5 sign-ins in the final run). Known, and harmless to the shots. | none |
+| F-661A-7 | LOW | Prettier (defaults, no `packages/ui` config) reflows unchanged parts of `packages/ui/src/button.tsx`. 661B keeps its diff to the recipe line. | 661B note |
+| F-661A-8 | MEDIUM (if A is picked) | A's inset margin also costs 16 px of rail **height**. The collapsed rail does not scroll, so at 1024×768 the active item low in the rail is cut in half (`a1/` and `a2/fee-notes-1024-collapsed.png`). Pre-existing part: today already hides the last FEES items at 768 px high. | 661B (if A) / 662A register |
 
 ### Deviations from the spec
 
@@ -365,7 +368,8 @@ Details are in [`found.md`](found.md). None of these is fixed in 661A.
 **What 661B must add if A1 is picked:**
 
 - a token for the translucent rail text (F-661A-1);
-- a decision on whether the inset card may appear in dark mode (F-661A-3). Either accept it, or make the variant light-only in a way that keeps one `<main>`.
+- a fix for the cut-off active item on the collapsed rail at 1024×768 (F-661A-8), for example letting the collapsed rail scroll;
+- a decision on how the inset card behaves in dark mode (F-661A-3). See § 11.
 
 K-21, the dark accent failure, stays recorded in the backlog unless you rule otherwise.
 
@@ -379,7 +383,13 @@ Judge on the screenshots in § 4, not on the tables.
 
 Recommendation: **A1**, with `--accent` and `--button-accent` retuned to `--kazi-teal-700` in the scoped light block only. **K-21 stays recorded (backlog)** unless the founder says otherwise.
 
-If you pick A, please also say how the inset card should behave in dark mode (F-661A-3).
+If you pick A (A1 or A2), there is one more choice: **what dark mode looks like.** The rounded white work-area card is a layout change, not a colour, so as built it also shows in dark mode (`found/dark-home-1440-a1.png` next to `found/dark-home-1440-today.png`).
+
+- **(c) Keep dark mode exactly as it is today — recommended.** The card is drawn with light-mode-only styling instead of the sidebar's built-in "inset" switch. About **2 h extra** in 661B (a handful of CSS rules plus a test). Small risk: the rules copy what the sidebar component does, so a future sidebar upgrade must re-check them.
+- **(a) Let dark mode get the card too.** **0 h.** Dark mode's colours stay the same, but its layout changes (8 px margin, rounded corners, shadow). The phase's "dark mode looks identical" check becomes "dark colours identical".
+- **(b) Switch the sidebar's "inset" setting on only in light mode, in code.** About 1 h, but the page can flash the wrong layout for a moment on load in dark mode, because the theme is applied before the code runs. **Not recommended.**
+
+Default if you only name a scheme: **(c)**.
 
 ---
 

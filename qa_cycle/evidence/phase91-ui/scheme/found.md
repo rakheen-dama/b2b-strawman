@@ -53,6 +53,16 @@ Dark tokens are untouched, so K-21 and every dark contrast pair are unchanged. *
 - (b) make the variant light-only, for example by reading the resolved theme in AppSidebar. This has a first-paint cost, because ADR-374's head script sets the class before hydration;
 - (c) express the inset purely in CSS under the scoped `:root:not(.dark):has([data-app-shell="firm"])` selector, instead of through the `variant` prop.
 
+**Recommended default: (c)**, ≈ 2 h in 661B; keeps dark mode pixel-identical as ADR-392 promises. The README § 11 puts the three options in plain words for FD-1. (Added after review of PR #1862.)
+
+## F-661A-8: A's inset margin also costs 16 px of rail height (collapsed rail cuts the active item at 1024×768)
+
+- **Severity:** MEDIUM if A is picked. Added after review of PR #1862 (the reviewer found it in the existing screenshots).
+- **What happens:** the inset frame's 8 px top and bottom margins take 16 px of height from the rail. The collapsed (icon) rail does not scroll, so items past the bottom are cut. In `a1/fee-notes-1024-collapsed.png` and `a2/fee-notes-1024-collapsed.png` the **active** Fee notes item's mint highlight is cut through the middle (about y = 604), and the icons below it sit about 7 px higher than in today / B / C.
+- **Already true today:** at 768 px high the collapsed rail already hides the last FEES items (`today/fee-notes-1024-collapsed.png` shows the active item whole). A moves the cut up into the active item; it does not create the clipping.
+- **Owner:** 661B if A is picked (e.g. let the collapsed rail scroll); the pre-existing clipping goes to the 662A kinks register.
+- **F-661A-2 note:** F-661A-2 cites the same screenshot for the search pill and did not call this out.
+
 ## F-661A-4: A's inset margin narrows the content column by 16 px
 
 - **Severity:** LOW.

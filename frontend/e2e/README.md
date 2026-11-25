@@ -79,6 +79,14 @@ fresh stack (`compose/scripts/e2e-down.sh && e2e-up.sh`) plus the portal dev ser
 and writes its evidence to `EXIT_MONTH_EVIDENCE_DIR` (default `<os tmpdir>/exit-month-<timestamp>/`)
 — see `qa_cycle/evidence/phase92-exit/README.md`.
 
+`pnpm test:e2e:take-on` (`--project take-on` of the same config) is the Phase 93 take-on capstone
+(`tests/legal-lifecycle/take-on.spec.ts`): also a separate single-shot project, not part of
+`pnpm test:e2e:legal-lifecycle`, and every step commits, so it needs its own fresh stack
+(`compose/scripts/e2e-down.sh && e2e-up.sh`; step 0 fails fast on a used one). It writes its evidence
+to `TAKE_ON_EVIDENCE_DIR` (default `<os tmpdir>/take-on-<timestamp>/`; leave `EXIT_MONTH_EVIDENCE_DIR`
+unset or equal to it) and reads the e2e Mailpit at `MAILPIT_URL` (default `http://localhost:8026`)
+— see `qa_cycle/evidence/phase93-exit/README.md`.
+
 ## 4. Stop the Stack
 
 ```bash

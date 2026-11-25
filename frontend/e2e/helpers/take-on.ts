@@ -2,10 +2,11 @@
  * Helpers for the Phase 93 take-on capstone (`tests/legal-lifecycle/take-on.spec.ts`, slice 660A,
  * tasks 660.1–660.3).
  *
- * - `takeOnDates()` — the cutover date C (the last day of the month TWO months back, by the SA
- *   business date, D-224 / A-11) and the first post-cutover month M (the month after C, wholly in
- *   the past, FU-6a), computed ONCE per run. Refuses to start within 30 minutes of SA midnight at a
- *   month end, the `exitMonth()` guard shifted one month further back.
+ * - `takeOnDates()` — the first post-cutover month M is `exitMonth()` (the previous calendar month
+ *   by the SA business date, wholly in the past, FU-6a), and the cutover date C is the day before
+ *   M's first day (D-224 / A-11). Computed ONCE per run; `exitMonth()`'s own guard refuses to start
+ *   within 30 minutes of SA midnight at a month end. `today` is `todayInSA()` at that instant —
+ *   recompute it with `todayInSA()` where a date-relative figure is read (the debtor book).
  * - `firstMonthStatementCsv()` — the first statement (660.2), Standard Bank CSV: the opening
  *   balance at C (= the take-on bank balance), the two cutover items, one deposit, one payment,
  *   the Fund interest and the service fee.
@@ -16,17 +17,31 @@
  * - the wizard steps the spec repeats: Radix option pick, upload-first, add a trust source,
  *   map-and-save, dry run, the cards, the position form.
  *
- * Shared helpers (money matchers, firm sessions, evidence screenshots) are IMPORTED from
- * `./trust-balanced-month`, not copied. Its `evidenceShot` writes under that module's evidence
- * dir, so `evidenceDir()` here points `EXIT_MONTH_EVIDENCE_DIR` at this run's take-on dir before
- * that module fixes its own: one run, one directory.
+ * Reused by import, not copied: `exitMonth`, `csvFile`, `evidenceDir` and `exactText` from
+ * `./trust-balanced-month` (plus its money matchers, firm sessions and `evidenceShot` in the
+ * spec); `todayInSA` / `daysBetween` from `@b2mash/shared/date`. Kept local, because nothing
+ * shared has them: ISO `addDays` and the sentence date `longDate`.
+ *
+ * Evidence directory: `./trust-balanced-month` owns the run's evidence dir and reads it from
+ * `EXIT_MONTH_EVIDENCE_DIR` once, on first use. `evidenceDir()` here sets that variable to the
+ * take-on dir before the first use, so screenshots, CSVs and logs land in one directory, and fails
+ * fast if `EXIT_MONTH_EVIDENCE_DIR` is already set to a different directory (or the module already
+ * fixed another one). Routing by env var is a known wart: a parameter on the shared helper would
+ * be the clean fix (deferred, `qa_cycle/evidence/phase93-exit/found.md` R-1).
  */
 import { expect, type Locator, type Page } from "@playwright/test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { todayInSA } from "@b2mash/shared/date";
 import { apiOk } from "./api";
-import { exactText } from "./trust-balanced-month";
+import {
+  csvFile,
+  exactText,
+  evidenceDir as sharedEvidenceDir,
+  exitMonth,
+  type ExitMonth,
+} from "./trust-balanced-month";
 
 /** The committed fixture set (660.1). */
 export const FIXTURE_DIR = path.resolve(__dirname, "../../../qa/fixtures/take-on");
@@ -41,18 +56,30 @@ let runEvidenceDir: string | undefined;
 /**
  * This run's evidence directory: `TAKE_ON_EVIDENCE_DIR`, else `<os tmpdir>/take-on-<timestamp>/`
  * (outside the repo; `qa_cycle/evidence/phase93-exit/` is filled by copying from the chosen run).
- * Fixed on first use. Also becomes `EXIT_MONTH_EVIDENCE_DIR` (unless set), so the imported
- * `evidenceShot` writes its screenshots here too.
+ * Fixed on first use, and handed to `./trust-balanced-month` (see the header) so its
+ * `evidenceShot` / `csvFile` write here too.
  */
 export function evidenceDir(): string {
   if (!runEvidenceDir) {
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    runEvidenceDir = process.env.TAKE_ON_EVIDENCE_DIR
+    const target = process.env.TAKE_ON_EVIDENCE_DIR
       ? path.resolve(process.env.TAKE_ON_EVIDENCE_DIR)
       : path.join(os.tmpdir(), `take-on-${stamp}`);
-    fs.mkdirSync(path.join(runEvidenceDir, "csv"), { recursive: true });
-    fs.mkdirSync(path.join(runEvidenceDir, "downloads"), { recursive: true });
-    process.env.EXIT_MONTH_EVIDENCE_DIR ??= runEvidenceDir;
+    const preset = process.env.EXIT_MONTH_EVIDENCE_DIR;
+    if (preset && path.resolve(preset) !== target) {
+      throw new Error(
+        `take-on: EXIT_MONTH_EVIDENCE_DIR (${preset}) differs from the take-on evidence dir ` +
+          `(${target}); unset it, or set TAKE_ON_EVIDENCE_DIR to the same directory`
+      );
+    }
+    process.env.EXIT_MONTH_EVIDENCE_DIR = target;
+    const shared = sharedEvidenceDir();
+    if (shared !== target) {
+      throw new Error(`take-on: the shared evidence dir is already ${shared}, not ${target}`);
+    }
+    fs.mkdirSync(path.join(target, "csv"), { recursive: true });
+    fs.mkdirSync(path.join(target, "downloads"), { recursive: true });
+    runEvidenceDir = target;
   }
   return runEvidenceDir;
 }
@@ -67,112 +94,58 @@ export function logEvidence(label: string, value: unknown): void {
 
 // ── Dates (660.2, D-224) ─────────────────────────────────────────────────────────────────────
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 const pad = (n: number) => String(n).padStart(2, "0");
-const iso = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 const parseIso = (s: string) => {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d));
 };
+// "en" month names are present under small-icu too (see `@b2mash/shared/date`)
+const MONTH_NAME = new Intl.DateTimeFormat("en", { month: "long", timeZone: "UTC" });
 
 /** "30 September 2026" — the backend's sentence date (`IntegrityMessages.date`, d MMMM yyyy). */
 export function longDate(isoDate: string): string {
   const d = parseIso(isoDate);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  return `${d.getUTCDate()} ${MONTH_NAME.format(d)} ${d.getUTCFullYear()}`;
 }
 
 /** `isoDate` plus `days` (negative = before). */
 export function addDays(isoDate: string, days: number): string {
   const d = parseIso(isoDate);
   d.setUTCDate(d.getUTCDate() + days);
-  return iso(d);
-}
-
-/** Whole days from `from` to `to` (both ISO). */
-export function daysBetween(from: string, to: string): number {
-  return Math.round((parseIso(to).getTime() - parseIso(from).getTime()) / 86_400_000);
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
 export interface TakeOnDates {
-  /** Today by the SA business date (ISO). */
+  /** Today by the SA business date (ISO), when the dates were computed. */
   today: string;
-  /** The cutover date C: the last day of the month two months back (ISO). */
+  /** The cutover date C: the last day of the month before M (ISO). */
   c: string;
   /** C as the backend writes it: "30 September 2026". */
   cLong: string;
   /** C + n days (ISO): the fixtures' `{{C+n}}` / `{{C-n}}`. */
   cPlus(n: number): string;
-  /** The first post-cutover month M (the month after C). */
-  month: {
-    year: number;
-    /** 1–12 */
-    month: number;
-    lastDay: number;
-    /** Day n of M (ISO); n > lastDay is clamped to the last day. */
-    d(n: number): string;
-    /** "October 2026" */
-    name: string;
-  };
+  /**
+   * The first post-cutover month M = `exitMonth()`. Its `d(n)` reads 29/30/31 as counted back
+   * from the month end; the take-on statement uses days 1–28 and 31 only.
+   */
+  month: ExitMonth;
 }
 
 /**
- * C and M, computed once per run (660.2). C = the last day of the month two months back by the SA
- * business date, so M (the month after C) is the previous full calendar month and no statement
- * line is in the future (FU-6a). Refuses to start within 30 minutes of SA midnight at a month end:
- * a run that straddles it would move C.
+ * C and M, computed once per run (660.2): M = `exitMonth(now)` (the previous full calendar month
+ * by the SA business date, so no statement line is in the future, FU-6a), C = the day before M's
+ * first day. `exitMonth` refuses to start within 30 minutes of SA midnight at a month end: a run
+ * that straddles it would move C and M.
  */
 export function takeOnDates(now: Date = new Date()): TakeOnDates {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Johannesburg",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(now);
-  const get = (type: string) => Number(parts.find((p) => p.type === type)!.value);
-  const [y, m, day, hh, mm] = [get("year"), get("month"), get("day"), get("hour"), get("minute")];
-  const daysInCurrent = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  const minuteOfDay = hh * 60 + mm;
-  if ((day === daysInCurrent && minuteOfDay >= 23 * 60 + 30) || (day === 1 && minuteOfDay < 30)) {
-    throw new Error(
-      "take-on: refusing to start within 30 minutes of SA midnight at a month end (660.2)"
-    );
-  }
-  const today = `${y}-${pad(m)}-${pad(day)}`;
-  // Date.UTC(y, m - 2, 0) = the last day of month (m - 2), 1-based: two months back
-  const c = iso(new Date(Date.UTC(y, m - 2, 0)));
-  const first = parseIso(addDays(c, 1));
-  const year = first.getUTCFullYear();
-  const month = first.getUTCMonth() + 1;
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const month = exitMonth(now);
+  const c = addDays(month.d(1), -1);
   return {
-    today,
+    today: todayInSA(now),
     c,
     cLong: longDate(c),
     cPlus: (n) => addDays(c, n),
-    month: {
-      year,
-      month,
-      lastDay,
-      d: (n) => `${year}-${pad(month)}-${pad(Math.min(n, lastDay))}`,
-      name: `${MONTHS[month - 1]} ${year}`,
-    },
+    month,
   };
 }
 
@@ -197,7 +170,7 @@ const MIME: Record<string, string> = {
 export function renderFixture(name: string, d: TakeOnDates): UploadFile {
   const ext = path.extname(name);
   const raw = fs.readFileSync(path.join(FIXTURE_DIR, name));
-  let buffer = raw;
+  const csvDir = path.join(evidenceDir(), "csv"); // first: it routes the shared evidence dir
   if (ext === ".csv") {
     const text = raw
       .toString("utf8")
@@ -205,10 +178,10 @@ export function renderFixture(name: string, d: TakeOnDates): UploadFile {
         d.cPlus(offset ? Number(offset) : 0)
       );
     if (/\{\{/.test(text)) throw new Error(`renderFixture: unreplaced token in ${name}`);
-    buffer = Buffer.from(text, "utf8");
+    return csvFile(name, text);
   }
-  fs.writeFileSync(path.join(evidenceDir(), "csv", name), buffer);
-  return { name, mimeType: MIME[ext] ?? "application/octet-stream", buffer };
+  fs.writeFileSync(path.join(csvDir, name), raw);
+  return { name, mimeType: MIME[ext] ?? "application/octet-stream", buffer: raw };
 }
 
 // ── The first post-cutover statement (660.2, B-1 option B — D-259) ───────────────────────────
@@ -237,9 +210,8 @@ export function firstMonthStatementCsv(d: TakeOnDates, accountNumber: string): U
     `${m.d(31)},INTEREST,,312.40,403562.40`,
     `${m.d(31)},SERVICE FEE,,-85.00,403477.40`,
   ];
-  const text = rows.join("\n") + "\n";
-  fs.writeFileSync(path.join(evidenceDir(), "csv", FIRST_MONTH_CSV), text);
-  return { name: FIRST_MONTH_CSV, mimeType: "text/csv", buffer: Buffer.from(text, "utf8") };
+  evidenceDir(); // first: it routes the shared evidence dir `csvFile` writes to
+  return csvFile(FIRST_MONTH_CSV, rows.join("\n") + "\n");
 }
 
 // ── Mailpit ──────────────────────────────────────────────────────────────────────────────────

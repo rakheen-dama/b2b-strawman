@@ -27,6 +27,14 @@ S="$(q "select schema_name from public.org_schema_mapping where external_org_id 
 [[ "$S" =~ ^tenant_[a-z0-9_]+$ ]] || { echo "unexpected tenant schema: '$S'" >&2; exit 3; }
 G="'Take-on Trust Banking Account'"
 
+# The cutover C the run used: G's take-on cutover and every dated take-on batch's cutover must be C
+# (the script exits 4 after printing everything if not). Expected "t|t|<n ≥ 1>".
+CUTOVER="$(q "select coalesce((select take_on_cutover_date = date '$C' from $S.trust_accounts
+                                where account_name = $G), false),
+                     not exists (select 1 from $S.take_on_batches
+                                  where cutover_date is not null and cutover_date <> date '$C'),
+                     (select count(*) from $S.take_on_batches where cutover_date = date '$C');")"
+
 {
   echo "# Phase 93 exit — take-on read-only psql check ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
   echo "# container $CONTAINER, cutover $C, first month end $END"
@@ -34,6 +42,10 @@ G="'Take-on Trust Banking Account'"
   echo "$S"
   echo "## flyway (tenant, latest)"
   q "select version, description from $S.flyway_schema_history order by installed_rank desc limit 1;"
+
+  echo "## cutover = $C"
+  echo "# G take_on_cutover_date = C|no batch with another cutover|batches at C"
+  echo "$CUTOVER"
 
   echo "## trust-accounts"
   echo "# name|type|primary|opened|take_on_cutover_date|status"
@@ -100,3 +112,5 @@ G="'Take-on Trust Banking Account'"
   q "select 'collection_activities', count(*) from $S.collection_activities;"
   q "select 'collections_enabled', collections_enabled from $S.org_settings;"
 } | tee "$OUT"
+
+[[ "$CUTOVER" =~ ^t\|t\|[1-9][0-9]*$ ]] || { echo "cutover check failed (expected t|t|n): '$CUTOVER'" >&2; exit 4; }

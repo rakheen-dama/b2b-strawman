@@ -41,6 +41,7 @@ import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { apiOk } from "../../helpers/api";
 import { BASE, openClient, openGroupedTab, selectNativeOption } from "../../helpers/legal-depth-ii";
 import {
@@ -56,7 +57,6 @@ import {
 } from "../../helpers/trust-balanced-month";
 import {
   addTrustSource,
-  daysBetween,
   evidenceDir,
   expectCards,
   expectEquation,
@@ -197,6 +197,8 @@ const state: {
   reportId?: string;
   downloads: Record<string, string>;
   mailpit: Record<string, { before: number; after: number }>;
+  /** Mailpit at step 0: the last step asserts the whole run left it unchanged (R-3). */
+  mailpitStart?: MailpitCount;
 } = { downloads: {}, mailpit: {} };
 
 // ── Small helpers ────────────────────────────────────────────────────────────────────────────
@@ -291,9 +293,9 @@ async function download(page: Page, button: ReturnType<Page["getByTestId"]>, lab
   return { bytes, sha256, name: file.suggestedFilename() };
 }
 
-/** The four-way debtor-book bucket of a due date, today by the SA date (AgingBuckets). */
-function bucketOf(dueIso: string): 0 | 1 | 2 | 3 {
-  const overdue = daysBetween(dueIso, D.today);
+/** The four-way debtor-book bucket of a due date on `today` (the SA date; AgingBuckets). */
+function bucketOf(dueIso: string, today: string): 0 | 1 | 2 | 3 {
+  const overdue = daysBetween(dueIso, today);
   if (overdue <= 0) return 0;
   if (overdue <= 30) return 1;
   if (overdue <= 60) return 2;
@@ -307,9 +309,9 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     // 660.2: C and M once per run (refuses within 30 minutes of SA midnight at a month end)
     D = takeOnDates();
     console.log(
-      `take-on: C = ${D.c} (${D.cLong}); first month ${D.month.name}; evidence ${evidenceDir()}`
+      `take-on: C = ${D.c} (${D.cLong}); first month ${D.month.monthName}; evidence ${evidenceDir()}`
     );
-    logEvidence("[dates]", { today: D.today, c: D.c, month: D.month.name });
+    logEvidence("[dates]", { today: D.today, c: D.c, month: D.month.monthName });
     aliceCtx = await firmSession(browser, testInfo, "alice");
     bobCtx = await firmSession(browser, testInfo, "bob");
     alice = await aliceCtx.newPage();
@@ -357,7 +359,8 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
       clients.filter((c) => (c.email ?? "").endsWith("@example.test")),
       `fixture clients exist — ${freshStack}`
     ).toHaveLength(0);
-    logEvidence("[mailpit at start]", await mailpitTotal());
+    state.mailpitStart = await mailpitTotal();
+    logEvidence("[mailpit at start]", state.mailpitStart);
   });
 
   // ── 1. Accounts ────────────────────────────────────────────────────────────────────────────
@@ -656,10 +659,11 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     expect(batch.allowedActions).not.toContain("SIGN_OFF");
     expect(batch.allowedActions).not.toContain("COMMIT");
     await evidenceShot(bob, "04-trust-debit-block");
-    // F-660A-1 (LOW, gap report; D-264): "Continue to sign-off" is offered on this blocked batch
-    // (the wizard gates it on status VALIDATED only, take-on-wizard.tsx:340), and the Sign-off
-    // step then reads as if the take-on awaited a partner. Observed as the product behaves; the
-    // gate itself holds — nothing there signs or commits.
+    // F-660A-1 (MEDIUM, gap report; D-264): "Continue to sign-off" is offered on this blocked
+    // batch (the wizard gates it on status VALIDATED only, take-on-wizard.tsx:340), and the
+    // Sign-off step then reads as if the take-on awaited a partner. Observed as the product
+    // behaves; the gate itself holds — nothing there signs or commits. The F-660A-1 fix PR must
+    // flip the next line to `toHaveCount(0)` (and drop the Sign-off step checks) in the same PR.
     await expect(bob.getByTestId("take-on-to-sign-off")).toBeVisible();
     await bob.getByTestId("take-on-to-sign-off").click();
     await expect(bob.getByTestId("take-on-signoff-status")).toHaveText(
@@ -671,7 +675,7 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     test.info().annotations.push({
       type: "FINDING",
       description:
-        'F-660A-1 (LOW): "Continue to sign-off" is offered on a trust batch with 2 statutory blocks; its Sign-off step says "A partner or director signs off this take-on from their Home page." although it can never be signed (allowedActions has no SIGN_OFF/COMMIT).',
+        'F-660A-1 (MEDIUM): "Continue to sign-off" is offered on a trust batch with 2 statutory blocks; its Sign-off step says "A partner or director signs off this take-on from their Home page." although it can never be signed (allowedActions has no SIGN_OFF/COMMIT).',
     });
   });
 
@@ -946,13 +950,10 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
       // The amount cell (a row-wide match would run into the due date's "…2026" before it)
       await expect(row.locator("td").filter({ hasText: randExact(d.amount) })).toHaveCount(1);
     }
-    // The seeded ordinary note carries no badge
-    await expect(
-      bob
-        .locator("main table tbody tr")
-        .filter({ hasText: "INV-0001" })
-        .getByTestId("fee-note-takeon-badge")
-    ).toHaveCount(0);
+    // The seeded ordinary note is listed and carries no badge
+    const seeded = bob.locator("main table tbody tr").filter({ hasText: "INV-0001" });
+    await expect(seeded, "seeded fee note INV-0001").toHaveCount(1, { timeout: 30_000 });
+    await expect(seeded.getByTestId("fee-note-takeon-badge")).toHaveCount(0);
     await evidenceShot(bob, "11-fee-note-list");
   });
 
@@ -968,6 +969,9 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     await expect(bob.getByRole("heading", { name: "Debtor book" })).toBeVisible({
       timeout: 60_000,
     });
+    // Today as the page was rendered (not D.today: a run may cross an SA midnight before here)
+    const today = todayInSA();
+    logEvidence("[debtor book today]", today);
     for (const d of DEBTORS) {
       const row = bob.locator("main table tbody tr").filter({
         has: bob.getByRole("link", { name: d.client, exact: true }),
@@ -976,7 +980,7 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
       const cells = row.locator("td");
       await expect(cells.nth(1)).toHaveText(randExact(d.amount));
       // Current · 30d · 60d · 90d+ are cells 3–6; the note's bucket by today's SA date
-      const bucket = bucketOf(D.cPlus(d.due));
+      const bucket = bucketOf(D.cPlus(d.due), today);
       for (let b = 0; b < 4; b++) {
         await expect(cells.nth(3 + b), `${d.client} bucket ${b}`).toHaveText(
           randExact(b === bucket ? d.amount : "0,00")
@@ -1147,7 +1151,7 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     const done = alice.getByTestId("step-complete");
     await expect(done).toBeVisible({ timeout: 30_000 });
     const locked = done.getByTestId("monthly-list-locked");
-    await expect(locked).toContainText(`${m.name} list locked —`);
+    await expect(locked).toContainText(`${m.monthName} list locked —`);
     await expect(locked).toContainText(randIn("403 477,40"));
     await expect(locked).toContainText("agrees with the cashbook and the adjusted bank balance.");
     await evidenceShot(alice, "15-recon-complete");
@@ -1174,5 +1178,11 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
       `The opening position taken on at ${D.cLong} is shown as one brought-forward line, not as receipts.`
     );
     await evidenceShot(alice, "16-receipts-payments");
+  });
+
+  // ── 17. The whole run sent no email ────────────────────────────────────────────────────────
+  test("17 · Mailpit over the whole run: total and latest message unchanged since step 0 (R-3)", async () => {
+    expect(state.mailpitStart, "step 0 read Mailpit").toBeDefined();
+    await expectMailpitUnchanged(state.mailpitStart!, "whole run");
   });
 });

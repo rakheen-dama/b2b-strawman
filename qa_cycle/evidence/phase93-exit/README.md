@@ -14,7 +14,7 @@ legal-depth-ii, exit-month), `suites/README.md` and the closure report are the o
 
 | | |
 |---|---|
-| Result | **16 passed, 0 failed, 0 skipped** in 2.1 min (`run-of-record/take-on-run.txt`, exit 0) |
+| Result | **16 passed (2 with DEFERRED sub-checks: CashDigest, dormancy job — G93-2/G93-3), 0 failed, 0 skipped** in 2.1 min (`run-of-record/take-on-run.txt`, exit 0). After this run the review added step 17 (Mailpit total and latest message unchanged since step 0, over the whole run), so the spec now has 17 tests; step 17 is not in this run of record (the per-action Mailpit checks and `run-of-record/mailpit-final.txt` show the same total, 2, at the end). |
 | Annotations | 2 × `DEFERRED` (step 12–13: CashDigest, B-3/D-261; step 14: dormancy job, B-2/D-260) and 1 × `FINDING` (step 4: F-660A-1, D-264). The list reporter does not print annotations; they are in the spec, at those steps. |
 | Window | 2026-11-25T02:02:02Z → 02:04:32Z (`run-of-record/run-window-*.txt`) |
 | Stack | e2e mock-auth stack, `e2e-down.sh && e2e-up.sh` from worktree-epic-660A, containers created 2026-11-25 04:01:13 SAST (02:01:13Z) (`run-of-record/stack-containers.txt`). Nothing ran on it before the spec (step 0 checks: only the seeded primary trust account, no take-on batch, no fixture client). Torn down after the evidence was taken. |
@@ -90,5 +90,7 @@ AUTO_MATCHED ×2 / RECORDED ×4 with their classifications; G, I3, I4 `take_on_c
   as generated.
 - `downloads/` + `sha256-downloads.txt` — the report PDF/CSV from the Results step and the Reports
   card.
-- `psql-check.sh`, `psql-output.txt` — the read-only check.
+- `psql-check.sh`, `psql-output.txt` — the read-only check. (`psql-output.txt` is from the run of
+  record; the review then added the `## cutover = C` section and its exit-4 assertion to the script.)
 - `gap-report.md` — the findings (draft; the orchestrator adds the other suites' findings).
+- `found.md` — review items deferred out of 660A (shared-helper refactors).

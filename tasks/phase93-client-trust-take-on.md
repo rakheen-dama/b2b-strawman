@@ -75,6 +75,9 @@ Merged since the architecture's SHA, not gates but context a builder must read a
 | FR-6 | Owner/Admin invitations an admin sent before the PR #1856 security fix | **RULED 2026-11-24:** none that matter; no action | No clean-up. |
 | FR-7 | Invite form "Customize for this user": the capability tweaks are silently discarded | **RULED 2026-11-24:** hide it; customisation is not available at invite time | Built in the invitation-fix PR, after the phase. Capabilities can be changed on the Team page after the person joins. |
 | FR-8 | Revoking an invitation in Kazi leaves the Keycloak invite link live, so the person can still join as Member | **RULED 2026-11-24:** fix it | Built in the invitation-fix PR, together with the custom-role invite fix (`tasks/custom-role-invite-fix-plan.md`, option A: apply the invitation's stored role id at first sign-in). |
+| FR-9 | Revoking after the person already used the Keycloak link (joined, not yet in Kazi) | **RULED 2026-11-24:** keep "already accepted". The revoke is refused; the firm removes the person on the Team page. | Ships as built in the invitation-fix PR. No sign-in behaviour change. |
+| FR-10 | D-253 (658A): Kazi's fee-note numbering continues after the highest brought-forward `INV-` number (refines FD-20). D-245 (658A): a fee note dated after the cutover cannot be brought forward | **RULED 2026-11-25:** both approved | No change; both shipped in PR #1857. |
+| FR-11 | F-658A-1: approving, sending or voiding an ordinary fee note may queue no Xero push (one test observation; hypothesis) | **RULED 2026-11-25:** investigate and fix in parallel once Phase 93's last slice (660A) is complete | Reproduce-first in its own worktree after 660A, in parallel with the invitation-fix PR gates. |
 
 ### Founder decisions FD-1..FD-37 (§17.10)
 

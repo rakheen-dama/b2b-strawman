@@ -1,0 +1,380 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: day-01-03-onboarding.spec.ts >> Day 1 — Sipho Ndlovu Onboarding >> Bob: Create client Sipho Ndlovu (Individual)
+- Location: e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByRole('heading', { name: 'Sipho Ndlovu mwwcir4icad7', level: 1 })
+Expected: visible
+Timeout: 15000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 15000ms
+  - waiting for getByRole('heading', { name: 'Sipho Ndlovu mwwcir4icad7', level: 1 })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e9]: Kazi
+        - generic [ref=e12]: E2E Test Organization
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - button "Search, Command K" [ref=e15]:
+              - img [ref=e16]
+              - generic [ref=e19]: Search...
+              - generic [ref=e20]: ⌘K
+      - navigation "Main navigation" [ref=e22]:
+        - generic [ref=e24]:
+          - button "Today" [expanded] [ref=e25]:
+            - text: Today
+            - img [ref=e26]
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "Home" [ref=e32] [cursor=pointer]:
+                - /url: /org/e2e-test-org/dashboard
+                - img [ref=e33]
+                - generic [ref=e36]: Home
+            - listitem [ref=e37]:
+              - link "My work" [ref=e38] [cursor=pointer]:
+                - /url: /org/e2e-test-org/my-work
+                - img [ref=e39]
+                - generic [ref=e42]: My work
+            - listitem [ref=e43]:
+              - link "Diary" [ref=e44] [cursor=pointer]:
+                - /url: /org/e2e-test-org/diary
+                - img [ref=e45]
+                - generic [ref=e47]: Diary
+        - generic [ref=e49]:
+          - button "Matters" [expanded] [ref=e50]:
+            - text: Matters
+            - img [ref=e51]
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link "Matters" [ref=e57] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters
+                - img [ref=e58]
+                - generic [ref=e62]: Matters
+            - listitem [ref=e63]:
+              - link "New matter" [ref=e64] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters/new
+                - img [ref=e65]
+                - generic [ref=e66]: New matter
+            - listitem [ref=e67]:
+              - link "Conflict check" [ref=e68] [cursor=pointer]:
+                - /url: /org/e2e-test-org/conflict-check
+                - img [ref=e69]
+                - generic [ref=e73]: Conflict check
+            - listitem [ref=e74]:
+              - link "Adverse parties" [ref=e75] [cursor=pointer]:
+                - /url: /org/e2e-test-org/legal/adverse-parties
+                - img [ref=e76]
+                - generic [ref=e81]: Adverse parties
+            - listitem [ref=e82]:
+              - link "AI reviews" [ref=e83] [cursor=pointer]:
+                - /url: /org/e2e-test-org/ai/reviews
+                - img [ref=e84]
+                - generic [ref=e87]: AI reviews
+        - generic [ref=e89]:
+          - button "Clients" [expanded] [ref=e90]:
+            - text: Clients
+            - img [ref=e91]
+          - list [ref=e95]:
+            - listitem [ref=e96]:
+              - link "Clients" [ref=e97] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients
+                - img [ref=e98]
+                - generic [ref=e102]: Clients
+            - listitem [ref=e103]:
+              - link "FICA & compliance" [ref=e104] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance
+                - img [ref=e105]
+                - generic [ref=e108]: FICA & compliance
+            - listitem [ref=e109]:
+              - link "Data requests" [ref=e110] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance/requests
+                - img [ref=e111]
+                - generic [ref=e114]: Data requests
+        - button "Fees" [ref=e117]:
+          - text: Fees
+          - img [ref=e118]
+        - button "Trust" [ref=e122]:
+          - text: Trust
+          - img [ref=e123]
+        - button "Firm" [ref=e127]:
+          - text: Firm
+          - img [ref=e128]
+      - generic [ref=e130]:
+        - list [ref=e131]:
+          - listitem [ref=e132]:
+            - link "Notifications" [ref=e133] [cursor=pointer]:
+              - /url: /org/e2e-test-org/notifications
+              - img [ref=e134]
+              - generic [ref=e137]: Notifications
+        - generic [ref=e138]:
+          - generic [ref=e139]: BA
+          - generic [ref=e140]:
+            - paragraph [ref=e141]: Bob Admin
+            - paragraph [ref=e142]: bob@e2e-test.local
+    - generic [ref=e143]:
+      - banner [ref=e144]:
+        - button "Toggle menu" [ref=e145]:
+          - img
+          - generic [ref=e146]: Toggle menu
+        - navigation "Breadcrumb" [ref=e147]:
+          - link "E2E Test Organization" [ref=e148] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e149]:
+            - img [ref=e150]
+            - link "Clients" [ref=e152] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+          - generic [ref=e153]:
+            - img [ref=e154]
+            - generic "Client" [ref=e156]
+        - generic [ref=e157]:
+          - button "Search, Command K" [ref=e158]:
+            - img [ref=e159]
+            - generic [ref=e162]: Search
+            - generic: ⌘K
+          - button "Notifications" [ref=e164]:
+            - img
+            - generic [ref=e165]: 3 unread notifications
+            - generic [ref=e166]: "3"
+          - generic [ref=e168]: e2e-test-org
+          - button "BA" [ref=e170]
+      - main [ref=e171]
+  - generic [ref=e269]:
+    - heading "Command Palette" [level=2] [ref=e270]
+    - paragraph [ref=e271]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e272]
+```
+
+# Test source
+
+```ts
+  26  | 
+  27  | export const ORG = "e2e-test-org";
+  28  | export const BASE = `/org/${ORG}`;
+  29  | 
+  30  | const RUN_FILE = path.join(tmpdir(), "kazi-legal-depth-ii-run.json");
+  31  | 
+  32  | interface DepthIiRunState {
+  33  |   runId: string;
+  34  |   /** Exact name of the client Sipho's depth-II matter was opened for (created by Day 5). */
+  35  |   siphoClient?: string;
+  36  | }
+  37  | 
+  38  | function readRunState(): DepthIiRunState {
+  39  |   if (!existsSync(RUN_FILE)) {
+  40  |     throw new Error(
+  41  |       `No legal-depth-ii run state at ${RUN_FILE} — run day-05-disbursements.spec.ts first`
+  42  |     );
+  43  |   }
+  44  |   return JSON.parse(readFileSync(RUN_FILE, "utf-8")) as DepthIiRunState;
+  45  | }
+  46  | 
+  47  | /**
+  48  |  * Starts a new depth-II run (called by the first Day 5 test) and returns its id —
+  49  |  * the single source of the run id for every spec in the suite. Millisecond time
+  50  |  * plus 16 random bits, so ids never collide across runs on a reused stack.
+  51  |  */
+  52  | export function startDepthIiRun(): string {
+  53  |   const runId = `${Date.now().toString(36)}${randomBytes(2).toString("hex")}`;
+  54  |   writeFileSync(RUN_FILE, JSON.stringify({ runId } satisfies DepthIiRunState));
+  55  |   return runId;
+  56  | }
+  57  | 
+  58  | /** The id of the depth-II run started by Day 5 (throws if Day 5 has not run). */
+  59  | export function currentDepthIiRun(): string {
+  60  |   return readRunState().runId;
+  61  | }
+  62  | 
+  63  | /**
+  64  |  * Run id scoped to the current test attempt. A retried serial group (CI runs with
+  65  |  * `retries: 1`) re-runs every test of the group with `retry > 0`, so names built from
+  66  |  * this id stay unique when a group re-creates its records for the same run.
+  67  |  */
+  68  | export function attemptRunId(): string {
+  69  |   const retry = test.info().retry;
+  70  |   return retry ? `${currentDepthIiRun()}-r${retry}` : currentDepthIiRun();
+  71  | }
+  72  | 
+  73  | /** Records the exact client name Sipho's depth-II matter belongs to. */
+  74  | export function recordSiphoClient(name: string): void {
+  75  |   writeFileSync(RUN_FILE, JSON.stringify({ ...readRunState(), siphoClient: name }));
+  76  | }
+  77  | 
+  78  | /** Exact name of Sipho's client record for this run (recorded by Day 5). */
+  79  | export function siphoClientName(): string {
+  80  |   const name = readRunState().siphoClient;
+  81  |   if (!name) throw new Error("Sipho's client was not recorded — run day-05 first");
+  82  |   return name;
+  83  | }
+  84  | 
+  85  | /** Sipho Ndlovu's litigation matter used by Day 5, Day 30-45 and Day 85. */
+  86  | export function siphoMatterName(runId: string = currentDepthIiRun()): string {
+  87  |   return `Ndlovu v RAF — Depth II ${runId}`;
+  88  | }
+  89  | 
+  90  | export function escapeRegExp(value: string): string {
+  91  |   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  92  | }
+  93  | 
+  94  | /**
+  95  |  * YYYY-MM-DD for South African today offset by `days` — the product's business date (G88-F49),
+  96  |  * independent of the Playwright host's zone.
+  97  |  */
+  98  | export function isoDate(days = 0): string {
+  99  |   const [y, m, d] = todayInSA().split("-").map(Number);
+  100 |   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  101 | }
+  102 | 
+  103 | /**
+  104 |  * Selects the first `<option>` of a native `<select>` whose text matches `label` and
+  105 |  * returns the selected option's text. Waits for the option to exist first — several
+  106 |  * selects load their options asynchronously ("Loading matters...").
+  107 |  */
+  108 | export async function selectNativeOption(select: Locator, label: string | RegExp): Promise<string> {
+  109 |   const option = select.locator("option", { hasText: label }).first();
+  110 |   await expect(option, `option ${String(label)} should load`).toBeAttached({ timeout: 15_000 });
+  111 |   const value = await option.getAttribute("value");
+  112 |   expect(value, `option ${String(label)} should have a value`).toBeTruthy();
+  113 |   await select.selectOption(value!);
+  114 |   await expect(select).toHaveValue(value!);
+  115 |   return (await option.textContent())?.trim() ?? "";
+  116 | }
+  117 | 
+  118 | /**
+  119 |  * Performs a click that navigates client-side to another page and waits until that page
+  120 |  * is ready for interaction: its `ready` element is visible. The destination is mounted
+  121 |  * once per navigation (the org entrance animation is a CSS-only template), so it can be
+  122 |  * acted on as soon as it is visible. No reload, no fixed sleep.
+  123 |  */
+  124 | export async function clickThrough(target: Locator, ready: Locator): Promise<void> {
+  125 |   await target.click();
+> 126 |   await expect(ready).toBeVisible({ timeout: 15_000 });
+      |                       ^ Error: expect(locator).toBeVisible() failed
+  127 | }
+  128 | 
+  129 | /**
+  130 |  * Opens a matter from the Matters list by clicking its row link and waits until the
+  131 |  * matter page is ready (heading visible).
+  132 |  */
+  133 | export async function openMatter(
+  134 |   page: Page,
+  135 |   matterName: string,
+  136 |   { closed = false }: { closed?: boolean } = {}
+  137 | ): Promise<void> {
+  138 |   // Phase 87 S4 (ADR-344): route rename
+  139 |   await page.goto(`${BASE}/matters`);
+  140 |   if (closed) {
+  141 |     // The list shows active matters by default; closed ones sit behind the "Closed" chip
+  142 |     await page.getByTestId("project-status-filter").getByRole("link", { name: "Closed" }).click();
+  143 |     await expect(page).toHaveURL(/[?&]status=CLOSED/);
+  144 |   }
+  145 |   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
+  146 |   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
+  147 |   await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
+  148 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  149 |   await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/);
+  150 | }
+  151 | 
+  152 | /**
+  153 |  * Opens a client from the Clients list by clicking its link and waits until the client
+  154 |  * page is ready (heading visible).
+  155 |  */
+  156 | export async function openClient(page: Page, clientName: string): Promise<void> {
+  157 |   // Phase 87 S4 (ADR-344): route rename
+  158 |   await page.goto(`${BASE}/clients`);
+  159 |   const link = page.getByRole("link", { name: clientName, exact: true });
+  160 |   await expect(link, `client "${clientName}" should be listed`).toBeVisible({ timeout: 15_000 });
+  161 |   await clickThrough(link, page.getByRole("heading", { level: 1, name: clientName }));
+  162 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  163 |   await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
+  164 | }
+  165 | 
+  166 | /**
+  167 |  * Opens Legal → Disbursements filtered to one matter (the list's "Matter filter"). The
+  168 |  * list shows one page (50 rows); on a stack reused across runs the unfiltered list can
+  169 |  * push this run's rows off that page, so every lookup narrows to the run's own matter.
+  170 |  */
+  171 | export async function openDisbursementList(page: Page, matterName: string): Promise<void> {
+  172 |   await page.goto(`${BASE}/legal/disbursements`);
+  173 |   await expect(page.getByTestId("disbursements-list-page")).toBeVisible({ timeout: 15_000 });
+  174 |   await selectNativeOption(page.getByLabel("Matter filter"), matterName);
+  175 |   // The filtered refetch has landed once no row of another matter is listed
+  176 |   await expect(
+  177 |     page.locator('[data-testid^="disbursement-row-"]').filter({ hasNotText: matterName })
+  178 |   ).toHaveCount(0, { timeout: 15_000 });
+  179 | }
+  180 | 
+  181 | export interface NewClient {
+  182 |   name: string;
+  183 |   type: "Individual" | "Company" | "Trust";
+  184 |   email: string;
+  185 |   /** SA ID / passport number (step 2 intake field) — individuals only. */
+  186 |   idNumber?: string;
+  187 |   /** Tax number — required to send a fee note (auto-filled from the ID number for individuals). */
+  188 |   taxNumber?: string;
+  189 | }
+  190 | 
+  191 | /**
+  192 |  * Creates a client through the New Client dialog (with the billing address fee
+  193 |  * notes require) and leaves the browser on the new client's page.
+  194 |  */
+  195 | export async function createClient(page: Page, client: NewClient): Promise<void> {
+  196 |   // Phase 87 S4 (ADR-344): route rename
+  197 |   await page.goto(`${BASE}/clients`);
+  198 |   await page.getByRole("button", { name: "New Client" }).click();
+  199 | 
+  200 |   // The dialog title changes from "Create Client" (step 1) to "Additional Information" (step 2)
+  201 |   const dialog = page.getByRole("dialog", { name: /^(Create Client|Additional Information)$/ });
+  202 |   await expect(dialog).toBeVisible();
+  203 |   await dialog.getByLabel("Name", { exact: true }).fill(client.name);
+  204 |   await selectNativeOption(dialog.getByLabel("Type", { exact: true }), client.type);
+  205 |   await dialog.getByLabel("Email", { exact: true }).fill(client.email);
+  206 |   await dialog.locator('input[name="addressLine1"]').fill("12 Rivonia Road");
+  207 |   await dialog.locator('input[name="city"]').fill("Sandton");
+  208 |   await dialog.locator('input[name="postalCode"]').fill("2196");
+  209 |   await dialog.getByLabel(/^Country/).selectOption("ZA");
+  210 |   if (client.taxNumber) {
+  211 |     await dialog.getByLabel(/^Tax Number/).fill(client.taxNumber);
+  212 |   }
+  213 |   await dialog.getByRole("button", { name: "Next" }).click();
+  214 | 
+  215 |   // Step 2: SA Legal client intake fields
+  216 |   await expect(dialog.getByText("Step 2 of 2")).toBeVisible();
+  217 |   if (client.idNumber) {
+  218 |     await dialog.getByLabel(/ID \/ Passport Number/).fill(client.idNumber);
+  219 |   }
+  220 |   // Creating the client navigates to its page
+  221 |   await clickThrough(
+  222 |     dialog.getByRole("button", { name: "Create Client" }),
+  223 |     page.getByRole("heading", { level: 1, name: client.name })
+  224 |   );
+  225 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  226 |   await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
+```

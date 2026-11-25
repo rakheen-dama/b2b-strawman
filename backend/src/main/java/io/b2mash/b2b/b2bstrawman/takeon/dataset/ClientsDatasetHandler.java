@@ -68,6 +68,16 @@ public class ClientsDatasetHandler
   public static final String EMAIL_TAKEN_MESSAGE =
       "A client with this email address already exists";
 
+  /**
+   * F-655A-3 / FR-2: a CREATED take-on row keeps its email key after the client's email changes
+   * ({@code uq_take_on_rows_created_key}, RD-6), so the address stays reserved for take-on. Fixed
+   * text: a row's failure reason is not redacted on anonymisation, so it never names the client.
+   */
+  public static final String EMAIL_RESERVED_MESSAGE =
+      "Another client was taken on with this email address in an earlier take-on. The address"
+          + " stays reserved for take-on, even if that client's email has since changed in Kazi."
+          + " Take this client on with a different email address, or add them in Kazi directly.";
+
   public static final String EMAIL_PLACEHOLDER = "EMAIL_PLACEHOLDER";
   public static final String COUNTRY_INVALID = "COUNTRY_INVALID";
   public static final String ADDRESS_MISSING = "ADDRESS_MISSING";
@@ -445,10 +455,14 @@ public class ClientsDatasetHandler
 
   @Override
   public String failureMessage(RuntimeException failure) {
-    if (failure instanceof DataIntegrityViolationException integrity
-        && String.valueOf(integrity.getMostSpecificCause().getMessage())
-            .contains("uq_customers_email")) {
-      return EMAIL_TAKEN_MESSAGE; // created in the UI while this row was committing
+    if (failure instanceof DataIntegrityViolationException integrity) {
+      String cause = String.valueOf(integrity.getMostSpecificCause().getMessage());
+      if (cause.contains("uq_customers_email")) {
+        return EMAIL_TAKEN_MESSAGE; // created in the UI while this row was committing
+      }
+      if (cause.contains("uq_take_on_rows_created_key")) {
+        return EMAIL_RESERVED_MESSAGE; // an earlier take-on's created row holds this email key
+      }
     }
     return GenericTakeOnDatasetHandler.fixedFailureMessage(failure);
   }

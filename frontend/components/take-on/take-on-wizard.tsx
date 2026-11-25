@@ -19,6 +19,7 @@ import {
   TAKE_ON_COMMIT_TRAITS,
   TAKE_ON_DATASET_LABEL,
   TAKE_ON_SECTION_LABEL,
+  takeOnBlocksCommit,
   takeOnKebab,
   type TakeOnBatch,
   type TakeOnDatasetCatalogue,
@@ -166,6 +167,9 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
   const steps = stepsFor(batch);
   const reachable = (id: TakeOnStep) => {
     if (inFlight !== null) return false;
+    if (id === "signOff" && batch.status === "VALIDATED" && takeOnBlocksCommit(batch)) {
+      return false; // F-660A-1: a batch that can never be signed has no Sign-off step to show
+    }
     if (id === "attestation" || id === "signOff") {
       return batch.status === "VALIDATED" || isCommitted(batch);
     }
@@ -337,17 +341,21 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
                   Continue to the FICA attestation
                 </Button>
               )}
-              {traitsOf(batch).signOffStep === "signOff" && batch.status === "VALIDATED" && (
-                <Button
-                  type="button"
-                  variant="accent"
-                  disabled={inFlight !== null}
-                  onClick={() => setStep("signOff")}
-                  data-testid="take-on-to-sign-off"
-                >
-                  Continue to sign-off
-                </Button>
-              )}
+              {traitsOf(batch).signOffStep === "signOff" &&
+                batch.status === "VALIDATED" &&
+                (takeOnBlocksCommit(batch) ? (
+                  <SignOffUnavailable batch={batch} />
+                ) : (
+                  <Button
+                    type="button"
+                    variant="accent"
+                    disabled={inFlight !== null}
+                    onClick={() => setStep("signOff")}
+                    data-testid="take-on-to-sign-off"
+                  >
+                    Continue to sign-off
+                  </Button>
+                ))}
               {commitsFromValidation(batch) && batch.status === "VALIDATED" && batch.lastError && (
                 <TakeOnError message={batch.lastError} testId="take-on-last-error" />
               )}
@@ -371,6 +379,25 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Why a validated batch offers no sign-off (F-660A-1, D-264): it holds statutory blocks, or — a
+ * batch committed whole (the trust position, D-191) — an error. The backend refuses SIGN_OFF and
+ * COMMIT on the same predicate (`blocksCommit`).
+ */
+function SignOffUnavailable({ batch }: { batch: TakeOnBatch }) {
+  return (
+    <p
+      role="status"
+      data-testid="take-on-sign-off-unavailable"
+      className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+    >
+      {batch.counts.blocks > 0
+        ? "This take-on cannot be signed off while the statutory blocks above remain. Correct them in the previous system, upload the corrected file and validate it again."
+        : "A trust take-on is committed whole, so it cannot be signed off while any error remains. Correct every error, upload the corrected files and validate it again."}
+    </p>
   );
 }
 

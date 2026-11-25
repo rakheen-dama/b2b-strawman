@@ -8,7 +8,13 @@ import java.util.List;
  */
 public sealed interface TakeOnFileReader permits CsvTakeOnReader, XlsxTakeOnReader {
 
-  long MAX_FILE_BYTES = 10_485_760L;
+  /**
+   * FR-3: 3 MB (3 000 000 bytes) — the file arrives through a Next server action whose body limit
+   * is 3 MiB (frontend {@code lib/server-action-upload.ts}); the file limit leaves headroom for the
+   * multipart framing.
+   */
+  long MAX_FILE_BYTES = 3_000_000L;
+
   int MAX_DATA_ROWS = 10_000;
   int MAX_COLUMNS = 100;
   int MAX_HEADER_ROW = 50;
@@ -21,7 +27,7 @@ public sealed interface TakeOnFileReader permits CsvTakeOnReader, XlsxTakeOnRead
     if (file.length > MAX_FILE_BYTES) {
       throw new TakeOnReadException(
           TakeOnReadException.Code.FILE_TOO_LARGE,
-          "This file is larger than 10 MB. Split it into smaller files.");
+          "This file is larger than 3 MB. Split it into smaller files.");
     }
   }
 

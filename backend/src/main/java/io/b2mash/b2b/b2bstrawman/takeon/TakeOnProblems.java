@@ -319,7 +319,7 @@ public final class TakeOnProblems {
         HttpStatus.UNPROCESSABLE_ENTITY,
         "TAKE_ON_FILE_TOO_LARGE",
         "File too large",
-        "This file is larger than 10 MB. Split it into smaller files.");
+        "This file is larger than 3 MB. Split it into smaller files.");
   }
 
   public static TakeOnProblemException fileEmpty() {

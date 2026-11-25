@@ -14,22 +14,18 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "@/lib/format";
+import { SERVER_ACTION_FILE_MAX_LABEL, fileTooLargeError } from "@/lib/server-action-upload";
 import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/documents/_tabs/FieldDiscoveryResults";
 import type { TemplateDetailResponse } from "@/lib/types";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 
 const DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_DOCX_SIZE_LABEL = "10 MB";
 
 function validateDocxFile(f: File): string | null {
   if (f.type !== DOCX_MIME_TYPE && !f.name.toLowerCase().endsWith(".docx")) {
     return "Only .docx files are accepted.";
   }
-  if (f.size > MAX_DOCX_SIZE) {
-    return `File size exceeds ${MAX_DOCX_SIZE_LABEL}.`;
-  }
-  return null;
+  return fileTooLargeError(f.size); // FR-3: the server-action limit
 }
 
 // --- File Info Panel ---
@@ -274,7 +270,7 @@ export function ReplaceFileDialog({
                     Drag and drop a .docx file, or click to browse
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Max {MAX_DOCX_SIZE_LABEL}
+                    Max {SERVER_ACTION_FILE_MAX_LABEL}
                   </p>
                 </>
               )}

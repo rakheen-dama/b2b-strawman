@@ -1272,6 +1272,45 @@ class ClientsTakeOnIntegrationTest {
     assertThat(inTenant(() -> takeOnRows.clientBySourceRef("H-3"))).contains(current);
   }
 
+  // 19 (F-655A-3, founder ruling FR-2): the email stays reserved; the row says why
+  @Test
+  void anEmailAnEarlierClientWasTakenOnWith_failsTheRowWithTheSpecificReason() throws Exception {
+    var first =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Reserved Holder", "reserved.address@example.test").ref("R-1")),
+            mapping());
+    attestAndCommit(first);
+    UUID earlier = resultEntity(first.batchId(), "R-1");
+    // the client moves off the address: no client in Kazi holds it any more …
+    changeEmail(earlier, "Reserved Holder", "reserved.moved@example.test");
+    // … but a later take-on of another client with it is still refused (RD-6, kept by FR-2)
+    var later =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Second Reserved", "reserved.address@example.test").ref("R-2")),
+            mapping());
+    attestAndCommit(later);
+    assertThat(rowStatusByRef(later.batchId(), "R-2")).isEqualTo("FAILED");
+    assertThat(failureReason(later.batchId(), "R-2"))
+        .isEqualTo(
+            "Another client was taken on with this email address in an earlier take-on. The"
+                + " address stays reserved for take-on, even if that client's email has since"
+                + " changed in Kazi. Take this client on with a different email address, or add"
+                + " them in Kazi directly.")
+        .doesNotContain("Reserved Holder")
+        .doesNotContain("reserved.address@example.test");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM \"%s\".customers WHERE name = 'Second Reserved'"
+                    .formatted(schema),
+                Integer.class))
+        .as("the rolled-back row created no client")
+        .isZero();
+  }
+
   private void changeEmail(UUID clientId, String name, String email) throws Exception {
     mockMvc
         .perform(

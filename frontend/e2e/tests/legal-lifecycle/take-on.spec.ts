@@ -701,25 +701,14 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     const batch = await getBatch(batchId);
     expect(batch.allowedActions).not.toContain("SIGN_OFF");
     expect(batch.allowedActions).not.toContain("COMMIT");
-    await evidenceShot(bob, "04-trust-debit-block");
-    // F-660A-1 (MEDIUM, gap report; D-264): "Continue to sign-off" is offered on this blocked
-    // batch (the wizard gates it on status VALIDATED only, take-on-wizard.tsx:340), and the
-    // Sign-off step then reads as if the take-on awaited a partner. Observed as the product
-    // behaves; the gate itself holds — nothing there signs or commits. The F-660A-1 fix PR must
-    // flip the next line to `toHaveCount(0)` (and drop the Sign-off step checks) in the same PR.
-    await expect(bob.getByTestId("take-on-to-sign-off")).toBeVisible();
-    await bob.getByTestId("take-on-to-sign-off").click();
-    await expect(bob.getByTestId("take-on-signoff-status")).toHaveText(
-      "A partner or director signs off this take-on from their Home page."
+    // F-660A-1 (D-264, fixed): a blocked batch offers no path to the Sign-off step (the wizard
+    // reads the backend's blocksCommit predicate) and says why instead.
+    await expect(bob.getByTestId("take-on-to-sign-off")).toHaveCount(0);
+    await expect(bob.getByTestId("take-on-step-signOff")).toBeDisabled();
+    await expect(bob.getByTestId("take-on-sign-off-unavailable")).toHaveText(
+      "This take-on cannot be signed off while the statutory blocks above remain. Correct them in the previous system, upload the corrected file and validate it again."
     );
-    await expect(bob.getByTestId("takeon-signoff-submit")).toHaveCount(0);
-    await expect(bob.getByTestId("take-on-commit")).toHaveCount(0);
-    await evidenceShot(bob, "04-trust-debit-block-sign-off-step");
-    test.info().annotations.push({
-      type: "FINDING",
-      description:
-        'F-660A-1 (MEDIUM): "Continue to sign-off" is offered on a trust batch with 2 statutory blocks; its Sign-off step says "A partner or director signs off this take-on from their Home page." although it can never be signed (allowedActions has no SIGN_OFF/COMMIT).',
-    });
+    await evidenceShot(bob, "04-trust-debit-block");
   });
 
   test("5 · corrected client file, cashbook off by R10,00: EQ-1 and EQ-2 blocks, exact texts", async () => {
@@ -754,6 +743,7 @@ test.describe.serial("Phase 93 exit — the take-on, observed end to end (660.3)
     await expectEquation(bob, "eq1", false, "10,00");
     await expectEquation(bob, "eq2", false, "10,00");
     await expect(bob.getByTestId("take-on-commit")).toHaveCount(0);
+    await expect(bob.getByTestId("take-on-to-sign-off")).toHaveCount(0); // F-660A-1
     await evidenceShot(bob, "05-trust-r10-block");
   });
 

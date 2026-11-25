@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { LEGACY_REDIRECTS } from "./lib/legacy-redirects";
+import { SERVER_ACTION_BODY_LIMIT } from "./lib/server-action-upload";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -13,8 +14,9 @@ const nextConfig: NextConfig = {
     // during `next build`. The API checker (16.2 behaviour) skips diagnostics in
     // `__tests__/` and `*.test.*` / `*.spec.*` files; keep that build scope.
     useTypeScriptCli: false,
-    // Phase 93 653A: take-on uploads are ≤ 10 MB (§17.6.2); multipart overhead → 11 MB. Default is 1 MB.
-    serverActions: { bodySizeLimit: "11mb" },
+    // FR-3: 3 MB, shared by every server action that takes a file (take-on, bank statements);
+    // the file limit sits under it with headroom (lib/server-action-upload.ts). Default is 1 MB.
+    serverActions: { bodySizeLimit: SERVER_ACTION_BODY_LIMIT },
   },
   async redirects() {
     // One committed table (Phase 87 §12.7.4 / §12.10.5): lib/legacy-redirects.ts.

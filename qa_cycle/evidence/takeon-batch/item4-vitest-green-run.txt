@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend
+
+
+ Test Files  20 passed (20)
+      Tests  197 passed (197)
+   Start at  19:00:46
+   Duration  5.97s (transform 3.39s, setup 2.66s, import 18.72s, tests 15.57s, environment 9.33s)
+

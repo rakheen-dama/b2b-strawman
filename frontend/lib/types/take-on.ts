@@ -745,6 +745,11 @@ export interface TakeOnCommitTraits {
   commitsFromValidation: boolean;
   /** The commit skips nil-balance rows (`SKIPPED_ZERO`): the balance datasets only. */
   skipsNilBalance: boolean;
+  /**
+   * Committed whole (backend `TakeOnDataset.commitsWhole`, D-191): any error, not only a block,
+   * stops the sign-off and the commit. The trust position only.
+   */
+  commitsWhole: boolean;
 }
 
 /**
@@ -754,11 +759,42 @@ export interface TakeOnCommitTraits {
  * outstanding amount is a row error (658A).
  */
 export const TAKE_ON_COMMIT_TRAITS: Record<TakeOnDataset, TakeOnCommitTraits> = {
-  CLIENTS: { signOffStep: "attestation", commitsFromValidation: false, skipsNilBalance: false },
-  MATTERS: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
-  TRUST_POSITION: { signOffStep: "signOff", commitsFromValidation: false, skipsNilBalance: true },
-  DEBTOR_BALANCES: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
+  CLIENTS: {
+    signOffStep: "attestation",
+    commitsFromValidation: false,
+    skipsNilBalance: false,
+    commitsWhole: false,
+  },
+  MATTERS: {
+    signOffStep: null,
+    commitsFromValidation: true,
+    skipsNilBalance: false,
+    commitsWhole: false,
+  },
+  TRUST_POSITION: {
+    signOffStep: "signOff",
+    commitsFromValidation: false,
+    skipsNilBalance: true,
+    commitsWhole: true,
+  },
+  DEBTOR_BALANCES: {
+    signOffStep: null,
+    commitsFromValidation: true,
+    skipsNilBalance: false,
+    commitsWhole: false,
+  },
 };
+
+/**
+ * The batch may not be signed off or committed — the backend's `TakeOnBatch.blocksCommit()`, read
+ * by every sign-off and commit guard: a statutory block, or any error on a batch committed whole.
+ */
+export function takeOnBlocksCommit(batch: Pick<TakeOnBatch, "dataset" | "counts">): boolean {
+  return (
+    batch.counts.blocks > 0 ||
+    (TAKE_ON_COMMIT_TRAITS[batch.dataset].commitsWhole && batch.counts.error > 0)
+  );
+}
 
 export const TAKE_ON_DATASET_LABEL: Record<TakeOnDataset, string> = {
   CLIENTS: "Clients",

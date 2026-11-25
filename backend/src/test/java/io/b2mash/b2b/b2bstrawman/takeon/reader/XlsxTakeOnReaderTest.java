@@ -293,15 +293,18 @@ class XlsxTakeOnReaderTest {
         .check(classes);
   }
 
-  /** C-9 (2): a ~10 MB workbook (≤ 10 000 rows, many unique strings) reads to completion. */
+  /**
+   * C-9 (2): a workbook just under the size limit (3 MB since FR-3; 10 000 rows, many unique
+   * strings) reads to completion.
+   */
   @Test
-  void aTenMegabyteWorkbookReadsToCompletion() {
-    byte[] file = TakeOnTestFiles.xlsxLarge(10_000, 20, 58, 93L);
+  void aWorkbookAtTheSizeLimitReadsToCompletion() {
+    byte[] file = TakeOnTestFiles.xlsxLarge(10_000, 6, 58, 93L);
     assertThat((long) file.length)
         .as("fixture size %d bytes", file.length)
-        .isBetween(9_000_000L, TakeOnFileReader.MAX_FILE_BYTES);
+        .isBetween(2_500_000L, TakeOnFileReader.MAX_FILE_BYTES);
     var sheet = read(file, "Data");
-    assertThat(sheet.headers()).hasSize(20);
+    assertThat(sheet.headers()).hasSize(6);
     assertThat(sheet.rows()).hasSize(10_000);
     assertThat(sheet.rows().getLast().rowNumber()).isEqualTo(10_001);
   }

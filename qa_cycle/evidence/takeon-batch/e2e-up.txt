@@ -1,0 +1,607 @@
+Stopping E2E mock-auth stack...
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+=== E2E Mock-Auth Stack ===
+
+Building from source at: /Users/rakheendama/Projects/2026/wt-takeon-batch
+
+[1/3] Building and starting services...
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.26kB done
+#1 DONE 0.0s
+
+#2 [seed internal] load build definition from Dockerfile
+#2 transferring dockerfile: 264B 0.0s done
+#2 DONE 0.1s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 934B 0.0s done
+#3 DONE 0.1s
+
+#4 [mock-idp internal] load build definition from Dockerfile
+#4 transferring dockerfile: 399B done
+#4 DONE 0.2s
+
+#5 [frontend internal] load build definition from Dockerfile
+#5 transferring dockerfile: 4.45kB done
+#5 DONE 0.2s
+
+#6 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#6 ...
+
+#7 [auth] library/node:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/alpine:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#9 DONE 0.0s
+
+#10 [mock-idp internal] load metadata for docker.io/library/node:22-alpine
+#10 ...
+
+#6 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#6 DONE 1.8s
+
+#10 [mock-idp internal] load metadata for docker.io/library/node:22-alpine
+#10 DONE 1.8s
+
+#11 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#11 DONE 1.8s
+
+#12 [seed internal] load metadata for docker.io/library/alpine:3.19
+#12 DONE 1.8s
+
+#13 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jre-alpine
+#13 DONE 1.8s
+
+#14 [mock-idp internal] load .dockerignore
+#14 transferring context: 2B done
+#14 DONE 0.0s
+
+#15 [seed internal] load .dockerignore
+#15 transferring context: 2B done
+#15 DONE 0.0s
+
+#16 [backend internal] load .dockerignore
+#16 transferring context: 140B done
+#16 DONE 0.0s
+
+#17 [backend builder  1/10] FROM docker.io/library/eclipse-temurin:25-jdk@sha256:ce2ef9d2d67a68de5e196d4de9d743327c44a10b57fe02ec39f572c652cacfd3
+#17 DONE 0.0s
+
+#18 [seed 1/8] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#18 DONE 0.0s
+
+#19 [backend runner 1/5] FROM docker.io/library/eclipse-temurin:25-jre-alpine@sha256:69c2a26e9894016e274c880fa542956d005b3755f84db765145185e87405bd89
+#19 DONE 0.0s
+
+#20 [mock-idp builder 1/7] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#20 DONE 0.0s
+
+#21 [frontend internal] load .dockerignore
+#21 transferring context: 798B 0.0s done
+#21 DONE 0.1s
+
+#22 [seed internal] load build context
+#22 transferring context: 68.23kB 0.0s done
+#22 DONE 0.0s
+
+#23 [frontend deps 1/9] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#23 DONE 0.0s
+
+#24 [mock-idp internal] load build context
+#24 transferring context: 43.91kB 0.0s done
+#24 DONE 0.0s
+
+#25 [mock-idp stage-1 3/5] COPY --from=builder /app/package.json /app/package-lock.json* ./
+#25 CACHED
+
+#26 [mock-idp stage-1 4/5] RUN npm ci --omit=dev
+#26 CACHED
+
+#27 [mock-idp builder 5/7] COPY tsconfig.json ./
+#27 CACHED
+
+#28 [mock-idp builder 2/7] WORKDIR /app
+#28 CACHED
+
+#29 [mock-idp builder 4/7] RUN npm ci
+#29 CACHED
+
+#30 [mock-idp builder 3/7] COPY package.json package-lock.json* ./
+#30 CACHED
+
+#31 [mock-idp builder 7/7] RUN npm run build
+#31 CACHED
+
+#32 [mock-idp builder 6/7] COPY src/ ./src/
+#32 CACHED
+
+#33 [mock-idp stage-1 5/5] COPY --from=builder /app/dist ./dist
+#33 CACHED
+
+#34 [seed 7/8] COPY lib/ lib/
+#34 CACHED
+
+#35 [seed 5/8] COPY seed.sh .
+#35 CACHED
+
+#36 [seed 6/8] COPY rich-seed.sh .
+#36 CACHED
+
+#37 [seed 4/8] COPY wait-for-backend.sh .
+#37 CACHED
+
+#38 [seed 2/8] RUN apk add --no-cache curl jq
+#38 CACHED
+
+#39 [seed 3/8] WORKDIR /seed
+#39 CACHED
+
+#40 [seed 8/8] RUN chmod +x wait-for-backend.sh seed.sh rich-seed.sh lib/*.sh
+#40 CACHED
+
+#41 [seed] exporting to image
+#41 exporting layers done
+#41 writing image sha256:f71c398cff138c74bcf217aca0683c0441e912accf55b5faf5555c31bb060b84 done
+#41 naming to docker.io/library/docteams-e2e-seed
+#41 naming to docker.io/library/docteams-e2e-seed 0.0s done
+#41 DONE 0.0s
+
+#42 [mock-idp] exporting to image
+#42 exporting layers done
+#42 writing image sha256:43583952b3cec1812a701bef32a889c8aa2d6fd9df1398068b555feb09bdb2a6 0.0s done
+#42 naming to docker.io/library/docteams-e2e-mock-idp done
+#42 DONE 0.0s
+
+#43 [seed] resolving provenance for metadata file
+#43 DONE 0.0s
+
+#44 [mock-idp] resolving provenance for metadata file
+#44 DONE 0.0s
+
+#45 [frontend internal] load build context
+#45 transferring context: 12.38MB 1.1s done
+#45 DONE 1.1s
+
+#46 [frontend deps 4/9] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#46 CACHED
+
+#47 [frontend deps 7/9] COPY packages/ui/package.json ./packages/ui/
+#47 CACHED
+
+#48 [frontend builder  4/11] COPY --from=deps /app/node_modules ./node_modules
+#48 CACHED
+
+#49 [frontend deps 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+#49 CACHED
+
+#50 [frontend deps 8/9] COPY packages/shared/package.json ./packages/shared/
+#50 CACHED
+
+#51 [frontend builder  5/11] COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+#51 CACHED
+
+#52 [frontend deps 6/9] COPY frontend/package.json ./frontend/
+#52 CACHED
+
+#53 [frontend builder  7/11] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#53 CACHED
+
+#54 [frontend deps 2/9] WORKDIR /app
+#54 CACHED
+
+#55 [frontend deps 5/9] COPY patches/ ./patches/
+#55 CACHED
+
+#56 [frontend deps 9/9] RUN pnpm install --frozen-lockfile --filter frontend...
+#56 CACHED
+
+#57 [frontend builder  6/11] COPY --from=deps /app/packages ./packages
+#57 CACHED
+
+#58 [frontend builder  8/11] COPY tsconfig.base.json ./
+#58 CACHED
+
+#59 [frontend builder  9/11] COPY frontend/ ./frontend/
+#59 ...
+
+#60 [backend internal] load build context
+#60 transferring context: 23.00MB 2.1s done
+#60 DONE 2.1s
+
+#61 [backend builder  2/10] WORKDIR /build
+#61 CACHED
+
+#62 [backend builder  3/10] COPY mvnw .
+#62 CACHED
+
+#63 [backend builder  4/10] COPY .mvn .mvn
+#63 CACHED
+
+#64 [backend builder  5/10] COPY pom.xml .
+#64 CACHED
+
+#65 [backend builder  6/10] RUN ./mvnw dependency:go-offline -B
+#65 CACHED
+
+#66 [backend builder  7/10] COPY src src
+#66 ...
+
+#59 [frontend builder  9/11] COPY frontend/ ./frontend/
+#59 DONE 1.3s
+
+#67 [frontend builder 10/11] COPY packages/ ./packages/
+#67 DONE 0.2s
+
+#66 [backend builder  7/10] COPY src src
+#66 DONE 1.8s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 2.397 
+#68 2.397 > frontend@0.1.0 build /app/frontend
+#68 2.397 > next build
+#68 2.397 
+#68 3.407 ▲ Next.js 16.3.8 (Turbopack)
+#68 3.811 ✓ Running next.config.ts took 403ms
+#68 3.967 - Experiments (use with caution):
+#68 3.967   · serverActions
+#68 3.967   ⨯ useTypeScriptCli
+#68 3.967 
+#68 4.101   Creating an optimized production build ...
+#68 ...
+
+#69 [backend builder  8/10] RUN ./mvnw clean package -DskipTests -B
+#69 2.249 [INFO] Scanning for projects...
+#69 2.526 [INFO] 
+#69 2.527 [INFO] -----------------< io.b2mash.b2b:b2b-strawman-backend >-----------------
+#69 2.527 [INFO] Building backend 0.0.1-SNAPSHOT
+#69 2.527 [INFO]   from pom.xml
+#69 2.527 [INFO] --------------------------------[ jar ]---------------------------------
+#69 4.613 [INFO] Downloading from spring-milestones: https://repo.spring.io/milestone/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar
+#69 6.329 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar
+#69 6.878 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar (539 kB at 987 kB/s)
+#69 6.907 [INFO] 
+#69 6.908 [INFO] --- clean:3.5.0:clean (default-clean) @ b2b-strawman-backend ---
+#69 7.010 [INFO] 
+#69 7.011 [INFO] --- spotless:3.2.1:check (default) @ b2b-strawman-backend ---
+#69 8.074 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.pom
+#69 8.129 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.pom (11 kB at 208 kB/s)
+#69 8.195 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format-parent/1.28.0/google-java-format-parent-1.28.0.pom
+#69 8.224 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format-parent/1.28.0/google-java-format-parent-1.28.0.pom (13 kB at 449 kB/s)
+#69 8.229 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.pom
+#69 8.274 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.pom (13 kB at 285 kB/s)
+#69 8.276 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/32.1.3-jre/guava-parent-32.1.3-jre.pom
+#69 8.324 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/32.1.3-jre/guava-parent-32.1.3-jre.pom (20 kB at 410 kB/s)
+#69 8.331 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom
+#69 8.362 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom (2.4 kB at 78 kB/s)
+#69 8.364 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom
+#69 8.466 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom (10 kB at 100 kB/s)
+#69 8.470 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom
+#69 8.499 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom (2.3 kB at 84 kB/s)
+#69 8.509 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.pom
+#69 8.553 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.pom (2.1 kB at 47 kB/s)
+#69 8.556 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.pom
+#69 8.594 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.pom (1.8 kB at 48 kB/s)
+#69 8.596 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_parent/2.21.1/error_prone_parent-2.21.1.pom
+#69 8.629 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_parent/2.21.1/error_prone_parent-2.21.1.pom (13 kB at 388 kB/s)
+#69 8.633 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.pom
+#69 8.683 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.pom (2.9 kB at 60 kB/s)
+#69 8.690 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.jar
+#69 8.690 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar
+#69 8.733 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.jar (281 kB at 6.0 MB/s)
+#69 8.761 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar
+#69 8.766 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+#69 8.767 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar
+#69 8.768 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar
+#69 8.792 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar (4.6 kB at 45 kB/s)
+#69 8.793 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar
+#69 8.819 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar (9.3 kB at 175 kB/s)
+#69 8.826 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar (2.2 kB at 34 kB/s)
+#69 8.838 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar (17 kB at 234 kB/s)
+#69 8.895 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar (224 kB at 1.8 MB/s)
+#69 8.902 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar (3.0 MB at 14 MB/s)
+#69 8.930 [INFO] Index file does not exist. Fallback to an empty index
+#69 8.972 WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+#69 8.972 WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/root/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+#69 8.972 WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+#69 8.972 WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+#69 ...
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 26.27 ✓ Compiled successfully in 21.4s
+#68 26.28   Running TypeScript ...
+#68 ...
+
+#69 [backend builder  8/10] RUN ./mvnw clean package -DskipTests -B
+#69 30.05 [INFO] Spotless.Java is keeping 2603 files clean - 0 needs changes to be clean, 2603 were already clean, 0 were skipped because caching determined they were already clean
+#69 30.08 [INFO] 
+#69 30.08 [INFO] --- resources:3.3.1:resources (default-resources) @ b2b-strawman-backend ---
+#69 30.22 [INFO] Copying 6 resources from src/main/resources to target/classes
+#69 30.24 [INFO] Copying 136 resources from src/main/resources to target/classes
+#69 30.26 [INFO] 
+#69 30.26 [INFO] --- compiler:3.14.1:compile (default-compile) @ b2b-strawman-backend ---
+#69 30.45 [INFO] Recompiling the module because of changed source code.
+#69 30.47 [INFO] Compiling 1626 source files with javac [debug parameters release 25] to target/classes
+#69 39.30 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Some input files use or override a deprecated API.
+#69 39.30 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Recompile with -Xlint:deprecation for details.
+#69 39.30 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java uses unchecked or unsafe operations.
+#69 39.30 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: Recompile with -Xlint:unchecked for details.
+#69 39.30 [INFO] 
+#69 39.30 [INFO] --- resources:3.3.1:testResources (default-testResources) @ b2b-strawman-backend ---
+#69 39.31 [INFO] Copying 58 resources from src/test/resources to target/test-classes
+#69 39.32 [INFO] 
+#69 39.32 [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
+#69 39.36 [INFO] Recompiling the module because of changed dependency.
+#69 39.36 [INFO] Compiling 977 source files with javac [debug parameters release 25] to target/test-classes
+#69 58.90 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/architecture/TerminologyRemnantScanTest.java: Some input files use or override a deprecated API.
+#69 58.90 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/architecture/TerminologyRemnantScanTest.java: Recompile with -Xlint:deprecation for details.
+#69 58.90 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
+#69 58.90 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
+#69 58.90 [INFO] 
+#69 58.90 [INFO] --- surefire:3.5.4:test (default-test) @ b2b-strawman-backend ---
+#69 59.24 [INFO] Tests are skipped.
+#69 59.25 [INFO] 
+#69 59.25 [INFO] --- asciidoctor:2.2.1:process-asciidoc (generate-docs) @ b2b-strawman-backend ---
+#69 59.66 [INFO] sourceDirectory /build/src/docs/asciidoc does not exist
+#69 59.66 [INFO] sourceDirectory /build/src/asciidoc does not exist
+#69 59.66 [INFO] sourceDirectory /build/src/main/asciidoc does not exist
+#69 59.66 [INFO] No sourceDirectory found. Skipping processing
+#69 59.67 [INFO] 
+#69 59.67 [INFO] --- jar:3.4.2:jar (default-jar) @ b2b-strawman-backend ---
+#69 60.03 [INFO] Building jar: /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar
+#69 60.25 [INFO] 
+#69 60.25 [INFO] --- spring-boot:4.0.2:repackage (repackage) @ b2b-strawman-backend ---
+#69 62.75 [INFO] Replacing main artifact /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+#69 62.75 [INFO] The original artifact has been renamed to /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar.original
+#69 62.75 [INFO] ------------------------------------------------------------------------
+#69 62.75 [INFO] BUILD SUCCESS
+#69 62.75 [INFO] ------------------------------------------------------------------------
+#69 62.76 [INFO] Total time:  01:00 min
+#69 62.76 [INFO] Finished at: 2026-11-25T16:31:21Z
+#69 62.76 [INFO] ------------------------------------------------------------------------
+#69 DONE 63.1s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 ...
+
+#70 [backend builder  9/10] RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+#70 DONE 3.1s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 ...
+
+#71 [backend builder 10/10] RUN mv extracted/*.jar extracted/app.jar
+#71 DONE 0.3s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 ...
+
+#72 [backend runner 3/5] RUN addgroup --system --gid 1001 spring &&     adduser --system --uid 1001 spring
+#72 CACHED
+
+#73 [backend runner 2/5] WORKDIR /app
+#73 CACHED
+
+#74 [backend runner 4/5] RUN apk add --no-cache curl
+#74 CACHED
+
+#75 [backend runner 5/5] COPY --from=builder --chown=spring:spring /build/extracted/ ./
+#75 DONE 0.6s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 ...
+
+#76 [backend] exporting to image
+#76 exporting layers
+#76 exporting layers 0.2s done
+#76 writing image sha256:e7fd89e47741f1b954de2456961800f0023839ff69de10f0f5f6ccff14b1a007
+#76 writing image sha256:e7fd89e47741f1b954de2456961800f0023839ff69de10f0f5f6ccff14b1a007 done
+#76 naming to docker.io/library/docteams-e2e-backend done
+#76 DONE 0.3s
+
+#77 [backend] resolving provenance for metadata file
+#77 DONE 0.0s
+
+#68 [frontend builder 11/11] RUN pnpm --filter frontend build
+#68 82.42   Finished TypeScript in 56s ...
+#68 82.44   Collecting page data using 9 workers ...
+#68 84.97   Generating static pages using 9 workers (0/14) ...
+#68 85.28   Generating static pages using 9 workers (3/14) 
+#68 85.28   Generating static pages using 9 workers (6/14) 
+#68 85.36   Generating static pages using 9 workers (10/14) 
+#68 85.47 ✓ Generating static pages using 9 workers (14/14) in 499ms
+#68 85.48   Finalizing page optimization ...
+#68 86.08 
+#68 86.09 Route (app)
+#68 86.09 ┌ ○ /
+#68 86.09 ├ ○ /_not-found
+#68 86.09 ├ ƒ /accept-invite
+#68 86.09 ├ ○ /accept-invite/complete
+#68 86.09 ├ ƒ /accept-invite/continue
+#68 86.09 ├ ƒ /accept/[token]
+#68 86.09 ├ ƒ /api/clients
+#68 86.09 ├ ƒ /api/invoices/[id]/preview
+#68 86.09 ├ ○ /create-org
+#68 86.09 ├ ○ /dashboard
+#68 86.09 ├ ○ /mock-login
+#68 86.09 ├ ƒ /org/[slug]/ai/reviews
+#68 86.09 ├ ƒ /org/[slug]/clients
+#68 86.09 ├ ƒ /org/[slug]/clients/[id]
+#68 86.09 ├ ƒ /org/[slug]/compliance
+#68 86.09 ├ ƒ /org/[slug]/compliance/requests
+#68 86.09 ├ ƒ /org/[slug]/compliance/requests/[id]
+#68 86.09 ├ ƒ /org/[slug]/conflict-check
+#68 86.09 ├ ƒ /org/[slug]/dashboard
+#68 86.09 ├ ƒ /org/[slug]/diary
+#68 86.09 ├ ƒ /org/[slug]/information-requests/[id]
+#68 86.09 ├ ƒ /org/[slug]/invoices
+#68 86.09 ├ ƒ /org/[slug]/invoices/[id]
+#68 86.09 ├ ƒ /org/[slug]/invoices/billing-runs
+#68 86.09 ├ ƒ /org/[slug]/invoices/billing-runs/[id]
+#68 86.09 ├ ƒ /org/[slug]/invoices/billing-runs/new
+#68 86.09 ├ ƒ /org/[slug]/invoices/collections
+#68 86.09 ├ ƒ /org/[slug]/invoices/unbilled
+#68 86.09 ├ ƒ /org/[slug]/legal/adverse-parties
+#68 86.09 ├ ƒ /org/[slug]/legal/disbursements
+#68 86.09 ├ ƒ /org/[slug]/legal/disbursements/[id]
+#68 86.09 ├ ƒ /org/[slug]/legal/tariffs
+#68 86.09 ├ ƒ /org/[slug]/matters
+#68 86.09 ├ ƒ /org/[slug]/matters/[id]
+#68 86.09 ├ ƒ /org/[slug]/matters/new
+#68 86.09 ├ ƒ /org/[slug]/my-work
+#68 86.09 ├ ƒ /org/[slug]/my-work/timesheet
+#68 86.09 ├ ƒ /org/[slug]/notifications
+#68 86.09 ├ ƒ /org/[slug]/reports
+#68 86.09 ├ ƒ /org/[slug]/reports/[reportSlug]
+#68 86.09 ├ ƒ /org/[slug]/reports/profitability
+#68 86.09 ├ ƒ /org/[slug]/settings
+#68 86.09 ├ ƒ /org/[slug]/settings/connections
+#68 86.09 ├ ƒ /org/[slug]/settings/connections/ai/history
+#68 86.09 ├ ƒ /org/[slug]/settings/connections/automations/executions
+#68 86.09 ├ ƒ /org/[slug]/settings/connections/xero/sync-log
+#68 86.09 ├ ƒ /org/[slug]/settings/documents
+#68 86.09 ├ ƒ /org/[slug]/settings/documents/templates/[id]/edit
+#68 86.09 ├ ƒ /org/[slug]/settings/documents/templates/new
+#68 86.09 ├ ƒ /org/[slug]/settings/fees
+#68 86.09 ├ ƒ /org/[slug]/settings/firm
+#68 86.09 ├ ƒ /org/[slug]/settings/matters
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/checklists/[id]
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/checklists/[id]/edit
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/checklists/new
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/request-templates/[id]
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/request-templates/new
+#68 86.09 ├ ƒ /org/[slug]/settings/matters/templates/[id]
+#68 86.09 ├ ƒ /org/[slug]/team
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/client-ledgers
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/client-ledgers/[clientId]
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/investments
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/other-creditors
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/reconciliation
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/reconciliation/lists/[listId]
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/reconciliation/new
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/reports
+#68 86.09 ├ ƒ /org/[slug]/trust-accounting/transactions
+#68 86.09 ├ ƒ /platform-admin/access-requests
+#68 86.09 ├ ƒ /platform-admin/billing
+#68 86.09 ├ ƒ /platform-admin/demo
+#68 86.09 ├ ○ /request-access
+#68 86.09 ├ ƒ /sign-in
+#68 86.09 └ ○ /signed-out
+#68 86.09 
+#68 86.09 
+#68 86.09 ƒ Proxy (Middleware)
+#68 86.09 
+#68 86.09 ○  (Static)   prerendered as static content
+#68 86.09 ƒ  (Dynamic)  server-rendered on demand
+#68 86.09 
+#68 DONE 86.5s
+
+#78 [frontend runner 3/7] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+#78 CACHED
+
+#79 [frontend runner 4/7] RUN apk add --no-cache curl
+#79 CACHED
+
+#80 [frontend runner 5/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+#80 DONE 0.7s
+
+#81 [frontend runner 6/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+#81 DONE 0.1s
+
+#82 [frontend runner 7/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
+#82 DONE 0.0s
+
+#83 [frontend] exporting to image
+#83 exporting layers
+#83 exporting layers 0.3s done
+#83 writing image sha256:ddc5d17ad9bbed867f063cfff1ca8f43d228cf1ec9d000371138db3bc75288f1 done
+#83 naming to docker.io/library/docteams-e2e-frontend done
+#83 DONE 0.3s
+
+#84 [frontend] resolving provenance for metadata file
+#84 DONE 0.0s
+ docteams-e2e-mock-idp  Built
+ docteams-e2e-backend  Built
+ docteams-e2e-frontend  Built
+ docteams-e2e-seed  Built
+ Network docteams-e2e_e2e-network  Creating
+ Network docteams-e2e_e2e-network  Created
+ Volume docteams-e2e_e2e_postgres_data  Creating
+ Volume docteams-e2e_e2e_postgres_data  Created
+ Volume docteams-e2e_e2e_localstack_data  Creating
+ Volume docteams-e2e_e2e_localstack_data  Created
+ Container e2e-postgres  Creating
+ Container e2e-localstack  Creating
+ Container e2e-mock-idp  Creating
+ Container e2e-mailpit  Creating
+ Container e2e-mailpit  Created
+ Container e2e-mock-idp  Created
+ Container e2e-postgres  Created
+ Container e2e-localstack  Created
+ Container e2e-backend  Creating
+ Container e2e-backend  Created
+ Container e2e-frontend  Creating
+ Container e2e-frontend  Created
+ Container e2e-seed  Creating
+ Container e2e-seed  Created
+ Container e2e-mailpit  Starting
+ Container e2e-mock-idp  Starting
+ Container e2e-postgres  Starting
+ Container e2e-localstack  Starting
+ Container e2e-mock-idp  Started
+ Container e2e-postgres  Started
+ Container e2e-mailpit  Started
+ Container e2e-localstack  Started
+ Container e2e-mock-idp  Waiting
+ Container e2e-postgres  Waiting
+ Container e2e-localstack  Waiting
+ Container e2e-mock-idp  Healthy
+ Container e2e-postgres  Healthy
+ Container e2e-localstack  Healthy
+ Container e2e-backend  Starting
+ Container e2e-backend  Started
+ Container e2e-backend  Waiting
+ Container e2e-backend  Healthy
+ Container e2e-frontend  Starting
+ Container e2e-frontend  Started
+ Container e2e-backend  Waiting
+ Container e2e-frontend  Waiting
+ Container e2e-mock-idp  Waiting
+ Container e2e-backend  Healthy
+ Container e2e-mock-idp  Healthy
+ Container e2e-frontend  Healthy
+ Container e2e-seed  Starting
+ Container e2e-seed  Started
+
+[2/3] Waiting for services to become healthy...
+  Backend (localhost:8081)... ready
+  Frontend (localhost:3001)... ready
+  Mock IDP (localhost:8090)... ready
+  Mailpit (localhost:8026)... ready
+
+[3/3] Waiting for seed to complete...
+  Seed completed (container exited)
+
+=== E2E Stack Ready ===
+
+  Frontend (mock auth):  http://localhost:3001
+  Mock login page:       http://localhost:3001/mock-login
+  Backend (e2e profile): http://localhost:8081
+  Mock IDP:              http://localhost:8090
+  Mailpit SMTP:          localhost:1026
+  Mailpit UI:            http://localhost:8026
+  Postgres:              localhost:5433 (user: postgres, pass: changeme, db: app)
+
+  Users: Alice (owner), Bob (admin), Carol (member)
+  Org:   e2e-test-org
+
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/wt-takeon-batch/compose/docker-compose.e2e.yml logs -f backend frontend
+  Access DB:   docker exec -it e2e-postgres psql -U postgres -d app
+  Stop stack:  bash compose/scripts/e2e-down.sh
+  Reseed data: bash compose/scripts/e2e-reseed.sh
+

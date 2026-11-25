@@ -1,0 +1,18 @@
+# Trimmed to the result lines (full log 2.9 MB).
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 17.97 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.takeon.TakeOnUploadValidationIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.takeon.TakeOnUploadValidationIntegrationTest.aFileOverThreeMegabytesIsRefused -- Time elapsed: 0.682 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<422> but was:<201>
+[ERROR] Failures: 
+[ERROR]   TakeOnUploadValidationIntegrationTest.aFileOverThreeMegabytesIsRefused:110->refused:447 Status expected:<422> but was:<201>
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-takeon-batch/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

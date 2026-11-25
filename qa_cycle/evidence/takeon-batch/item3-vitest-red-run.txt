@@ -1,0 +1,61 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-takeon-batch/frontend
+
+ ❯ __tests__/take-on/take-on-wizard.test.tsx (38 tests | 2 failed | 30 skipped) 467ms
+     × a statutorily blocked trust batch offers no path to Sign-off and says why 51ms
+     × a trust batch with an error but no block offers no path to Sign-off either (committed whole, D-191) 37ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/take-on/take-on-wizard.test.tsx > TakeOnWizard — trust sign-off (657C) > a statutorily blocked trust batch offers no path to Sign-off and says why
+Error: [2mexpect([22m[31melement[39m[2m).not.toBeInTheDocument()[22m
+
+[31mexpected document not to contain element, found <button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-teal-600 text-white hover:bg-teal-600/90 rounded-full h-9 px-4 py-2 has-[>svg]:px-3"
+  data-size="default"
+  data-slot="button"
+  data-testid="take-on-to-sign-off"
+  data-variant="accent"
+  type="button"
+>
+  Continue to sign-off
+</button> instead[39m
+ ❯ __tests__/take-on/take-on-wizard.test.tsx:1085:61
+    1083|       TRUST_CATALOGUE
+    1084|     );
+    1085|     expect(screen.queryByTestId("take-on-to-sign-off")).not.toBeInTheD…
+       |                                                             ^
+    1086|     expect(screen.getByTestId("take-on-step-signOff")).toBeDisabled();
+    1087|     expect(screen.getByTestId("take-on-sign-off-unavailable")).toHaveT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  __tests__/take-on/take-on-wizard.test.tsx > TakeOnWizard — trust sign-off (657C) > a trust batch with an error but no block offers no path to Sign-off either (committed whole, D-191)
+Error: [2mexpect([22m[31melement[39m[2m).not.toBeInTheDocument()[22m
+
+[31mexpected document not to contain element, found <button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-teal-600 text-white hover:bg-teal-600/90 rounded-full h-9 px-4 py-2 has-[>svg]:px-3"
+  data-size="default"
+  data-slot="button"
+  data-testid="take-on-to-sign-off"
+  data-variant="accent"
+  type="button"
+>
+  Continue to sign-off
+</button> instead[39m
+ ❯ __tests__/take-on/take-on-wizard.test.tsx:1097:61
+    1095|       TRUST_CATALOGUE
+    1096|     );
+    1097|     expect(screen.queryByTestId("take-on-to-sign-off")).not.toBeInTheD…
+       |                                                             ^
+    1098|     expect(screen.getByTestId("take-on-step-signOff")).toBeDisabled();
+    1099|     expect(screen.getByTestId("take-on-sign-off-unavailable")).toHaveT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed | 30 skipped (38)
+   Start at  17:53:39
+   Duration  1.72s (transform 429ms, setup 91ms, import 884ms, tests 467ms, environment 164ms)
+

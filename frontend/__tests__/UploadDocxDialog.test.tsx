@@ -98,7 +98,7 @@ describe("UploadDocxDialog", () => {
     });
   });
 
-  it("shows validation error for file exceeding 10MB", async () => {
+  it("shows validation error for a file over the 3 MB server-action limit (FR-3)", async () => {
     const user = userEvent.setup();
     renderDialog();
 
@@ -108,13 +108,13 @@ describe("UploadDocxDialog", () => {
     });
 
     const bigFile = new File(["x"], "big.docx", { type: DOCX_MIME });
-    Object.defineProperty(bigFile, "size", { value: 11 * 1024 * 1024 });
+    Object.defineProperty(bigFile, "size", { value: 11 * 1024 * 1024 }); // 11.6 MB decimal
 
     const input = screen.getByTestId("docx-file-input");
     fireEvent.change(input, { target: { files: [bigFile] } });
 
     await waitFor(() => {
-      expect(screen.getByText("File size exceeds 10 MB.")).toBeInTheDocument();
+      expect(screen.getByText("File exceeds the 3 MB limit (11.6 MB)")).toBeInTheDocument();
     });
   });
 

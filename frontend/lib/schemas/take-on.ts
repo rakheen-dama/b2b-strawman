@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { SERVER_ACTION_FILE_MAX_BYTES, fileTooLargeError } from "@/lib/server-action-upload";
 
 // Client and trust take-on (Phase 93 653A, architecture §17.6.2). The backend repeats every check;
 // these refuse early so a wrong file never leaves the browser.
 
-export const TAKE_ON_MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB (§17.6.2)
+export const TAKE_ON_MAX_FILE_BYTES = SERVER_ACTION_FILE_MAX_BYTES; // 3 MB (FR-3)
 
 /** MIME types a browser reports for .csv / .xlsx; "" when the OS does not know the type. */
 export const TAKE_ON_ALLOWED_MIME_TYPES: ReadonlySet<string> = new Set([
@@ -24,10 +25,7 @@ export function takeOnFileError(file: { name: string; size: number; type: string
   if (!TAKE_ON_ALLOWED_MIME_TYPES.has(file.type)) {
     return WRONG_FORMAT;
   }
-  if (file.size > TAKE_ON_MAX_FILE_BYTES) {
-    return `File exceeds the 10 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
-  }
-  return null;
+  return fileTooLargeError(file.size);
 }
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the cutover date.");

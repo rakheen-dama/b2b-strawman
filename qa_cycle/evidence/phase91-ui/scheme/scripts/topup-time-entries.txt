@@ -1,0 +1,3 @@
+2026-11-25T18:20:12.176Z logged 2h on 2026-10-16 billable=true (Open task detail for Execution -- warrant / attachment)
+2026-11-25T18:20:13.926Z logged 1h on 2026-11-25 billable=false (Open task detail for Execution -- warrant / attachment)
+2026-11-25T18:20:17.036Z Home KPI row after top-up: "Last 30 days\n\nActive matters\n8\nHours logged\n13,8h\nFirst week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6.\nBillable %\n100,0%\nOverdue tasks\n0"

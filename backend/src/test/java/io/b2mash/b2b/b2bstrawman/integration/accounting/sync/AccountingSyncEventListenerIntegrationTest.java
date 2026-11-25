@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -41,11 +42,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
  * accounting_sync_entry} in the firm's own schema when Xero is CONNECTED. {@link
  * AccountingSyncServiceTest} calls the service directly, so it never exercised the AFTER_COMMIT
  * listener ({@link AccountingSyncEventListener}). Asserts by entity id, never by global counts.
+ *
+ * <p>Pushes are off by default ({@code kazi.accounting.push.enabled}, PR #1860 ruling) until the
+ * worker sends real payloads; {@link AccountingPushDisabledIntegrationTest} covers the default.
+ * This class is about the enabled route, so it turns pushes on. A class-level property is the
+ * narrowest mechanism here: the value genuinely differs from the suite default for this class
+ * (backend/CLAUDE.md), and {@link AccountingSyncWorkerTest} uses the same single property.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@TestPropertySource(properties = "kazi.accounting.push.enabled=true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountingSyncEventListenerIntegrationTest {
 
@@ -166,6 +174,33 @@ class AccountingSyncEventListenerIntegrationTest {
               assertThat(e.getState()).isEqualTo(SyncState.PENDING);
               assertThat(e.getTrigger()).isEqualTo(SyncTrigger.EVENT);
             });
+  }
+
+  @Test
+  void updatingAClient_queuesANewPendingXeroPush() throws Exception {
+    UUID customerId =
+        UUID.fromString(
+            TestEntityHelper.createCustomer(
+                mockMvc,
+                TestJwtFactory.ownerJwt(ORG_ID, OWNER),
+                "Zanele Khumalo",
+                "sync.listener.updated@example.test"));
+    completeActiveEntries(SyncEntityType.CUSTOMER, customerId); // the create's push went out
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/api/clients/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"name\": \"Zanele Khumalo-Dlamini\","
+                        + " \"email\": \"sync.listener.updated@example.test\"}"))
+        .andExpect(status().isOk());
+
+    assertThat(entriesFor(SyncEntityType.CUSTOMER, customerId))
+        .filteredOn(e -> e.getState() == SyncState.PENDING)
+        .singleElement()
+        .satisfies(e -> assertThat(e.getTrigger()).isEqualTo(SyncTrigger.EVENT));
   }
 
   // --- helpers ---

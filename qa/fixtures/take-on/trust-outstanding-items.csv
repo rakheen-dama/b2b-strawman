@@ -1,0 +1,3 @@
+Item type,Original date,Amount,Reference,Client reference,Matter reference
+Deposit,{{C-1}},5000.00,EFT B-0001,C-002,TR-B1
+Cheque,{{C-5}},20000.00,PAY-778,C-001,TR-A1

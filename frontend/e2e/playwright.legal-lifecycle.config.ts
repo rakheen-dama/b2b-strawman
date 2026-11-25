@@ -15,9 +15,19 @@ if (authMode !== "mock") {
  */
 const EXIT_MONTH_SPEC = "**/trust-balanced-month.spec.ts";
 
+/**
+ * The Phase 93 take-on capstone (660A, P-14): its own project, not part of the default lifecycle
+ * run. It takes a whole fictional firm on (clients, matters, the trust position, debtors) and
+ * reconciles the first post-cutover month — all committed, so it is single-shot per stack and runs
+ * alone on a fresh stack: `pnpm test:e2e:take-on` (= `--project take-on`). `chromium` ignores it.
+ */
+const TAKE_ON_SPEC = "**/take-on.spec.ts";
+
 export default defineConfig({
   testDir: "./tests/legal-lifecycle",
   snapshotPathTemplate: "{testDir}/../../screenshots/legal-lifecycle/{arg}{ext}",
+  // 10 min per run. The take-on project (660A) measured ~2 min end to end on a fresh stack, so it
+  // fits without raising this.
   globalTimeout: 600_000,
   timeout: 30_000,
   // No retries: the lifecycle is one serial chain whose records are named per run, not per
@@ -41,7 +51,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      testIgnore: EXIT_MONTH_SPEC,
+      testIgnore: [EXIT_MONTH_SPEC, TAKE_ON_SPEC],
       use: {
         ...devices["Desktop Chrome"],
         deviceScaleFactor: 2,
@@ -50,6 +60,14 @@ export default defineConfig({
     {
       name: "exit-month",
       testMatch: EXIT_MONTH_SPEC,
+      use: {
+        ...devices["Desktop Chrome"],
+        deviceScaleFactor: 2,
+      },
+    },
+    {
+      name: "take-on",
+      testMatch: TAKE_ON_SPEC,
       use: {
         ...devices["Desktop Chrome"],
         deviceScaleFactor: 2,

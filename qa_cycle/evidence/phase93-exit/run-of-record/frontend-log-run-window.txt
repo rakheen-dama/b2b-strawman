@@ -1,0 +1,32 @@
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }
+e2e-frontend  | ⨯ Error: The destination stream closed early.
+e2e-frontend  |     at ignore-listed frames {
+e2e-frontend  |   digest: '1054653889'
+e2e-frontend  | }

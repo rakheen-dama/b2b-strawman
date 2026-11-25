@@ -15,6 +15,7 @@
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "test:e2e:legal-lifecycle": "playwright test --config e2e/playwright.legal-lifecycle.config.ts --project chromium",
     "test:e2e:exit-month": "playwright test --config e2e/playwright.legal-lifecycle.config.ts --project exit-month",
+    "test:e2e:take-on": "playwright test --config e2e/playwright.legal-lifecycle.config.ts --project take-on",
     "test:e2e:legal-depth-ii": "playwright test --config e2e/playwright.legal-depth-ii.config.ts",
     "test:e2e:projects": "playwright test --config e2e/playwright.config.ts e2e/tests/projects/",
     "test:e2e:customers": "playwright test --config e2e/playwright.config.ts e2e/tests/customers/",

@@ -1,7 +1,7 @@
 {
-  "commit": "0d08e820f",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node v20.11.1)",
+  "commit": "15ab8bbaa",
+  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && rm -rf .next && pnpm build && pnpm test (nvm node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-24T20:15:30Z",
-  "summary": "PR #1857 (658A) @ 0d08e820f (frontend unchanged at head bc2c478ad): lint 0 errors, typecheck 0, format:check 0, build 0; vitest 506 files / 4960 passed / 2 skipped (re-run; run 1 had 1 load-timeout flake in untouched trust-balance-trend-chart.test.tsx, F-658A-7)"
+  "ts": "2026-11-25T02:10:19Z",
+  "summary": "660A @ 15ab8bbaa (frontend = e2e spec/helper/config/package.json only): lint 0 errors (77 pre-existing warnings, none in the new files), typecheck 0, format:check 0, build 0; vitest 506 files / 4960 passed / 2 skipped (no flake). E2E take-on run of record: 16 passed, 2.1 min, fresh stack."
 }

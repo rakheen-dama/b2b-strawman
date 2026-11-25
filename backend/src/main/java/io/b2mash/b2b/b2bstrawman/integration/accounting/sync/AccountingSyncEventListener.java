@@ -25,6 +25,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * {@code @Transactional} would otherwise join that finished transaction and its insert would never
  * be committed (F-658A-1). Idempotency stays in {@link AccountingSyncService}: an active or
  * terminal entry for the entity makes the enqueue a no-op.
+ *
+ * <p>Nothing is queued while {@link AccountingPushSwitch} is off (the default until the worker
+ * sends real payloads).
  */
 @Component
 public class AccountingSyncEventListener {
@@ -32,11 +35,15 @@ public class AccountingSyncEventListener {
   private static final Logger log = LoggerFactory.getLogger(AccountingSyncEventListener.class);
 
   private final AccountingSyncService syncService;
+  private final AccountingPushSwitch pushSwitch;
   private final TransactionTemplate requiresNewTransactionTemplate;
 
   public AccountingSyncEventListener(
-      AccountingSyncService syncService, PlatformTransactionManager transactionManager) {
+      AccountingSyncService syncService,
+      AccountingPushSwitch pushSwitch,
+      PlatformTransactionManager transactionManager) {
     this.syncService = syncService;
+    this.pushSwitch = pushSwitch;
     this.requiresNewTransactionTemplate = new TransactionTemplate(transactionManager);
     this.requiresNewTransactionTemplate.setPropagationBehavior(
         TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -44,6 +51,9 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceApproved(InvoiceApprovedEvent event) {
+    if (!pushSwitch.isEnabled()) {
+      return;
+    }
     RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
@@ -64,6 +74,9 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceSent(InvoiceSentEvent event) {
+    if (!pushSwitch.isEnabled()) {
+      return;
+    }
     RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
@@ -84,6 +97,9 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceVoided(InvoiceVoidedEvent event) {
+    if (!pushSwitch.isEnabled()) {
+      return;
+    }
     RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
@@ -104,6 +120,9 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCustomerCreated(CustomerCreatedEvent event) {
+    if (!pushSwitch.isEnabled()) {
+      return;
+    }
     RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
@@ -124,6 +143,9 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCustomerUpdated(CustomerUpdatedEvent event) {
+    if (!pushSwitch.isEnabled()) {
+      return;
+    }
     RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),

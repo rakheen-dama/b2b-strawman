@@ -139,6 +139,11 @@ app:
 # The KeycloakProvisioningClient bean is only created when that profile is active.
 
 kazi:
+  # Fee-note / client pushes to Xero (AccountingPushSwitch). Off until the drain worker sends real
+  # payloads (PR #1860 ruling); false is also the default when the property is absent.
+  accounting:
+    push:
+      enabled: false
   sharding:
     enabled: false
     control-plane-datasource: primary

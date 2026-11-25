@@ -364,7 +364,7 @@ class AccountingSyncControllerIntegrationTest {
   @Test
   void resync_integrationManagerCanAccess() throws Exception {
     UUID invoiceId = UUID.randomUUID();
-    doNothing().when(syncService).enqueueInvoicePush(any(UUID.class), any(SyncTrigger.class));
+    doNothing().when(syncService).forceResyncInvoice(any(UUID.class));
 
     mockMvc
         .perform(

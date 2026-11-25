@@ -47,6 +47,7 @@ public class AccountingSyncWorker {
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
+  private final AccountingPushSwitch pushSwitch;
 
   public AccountingSyncWorker(
       AccountingSyncEntryRepository syncEntryRepository,
@@ -54,13 +55,15 @@ public class AccountingSyncWorker {
       AccountingSyncService syncService,
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate,
-      JobEnqueuer jobEnqueuer) {
+      JobEnqueuer jobEnqueuer,
+      AccountingPushSwitch pushSwitch) {
     this.syncEntryRepository = syncEntryRepository;
     this.integrationRegistry = integrationRegistry;
     this.syncService = syncService;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
+    this.pushSwitch = pushSwitch;
   }
 
   @SchedulerLock(name = "accounting_sync_drain_pending_entries", lockAtLeastFor = "15s")
@@ -70,9 +73,18 @@ public class AccountingSyncWorker {
     jobEnqueuer.fanOutToAllTenants("accounting_sync_drain", null);
   }
 
+  /**
+   * Drains one tenant's actionable entries. While {@link AccountingPushSwitch} is off, PUSH entries
+   * (INVOICE / CUSTOMER) are not selected at all: they stay exactly as queued — not dispatched to
+   * the placeholder payloads in {@link #dispatchSync}, not retried, not dead-lettered.
+   */
   int drainForTenant() {
+    var page = PageRequest.of(0, BATCH_SIZE);
     var entries =
-        syncEntryRepository.findDrainableEntries(Instant.now(), PageRequest.of(0, BATCH_SIZE));
+        pushSwitch.isEnabled()
+            ? syncEntryRepository.findDrainableEntries(Instant.now(), page)
+            : syncEntryRepository.findDrainableEntriesExcludingDirection(
+                SyncDirection.PUSH, Instant.now(), page);
     int processed = 0;
 
     for (AccountingSyncEntry entry : entries) {

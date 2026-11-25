@@ -29,6 +29,24 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
       """)
   List<AccountingSyncEntry> findDrainableEntries(@Param("now") Instant now, Pageable pageable);
 
+  /**
+   * Worker drain query while accounting pushes are switched off ({@link AccountingPushSwitch}):
+   * actionable entries of every direction except {@code excluded}, ordered by next_attempt_at.
+   */
+  @Query(
+      """
+      SELECT e FROM AccountingSyncEntry e
+      WHERE e.state IN (
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.PENDING,
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.FAILED_RETRYING
+      )
+      AND e.nextAttemptAt <= :now
+      AND e.direction <> :excluded
+      ORDER BY e.nextAttemptAt ASC
+      """)
+  List<AccountingSyncEntry> findDrainableEntriesExcludingDirection(
+      @Param("excluded") SyncDirection excluded, @Param("now") Instant now, Pageable pageable);
+
   /** Lookup: latest sync entry for an entity (invoice/customer status chip). */
   @Query(
       """

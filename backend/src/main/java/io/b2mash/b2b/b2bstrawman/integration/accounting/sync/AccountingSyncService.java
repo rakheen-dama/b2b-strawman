@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -52,6 +53,7 @@ public class AccountingSyncService {
   private final TrustBoundaryGuard trustBoundaryGuard;
   private final InvoiceTransitionService invoiceTransitionService;
   private final PaymentEventRepository paymentEventRepository;
+  private final AccountingPushSwitch pushSwitch;
 
   public AccountingSyncService(
       AccountingSyncEntryRepository syncEntryRepository,
@@ -65,7 +67,8 @@ public class AccountingSyncService {
       AuditService auditService,
       TrustBoundaryGuard trustBoundaryGuard,
       InvoiceTransitionService invoiceTransitionService,
-      PaymentEventRepository paymentEventRepository) {
+      PaymentEventRepository paymentEventRepository,
+      AccountingPushSwitch pushSwitch) {
     this.syncEntryRepository = syncEntryRepository;
     this.xeroConnectionRepository = xeroConnectionRepository;
     this.integrationRegistry = integrationRegistry;
@@ -78,6 +81,23 @@ public class AccountingSyncService {
     this.trustBoundaryGuard = trustBoundaryGuard;
     this.invoiceTransitionService = invoiceTransitionService;
     this.paymentEventRepository = paymentEventRepository;
+    this.pushSwitch = pushSwitch;
+  }
+
+  /**
+   * Manual resync of a fee note ({@code POST /api/integrations/sync/invoice/{id}/resync}). Refused
+   * with a 409 while {@link AccountingPushSwitch} is off, rather than queueing an entry the worker
+   * would not send; otherwise {@link #enqueueInvoicePush} with {@link SyncTrigger#FORCE_RESYNC}.
+   */
+  @Transactional
+  public void forceResyncInvoice(UUID invoiceId) {
+    if (!pushSwitch.isEnabled()) {
+      throw new ResourceConflictException(
+          "Xero sync is not available yet",
+          "Kazi does not send fee notes or clients to Xero yet. Nothing was queued.",
+          Map.of("code", "XERO_SYNC_NOT_AVAILABLE"));
+    }
+    enqueueInvoicePush(invoiceId, SyncTrigger.FORCE_RESYNC);
   }
 
   /**

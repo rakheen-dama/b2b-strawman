@@ -72,7 +72,7 @@ public class AccountingSyncController {
   @PostMapping("/invoice/{invoiceId}/resync")
   @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<Void> resync(@PathVariable UUID invoiceId) {
-    syncService.enqueueInvoicePush(invoiceId, SyncTrigger.FORCE_RESYNC);
+    syncService.forceResyncInvoice(invoiceId);
     return ResponseEntity.noContent().build();
   }
 

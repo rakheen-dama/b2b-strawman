@@ -1,0 +1,79 @@
+[ERROR] COMPILATION ERROR : 
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[21,71] cannot find symbol
+  symbol:   class InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[16,71] cannot find symbol
+  symbol:   class InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationRevokeAlwaysWinsIntegrationTest.java:[150,40] cannot find symbol
+  symbol:   variable InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationRevokeAlwaysWinsIntegrationTest.java:[149,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[100,21] cannot find symbol
+  symbol:   variable InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[99,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[105,24] cannot find symbol
+  symbol:   method emailNotSentReason()
+  location: variable response of type io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[113,21] cannot find symbol
+  symbol:   variable InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[112,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[115,62] cannot find symbol
+  symbol:   method emailNotSentReason()
+  location: class io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[137,34] cannot find symbol
+  symbol:   method emailNotSentReason()
+  location: variable response of type io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[129,20] cannot find symbol
+  symbol:   variable InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClientInvitationLookupTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[128,35] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[137,20] cannot find symbol
+  symbol:   variable InviteResult
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClientInvitationLookupTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[136,35] 'void' type not allowed here
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project b2b-strawman-backend: Compilation failure: Compilation failure: 
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[21,71] cannot find symbol
+[ERROR]   symbol:   class InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[16,71] cannot find symbol
+[ERROR]   symbol:   class InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationRevokeAlwaysWinsIntegrationTest.java:[150,40] cannot find symbol
+[ERROR]   symbol:   variable InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationRevokeAlwaysWinsIntegrationTest.java:[149,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[100,21] cannot find symbol
+[ERROR]   symbol:   variable InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[99,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[105,24] cannot find symbol
+[ERROR]   symbol:   method emailNotSentReason()
+[ERROR]   location: variable response of type io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[113,21] cannot find symbol
+[ERROR]   symbol:   variable InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[112,42] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[115,62] cannot find symbol
+[ERROR]   symbol:   method emailNotSentReason()
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[137,34] cannot find symbol
+[ERROR]   symbol:   method emailNotSentReason()
+[ERROR]   location: variable response of type io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[129,20] cannot find symbol
+[ERROR]   symbol:   variable InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClientInvitationLookupTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[128,35] 'void' type not allowed here
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[137,20] cannot find symbol
+[ERROR]   symbol:   variable InviteResult
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClientInvitationLookupTest
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[136,35] 'void' type not allowed here
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

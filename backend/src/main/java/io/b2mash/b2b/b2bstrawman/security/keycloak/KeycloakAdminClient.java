@@ -57,16 +57,9 @@ public class KeycloakAdminClient {
             .defaultStatusHandler(
                 HttpStatusCode::isError,
                 (request, response) -> {
-                  HttpStatusCode status = response.getStatusCode();
-                  String body =
-                      new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                  log.error("Keycloak Admin API error: {} — {}", status, body);
-                  if (status.value() == 401 || status.value() == 403 || status.value() >= 500) {
-                    throw new InvalidStateException(
-                        "Keycloak unavailable", "Keycloak Admin API unavailable");
-                  }
-                  throw new InvalidStateException(
-                      "Keycloak error", "Keycloak Admin API error: " + status.value());
+                  throw apiError(
+                      response.getStatusCode(),
+                      new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
                 })
             .build();
     this.tokenRestClient = RestClient.builder().requestFactory(requestFactory).build();
@@ -150,19 +143,75 @@ public class KeycloakAdminClient {
         .body(new ParameterizedTypeReference<>() {});
   }
 
-  public void inviteMember(String orgId, String email, String role, String redirectUrl) {
+  /** What Keycloak did with an {@code invite-user} call that did not fail. */
+  public enum InviteResult {
+    /** Keycloak stored an invitation and emailed the link. */
+    SENT,
+    /**
+     * The person is already a member of the Keycloak organization (e.g. a revoked invitee — Kazi
+     * does not remove them, "revoke always wins"): Keycloak answered 409 {@value
+     * #ALREADY_MEMBER_MESSAGE} and sent no email.
+     */
+    ALREADY_MEMBER
+  }
+
+  /** Keycloak 26.5 {@code OrganizationInvitationResource.inviteUser}'s message for that 409. */
+  static final String ALREADY_MEMBER_MESSAGE = "User already a member of the organization";
+
+  /**
+   * {@code POST /organizations/{id}/members/invite-user}. Exactly Keycloak's 409 {@value
+   * #ALREADY_MEMBER_MESSAGE} is an expected outcome ({@link InviteResult#ALREADY_MEMBER}, no ERROR
+   * log); every other error is logged and thrown as by the default status handler.
+   */
+  public InviteResult inviteMember(String orgId, String email, String role, String redirectUrl) {
     String formBody = "email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
     if (redirectUrl != null && !redirectUrl.isBlank()) {
       formBody += "&redirectUrl=" + URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8);
     }
-    restClient
+    return restClient
         .post()
         .uri("/organizations/{orgId}/members/invite-user", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
         .body(formBody)
-        .retrieve()
-        .toBodilessEntity();
+        .exchange(
+            (request, response) -> {
+              HttpStatusCode status = response.getStatusCode();
+              if (!status.isError()) {
+                return InviteResult.SENT;
+              }
+              String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+              if (status.value() == 409 && ALREADY_MEMBER_MESSAGE.equals(errorMessage(body))) {
+                log.info("Keycloak sent no invitation email: {} is already an org member", email);
+                return InviteResult.ALREADY_MEMBER;
+              }
+              throw apiError(status, body);
+            });
+  }
+
+  /** Keycloak's {@code ErrorRepresentation.errorMessage}, or null when the body is not one. */
+  private static String errorMessage(String body) {
+    try {
+      var node = ERROR_READER.readTree(body);
+      return node != null && node.path("errorMessage").isString()
+          ? node.path("errorMessage").asString()
+          : null;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private static final tools.jackson.databind.ObjectMapper ERROR_READER =
+      new tools.jackson.databind.ObjectMapper();
+
+  /** The default status handler's behaviour: log the error, map it to an InvalidStateException. */
+  private static InvalidStateException apiError(HttpStatusCode status, String body) {
+    log.error("Keycloak Admin API error: {} — {}", status, body);
+    if (status.value() == 401 || status.value() == 403 || status.value() >= 500) {
+      return new InvalidStateException("Keycloak unavailable", "Keycloak Admin API unavailable");
+    }
+    return new InvalidStateException(
+        "Keycloak error", "Keycloak Admin API error: " + status.value());
   }
 
   public List<Map<String, Object>> listInvitations(String orgId) {
@@ -172,6 +221,44 @@ public class KeycloakAdminClient {
         .header("Authorization", "Bearer " + getAdminToken())
         .retrieve()
         .body(new ParameterizedTypeReference<>() {});
+  }
+
+  /**
+   * The ids of the organization's Keycloak invitations for exactly {@code email}, across every page
+   * (FR-8). Keycloak 26.5's {@code email} filter is a LIKE ({@code %email%}) and results are paged,
+   * so this pages with {@code first}/{@code max} until a short page and re-checks each email
+   * exactly. Any Keycloak error propagates — callers must not read it as "none".
+   */
+  public List<String> findInvitationIdsByEmail(String orgId, String email) {
+    List<String> ids = new ArrayList<>();
+    int first = 0;
+    int max = 100;
+    while (true) {
+      List<Map<String, Object>> page =
+          restClient
+              .get()
+              .uri(
+                  "/organizations/{orgId}/invitations?email={email}&first={first}&max={max}",
+                  orgId,
+                  email,
+                  first,
+                  max)
+              .header("Authorization", "Bearer " + getAdminToken())
+              .retrieve()
+              .body(new ParameterizedTypeReference<>() {});
+      if (page == null || page.isEmpty()) {
+        break;
+      }
+      page.stream()
+          .filter(inv -> email.equalsIgnoreCase(String.valueOf(inv.get("email"))))
+          .map(inv -> String.valueOf(inv.get("id")))
+          .forEach(ids::add);
+      if (page.size() < max) {
+        break;
+      }
+      first += max;
+    }
+    return ids;
   }
 
   public void revokeInvitation(String orgId, String invitationId) {

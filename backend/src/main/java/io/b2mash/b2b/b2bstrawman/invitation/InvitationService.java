@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,13 +117,22 @@ public class InvitationService {
             .build());
 
     // Trigger Keycloak invitation email (best-effort — failure doesn't roll back DB record)
+    String emailNotSentReason = null;
     if (keycloakAdminClient != null) {
       try {
         String orgId = RequestScopes.getOrgIdOrNull();
         if (orgId != null) {
           String kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
-          keycloakAdminClient.inviteMember(kcOrgId, email, orgRole.getSlug(), null);
-          log.info("Triggered Keycloak invitation for email={}", email);
+          var result = keycloakAdminClient.inviteMember(kcOrgId, email, orgRole.getSlug(), null);
+          if (result == KeycloakAdminClient.InviteResult.ALREADY_MEMBER) {
+            // Fix 6: e.g. a revoked invitee (still in the Keycloak org, "revoke always wins") —
+            // no email; this invitation admits them on their next Kazi request
+            emailNotSentReason = PendingInvitationResponse.ALREADY_HAS_LOGIN;
+            log.info(
+                "No Keycloak invitation email for email={}: already has a login in the org", email);
+          } else {
+            log.info("Triggered Keycloak invitation for email={}", email);
+          }
         }
       } catch (Exception e) {
         log.warn("Failed to send Keycloak invitation for email={}: {}", email, e.getMessage());
@@ -130,7 +140,7 @@ public class InvitationService {
     }
 
     log.info("Created invitation for email={} with role={}", email, orgRole.getSlug());
-    return PendingInvitationResponse.from(invitation);
+    return PendingInvitationResponse.from(invitation, emailNotSentReason);
   }
 
   @Transactional(readOnly = true)
@@ -162,6 +172,10 @@ public class InvitationService {
     invitation.revoke();
     invitationRepository.save(invitation);
 
+    // FR-8: the Keycloak invitation (its email link) goes too. Runs inside this transaction, so a
+    // refusal rolls the Kazi revoke back — never a revoked invitation whose link still works.
+    revokeInKeycloak(invitation.getEmail());
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("invitation.revoked")
@@ -171,6 +185,64 @@ public class InvitationService {
             .build());
 
     log.info("Revoked invitation id={} for email={}", invitationId, invitation.getEmail());
+  }
+
+  /**
+   * FR-8: cancels the Keycloak side of an invitation. Keycloak 26.5 persists an organization
+   * invitation at {@code invite-user} and, when the emailed link is used (registration or existing
+   * user), refuses it once that invitation no longer exists; org membership is added only on
+   * acceptance, and Keycloak deletes its invitation then. So every Keycloak invitation for this
+   * exact email (all pages) is deleted. None left — the link was already used, or invite-user
+   * failed at creation — is fine: "revoke always wins" (founder ruling, PR #1859), and {@code
+   * MemberFilter} refuses anyone whose latest invitation is revoked at first sign-in, so Kazi is
+   * the authority. Kazi does not remove the person from the Keycloak org: for a member who
+   * registered through the link Keycloak would delete the whole account. Any Keycloak failure
+   * refuses the revoke (the caller's transaction rolls back), so a live link is never left behind a
+   * "revoked" invitation. Mock/e2e mode (no Keycloak client) and calls without an org context are
+   * unaffected.
+   */
+  private void revokeInKeycloak(String email) {
+    String orgId = RequestScopes.getOrgIdOrNull();
+    if (keycloakAdminClient == null || orgId == null) {
+      return;
+    }
+
+    String kcOrgId;
+    List<String> kcInvitationIds;
+    try {
+      kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
+      // exhaustive (every page, exact email); an error is never read as "no invitation"
+      kcInvitationIds = keycloakAdminClient.findInvitationIdsByEmail(kcOrgId, email);
+    } catch (Exception e) {
+      throw keycloakRevokeFailed(email, e);
+    }
+
+    for (String kcInvitationId : kcInvitationIds) {
+      try {
+        keycloakAdminClient.revokeInvitation(kcOrgId, kcInvitationId);
+      } catch (Exception e) {
+        throw keycloakRevokeFailed(email, e);
+      }
+    }
+    if (kcInvitationIds.isEmpty()) {
+      log.info(
+          "No live Keycloak invitation for email={} (link used or never sent) — revoked in Kazi;"
+              + " sign-in is refused by MemberFilter",
+          email);
+    } else {
+      log.info("Revoked {} Keycloak invitation(s) for email={}", kcInvitationIds.size(), email);
+    }
+  }
+
+  private static InvalidStateException keycloakRevokeFailed(String email, Exception cause) {
+    log.warn(
+        "Failed to revoke the Keycloak invitation for email={}: {}", email, cause.getMessage());
+    return new InvalidStateException(
+        "Invitation not revoked",
+        "The invitation email for '"
+            + email
+            + "' could not be cancelled in Keycloak, so its link may still work. Nothing was"
+            + " changed. Please try again.");
   }
 
   @Transactional
@@ -187,6 +259,32 @@ public class InvitationService {
     }
 
     return result;
+  }
+
+  /**
+   * "Revoke always wins" (PR #1859): true when the latest <em>non-expired</em> invitation for
+   * {@code email} in this tenant is REVOKED — {@code MemberFilter} then refuses to create a member
+   * at first sign-in. Expired invitations (marked EXPIRED, or still PENDING past their expiry)
+   * never decide: an expired re-invite does not lift a revocation (CodeRabbit, MAJOR). A REVOKED or
+   * ACCEPTED invitation decides whatever its expiry date — a revocation does not lapse, and an
+   * acceptance after a revocation means the firm let the person in (they are then not refused). A
+   * live PENDING invitation never reaches this check: the caller looks it up first and it wins. The
+   * email is normalised exactly as {@link #findPendingByEmail} does.
+   */
+  @Transactional(readOnly = true)
+  public boolean isLatestInvitationRevoked(String email) {
+    return invitationRepository
+        .findAllByEmailOrderByCreatedAtDesc(email.toLowerCase().trim())
+        .stream()
+        .filter(invitation -> !lapsed(invitation))
+        .findFirst()
+        .map(invitation -> invitation.getStatus() == InvitationStatus.REVOKED)
+        .orElse(false);
+  }
+
+  private static boolean lapsed(PendingInvitation invitation) {
+    return invitation.getStatus() == InvitationStatus.EXPIRED
+        || (invitation.getStatus() == InvitationStatus.PENDING && invitation.isExpired());
   }
 
   @Transactional

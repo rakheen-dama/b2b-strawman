@@ -1,0 +1,75 @@
+[ERROR] COMPILATION ERROR : 
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[141,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[154,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[179,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[198,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[230,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[240,32] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[249,29] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[276,41] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.Object,java.lang.Object)
+  location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[83,22] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[96,22] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[104,36] cannot find symbol
+  symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+  location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project b2b-strawman-backend: Compilation failure: Compilation failure: 
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[141,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[154,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[179,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[198,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[230,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[240,32] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[249,29] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable keycloakAdminClient of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationServiceTest.java:[276,41] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.Object,java.lang.Object)
+[ERROR]   location: class io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[83,22] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[96,22] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/keycloak/KeycloakAdminClientInvitationLookupTest.java:[104,36] cannot find symbol
+[ERROR]   symbol:   method findInvitationIdsByEmail(java.lang.String,java.lang.String)
+[ERROR]   location: variable client of type io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

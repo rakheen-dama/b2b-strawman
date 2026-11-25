@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -41,18 +42,21 @@ public class OrgRoleService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final MemberFilter memberFilter;
+  private final PendingInvitationRepository invitationRepository;
 
   public OrgRoleService(
       OrgRoleRepository orgRoleRepository,
       MemberRepository memberRepository,
       AuditService auditService,
       NotificationService notificationService,
-      @Lazy MemberFilter memberFilter) {
+      @Lazy MemberFilter memberFilter,
+      PendingInvitationRepository invitationRepository) {
     this.orgRoleRepository = orgRoleRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.memberFilter = memberFilter;
+    this.invitationRepository = invitationRepository;
   }
 
   @Transactional(readOnly = true)
@@ -389,6 +393,21 @@ public class OrgRoleService {
               + " member(s)");
     }
 
+    // Every invitation row references its role (pending_invitations_org_role_id_fkey, no ON
+    // DELETE): a pending one grants this exact role at first sign-in (by the id it stores), and a
+    // revoked, accepted or expired one still holds the FK — so any reference blocks the delete
+    // with a clear 409 instead of the FK's 500 (CodeRabbit, PR #1859).
+    long invitations = invitationRepository.countByOrgRole_Id(id);
+    if (invitations > 0) {
+      throw new ResourceConflictException(
+          "Role in use",
+          "Cannot delete role '"
+              + role.getName()
+              + "' because "
+              + invitations
+              + " invitation(s) reference it.");
+    }
+
     auditService.log(AuditEventBuilder.roleDeleted(role));
     orgRoleRepository.delete(role);
   }
@@ -400,6 +419,18 @@ public class OrgRoleService {
   @Transactional(readOnly = true)
   public java.util.Optional<OrgRole> findSystemRoleBySlug(String slug) {
     return orgRoleRepository.findBySlug(slug).filter(OrgRole::isSystem);
+  }
+
+  /**
+   * The role a pending invitation grants, by the id the invitation stores (system or custom). The
+   * invitation's guards ran when it was created ({@code InvitationService.createInvitation}); the
+   * role cannot be deleted while a pending invitation offers it ({@link #deleteRole}).
+   */
+  @Transactional(readOnly = true)
+  public OrgRole findRoleForInvitation(UUID roleId) {
+    return orgRoleRepository
+        .findById(roleId)
+        .orElseThrow(() -> new ResourceNotFoundException("OrgRole", roleId));
   }
 
   static String generateSlug(String name) {

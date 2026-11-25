@@ -1,0 +1,711 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend
+
+stderr | components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows the refusal detail when the revoke is refused, and keeps the row
+Failed to revoke invitation: 'dave@example.com' has already accepted the invitation email and joins with the invited role on their first sign-in, so it can no longer be revoked. Remove them from the team once they appear.
+
+stderr | components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows a generic message when the refusal carries no detail
+Failed to revoke invitation: undefined
+
+stderr | components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows a generic message when the revoke throws
+Failed to revoke invitation: Error: network down
+    at /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/components/team/pending-invitations.test.tsx:157:44
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64
+
+stderr | components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > clears the refusal on the next attempt
+Failed to revoke invitation: Invitation not revoked
+
+ ❯ components/team/pending-invitations.test.tsx (9 tests | 4 failed) 4141ms
+     × shows the refusal detail when the revoke is refused, and keeps the row 1021ms
+     × shows a generic message when the refusal carries no detail 1017ms
+     × shows a generic message when the revoke throws 1018ms
+     × clears the refusal on the next attempt 1018ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows the refusal detail when the revoke is refused, and keeps the row
+TestingLibraryElementError: Unable to find an element by: [data-testid="revoke-invitation-error"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ components/team/pending-invitations.test.tsx:134:32
+    132|     await user.click(await screen.findByText("Revoke"));
+    133|
+    134|     const alert = await screen.findByTestId("revoke-invitation-error");
+       |                                ^
+    135|     expect(alert).toHaveAttribute("role", "alert");
+    136|     expect(alert).toHaveTextContent(ALREADY_ACCEPTED);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows a generic message when the refusal carries no detail
+TestingLibraryElementError: Unable to find an element by: [data-testid="revoke-invitation-error"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ components/team/pending-invitations.test.tsx:149:25
+    147|     await user.click(await screen.findByText("Revoke"));
+    148|
+    149|     expect(await screen.findByTestId("revoke-invitation-error")).toHav…
+       |                         ^
+    150|       "Could not revoke the invitation. Please try again."
+    151|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > shows a generic message when the revoke throws
+TestingLibraryElementError: Unable to find an element by: [data-testid="revoke-invitation-error"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ components/team/pending-invitations.test.tsx:162:25
+    160|     await user.click(await screen.findByText("Revoke"));
+    161|
+    162|     expect(await screen.findByTestId("revoke-invitation-error")).toHav…
+       |                         ^
+    163|       "Could not revoke the invitation. Please try again."
+    164|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > clears the refusal on the next attempt
+TestingLibraryElementError: Unable to find an element by: [data-testid="revoke-invitation-error"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"overflow-x-auto"[39m
+    [36m>[39m
+      [36m<table[39m
+        [33mclass[39m=[32m"w-full text-sm"[39m
+      [36m>[39m
+        [36m<thead>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+          [36m>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mEmail[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mRole[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mInvited[0m
+            [36m</th>[39m
+            [36m<th[39m
+              [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+            [36m>[39m
+              [0mActions[0m
+            [36m</th>[39m
+          [36m</tr>[39m
+        [36m</thead>[39m
+        [36m<tbody>[39m
+          [36m<tr[39m
+            [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+            [33mdata-testid[39m=[32m"pending-invite-row"[39m
+          [36m>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+            [36m>[39m
+              [0mdave@example.com[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                [33mdata-slot[39m=[32m"badge"[39m
+                [33mdata-variant[39m=[32m"member"[39m
+              [36m>[39m
+                [0mMember[0m
+              [36m</span>[39m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m2026-01-15[0m
+            [36m</td>[39m
+            [36m<td[39m
+              [33mclass[39m=[32m"py-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+              [36m>[39m
+                [0mRevoke[0m
+              [36m</button>[39m
+            [36m</td>[39m
+          [36m</tr>[39m
+        [36m</tbody>[39m
+      [36m</table>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ components/team/pending-invitations.test.tsx:177:25
+    175|     render(<PendingInvitations isAdmin={true} />);
+    176|     await user.click(await screen.findByText("Revoke"));
+    177|     expect(await screen.findByTestId("revoke-invitation-error")).toBeI…
+       |                         ^
+    178|
+    179|     await user.click(screen.getByRole("button", { name: "Revoke" }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 5 passed (9)
+   Start at  05:13:38
+   Duration  5.29s (transform 126ms, setup 133ms, import 535ms, tests 4.14s, environment 262ms)
+

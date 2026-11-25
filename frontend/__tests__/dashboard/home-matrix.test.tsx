@@ -16,7 +16,7 @@ const { mockCaps, mockSettings, mockFetchHome, mockFacets, mockAudit, MockApiErr
       constructor(
         public status: number,
         message: string,
-        public detail?: { title?: string }
+        public detail?: { title?: string; detail?: string }
       ) {
         super(message);
         this.name = "ApiError";
@@ -457,6 +457,21 @@ describe("Home widget matrix (614B)", () => {
 
     expect(screen.queryByTestId("home-cell-kpis")).not.toBeInTheDocument();
     expect(cellRows()[0]).toEqual(["diary"]);
+  });
+
+  // "revoke always wins" (PR #1859): a person whose invitation was revoked is refused by the
+  // backend at first sign-in (403 ProblemDetail "Access revoked") — Home says so, it does not spin
+  it("a revoked invitee (403 Access revoked) sees the refusal, not the setting-up state", async () => {
+    const detail = "Your invitation to this firm was revoked. Ask the firm to invite you again.";
+    mockCaps.mockRejectedValue(new MockApiError(403, detail, { title: "Access revoked", detail }));
+    await renderHome();
+
+    const notice = screen.getByTestId("access-revoked");
+    expect(notice).toHaveAttribute("role", "alert");
+    expect(notice).toHaveTextContent("Access revoked");
+    expect(notice).toHaveTextContent(detail);
+    expect(screen.queryByText("Setting up your workspace")).not.toBeInTheDocument();
+    expect(mockFetchHome).not.toHaveBeenCalled();
   });
 
   it("while the workspace is provisioning (capabilities 403) shows the setting-up state", async () => {

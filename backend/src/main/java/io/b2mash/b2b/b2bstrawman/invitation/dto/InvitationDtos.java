@@ -23,9 +23,23 @@ public final class InvitationDtos {
       String status,
       Instant expiresAt,
       Instant createdAt,
-      Instant acceptedAt) {
+      Instant acceptedAt,
+      String emailNotSentReason) {
+
+    /**
+     * Fix 6 (Keycloak-stack OBS F-2), set on the create response only: Keycloak sent no invitation
+     * email because the person already has a login in the firm's Keycloak organization. Null when
+     * an email went out, in mock mode, when the best-effort Keycloak call failed, and in list
+     * responses.
+     */
+    public static final String ALREADY_HAS_LOGIN = "ALREADY_HAS_LOGIN";
 
     public static PendingInvitationResponse from(PendingInvitation invitation) {
+      return from(invitation, null);
+    }
+
+    public static PendingInvitationResponse from(
+        PendingInvitation invitation, String emailNotSentReason) {
       return new PendingInvitationResponse(
           invitation.getId(),
           invitation.getEmail(),
@@ -35,7 +49,8 @@ public final class InvitationDtos {
           invitation.getStatus().name(),
           invitation.getExpiresAt(),
           invitation.getCreatedAt(),
-          invitation.getAcceptedAt());
+          invitation.getAcceptedAt(),
+          emailNotSentReason);
     }
   }
 

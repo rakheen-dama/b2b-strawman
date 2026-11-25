@@ -11,6 +11,17 @@ interface ActionResult {
   error?: string;
 }
 
+/**
+ * Why Keycloak sent no invitation email (backend PendingInvitationResponse.emailNotSentReason,
+ * create response only). ALREADY_HAS_LOGIN: the person is already in the firm's Keycloak
+ * organization (e.g. a revoked invitee) — the invitation admits them when they next sign in.
+ */
+export type EmailNotSentReason = "ALREADY_HAS_LOGIN";
+
+interface InviteResult extends ActionResult {
+  emailNotSentReason?: EmailNotSentReason;
+}
+
 // --- BFF invitation types ---
 
 /** Shape returned by the gateway's /bff/admin/invitations endpoint. */
@@ -76,15 +87,20 @@ async function resolveOrgRoleId(
 async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
-  orgRoleId?: string,
-  _capabilityOverrides?: string[]
-): Promise<ActionResult> {
+  orgRoleId?: string
+): Promise<InviteResult> {
   try {
     const resolvedRoleId = await resolveOrgRoleId(role, orgRoleId);
-    await api.post<unknown>("/api/invitations", {
-      email,
-      orgRoleId: resolvedRoleId,
-    });
+    const created = await api.post<{ emailNotSentReason?: string | null } | undefined>(
+      "/api/invitations",
+      {
+        email,
+        orgRoleId: resolvedRoleId,
+      }
+    );
+    if (created?.emailNotSentReason === "ALREADY_HAS_LOGIN") {
+      return { success: true, emailNotSentReason: "ALREADY_HAS_LOGIN" };
+    }
     return { success: true };
   } catch (err: unknown) {
     const message =
@@ -146,12 +162,12 @@ async function revokeInvitationBff(id: string): Promise<ActionResult> {
 
 // --- Dispatch wrappers ---
 
+/** An invitation carries only the role; capabilities are not customised at invite time (FR-7). */
 export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin",
-  orgRoleId?: string,
-  capabilityOverrides?: string[]
-): Promise<ActionResult> {
+  orgRoleId?: string
+): Promise<InviteResult> {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {
@@ -165,7 +181,7 @@ export async function inviteMember(
     return { success: true };
   }
 
-  return inviteMemberBff(emailAddress, role, orgRoleId, capabilityOverrides);
+  return inviteMemberBff(emailAddress, role, orgRoleId);
 }
 
 export async function listInvitations(): Promise<MappedInvitation[]> {

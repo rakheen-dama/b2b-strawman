@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  24 passed (24)
+   Start at  08:01:59
+   Duration  1.51s (transform 625ms, setup 214ms, import 1.37s, tests 325ms, environment 358ms)
+

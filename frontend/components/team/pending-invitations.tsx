@@ -10,6 +10,8 @@ import type { MappedInvitation } from "@/app/(app)/org/[slug]/team/invitation-ac
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
+const REVOKE_FAILED = "Could not revoke the invitation. Please try again.";
+
 const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
   "org:owner": { label: "Owner", variant: "owner" },
   "org:admin": { label: "Admin", variant: "admin" },
@@ -20,6 +22,9 @@ function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [invitations, setInvitations] = useState<MappedInvitation[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  // FR-8: the backend refuses a revoke it cannot make safe (400 "Invitation not revoked" when
+  // Keycloak fails); the action returns the ProblemDetail detail — show it
+  const [revokeError, setRevokeError] = useState<string | null>(null);
 
   useEffect(() => {
     listInvitations()
@@ -50,42 +55,59 @@ function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
 
   const handleRevoke = async (invitationId: string) => {
     setRevokingId(invitationId);
+    setRevokeError(null);
     try {
-      const result = await revokeInvitation(invitationId);
-      if (result.success) {
-        // Refresh the list
-        const updated = await listInvitations();
-        setInvitations(updated);
-      } else {
-        console.error("Failed to revoke invitation:", result.error);
+      let result: Awaited<ReturnType<typeof revokeInvitation>>;
+      try {
+        result = await revokeInvitation(invitationId);
+      } catch (err) {
+        console.error("Failed to revoke invitation:", err);
+        setRevokeError(REVOKE_FAILED);
+        return;
       }
-    } catch (err) {
-      console.error("Failed to revoke invitation:", err);
+      if (!result.success) {
+        setRevokeError(result.error || REVOKE_FAILED);
+        return;
+      }
+      // Revoked: drop the row now, so a failed refresh below can never read as a failed revoke
+      setInvitations((current) => current.filter((inv) => inv.id !== invitationId));
+      try {
+        setInvitations(await listInvitations());
+      } catch (err) {
+        console.error("Invitation revoked, but the list could not be refreshed:", err);
+      }
     } finally {
       setRevokingId(null);
     }
   };
 
   return (
-    <InvitationTable isAdmin={isAdmin}>
-      {invitations.map((inv) => {
-        const roleInfo = ROLE_BADGES[inv.role] ?? {
-          label: inv.role,
-          variant: "member" as const,
-        };
-        return (
-          <InvitationRow
-            key={inv.id}
-            email={inv.emailAddress}
-            role={roleInfo}
-            createdAt={inv.createdAt ? formatDate(inv.createdAt) : "\u2014"}
-            isAdmin={isAdmin}
-            isRevoking={revokingId === inv.id}
-            onRevoke={() => handleRevoke(inv.id)}
-          />
-        );
-      })}
-    </InvitationTable>
+    <div className="space-y-3">
+      {revokeError && (
+        <p role="alert" data-testid="revoke-invitation-error" className="text-destructive text-sm">
+          {revokeError}
+        </p>
+      )}
+      <InvitationTable isAdmin={isAdmin}>
+        {invitations.map((inv) => {
+          const roleInfo = ROLE_BADGES[inv.role] ?? {
+            label: inv.role,
+            variant: "member" as const,
+          };
+          return (
+            <InvitationRow
+              key={inv.id}
+              email={inv.emailAddress}
+              role={roleInfo}
+              createdAt={inv.createdAt ? formatDate(inv.createdAt) : "\u2014"}
+              isAdmin={isAdmin}
+              isRevoking={revokingId === inv.id}
+              onRevoke={() => handleRevoke(inv.id)}
+            />
+          );
+        })}
+      </InvitationTable>
+    </div>
   );
 }
 

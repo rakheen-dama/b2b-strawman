@@ -4,11 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Badge } from "@b2mash/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -26,10 +24,8 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   CAPABILITY_META,
-  OWNER_ONLY_CAPABILITIES,
   holdsOwnerOnlyCapability,
   useCanGrantOwnerOnly,
 } from "@/lib/capabilities";
@@ -131,20 +127,16 @@ function InviteFormUI({
     },
   });
 
-  const [overrides, setOverrides] = useState<string[]>([]);
-  const [customizeOpen, setCustomizeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const roleSelectValue = form.watch("roleSelectValue");
-  // FR-4: a non-owner can neither invite into a role holding an owner-only capability nor add one
+  // FR-4: a non-owner cannot invite into a role holding an owner-only capability (or into Admin)
   const canGrantOwnerOnly = useCanGrantOwnerOnly();
-  const isLockedCapability = (cap: string) =>
-    !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
   const suppressRoleChangeClearRef = useRef(false);
 
-  // Reset overrides + status messages when role selection changes.
+  // Reset status messages when role selection changes.
   // Skip when the change comes from form.reset() after a successful submit —
   // otherwise we'd clobber the success toast we're about to set.
   useEffect(() => {
@@ -152,8 +144,6 @@ function InviteFormUI({
       suppressRoleChangeClearRef.current = false;
       return;
     }
-    setOverrides([]);
-    setCustomizeOpen(false);
     setError(null);
     setSuccess(null);
   }, [roleSelectValue]);
@@ -172,44 +162,10 @@ function InviteFormUI({
   const selectedRoleId = isSystemRole ? undefined : roleSelectValue;
   const selectedRole = selectedRoleId ? roles.find((r) => r.id === selectedRoleId) : undefined;
   const isCustomRole = selectedRole && !selectedRole.isSystem;
-  const roleCapabilities = new Set(selectedRole?.capabilities ?? []);
 
   // Pending invitations reserve seats against a member cap (maxMembers 0 = unlimited), but they
   // are not members, so the seat line counts them separately.
   const isAtLimit = maxMembers > 0 && currentMembers + pendingInvitations >= maxMembers;
-
-  function isEffectivelyEnabled(cap: string): boolean {
-    if (overrides.includes(`-${cap}`)) return false;
-    if (overrides.includes(`+${cap}`)) return true;
-    return roleCapabilities.has(cap);
-  }
-
-  function getOverrideStatus(cap: string): "added" | "removed" | "default" {
-    if (overrides.includes(`+${cap}`)) return "added";
-    if (overrides.includes(`-${cap}`)) return "removed";
-    return "default";
-  }
-
-  function toggleCapability(cap: string) {
-    if (isLockedCapability(cap)) return;
-    const inRole = roleCapabilities.has(cap);
-    const hasPlus = overrides.includes(`+${cap}`);
-    const hasMinus = overrides.includes(`-${cap}`);
-
-    if (inRole) {
-      if (hasMinus) {
-        setOverrides((prev) => prev.filter((o) => o !== `-${cap}`));
-      } else {
-        setOverrides((prev) => [...prev, `-${cap}`]);
-      }
-    } else {
-      if (hasPlus) {
-        setOverrides((prev) => prev.filter((o) => o !== `+${cap}`));
-      } else {
-        setOverrides((prev) => [...prev, `+${cap}`]);
-      }
-    }
-  }
 
   const handleSubmit = async (values: InviteMemberFormData) => {
     setError(null);
@@ -217,12 +173,7 @@ function InviteFormUI({
     setIsSubmitting(true);
 
     try {
-      const result = await inviteMember(
-        values.emailAddress.trim(),
-        role,
-        selectedRoleId,
-        overrides.length > 0 ? overrides : undefined
-      );
+      const result = await inviteMember(values.emailAddress.trim(), role, selectedRoleId);
       if (!result.success) {
         setError(result.error ?? "Failed to send invitation.");
         return;
@@ -230,9 +181,14 @@ function InviteFormUI({
       onInviteSent();
       suppressRoleChangeClearRef.current = true;
       form.reset({ emailAddress: "", roleSelectValue: SYSTEM_MEMBER_VALUE });
-      setOverrides([]);
-      setCustomizeOpen(false);
-      setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
+      const email = values.emailAddress.trim();
+      // Fix 6: Keycloak sends no email to someone already in the firm's organization (e.g. a
+      // revoked invitee) — the invitation still admits them when they next sign in
+      setSuccess(
+        result.emailNotSentReason === "ALREADY_HAS_LOGIN"
+          ? `Invitation created for ${email}. They already have a login, so no email was sent \u2014 ask them to sign in to Kazi to join.`
+          : `Invitation sent to ${email}.`
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to send invitation.";
       setError(message);
@@ -348,62 +304,9 @@ function InviteFormUI({
         </div>
       )}
 
-      {/* Customize for this user — only for custom roles */}
-      {isCustomRole && (
-        <Collapsible open={customizeOpen} onOpenChange={setCustomizeOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100">
-            <ChevronRight
-              className={`size-4 transition-transform ${customizeOpen ? "rotate-90" : ""}`}
-            />
-            Customize for this user
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-3 space-y-3">
-              {CAPABILITY_META.map((cap) => {
-                const enabled = isEffectivelyEnabled(cap.value);
-                const status = getOverrideStatus(cap.value);
-                const locked = isLockedCapability(cap.value);
-
-                return (
-                  <label
-                    key={cap.value}
-                    className={`flex items-start gap-3 ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    <Checkbox
-                      checked={enabled}
-                      onCheckedChange={() => toggleCapability(cap.value)}
-                      disabled={locked}
-                      aria-label={cap.label}
-                      aria-describedby={locked ? `invite-owner-only-hint-${cap.value}` : undefined}
-                      data-testid={`invite-capability-${cap.value}`}
-                    />
-                    <div className="flex-1 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm leading-none font-medium">{cap.label}</span>
-                        {status === "added" && (
-                          <span className="text-xs font-medium text-teal-600">+</span>
-                        )}
-                        {status === "removed" && (
-                          <span className="text-destructive text-xs font-medium">&minus;</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {cap.description}
-                      </p>
-                      {locked && (
-                        <OwnerOnlyHint
-                          id={`invite-owner-only-hint-${cap.value}`}
-                          testId={`owner-only-hint-${cap.value}`}
-                        />
-                      )}
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+      {/* FR-7 (founder ruling 2026-11-24): no capability customisation at invite time — the
+          invitee gets the role as defined; capabilities are changed on the Team page after they
+          join. */}
 
       {/* At-limit message */}
       {isAtLimit && (
@@ -428,7 +331,11 @@ function InviteFormUI({
 
       {/* Feedback messages */}
       {error && <p className="text-destructive text-sm">{error}</p>}
-      {success && <p className="text-sm text-emerald-600">{success}</p>}
+      {success && (
+        <p className="text-sm text-emerald-600" data-testid="invite-success">
+          {success}
+        </p>
+      )}
     </div>
   );
 }

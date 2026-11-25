@@ -295,20 +295,6 @@ describe("InviteMemberForm — owner-only capabilities", () => {
     );
   });
 
-  it("a non-owner cannot add an owner-only capability when customizing", async () => {
-    const user = userEvent.setup();
-    asCaller("admin", <InviteMemberForm {...inviteProps} />);
-
-    await user.click(screen.getByRole("combobox"));
-    await user.click(screen.getByTestId("role-option-role-bookkeeper"));
-    await user.click(screen.getByText("Customize for this user"));
-
-    const signOff = await screen.findByRole("checkbox", { name: SIGN_OFF_LABEL });
-    expect(signOff).toBeDisabled();
-    expect(signOff).toHaveAttribute("data-testid", `invite-capability-${SIGN_OFF}`);
-    expect(screen.getByTestId(`owner-only-hint-${SIGN_OFF}`)).toHaveTextContent(HINT);
-  });
-
   it("the owner can pick the role; no hint", async () => {
     const user = userEvent.setup();
     asCaller("owner", <InviteMemberForm {...inviteProps} />);
@@ -383,17 +369,6 @@ describe("Owner-only hint — tied to its disabled checkbox", () => {
     expect(screen.getByRole("checkbox", { name: SIGN_OFF_LABEL })).toHaveAccessibleDescription(
       HINT
     );
-  });
-
-  it("in the invite form", async () => {
-    const user = userEvent.setup();
-    asCaller("admin", <InviteMemberForm {...inviteProps} />);
-    await user.click(screen.getByRole("combobox"));
-    await user.click(screen.getByTestId("role-option-role-bookkeeper"));
-    await user.click(screen.getByText("Customize for this user"));
-    expect(
-      await screen.findByRole("checkbox", { name: SIGN_OFF_LABEL })
-    ).toHaveAccessibleDescription(HINT);
   });
 
   it("an ordinary capability has no description", () => {

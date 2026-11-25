@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.orgrole.Capability;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
@@ -41,15 +42,21 @@ class MemberFilterCacheEvictionTest {
   @Mock private MemberRepository memberRepository;
   @Mock private AuditService auditService;
   @Mock private NotificationService notificationService;
+  @Mock private PendingInvitationRepository invitationRepository;
   private MemberFilter memberFilter;
   private OrgRoleService service;
 
   @BeforeEach
   void setup() {
-    memberFilter = spy(new MemberFilter(memberRepository, null, null, null));
+    memberFilter = spy(new MemberFilter(memberRepository, null, null, null, null));
     service =
         new OrgRoleService(
-            orgRoleRepository, memberRepository, auditService, notificationService, memberFilter);
+            orgRoleRepository,
+            memberRepository,
+            auditService,
+            notificationService,
+            memberFilter,
+            invitationRepository);
   }
 
   @Test

@@ -10,13 +10,18 @@ Sources: [`tasks/phase91-ui-modernization-ii.md`](../../../../tasks/phase91-ui-m
 
 ## Decision
 
-> _To be filled in by the orchestrator once the founder rules on FD-1. 661B refuses to start while this section is empty (P-3)._
->
-> - Candidate:
-> - Primary-button colour:
-> - K-21 (dark accent) fixed in 661B?:
-> - Variant requested? (if yes: addendum PR `phase91/61A-scheme-variant-<n>`):
-> - Ruled on (date, by):
+**FD-1 ruled by the founder on 2026-11-25 (in the session chat, answering the comparison page): "A1, (c)".**
+
+- **Candidate:** A, the light rail with the inset canvas.
+- **Primary-button colour:** A1, slate-900. `--accent` and `--button-accent` are retuned to `--kazi-teal-700` in the scoped light block only.
+- **Dark-mode inset (F-661A-3):** option **(c)**. The inset is drawn with light-only CSS under the scoped `:root:not(.dark):has([data-app-shell="firm"])` selector, so dark mode stays pixel-identical. The CSS includes the sidebar container's `p-2` and icon-mode widths, not only the card's `m-2` (PR #1862 carry-over 3).
+- **K-21 (dark accent) fixed in 661B?:** no; it stays in the backlog. The founder named only the scheme and the inset option, so the stated default applies.
+- **Variant requested?:** no.
+- **Also in scope for 661B, because A was picked:**
+  - F-661A-1: a token for the translucent rail text.
+  - F-661A-8: the collapsed rail cuts the active item at 1024×768.
+  - The other PR #1862 carry-overs (`tasks/phase91-decisions.md` D-3).
+- **Ruled on:** 2026-11-25, by the founder. Recorded by the orchestrator.
 
 ---
 

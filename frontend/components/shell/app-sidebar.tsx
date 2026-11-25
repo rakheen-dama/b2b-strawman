@@ -219,6 +219,7 @@ export function AppSidebar({
     }
     if (value) document.documentElement.setAttribute("data-scheme-candidate", value);
     else document.documentElement.removeAttribute("data-scheme-candidate");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- throwaway prototype: syncs from window.location/localStorage
     setSchemeCandidate(value);
   }, [pathname]);
   const sidebarVariant = schemeCandidate === "a1" || schemeCandidate === "a2" ? "inset" : "sidebar";

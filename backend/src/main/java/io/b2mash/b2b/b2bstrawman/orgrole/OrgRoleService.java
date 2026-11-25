@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.invitation.InvitationStatus;
 import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
@@ -394,19 +393,19 @@ public class OrgRoleService {
               + " member(s)");
     }
 
-    // A pending invitation grants this exact role at first sign-in (by the id it stores), so the
-    // role stays while one offers it — the invitee lands on the role the inviter chose, never a
-    // silent fallback. (The invitation's FK would refuse the delete anyway, as a 500.)
-    long pendingInvitations =
-        invitationRepository.countByOrgRole_IdAndStatus(id, InvitationStatus.PENDING);
-    if (pendingInvitations > 0) {
+    // Every invitation row references its role (pending_invitations_org_role_id_fkey, no ON
+    // DELETE): a pending one grants this exact role at first sign-in (by the id it stores), and a
+    // revoked, accepted or expired one still holds the FK — so any reference blocks the delete
+    // with a clear 409 instead of the FK's 500 (CodeRabbit, PR #1859).
+    long invitations = invitationRepository.countByOrgRole_Id(id);
+    if (invitations > 0) {
       throw new ResourceConflictException(
           "Role in use",
           "Cannot delete role '"
               + role.getName()
-              + "' because it is offered in "
-              + pendingInvitations
-              + " pending invitation(s). Revoke the invitation(s) first.");
+              + "' because "
+              + invitations
+              + " invitation(s) reference it.");
     }
 
     auditService.log(AuditEventBuilder.roleDeleted(role));

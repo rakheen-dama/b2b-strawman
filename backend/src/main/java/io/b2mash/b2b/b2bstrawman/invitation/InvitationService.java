@@ -262,16 +262,29 @@ public class InvitationService {
   }
 
   /**
-   * "Revoke always wins" (PR #1859): true when the most recent invitation for {@code email} in this
-   * tenant is REVOKED — {@code MemberFilter} then refuses to create a member at first sign-in. The
+   * "Revoke always wins" (PR #1859): true when the latest <em>non-expired</em> invitation for
+   * {@code email} in this tenant is REVOKED — {@code MemberFilter} then refuses to create a member
+   * at first sign-in. Expired invitations (marked EXPIRED, or still PENDING past their expiry)
+   * never decide: an expired re-invite does not lift a revocation (CodeRabbit, MAJOR). A REVOKED or
+   * ACCEPTED invitation decides whatever its expiry date — a revocation does not lapse, and an
+   * acceptance after a revocation means the firm let the person in (they are then not refused). A
+   * live PENDING invitation never reaches this check: the caller looks it up first and it wins. The
    * email is normalised exactly as {@link #findPendingByEmail} does.
    */
   @Transactional(readOnly = true)
   public boolean isLatestInvitationRevoked(String email) {
     return invitationRepository
-        .findFirstByEmailOrderByCreatedAtDesc(email.toLowerCase().trim())
+        .findAllByEmailOrderByCreatedAtDesc(email.toLowerCase().trim())
+        .stream()
+        .filter(invitation -> !lapsed(invitation))
+        .findFirst()
         .map(invitation -> invitation.getStatus() == InvitationStatus.REVOKED)
         .orElse(false);
+  }
+
+  private static boolean lapsed(PendingInvitation invitation) {
+    return invitation.getStatus() == InvitationStatus.EXPIRED
+        || (invitation.getStatus() == InvitationStatus.PENDING && invitation.isExpired());
   }
 
   @Transactional

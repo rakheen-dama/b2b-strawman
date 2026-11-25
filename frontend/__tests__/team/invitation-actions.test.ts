@@ -6,12 +6,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
+const { mockGet, mockPost, mockCaps } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+  mockCaps: vi.fn(),
+}));
 
 vi.mock("@/lib/api", () => ({
   api: {
     get: (...args: unknown[]) => mockGet(...args),
-    post: vi.fn(),
+    post: (...args: unknown[]) => mockPost(...args),
     put: vi.fn(),
     delete: vi.fn(),
   },
@@ -27,9 +31,9 @@ vi.mock("@/lib/api", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ AUTH_MODE: "keycloak" }));
-vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: vi.fn() }));
+vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: () => mockCaps() }));
 
-import { listInvitations } from "@/app/(app)/org/[slug]/team/invitation-actions";
+import { inviteMember, listInvitations } from "@/app/(app)/org/[slug]/team/invitation-actions";
 
 // Real InvitationResponse shape (backend InvitationDtos): status is the enum name, upper case.
 const PENDING = {
@@ -88,5 +92,34 @@ describe("listInvitations (keycloak mode)", () => {
     mockGet.mockRejectedValueOnce(new Error("boom"));
 
     await expect(listInvitations()).resolves.toEqual([]);
+  });
+});
+
+// Fix 6 (Keycloak-stack OBS F-2): when the person already has a login (a revoked invitee is still in
+// the Keycloak org), Keycloak sends no email — the 201 says so and the action passes it on.
+describe("inviteMember (keycloak mode)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCaps.mockResolvedValue({ isAdmin: false, isOwner: true });
+  });
+
+  it("passes on that no email was sent because the person already has a login", async () => {
+    mockPost.mockResolvedValue({ ...PENDING, emailNotSentReason: "ALREADY_HAS_LOGIN" });
+
+    const result = await inviteMember("thandi@mathebula.co.za", "org:member", "role-1");
+
+    expect(mockPost).toHaveBeenCalledWith("/api/invitations", {
+      email: "thandi@mathebula.co.za",
+      orgRoleId: "role-1",
+    });
+    expect(result).toEqual({ success: true, emailNotSentReason: "ALREADY_HAS_LOGIN" });
+  });
+
+  it("an emailed invitation carries no reason", async () => {
+    mockPost.mockResolvedValue({ ...PENDING, emailNotSentReason: null });
+
+    expect(await inviteMember("thandi@mathebula.co.za", "org:member", "role-1")).toEqual({
+      success: true,
+    });
   });
 });

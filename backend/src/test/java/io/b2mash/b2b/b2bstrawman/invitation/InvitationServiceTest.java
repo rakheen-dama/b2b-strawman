@@ -12,11 +12,13 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.CreateInvitationRequest;
+import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.InviteResult;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,6 +92,30 @@ class InvitationServiceTest {
   }
 
   @Test
+  void createInvitation_personAlreadyHasALogin_invitationCreated_responseSaysNoEmail() {
+    // Fix 6 (OBS F-2): a revoked invitee stays in the Keycloak org ("revoke always wins"), so a
+    // re-invite gets Keycloak's 409 "User already a member of the organization" — no email is sent
+    when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
+    when(keycloakAdminClient.inviteMember(any(), eq("kc-has-login@example.com"), any(), any()))
+        .thenReturn(InviteResult.ALREADY_MEMBER);
+
+    UUID id = invite("kc-has-login@example.com");
+    var response = createdResponse(id);
+
+    assertThat(response.emailNotSentReason()).isEqualTo("ALREADY_HAS_LOGIN");
+    assertThat(status(id)).isEqualTo(InvitationStatus.PENDING);
+  }
+
+  @Test
+  void createInvitation_emailSent_noReason() {
+    when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
+    when(keycloakAdminClient.inviteMember(any(), eq("kc-sent@example.com"), any(), any()))
+        .thenReturn(InviteResult.SENT);
+
+    assertThat(createdResponse(invite("kc-sent@example.com")).emailNotSentReason()).isNull();
+  }
+
+  @Test
   void createInvitation_keycloakFails_invitationStillCreated() {
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
     doThrow(new RuntimeException("KC unavailable"))
@@ -105,9 +131,10 @@ class InvitationServiceTest {
               var request = new CreateInvitationRequest("kc-test2@example.com", adminRoleId);
               var response = invitationService.createInvitation(request, ownerMemberId);
 
-              // Invitation should still be created despite KC failure
+              // Invitation should still be created despite KC failure (unchanged by Fix 6)
               assertThat(response).isNotNull();
               assertThat(response.email()).isEqualTo("kc-test2@example.com");
+              assertThat(response.emailNotSentReason()).isNull();
             });
   }
 
@@ -224,18 +251,25 @@ class InvitationServiceTest {
 
   // --- helpers ---
 
+  private final java.util.Map<UUID, PendingInvitationResponse> created = new java.util.HashMap<>();
+
   /** Creates a pending invitation into the Member role (Keycloak invite-user mocked). */
   private UUID invite(String email) {
     UUID[] id = new UUID[1];
     inOwnerScope(
         () -> {
           UUID memberRoleId = orgRoleRepository.findBySlug("member").orElseThrow().getId();
-          id[0] =
-              invitationService
-                  .createInvitation(new CreateInvitationRequest(email, memberRoleId), ownerMemberId)
-                  .id();
+          var response =
+              invitationService.createInvitation(
+                  new CreateInvitationRequest(email, memberRoleId), ownerMemberId);
+          created.put(response.id(), response);
+          id[0] = response.id();
         });
     return id[0];
+  }
+
+  private PendingInvitationResponse createdResponse(UUID invitationId) {
+    return created.get(invitationId);
   }
 
   private void inOwnerScope(Runnable action) {

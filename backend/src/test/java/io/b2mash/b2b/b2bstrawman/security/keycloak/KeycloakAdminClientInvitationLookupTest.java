@@ -13,18 +13,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.InviteResult;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 /**
  * FR-8 review finding: the revoke must find the Keycloak invitation for an email exhaustively — the
  * {@code email} filter of {@code GET /organizations/{id}/invitations} (Keycloak 26.5) is a LIKE,
  * and results are paged, so the client pages until a short page and re-checks the email exactly.
+ *
+ * <p>Fix 6 (Keycloak-stack OBS F-2): {@code invite-user} for a person already in the Keycloak org
+ * (a revoked invitee — Kazi does not remove them, "revoke always wins") answers 409 {@code
+ * {"errorMessage":"User already a member of the organization"}} and sends no email. The client
+ * reports exactly that case as {@link InviteResult#ALREADY_MEMBER}, without the ERROR log; every
+ * other error (another 409, a 5xx) still throws as before.
  */
+@ExtendWith(OutputCaptureExtension.class)
 class KeycloakAdminClientInvitationLookupTest {
 
   private static final String INVITATIONS = "/admin/realms/kazi/organizations/kc-org/invitations";
@@ -103,6 +114,55 @@ class KeycloakAdminClientInvitationLookupTest {
 
     assertThatThrownBy(() -> client.findInvitationIdsByEmail("kc-org", "ann@firm.co.za"))
         .isInstanceOf(InvalidStateException.class);
+  }
+
+  // --- invite-user (Fix 6) ---
+
+  private static final String INVITE_USER =
+      "/admin/realms/kazi/organizations/kc-org/members/invite-user";
+
+  @Test
+  void inviteMember_sent() {
+    stubInvite(204, "");
+
+    assertThat(client.inviteMember("kc-org", "ann@firm.co.za", "member", null))
+        .isEqualTo(InviteResult.SENT);
+  }
+
+  @Test
+  void inviteMember_alreadyAMember_isAnExpectedOutcome_notAnError(CapturedOutput output) {
+    stubInvite(409, "{\"errorMessage\":\"User already a member of the organization\"}");
+
+    assertThat(client.inviteMember("kc-org", "ann@firm.co.za", "member", null))
+        .isEqualTo(InviteResult.ALREADY_MEMBER);
+    assertThat(output).doesNotContain("Keycloak Admin API error");
+  }
+
+  @Test
+  void inviteMember_anotherConflict_stillThrows(CapturedOutput output) {
+    stubInvite(409, "{\"errorMessage\":\"User already has a pending invitation\"}");
+
+    assertThatThrownBy(() -> client.inviteMember("kc-org", "ann@firm.co.za", "member", null))
+        .isInstanceOf(InvalidStateException.class);
+    assertThat(output).contains("Keycloak Admin API error: 409");
+  }
+
+  @Test
+  void inviteMember_aServerError_stillThrows() {
+    stubInvite(500, "boom");
+
+    assertThatThrownBy(() -> client.inviteMember("kc-org", "ann@firm.co.za", "member", null))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  private static void stubInvite(int status, String body) {
+    wireMock.stubFor(
+        post(urlEqualTo(INVITE_USER))
+            .willReturn(
+                aResponse()
+                    .withStatus(status)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(body)));
   }
 
   private static void stubPage(int first, String body) {

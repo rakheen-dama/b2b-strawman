@@ -133,6 +133,39 @@ class InvitationRevokeAlwaysWinsIntegrationTest {
         .andExpect(jsonPath("$.role").value("Bookkeeper RAW"));
   }
 
+  /**
+   * Fix 6 (Keycloak-stack OBS F-2): the revoked person stays in the Keycloak org, so re-inviting
+   * them gets Keycloak's 409 "User already a member of the organization" and no email goes out. The
+   * invitation is still created (and admits them on their next request), and the 201 says why no
+   * email was sent so the inviter can tell them.
+   */
+  @Test
+  void reInvitingSomeoneWhoAlreadyHasALogin_createsTheInvitation_andSaysNoEmailWasSent()
+      throws Exception {
+    when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn(KC_ORG);
+    when(keycloakAdminClient.findInvitationIdsByEmail(KC_ORG, "raw_login@test.com"))
+        .thenReturn(List.of());
+    revoke(invite("raw_login@test.com", roleId("member"))).andExpect(status().isNoContent());
+    when(keycloakAdminClient.inviteMember(KC_ORG, "raw_login@test.com", "member", null))
+        .thenReturn(KeycloakAdminClient.InviteResult.ALREADY_MEMBER);
+
+    mockMvc
+        .perform(
+            post("/api/invitations")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"email\": \"raw_login@test.com\", \"orgRoleId\": \"%s\"}"
+                        .formatted(roleId("member"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("PENDING"))
+        .andExpect(jsonPath("$.emailNotSentReason").value("ALREADY_HAS_LOGIN"));
+
+    firstRequest("user_raw_login", "raw_login@test.com")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.role").value("Member"));
+  }
+
   @Test
   void anExistingMember_isUnaffectedByALaterRevokedInvitation() throws Exception {
     firstRequest("user_raw_member", "raw_member@test.com").andExpect(status().isOk());

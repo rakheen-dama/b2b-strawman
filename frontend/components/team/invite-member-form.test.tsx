@@ -126,7 +126,28 @@ describe("InviteMemberForm", () => {
     await waitFor(() => {
       expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member", undefined);
     });
-    expect(await screen.findByText(/Invitation sent to test@example.com/)).toBeInTheDocument();
+    expect(await screen.findByTestId("invite-success")).toHaveTextContent(
+      "Invitation sent to test@example.com."
+    );
+  });
+
+  // Fix 6 (Keycloak-stack OBS F-2): a re-invited revoked person already has a login, so Keycloak
+  // sends no email — the inviter must not be told one was sent
+  it("says no email was sent when the person already has a login", async () => {
+    const user = userEvent.setup();
+    mockListInvitations.mockResolvedValue([]);
+    mockInviteMember.mockResolvedValue({ success: true, emailNotSentReason: "ALREADY_HAS_LOGIN" });
+
+    await renderForm({ maxMembers: 10, currentMembers: 1, orgSlug: "acme" });
+
+    await user.type(screen.getByLabelText("Email address"), "back@example.com");
+    await user.click(screen.getByRole("button", { name: "Send Invite" }));
+
+    expect(await screen.findByTestId("invite-success")).toHaveTextContent(
+      "Invitation created for back@example.com. They already have a login, so no email was" +
+        " sent \u2014 ask them to sign in to Kazi to join."
+    );
+    expect(screen.queryByText(/Invitation sent to/)).not.toBeInTheDocument();
   });
 
   it("shows error when invite fails", async () => {

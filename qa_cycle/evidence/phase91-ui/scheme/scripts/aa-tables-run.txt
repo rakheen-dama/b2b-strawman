@@ -1,0 +1,38 @@
+prototype HEAD: 5caf1b74a0b69f32f18aafbdae52ee013b42ef8b
+color-math.ts sha256: c14b6f105b68594680dd3efb42c1696ab22ec66b017953cde1ea20b84353b995
+AA tables — generated 2026-11-25T18:15:46.556Z from /Users/rakheendama/Projects/2026/wt-661a-proto
+
+pair | floor | today | a1 | a2 | b | c | dark (all)
+body text on canvas (--foreground / --background) | 4.5 | 16.58 (#14171c on #f4f6f8) | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 16.58 (#14171c on #f4f6f8) | 20.03 (#ffffff on #07080b)
+body text on card (--card-foreground / --card) | 4.5 | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 17.79 (#14171c on #fdfeff) | 17.96 (#ffffff on #14171c)
+muted text on canvas (--muted-foreground / --background) | 4.5 | 7.03 (#4e545f on #f4f6f8) | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 7.03 (#4e545f on #f4f6f8) | 7.51 (#989faa on #07080b)
+muted text on card (--muted-foreground / --card) | 4.5 | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 7.54 (#4e545f on #fdfeff) | 6.74 (#989faa on #14171c)
+rail text (--sidebar-foreground / --sidebar) | 4.5 | 20.03 (#ffffff on #07080b) | 9.41 (#3a4049 on #f1f3f7) | 9.41 (#3a4049 on #f1f3f7) | 15.12 (#14171c on #e0eef2) | 14.33 (#ffffff on #003030) | 19.32 (#ffffff on #0c0e12)
+active item text on its fill (--sidebar-accent-foreground / --sidebar-accent over rail) | 4.5 | 17.92 (#ffffff on #16171a) | 11.6 (#00312e on #caf0e9) | 11.6 (#00312e on #caf0e9) | 17.96 (#14171c on #ffffff) | 11.28 (#ffffff on #144141) | 17.02 (#ffffff on #1b1c20)
+active indicator bar vs rail (--sidebar-primary / --sidebar, non-text) | 3 | 8.92 (#00c2b1 on #07080b) | 4.91 (#00776a on #f1f3f7) | 4.91 (#00776a on #f1f3f7) | 4.6 (#00776a on #e0eef2) | 6.38 (#00c2b1 on #003030) | 8.6 (#00c2b1 on #0c0e12)
+primary-button label (--primary-foreground / --primary) | 4.5 | 20.03 (#ffffff on #07080b) | 17.96 (#ffffff on #14171c) | 5.46 (#ffffff on #00776a) | 17.96 (#ffffff on #14171c) | 5.46 (#ffffff on #00776a) | 20.03 (#07080b on #ffffff)
+accent button label (--button-accent-foreground / --button-accent) | 4.5 | 3.16 FAIL (#ffffff on #00a38f) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 3.16 FAIL (#ffffff on #00a38f)
+focused menu/select item (--accent-foreground / --accent) | 4.5 | 3.16 FAIL (#ffffff on #00a38f) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 5.46 (#ffffff on #00776a) | 2.25 FAIL (#ffffff on #00c2b1)
+focus ring on rail (--sidebar-ring / --sidebar, non-text) | 3 | 8.92 (#00c2b1 on #07080b) | 3.48 (#009282 on #f1f3f7) | 3.48 (#009282 on #f1f3f7) | 3.25 (#009282 on #e0eef2) | 6.38 (#00c2b1 on #003030) | 8.6 (#00c2b1 on #0c0e12)
+focus ring (--ring) vs rail (non-text) | 3 | 5.18 (#009282 on #07080b) | 3.48 (#009282 on #f1f3f7) | 3.48 (#009282 on #f1f3f7) | 3.25 (#009282 on #e0eef2) | 3.71 (#009282 on #003030) | 8.6 (#00c2b1 on #0c0e12)
+focus ring vs canvas (--ring / --background, non-text) | 3 | 3.57 (#009282 on #f4f6f8) | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 3.57 (#009282 on #f4f6f8) | 8.92 (#00c2b1 on #07080b)
+focus ring vs card (--ring / --card, non-text) | 3 | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 3.83 (#009282 on #fdfeff) | 8 (#00c2b1 on #14171c)
+[info] rail group label (text-sidebar-foreground/50 on rail) | 4.5 | 5.34 (#838485 on #07080b) | 2.55 FAIL (#969aa0 on #f1f3f7) | 2.55 FAIL (#969aa0 on #f1f3f7) | 3.26 FAIL (#7a8387 on #e0eef2) | 4.68 (#809898 on #003030) | 5.37 (#868789 on #0c0e12)
+[info] rail org name (text-sidebar-foreground/80 on rail) | 4.5 | 12.7 (#cdcece on #07080b) | 5.36 (#5f646c on #f1f3f7) | 5.36 (#5f646c on #f1f3f7) | 8.55 (#3d4247 on #e0eef2) | 9.66 (#ccd6d6 on #003030) | 12.38 (#cecfd0 on #0c0e12)
+[info] search pill text (text-sidebar-foreground/60 on --sidebar-accent over rail) | 4.5 | 7.03 (#a2a2a3 on #16171a) | 3.11 FAIL (#748689 on #caf0e9) | 3.11 FAIL (#748689 on #caf0e9) | 4.69 (#727477 on #ffffff) | 5.16 (#a1b3b3 on #144141) | 6.84 (#a4a4a6 on #1b1c20)
+[info] user-footer email (text-sidebar-foreground/60 on rail) | 4.5 | 7.3 (#9c9c9d on #07080b) | 3.21 FAIL (#83888f on #f1f3f7) | 3.21 FAIL (#83888f on #f1f3f7) | 4.43 FAIL (#666d72 on #e0eef2) | 6.04 (#99acac on #003030) | 7.29 (#9e9fa0 on #0c0e12)
+[info] rail vs canvas separation (--sidebar / --background, luminance only) | - | 18.49 (#07080b on #f4f6f8) | 1.1 (#f1f3f7 on #fdfeff) | 1.1 (#f1f3f7 on #fdfeff) | 1.18 (#e0eef2 on #fdfeff) | 13.23 (#003030 on #f4f6f8) | 1.04 (#0c0e12 on #07080b)
+[info] canvas vs card (--background / --card) | - | 1.07 (#f4f6f8 on #fdfeff) | 1 (#fdfeff on #fdfeff) | 1 (#fdfeff on #fdfeff) | 1 (#fdfeff on #fdfeff) | 1.07 (#f4f6f8 on #fdfeff) | 1.11 (#07080b on #14171c)
+
+Brand colour vs rail (decorative 3px bar; no floor):
+  today: burgundy 2.04 · gold 10.65 (rail #07080b)
+  a1: burgundy 8.83 · gold 1.69 (rail #f1f3f7)
+  a2: burgundy 8.83 · gold 1.69 (rail #f1f3f7)
+  b: burgundy 8.26 · gold 1.58 (rail #e0eef2)
+  c: burgundy 1.46 · gold 7.62 (rail #003030)
+  dark: burgundy 1.97 · gold 10.27
+
+K-21 (dark): accent button 3.16 · focused menu item 2.25
+Kazi teal steps: {"--kazi-teal-50":"#e4f9f5","--kazi-teal-100":"#caf0e9","--kazi-teal-700":"#00776a","--kazi-teal-950":"#00312e","--teal-500":"#00c2b1","--teal-600":"#00a38f"}
+Chart light: #009787,#e06623,#096acb,#c8800d,#894ed6
+Chart dark: #00aa99,#df6c32,#3986e4,#bd891c,#9d6fe3

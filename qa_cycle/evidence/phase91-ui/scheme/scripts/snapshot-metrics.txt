@@ -1,0 +1,27 @@
+HEAD: 7b7107d021d3fb201bb6794cce0996c066d8d7af
+date: 2026-11-25T18:11:28Z
+
+## Pages under org/[slug]
+      58
+## PageHeader adoption
+       7
+## Files with <h1
+      71
+## Display h1
+92
+## Direct tables by area (grouped by first path segment under org/[slug])
+   1 documents
+   4 invoices
+   1 legal
+  10 settings
+   6 trust-accounting
+## Raw hex (PCRE, *.tsx)
+      33
+## dark: lines, whole frontend
+3842
+## Phase 93 presence: take-on tab in settings-nav + its loader
+frontend/lib/settings-nav.ts:181:        id: "take-on",
+frontend/lib/settings-nav.ts:185:        keywords: ["import", "migrate", "take-on", "opening balances", "previous system"],
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/index.ts
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/take-on-tab.tsx
+frontend/app/(app)/org/[slug]/settings/matters/take-on-actions.ts

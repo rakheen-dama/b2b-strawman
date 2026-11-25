@@ -10,7 +10,23 @@
    base layer, tabular utility) live in the @b2mash/ui package. */
 @import "@b2mash/ui/styles/globals.css";
 
-/* ---- Frontend-specific extensions (not shared with portal) ---- */
+/* ---- Frontend-specific extensions (not shared with portal) ----
+ *
+ * Two light token sources (ADR-392). (1) The shared :root (packages/ui/styles/globals.css) plus
+ * the app :root below: marketing /, auth, mock login, accept/[token], the pre-org (app) routes and
+ * platform-admin. (2) The firm block at the end of this file,
+ * :root:not(.dark):has([data-app-shell="firm"]): the org shell only (org/[slug]/layout.tsx puts
+ * data-app-shell="firm" on the SidebarProvider wrapper). Its specificity (0,3,0) beats both :root
+ * blocks wherever the firm shell is mounted, and it never matches under .dark, so the .dark
+ * blocks keep winning in dark mode — dark is unchanged by Phase 91 (FD-1 option c).
+ * Validation record (661B, FD-1 = A1, __tests__/theme/color-math.ts): firm light — body text
+ * 17.79 on canvas and card, muted text 7.54, rail text 9.41, active item 11.60, rail labels and
+ * muted rail text 6.86 (search pill 6.22), active indicator bar 4.91 vs the rail and 4.46 vs
+ * the active item fill it is painted on (non-text), --sidebar-ring / --ring vs rail 3.48
+ * (non-text), --ring vs canvas and card 3.83, primary label 17.96, accent
+ * button and focused menu item 5.46 (K-04 fixed); chart-1..5 >= 3:1 on the firm canvas (= the
+ * card). Pinned by __tests__/theme/{token-contrast,chart-palette,firm-shell-scheme}.test.ts.
+ */
 
 @theme inline {
   /* Sidebar semantic colors */
@@ -22,10 +38,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-label-foreground: var(--sidebar-label-foreground);
 }
 
 :root {
-  /* Sidebar — light keeps the slate-950 rail: Signal Deck's identity mark (§15.2.5, OQ #3) */
+  /* Sidebar — the slate-950 rail outside the firm light block. The firm shell's light rail is
+     the scoped block at the end of this file (ADR-392; supersedes §15.2.5's light-rail ruling). */
   --sidebar: var(--slate-950);
   --sidebar-foreground: oklch(100% 0 0);
   --sidebar-primary: var(--teal-500); /* active item indicator (was white) */
@@ -34,6 +53,10 @@
   --sidebar-accent-foreground: oklch(100% 0 0);
   --sidebar-border: oklch(100% 0 0 / 10%);
   --sidebar-ring: var(--teal-500);
+  /* Translucent rail text as tokens (F-661A-1): exactly today's white /60 and /50 paint, so the
+     firm light block can give them AA-passing opaque values. */
+  --sidebar-muted-foreground: oklch(100% 0 0 / 60%); /* search pill, user-footer email */
+  --sidebar-label-foreground: oklch(100% 0 0 / 50%); /* zone group labels */
 
   /* Floating header height — sticky table headers and anchor offsets */
   --app-header-height: 3.5rem;
@@ -41,6 +64,15 @@
   /* Tenant brand colour — overridable via inline style on <html>.
      Defaults to teal-500 so unbranded orgs see the standard accent. */
   --brand-color: var(--teal-500);
+
+  /* Kazi-tuned teal steps (ADR-392, architecture §18.2.1; hue 183–190), verified as-is in 661A.
+     A raw scale for the firm light block, which consumes 100, 700 and 950 (50 is reserved, unused
+     by A1) — not Tailwind's stock teal-50/100/700/950 utilities, which stay stock and are
+     different colours. */
+  --kazi-teal-50: oklch(96.5% 0.022 183);
+  --kazi-teal-100: oklch(92.5% 0.04 183);
+  --kazi-teal-700: oklch(50% 0.11 184);
+  --kazi-teal-950: oklch(28% 0.05 190);
 }
 
 .dark {
@@ -53,6 +85,8 @@
   --sidebar-accent-foreground: oklch(100% 0 0);
   --sidebar-border: oklch(100% 0 0 / 8%);
   --sidebar-ring: var(--teal-500);
+  --sidebar-muted-foreground: oklch(100% 0 0 / 60%);
+  --sidebar-label-foreground: oklch(100% 0 0 / 50%);
 
   --brand-color: var(--teal-500);
 }
@@ -71,4 +105,84 @@
     100% 14px,
     100% 14px;
   background-attachment: local, local, scroll, scroll;
+}
+
+/* ==== Phase 91 firm light scheme (ADR-392; FD-1 ruled 2026-11-25: A1, dark inset option c) ====
+   Light only and firm shell only: :not(.dark) never matches in dark mode, and only the org shell
+   renders [data-app-shell="firm"]. Tokens sit on :root so Radix portals (dialogs, menus, sheets,
+   toasts under <body>) receive them. --card, --border, --ring, --foreground and
+   --muted-foreground keep the shared light values. */
+:root:not(.dark):has([data-app-shell="firm"]) {
+  /* Light rail (A): a quiet grey-blue frame; the active item is a mint pill with a teal-700 bar */
+  --sidebar: oklch(96.5% 0.005 260);
+  --sidebar-foreground: var(--slate-700);
+  --sidebar-primary: var(--kazi-teal-700);
+  --sidebar-primary-foreground: oklch(100% 0 0);
+  --sidebar-accent: var(--kazi-teal-100);
+  --sidebar-accent-foreground: var(--kazi-teal-950);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --sidebar-muted-foreground: var(--slate-600);
+  --sidebar-label-foreground: var(--slate-600);
+
+  /* Canvas = the card colour: the inset card is the work surface */
+  --background: oklch(99.6% 0.002 260);
+
+  /* A1: slate-900 primary keeps the default-vs-accent hierarchy */
+  --primary: var(--slate-900);
+  --primary-foreground: oklch(100% 0 0);
+
+  /* K-04: accent button and focused menu/select item, white on Kazi teal-700 (5.46:1) */
+  --accent: var(--kazi-teal-700);
+  --accent-foreground: oklch(100% 0 0);
+  --button-accent: var(--kazi-teal-700);
+  --button-accent-foreground: var(--color-white); /* as the shared :root, = text-white */
+}
+
+/* Inset canvas (A) as light-only CSS (FD-1 option c). Mirrors what ui/sidebar.tsx applies for
+   variant="inset" (wrapper :158, gap :246-248, container :259-261, SidebarInset :333) without
+   switching the prop, which is not theme-aware and would also inset dark mode (F-661A-3).
+   Desktop only, like the md: inset classes; the 390 Sheet is unaffected. Re-check against
+   ui/sidebar.tsx after any sidebar CLI upgrade (firm-shell-scheme.test.ts guards the strings). */
+@media (width >= 48rem) {
+  /* has-data-[variant=inset]:bg-sidebar */
+  :root:not(.dark) [data-app-shell="firm"] {
+    background-color: var(--sidebar);
+  }
+
+  /* p-2 without its vertical half: the rail keeps today's full height, so the collapsed icon
+     rail does not lose 16 px and cut the active item at 1024x768 (F-661A-8). The inset variant
+     has no container border. */
+  :root:not(.dark) [data-app-shell="firm"] [data-slot="sidebar-container"] {
+    padding: 0 0.5rem;
+    border-right-width: 0;
+  }
+
+  /* group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))] (gap) and
+     …+(--spacing(4))+2px)] (container) */
+  :root:not(.dark) [data-app-shell="firm"] [data-collapsible="icon"] > [data-slot="sidebar-gap"] {
+    width: calc(var(--sidebar-width-icon) + 1rem);
+  }
+  :root:not(.dark)
+    [data-app-shell="firm"]
+    [data-collapsible="icon"]
+    > [data-slot="sidebar-container"] {
+    width: calc(var(--sidebar-width-icon) + 1rem + 2px);
+  }
+
+  /* md:peer-data-[variant=inset]:m-2 ml-0 rounded-xl shadow-sm (rounded-xl = --radius + 4px) */
+  :root:not(.dark) [data-app-shell="firm"] > [data-slot="sidebar-inset"] {
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+  /* …:peer-data-[state=collapsed]:ml-2 */
+  :root:not(.dark)
+    [data-app-shell="firm"]
+    > [data-slot="sidebar"][data-state="collapsed"]
+    ~ [data-slot="sidebar-inset"] {
+    margin-left: 0.5rem;
+  }
 }

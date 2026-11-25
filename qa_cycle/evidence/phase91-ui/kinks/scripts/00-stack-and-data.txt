@@ -41,3 +41,5 @@ $ BUDGET_S=540 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/0
 $ BUDGET_S=480 CONC=4 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/05-topups.cjs   run 1 -> "ALL DONE 05-topups" (DSR 92f1d962… Access Request for Acme Corp; fee run 3247ec6c… PREVIEW, configure step only; both detail pages captured × 8 combos)
 $ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/06-sheets.cjs '--only=^(t1-matters-id|t1-matters-id-tabs-1|t4-dialogs-1|t1-shell-390)\.png$'   (trial render of 4 sheets) -> "ONLY run — index not rewritten"
 $ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/06-sheets.cjs   -> "ALL DONE 06-sheets 111 sheets" (walk-index.json 1020 KB, 1433 captures; console.json 70 entries)
+$ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/07-register-crops.cjs   (register agent, 2026-11-26) -> "ALL DONE 07-register-crops 20 crops"
+$ node qa_cycle/evidence/phase91-ui/kinks/scripts/08-register-counts.cjs   (register agent, re-run after every register edit) -> "wrote counts into qa_cycle/evidence/phase91-ui/kinks-register.md (125 rows validated)"

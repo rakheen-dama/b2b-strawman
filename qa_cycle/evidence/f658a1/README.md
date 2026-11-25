@@ -1,8 +1,8 @@
 # F-658A-1: Xero push never queued on fee note approve, send or void
 
-Founder ruling FR-11: investigate and fix. Branch `fix/f658a1-accounting-push-not-queued` (local commits only: no push, no PR, no full verify, no E2E).
+Founder rulings FR-11 (investigate and fix), FR-12 (sync from now on only, no backfill) and FR-14 (merge the fix gated off). PR #1860, branch `fix/f658a1-accounting-push-not-queued`.
 
-**Status: REPRODUCED and FIXED; the fix passes the targeted tests. MERGED-AWAITING-VERIFY does not apply yet, because the branch is not merged. A full `./mvnw verify` is still needed before merge.**
+**Status: the lost enqueue is REPRODUCED and FIXED, and it ships SWITCHED OFF (`kazi.accounting.push.enabled`, false when absent). Nothing is queued, dispatched or resynced until the drain worker sends real payloads. The targeted tests are green on the rebased head. The full `./mvnw verify` (the merge bar) has not been run by this agent.**
 
 ## Hypothesis (from `qa_cycle/evidence/phase93/658A/found.md` F-658A-1)
 
@@ -29,7 +29,10 @@ Nothing else blocks it: no feature or module flag, the tenant binding is correct
 2. approve, mark that push COMPLETED, send → a new PENDING EVENT entry
 3. approve, send, mark COMPLETED, void → a new PENDING EVENT entry
 4. approve, then send while the approval push is still PENDING → still exactly one entry (no double enqueue)
-5. `POST /api/customers` → one PENDING EVENT CUSTOMER entry
+5. `POST /api/clients` → one PENDING EVENT CUSTOMER entry
+6. `POST /api/clients`, mark that push COMPLETED, `PUT /api/clients/{id}` → a new PENDING EVENT CUSTOMER entry. This was added for PR #1860 review: `onCustomerUpdated` had no test.
+
+Since FR-14, this class tests the **enabled** route. It sets `kazi.accounting.push.enabled=true` at class level, and so does `AccountingSyncWorkerTest`.
 
 **RED on unchanged code** (commit `cd32d2394`, log `red-run.txt`): `Tests run: 5, Failures: 5`, and every failure reads:
 
@@ -63,26 +66,49 @@ Expected size: 1 but was: 0 in:
 - `94d752af4`: the fee-note handlers (approve, sent, voided). After this commit the reproduction was 4/5 green, with only the client case red (`step2-invoice-fix-run.txt`).
 - `88eddf1bb`: the client create/update handlers. This is the same defect in the same listener, kept as its own commit so it can be dropped if the client half is ruled out of scope (root CLAUDE.md §7).
 
+## Gated off (FR-14, PR #1860 review)
+
+Both reviewers found (and I confirmed in the code) that the drain worker never got its real payload mapping. `AccountingSyncWorker.dispatchSync` still sends stubs: an INVOICE goes out as `"Pending"`, with no lines, currency `"NZD"` and a null issue date, which NPEs in `XeroInvoicePayloadMapper.java:45`. A CUSTOMER goes out as a contact named `"Pending"`. Wiring the real payloads (the 519A comments) never happened between epics 519/520 and the worker. Failed entries retry and then DEAD_LETTER, and a dead letter blocks every later enqueue for that entity, FORCE_RESYNC included. The listener fix is correct, but it makes that broken pipeline reachable, so it ships switched off:
+
+| Where | While off (the default) |
+|---|---|
+| `AccountingPushSwitch` (new) | Reads `kazi.accounting.push.enabled` (`@Value`, default `false`). Documented in `application.yml` as `false`. Logs ENABLED/DISABLED once at INFO on `ApplicationReadyEvent`. |
+| `AccountingSyncEventListener` | Every handler (approve, sent, voided, client created, client updated) returns before binding or enqueueing. The REQUIRES_NEW fix stays in place for when the switch is on. |
+| `AccountingSyncWorker.drainForTenant` | Uses the new `AccountingSyncEntryRepository.findDrainableEntriesExcludingDirection(PUSH, …)`. INVOICE and CUSTOMER push entries are not selected, so they are not dispatched, retried or dead-lettered. Non-push entries (PAYMENT_PULL) drain as before. The payment poller (`AccountingPaymentPollWorker`) is a separate job and is unchanged. |
+| `POST /api/integrations/sync/invoice/{id}/resync` | The controller now calls `AccountingSyncService.forceResyncInvoice`, which throws `ResourceConflictException` → **409** ProblemDetail: title "Xero sync is not available yet", detail "Kazi does not send fee notes or clients to Xero yet. Nothing was queued.", `code: XERO_SYNC_NOT_AVAILABLE`. Nothing is queued. |
+| Direct `enqueueInvoicePush` / `enqueueCustomerPush` | Not gated, because tests and the brought-forward guard rely on them. Anything they queue stays untouched under the worker gate. |
+
+**UI:** no change. The only frontend caller is `forceResyncInvoiceAction` (`frontend/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions.ts:129`), used by `XeroStatusChip.handleResync`. No button renders `handleResync` (`frontend/components/invoices/XeroStatusChip.tsx:62`, never referenced in its JSX), so nothing in the UI calls the endpoint today. If a button is ever added, the action already toasts `ApiError.message`, which is the ProblemDetail `detail` (`frontend/lib/api/client.ts:147`): "Kazi does not send fee notes or clients to Xero yet. Nothing was queued."
+
+**Tests, red first** (`AccountingPushDisabledIntegrationTest`, on the default with Xero CONNECTED, so "nothing queued" is the switch rather than the no-connection guard; all assertions by id):
+1. approve, send and void queue nothing (checked after each step)
+2. client create (`POST /api/clients`) and update (`PUT /api/clients/{id}`) queue nothing
+3. the worker leaves pre-existing PENDING INVOICE and CUSTOMER push entries untouched (state, attempt count, error code, external id and `updated_at` all unchanged), while a PENDING PAYMENT_PULL still drains to COMPLETED
+4. manual resync → 409 with the ProblemDetail above, and no entry
+
+RED at `734f984ae` (before the gate; log `gate-red-run.txt`): `Tests run: 4, Failures: 3, Errors: 1`. Approve: `[after approve] Expecting empty but was: [AccountingSyncEntry@…]`. Client: `[after create] Expecting empty …`. Resync: `Status expected:<409> but was:<204>`. The worker case shows what the stub path does today: the worker handed the stub to the Xero provider, the provider failed with `Secret not found … :xero:access` inside a transactional bean, and that marked the drain transaction rollback-only. The worker's own catch then could not commit, and `drainForTenant` threw `UnexpectedRollbackException`. One failing push aborts that tenant's drain, and its error state is never saved. This is a further worker defect for the worker-completion work; it is not fixed here. In the same run the enabled listener class (6) and worker class (5) were green.
+
 ## Green
 
-Targeted set (log `green-targeted-run.txt`; counts are `<testcase>` elements in `target/surefire-reports`): **104 classes, 888 tests, 0 failures, 0 errors, 0 skipped.** The new class is 5/5.
+Final targeted run on the rebased head (after PR #1859; log `gate-green-rebased-run.txt`; counts are `<testcase>` elements in `target/surefire-reports`): **the same 119 classes, Maven exit 0, and no failure or error line in the log.** The per-testcase count was not captured, because the coordinator's full verify started in this worktree and rewrote `target/surefire-reports` before the count was taken. The run before the rebase was green too: 119 classes, 969 tests, 0 failures, 0 errors, 0 skipped (`gate-green-targeted-run.txt`).
 
-The set: every test class under `integration/accounting/` (sync + Xero), `invoice/`, and `architecture/` (TenantScopeBindingTest, LayerDependencyRulesTest, TestConventionsTest, TerminologyRemnantScanTest, ZoneAwareTimeArchTest, PortalLinkBuilderArchTest, PortalReadModelOrgScopingGuardTest). It also includes every `*Accounting*Test`, `*Xero*Test`, `Invoice*Test`, `*TakeOn*Test` and `*BroughtForward*Test`, and every test that references the listener or the service (CollectionsPaymentCancellationTest, ClientsTakeOnIntegrationTest, and others). The full class list is in `targeted-classes.txt` (passed as `-Dtest`).
+The original fix (before FR-14) was green on 104 classes, 888 tests (`green-targeted-run.txt`).
 
-**Not run (out of scope per brief):** the full `./mvnw verify` and E2E. The full verify is the merge bar. Other tests that connect Xero and then create fee notes or clients through the API will now get real queue rows. I grepped every test that creates an `AccountingXeroConnection`, and all of them are in the targeted set. A global-count assertion elsewhere could still surface only in the full verify.
+The set: every test class under `integration/accounting/` (sync + Xero), `invoice/`, and `architecture/` (TenantScopeBindingTest, LayerDependencyRulesTest, TestConventionsTest, TerminologyRemnantScanTest, ZoneAwareTimeArchTest, PortalLinkBuilderArchTest, PortalReadModelOrgScopingGuardTest). It also includes every `*Accounting*Test`, `*Xero*Test`, `Invoice*Test`, `*TakeOn*Test` and `*BroughtForward*Test`, and every test that references the listener or the service (CollectionsPaymentCancellationTest, ClientsTakeOnIntegrationTest, and others). For PR #1860 it adds every whole-codebase scanner: the `@AnalyzeClasses` classes (incl. TakeOnEntryPointsArchTest, TrustPostingRulesTest), the `ClassFileImporter` classes (LegalOnlyProfileReplacementTest, DeadlineCopyRuleTest, the *Without* tests), CollectionsSqlSourceScanTest, WireVocabularyContractTest, McpToolContractTest, plus SchedulerMigrationBatch1ATest and the customer integration tests. The full class list is in `targeted-classes.txt` (passed as `-Dtest`).
+
+**Not run (out of scope per brief):** the full `./mvnw verify` and E2E. The full verify is the merge bar. With the switch off by default, other suites that connect Xero and then create fee notes or clients through the API queue nothing, exactly as before this PR. Only the two classes that turn the switch on get real queue rows, and both assert by id.
 
 ## Impact on existing firms
 
-- **Since when:** the listener and the REQUIRED service method arrived together in `5f389ff65` (Epic 518A, #1327, 2026-05-18). The Xero connect flow followed in `cbd68105c` (#1328, 2026-05-18) and `8ccc846b0` (#1335, 2026-05-20). The event route has never worked. No test ever covered it: 518A shipped only `AccountingSyncServiceTest` and `AccountingSyncWorkerTest`, which call the service directly.
-- **Who:** any tenant that has had a CONNECTED Xero connection, from the time that build was deployed. For those tenants, no fee note approved, sent or voided in Kazi was ever queued for Xero, and no client created or updated in Kazi was ever pushed. The only entries that could exist are FORCE_RESYNC ones from `POST /api/integrations/sync/invoice/{id}/resync`. A knock-on effect: payment polling matches Xero payments only through COMPLETED PUSH entries (`AccountingSyncService.pollPaymentsForConnection`), so payments were never reconciled back for those fee notes either.
-- **Not checked:** I cannot see production, so I do not know whether any live firm has connected Xero. Detection query per tenant schema: `SELECT i.id, i.invoice_number, i.status FROM <schema>.invoices i JOIN <schema>.accounting_xero_connection c ON c.status = 'CONNECTED' WHERE i.status <> 'DRAFT' AND i.take_on_batch_id IS NULL AND i.updated_at >= c.connected_at AND NOT EXISTS (SELECT 1 FROM <schema>.accounting_sync_entry e WHERE e.entity_type = 'INVOICE' AND e.entity_id = i.id)`. The column names were checked against the tenant schema (V1 baseline + V37), but the query has never been run. A firm that disconnected and reconnected has a later `connected_at`, so widen the window for that case.
+- **Since when:** the listener and the REQUIRED service method arrived together in `5f389ff65` (Epic 518A, #1327, 2026-05-18). The Xero connect flow followed in `cbd68105c` (#1328, 2026-05-18) and `8ccc846b0` (#1335, 2026-05-20). The event route has never queued anything. No test ever covered it: 518A shipped only `AccountingSyncServiceTest` and `AccountingSyncWorkerTest`, which call the service directly.
+- **What that means in practice:** nothing usable was lost. Even if an entry had been queued, the worker would have sent a placeholder and not the firm's data, so no firm has ever had correct fee notes or clients pushed to Xero by Kazi. The only push that could reach the worker was a manual fee-note resync. Its stub request has a null issue date, so it fails at `XeroInvoicePayloadMapper.java:45` before any Xero API call (`XeroAccountingProvider.syncInvoice:72` maps before `createOrUpdateInvoice` at `:74`). A resync could therefore never write to Xero. At worst it left a FAILED_RETRYING or DEAD_LETTER entry, or hit the drain abort described above. The "Pending" contact risk the reviewers raised exists only for CUSTOMER pushes, and those came only from the event route, which never committed. Payment polling matches Xero payments only through COMPLETED PUSH entries, so no Kazi fee note has had a Xero payment reconciled back either. I cannot see production, so whether any firm ever used the resync endpoint is unverified.
 
-## Remediation proposal (founder to rule; nothing was backfilled)
+## Remediation (ruled)
 
-Option A, the default proposal: after this fix is deployed, run the detection query per tenant and report counts. For each affected firm, re-queue the missed fee notes with the existing force-resync endpoint (or a one-off admin job calling `enqueueInvoicePush(id, FORCE_RESYNC)`; it is idempotent and skips brought-forward notes), and the missed clients with `enqueueCustomerPush`.
-
-Open questions for the ruling:
-1. Should VOID fee notes that Xero never saw be pushed at all, or skipped?
-2. Should a firm that has since keyed these fee notes into Xero by hand be excluded, to avoid duplicates in Xero? This probably needs a check with the firm first.
-
-Option B: do nothing retroactively. Fee notes are queued from the next approve, send or void onwards.
+- **FR-12: sync from now on only. No backfill.** Fee notes and clients from before the switch is turned on are not re-sent. The existing per-fee-note resync covers any firm that turns up.
+- **FR-14: this PR fixes the enqueue and ships it disabled** (`kazi.accounting.push.enabled=false` everywhere; prod, dev and local all default off).
+- **Before anyone turns pushes on**, three things must exist, as planned work of their own:
+  1. real fee-note and client payload mapping in `AccountingSyncWorker.dispatchSync`, replacing the placeholders (`XeroInvoicePayloadMapper` / contact mapping wired to the actual invoice, lines and client);
+  2. dead-letter recovery, because today a DEAD_LETTER entry blocks every later enqueue for that entity, FORCE_RESYNC included; this needs to be solved together with the `UnexpectedRollbackException` drain abort described above;
+  3. an observed run against a Xero sandbox, end to end.
+- Worth checking once production is visible: whether any connected firm has FAILED_RETRYING or DEAD_LETTER fee-note entries from manual resyncs. These would block that fee note's later pushes until dead-letter recovery exists.

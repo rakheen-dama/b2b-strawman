@@ -1,7 +1,7 @@
 {
-  "commit": "3199e4fbc",
-  "command": "cd backend && bash scripts/verify.sh -q (wt-invite-fixes, PR #1859)",
+  "commit": "b9efaa7ce",
+  "command": "cd backend && bash scripts/verify.sh -q (wt-f658a1, PR #1860)",
   "exit": 0,
-  "ts": "2026-11-25T09:29:00Z",
-  "summary": "PR #1859 @3199e4fbc \u2014 8203 <testcase> / 0 failures / 0 errors (surefire XML)"
+  "ts": "2026-11-25T14:11:00Z",
+  "summary": "PR #1860 @b9efaa7ce \u2014 8213 <testcase> / 0 failures / 0 errors (surefire XML)"
 }

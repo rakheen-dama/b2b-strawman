@@ -1,7 +1,7 @@
 {
-  "commit": "3199e4fbc",
-  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-invite-fixes, PR #1859, CodeRabbit round)",
+  "commit": "63ca9b13e",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-takeon-batch, PR #1861)",
   "exit": 0,
-  "ts": "2026-11-25T08:50:00Z",
-  "summary": "PR #1859 @3199e4fbc \u2014 lint 0 errors, format clean, build ok, vitest 506 files / 4968 passed / 2 skipped (first run: 6 load-induced timeouts in 4 untouched files at load ~121; re-run green)"
+  "ts": "2026-11-25T19:00:00Z",
+  "summary": "PR #1861 @63ca9b13e \u2014 lint 0 errors, format clean, build ok, vitest 508 files / 4980 passed / 2 skipped"
 }

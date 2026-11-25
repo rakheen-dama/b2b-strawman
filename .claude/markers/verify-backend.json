@@ -1,7 +1,7 @@
 {
-  "commit": "b9efaa7ce",
-  "command": "cd backend && bash scripts/verify.sh -q (wt-f658a1, PR #1860)",
+  "commit": "3266a852f",
+  "command": "cd backend && bash scripts/verify.sh -q (wt-takeon-batch, PR #1861)",
   "exit": 0,
-  "ts": "2026-11-25T14:11:00Z",
-  "summary": "PR #1860 @b9efaa7ce \u2014 8213 <testcase> / 0 failures / 0 errors (surefire XML)"
+  "ts": "2026-11-25T16:30:00Z",
+  "summary": "PR #1861 @3266a852f \u2014 8214 <testcase> / 0 failures / 0 errors / 55 skipped; later commits frontend/docs only"
 }

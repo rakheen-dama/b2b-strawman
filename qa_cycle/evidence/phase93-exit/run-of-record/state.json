@@ -1,0 +1,40 @@
+{
+  "dates": {
+    "today": "2026-11-25",
+    "c": "2026-09-30"
+  },
+  "downloads": {
+    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df",
+    "results-step-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4",
+    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.pdf": "bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df",
+    "reports-card-take-on-report-take-on-trust-banking-account-2026-09-30.csv": "1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4"
+  },
+  "mailpit": {
+    "clients commit": {
+      "before": 2,
+      "after": 2
+    },
+    "portal access": {
+      "before": 2,
+      "after": 2
+    },
+    "matters commit": {
+      "before": 2,
+      "after": 2
+    },
+    "trust commit": {
+      "before": 2,
+      "after": 2
+    },
+    "debtors commit": {
+      "before": 2,
+      "after": 2
+    },
+    "first-month reconciliation": {
+      "before": 2,
+      "after": 2
+    }
+  },
+  "trustBatch": "04682907-06e6-4e9a-8eef-1270bc0c04d2",
+  "reportId": "b77d0623-2b2d-4821-97c5-db1721a8e3e5"
+}

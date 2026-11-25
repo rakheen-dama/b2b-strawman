@@ -1,0 +1,3 @@
+Investment account (number or name),Basis,Institution,Account number,Principal at cutover,Interest rate,Original deposit date,Client reference,Matter reference,Instruction reference,Instruction date,Endorsed under section 86(4),Accrued interest not capitalised,Legal Practitioners' Fidelity Fund amount held,Balance per confirmation
+6573001,S86(3),Investec,0001,100000.00,7.25%,2026-03-01,,,,,,,,100000.00
+6574001,S86(4),Investec,0002,200000.00,7.50%,2026-04-01,C-001,TR-A1,INSTR-A-01,2026-04-01,Yes,1234.56,0.00,200000.00

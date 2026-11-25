@@ -1,0 +1,64 @@
+# Phase 93 exit — take-on read-only psql check (2026-11-25T02:05:12Z)
+# container e2e-postgres, cutover 2026-09-30, first month end 2026-10-31
+## schema
+tenant_7d218705360b
+## flyway (tenant, latest)
+37|phase93 brought forward fee notes
+## trust-accounts
+# name|type|primary|opened|take_on_cutover_date|status
+Mathebula & Partners Trust Account|GENERAL|t|2026-11-25||ACTIVE
+Take-on Investment 6573001|INVESTMENT|f|2024-01-01|2026-09-30|ACTIVE
+Take-on Investment 6574001|INVESTMENT|f|2024-01-01|2026-09-30|ACTIVE
+Take-on Trust Banking Account|GENERAL|f|2024-01-01|2026-09-30|ACTIVE
+## take-on-batches
+# dataset|status|total|valid|error|duplicate|blocks|cutover
+CLIENTS|COMPLETED|23|19|4|1|0|
+MATTERS|COMPLETED|16|15|1|0|0|
+TRUST_POSITION|COMPLETED|9|9|0|0|0|2026-09-30
+DEBTOR_BALANCES|COMPLETED|11|6|5|0|0|2026-09-30
+## take-on-rows (status per dataset)
+CLIENTS|CREATED|18
+CLIENTS|ERROR|4
+CLIENTS|SKIPPED_DUPLICATE|1
+DEBTOR_BALANCES|CREATED|6
+DEBTOR_BALANCES|ERROR|5
+MATTERS|CREATED|15
+MATTERS|ERROR|1
+TRUST_POSITION|CREATED|9
+## customers taken on
+# lifecycle_status|count|with taken_on_at
+ACTIVE|18|18
+## brought-forward fee notes
+# number|status|total|issue|due
+INV-0007|SENT|1150.00|2026-09-30|2026-10-30
+PS-1001|SENT|4600.00|2026-07-15|2026-08-14
+PS-1002|SENT|12075.50|2026-09-01|2026-10-01
+PS-1003|SENT|2300.00|2026-09-20|2026-10-20
+PS-1004|SENT|8050.00|2026-09-01|2027-01-28
+PS-1006|SENT|3450.00|2026-08-31|2026-09-30
+# invoice counter next_number
+8
+## G cashbook vs ledgers (posted rows dated <= 2026-10-31)
+# sum(cashbook_effect)|sum(ledger_effect)|difference|rows
+403477.40|403477.40|0.00|15
+## G reconciliations
+# period_end|status|difference|notes
+2026-10-31|COMPLETED|0.00|
+## G monthly list
+# period_end|bank|adjusted_bank|cashbook|client_ledgers|fund|unidentified|inter_account|creditor_total|difference
+2026-10-31|403477.40|403477.40|403477.40|499500.00|227.40|3750.00|-100000.00|403477.40|0.00
+## G statement lines
+# date|description|amount|status|classification
+2026-10-02|EFT B-0001|5000.00|AUTO_MATCHED|
+2026-10-05|PAY-778|-20000.00|AUTO_MATCHED|
+2026-10-10|CASH DEPOSIT BRANCH 0045|1000.00|RECORDED|UNIDENTIFIED_DEPOSIT
+2026-10-20|LPFF INTEREST TRANSFER|-1250.00|RECORDED|FUND_SWEEP
+2026-10-31|INTEREST|312.40|RECORDED|FUND_INTEREST
+2026-10-31|SERVICE FEE|-85.00|RECORDED|BANK_CHARGE
+## take-on report files
+# format|file_size|sha256
+CSV|2219|1f5b666da6bcbf943b6690955251bbb36e77bcc3ee1fdeeb81d82a22110090f4
+PDF|9641|bdca851599cf0ef9748ce392534012dcb9b65a9858eadb74768a554bd48c65df
+## dormancy / collections
+collection_activities|0
+collections_enabled|f

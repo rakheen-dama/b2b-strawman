@@ -1,0 +1,17 @@
+Matter name,Client email,Client previous-system ID,Client ID number,Matter reference,Description,Due date,Work type,Priority,Responsible attorney email,Previous system ID,File room
+Transfer of Erf 101 Brooklyn,,C-001,,TR-A1,Transfer from the previous system,2027-02-28,Conveyancing,HIGH,,OLD-M-01,Cabinet 1
+Estate late S Nkosi,,C-002,,TR-B1,Deceased estate,2027-06-30,Deceased estates,MEDIUM,,OLD-M-02,Cabinet 1
+Supply contract claim,,C-003,,TR-C1,Claim against a supplier,2027-03-31,commercial litigation,HIGH,bob@e2e-test.local,OLD-M-03,Cabinet 2
+Transfer of Erf 77 Waterkloof,,C-004,,TO-D-2001,Transfer fees brought forward,,Conveyancing,MEDIUM,,OLD-M-04,
+Freight contract review,,C-006,,TO-M-1005,,,Commercial,,,OLD-M-05,
+Labour dispute CCMA,johan.pretorius@example.test,,,TO-M-1006,,,Labour,,,OLD-M-06,
+Sale of Erf 88 Umhlanga,,,8803035800085,TO-M-1007,,,Conveyancing,,,OLD-M-07,
+Will drafting,,C-010,,TO-M-1008,,,Wills,LOW,,OLD-M-08,
+Road accident claim,,C-011,,TO-M-1009,,,Personal injury,HIGH,,OLD-M-09,Cabinet 5
+Liquor licence renewal,,C-012,,TO-M-1010,,2027-01-31,Licensing,LOW,former.partner@oldfirm.example.test,OLD-M-10,Cabinet 4
+Trust deed amendment,,C-018,,TO-M-1011,,,Trusts,,,OLD-M-11,
+Farm lease agreement,,C-013,,TO-M-1012,,,Commercial,,,OLD-M-12,
+Antenuptial contract,,C-015,,TO-M-1013,,,Family law,,,OLD-M-13,
+Bond registration Erf 101 Brooklyn,,C-001,,TO-M-1014,,2027-02-28,Conveyancing,LOW,,OLD-M-14,
+Debt collection orphan,,C-099,,TO-M-1015,,,Collections,,,OLD-M-15,Cabinet 6
+Estate duty objection,,C-002,,TO-M-1016,,,Tax,,,OLD-M-16,Cabinet 1

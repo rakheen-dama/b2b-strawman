@@ -166,6 +166,36 @@ class InvitationRevokeAlwaysWinsIntegrationTest {
         .andExpect(jsonPath("$.role").value("Member"));
   }
 
+  /**
+   * CodeRabbit (MAJOR): an expired re-invite must not lift the revocation. Revoke → re-invite → the
+   * re-invite expires (still PENDING past its expiry, or already marked EXPIRED) → the latest
+   * non-expired invitation is the revoked one → 403, no member.
+   */
+  @Test
+  void anExpiredReInvite_doesNotLiftTheRevocation() throws Exception {
+    revoke(invite("raw_expired_pending@test.com", roleId("member")))
+        .andExpect(status().isNoContent());
+    saveReInvite("raw_expired_pending@test.com", false);
+
+    firstRequest("user_raw_expired_pending", "raw_expired_pending@test.com")
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Access revoked"))
+        .andExpect(jsonPath("$.detail").value(ACCESS_REVOKED_DETAIL));
+    assertNoMember("user_raw_expired_pending", "raw_expired_pending@test.com");
+  }
+
+  @Test
+  void aReInviteAlreadyMarkedExpired_doesNotLiftTheRevocation() throws Exception {
+    revoke(invite("raw_expired_marked@test.com", roleId("member")))
+        .andExpect(status().isNoContent());
+    saveReInvite("raw_expired_marked@test.com", true);
+
+    firstRequest("user_raw_expired_marked", "raw_expired_marked@test.com")
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Access revoked"));
+    assertNoMember("user_raw_expired_marked", "raw_expired_marked@test.com");
+  }
+
   @Test
   void anExistingMember_isUnaffectedByALaterRevokedInvitation() throws Exception {
     firstRequest("user_raw_member", "raw_member@test.com").andExpect(status().isOk());
@@ -277,6 +307,28 @@ class InvitationRevokeAlwaysWinsIntegrationTest {
                         .orElseThrow()
                         .getStatus());
     return status[0];
+  }
+
+  /**
+   * A re-invite whose expiry has passed, saved the way the codebase's expiry tests do (an
+   * invitation built with a past {@code expiresAt}): still PENDING, or already marked EXPIRED.
+   */
+  private void saveReInvite(String email, boolean markedExpired) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .run(
+            () -> {
+              Member owner = memberRepository.findByClerkUserId(OWNER).orElseThrow();
+              var reInvite =
+                  new PendingInvitation(
+                      email,
+                      orgRoleRepository.findBySlug("member").orElseThrow(),
+                      owner,
+                      Instant.now().minus(1, ChronoUnit.DAYS));
+              if (markedExpired) {
+                reInvite.expire();
+              }
+              invitationRepository.save(reInvite);
+            });
   }
 
   private void assertNoMember(String subject, String email) {

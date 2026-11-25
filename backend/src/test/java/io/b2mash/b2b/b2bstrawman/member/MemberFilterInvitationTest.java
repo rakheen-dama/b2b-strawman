@@ -331,8 +331,7 @@ class MemberFilterInvitationTest {
         .andExpect(
             jsonPath("$.detail")
                 .value(
-                    "Cannot delete role 'Partner Inv Delete' because it is offered in 1 pending"
-                        + " invitation(s). Revoke the invitation(s) first."));
+                    "Cannot delete role 'Partner Inv Delete' because 1 invitation(s) reference it."));
 
     mockMvc
         .perform(
@@ -342,6 +341,36 @@ class MemberFilterInvitationTest {
         .andExpect(jsonPath("$.role").value("Partner Inv Delete"));
 
     assertMemberOnRoleAndInvitationAccepted("user_invited_partner_delete", ids);
+  }
+
+  /**
+   * CodeRabbit (minor): any invitation referencing a role — revoked, accepted or expired too —
+   * blocks its deletion through the {@code pending_invitations_org_role_id_fkey} FK; the guard
+   * answers a clear 409 for all of them instead of the FK's 500.
+   */
+  @Test
+  void aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted() throws Exception {
+    UUID[] ids = customRoleInvitation("Partner Inv Revoked", "invited_partner_revoked@test.com", 7);
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var invitation = invitationRepository.findById(ids[1]).orElseThrow();
+              invitation.revoke();
+              invitationRepository.save(invitation);
+            });
+
+    mockMvc
+        .perform(
+            delete("/api/org-roles/" + ids[0])
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_flow_owner")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("Role in use"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Cannot delete role 'Partner Inv Revoked' because 1 invitation(s) reference"
+                        + " it."));
   }
 
   // --- helpers ---

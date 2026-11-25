@@ -109,8 +109,8 @@ describe("PendingInvitations (keycloak mode)", () => {
   });
 
   // FR-8: the backend refuses a revoke it cannot make safe — 400 "Invitation not revoked" when
-  // Keycloak fails (fail closed). ("Invitation already accepted" no longer exists: revoke always
-  // wins, PR #1859.) The action returns the ProblemDetail detail; the admin must see it.
+  // Keycloak fails (fail closed). The action returns the ProblemDetail detail; the admin must see
+  // it.
   const NOT_REVOKED =
     "The invitation email for 'dave@example.com' could not be cancelled in Keycloak, so its link" +
     " may still work. Nothing was changed. Please try again.";
@@ -162,6 +162,23 @@ describe("PendingInvitations (keycloak mode)", () => {
       "Could not revoke the invitation. Please try again."
     );
     expect(screen.getByText("dave@example.com")).toBeInTheDocument();
+  });
+
+  // CodeRabbit (minor): a revoke that succeeded must never be reported as failed because the
+  // list refresh afterwards failed
+  it("a successful revoke whose list refresh fails drops the row, with no failure message", async () => {
+    const user = userEvent.setup();
+    mockListInvitations
+      .mockResolvedValueOnce([dave])
+      .mockRejectedValueOnce(new Error("refresh failed"));
+    mockRevokeInvitation.mockResolvedValue({ success: true });
+
+    render(<PendingInvitations isAdmin={true} />);
+    await user.click(await screen.findByText("Revoke"));
+
+    await waitFor(() => expect(screen.queryByText("dave@example.com")).not.toBeInTheDocument());
+    expect(screen.queryByTestId("revoke-invitation-error")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Could not revoke/)).not.toBeInTheDocument();
   });
 
   it("clears the refusal on the next attempt", async () => {

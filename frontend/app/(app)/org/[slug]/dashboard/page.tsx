@@ -36,6 +36,7 @@ import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-w
 import { TakeOnSignOffWidget } from "@/components/dashboard/take-on-sign-off-widget";
 import { todayInSA } from "@b2mash/shared/date";
 
+const ACCESS_REVOKED_TITLE = "Access revoked";
 const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
 const SENSITIVE_VIEW_ALL_LOOKBACK_DAYS = 30;
 
@@ -67,6 +68,26 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
     caps = capabilities;
     enabledModules = settings?.enabledModules ?? [];
   } catch (error) {
+    // "Revoke always wins" (PR #1859): the backend refuses a person whose invitation was revoked at
+    // first sign-in (403 ProblemDetail "Access revoked"). Say so — never the setting-up spinner.
+    if (
+      error instanceof ApiError &&
+      error.status === 403 &&
+      error.detail?.title === ACCESS_REVOKED_TITLE
+    ) {
+      return (
+        <div
+          role="alert"
+          data-testid="access-revoked"
+          className="flex min-h-[40vh] flex-col items-center justify-center gap-2 text-center"
+        >
+          <h2 className="text-lg font-semibold">{ACCESS_REVOKED_TITLE}</h2>
+          <p className="text-muted-foreground max-w-md text-sm">
+            {error.detail?.detail || error.message}
+          </p>
+        </div>
+      );
+    }
     const isProvisioning =
       error instanceof ApiError &&
       (error.status === 403 ||

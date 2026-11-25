@@ -26,6 +26,9 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
           + " ORDER BY p.createdAt DESC")
   List<PendingInvitation> findAllByOrderByCreatedAtDesc();
 
+  /** The most recent invitation for {@code email} (any status). */
+  Optional<PendingInvitation> findFirstByEmailOrderByCreatedAtDesc(String email);
+
   /** Invitations in {@code status} that would grant the role {@code orgRoleId}. */
   long countByOrgRole_IdAndStatus(UUID orgRoleId, InvitationStatus status);
 }

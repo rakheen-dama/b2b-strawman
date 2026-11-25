@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.invitation.InvitationService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
@@ -26,6 +27,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class MemberFilter extends OncePerRequestFilter {
@@ -36,6 +38,7 @@ public class MemberFilter extends OncePerRequestFilter {
   private final OrgRoleService orgRoleService;
   private final InvitationService invitationService;
   private final MemberRateSeedingService memberRateSeedingService;
+  private final ObjectMapper objectMapper;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
@@ -43,12 +46,20 @@ public class MemberFilter extends OncePerRequestFilter {
       MemberRepository memberRepository,
       OrgRoleService orgRoleService,
       InvitationService invitationService,
-      MemberRateSeedingService memberRateSeedingService) {
+      MemberRateSeedingService memberRateSeedingService,
+      ObjectMapper objectMapper) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
     this.invitationService = invitationService;
     this.memberRateSeedingService = memberRateSeedingService;
+    this.objectMapper = objectMapper;
   }
+
+  /**
+   * "Revoke always wins" (PR #1859): the refusal for a person whose latest invitation is revoked.
+   */
+  static final String ACCESS_REVOKED_DETAIL =
+      "Your invitation to this firm was revoked. Ask the firm to invite you again.";
 
   @Override
   protected void doFilterInternal(
@@ -58,7 +69,18 @@ public class MemberFilter extends OncePerRequestFilter {
     String tenantId = RequestScopes.getTenantIdOrNull();
 
     if (tenantId != null) {
-      MemberInfo info = resolveMember(tenantId);
+      MemberInfo info;
+      try {
+        info = resolveMember(tenantId);
+      } catch (ForbiddenException refused) {
+        // a filter answers before any controller, so it writes the semantic exception's
+        // ProblemDetail itself (the SubscriptionGuardFilter pattern) — a 403, never the 500
+        // "Member context not available" an unbound request would get
+        response.setStatus(refused.getStatusCode().value());
+        response.setContentType("application/problem+json");
+        response.getOutputStream().write(objectMapper.writeValueAsBytes(refused.getBody()));
+        return;
+      }
       if (info != null) {
         var carrier = ScopedValue.where(RequestScopes.MEMBER_ID, info.memberId());
         if (info.orgRole() != null) {
@@ -119,6 +141,13 @@ public class MemberFilter extends OncePerRequestFilter {
     MemberInfo info;
     try {
       info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwt));
+    } catch (ForbiddenException refused) {
+      log.warn(
+          "Refused member creation for user {} in tenant {}: {}",
+          clerkUserId,
+          tenantId,
+          refused.getBody().getDetail());
+      throw refused; // not cached: a later re-invitation is picked up on the next request
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -176,6 +205,13 @@ public class MemberFilter extends OncePerRequestFilter {
         }
       } catch (Exception e) {
         log.warn("Failed to lookup pending invitation for email {}: {}", jwtEmail, e.getMessage());
+      }
+
+      // "Revoke always wins" (PR #1859): no pending invitation, but the latest one for this email
+      // was revoked → no member is created (a newer pending invitation took precedence above).
+      // Existing members never reach this path. Same email normalisation as the pending lookup.
+      if (invitedRoleId == null && invitationService.isLatestInvitationRevoked(jwtEmail)) {
+        throw new ForbiddenException("Access revoked", ACCESS_REVOKED_DETAIL);
       }
     }
 

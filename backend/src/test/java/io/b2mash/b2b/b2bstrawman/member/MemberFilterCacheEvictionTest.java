@@ -48,7 +48,7 @@ class MemberFilterCacheEvictionTest {
 
   @BeforeEach
   void setup() {
-    memberFilter = spy(new MemberFilter(memberRepository, null, null, null));
+    memberFilter = spy(new MemberFilter(memberRepository, null, null, null, null));
     service =
         new OrgRoleService(
             orgRoleRepository,

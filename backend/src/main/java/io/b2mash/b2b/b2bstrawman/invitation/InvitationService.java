@@ -182,14 +182,15 @@ public class InvitationService {
    * FR-8: cancels the Keycloak side of an invitation. Keycloak 26.5 persists an organization
    * invitation at {@code invite-user} and, when the emailed link is used (registration or existing
    * user), refuses it once that invitation no longer exists; org membership is added only on
-   * acceptance, and Keycloak deletes its invitation then. So: find every Keycloak invitation for
-   * this exact email (all pages) and delete it; if there is none, check membership explicitly —
-   * already a member of the Keycloak org means the link was used before they reached Kazi: refuse
-   * (409), because revoking only the Kazi invitation would let them join as Member; not a member
-   * means Keycloak holds no invitation record (e.g. invite-user failed at creation), so no link can
-   * work and the Kazi revoke goes ahead. Any Keycloak failure refuses the revoke (the caller's
-   * transaction rolls back), so a link is never left live behind a "revoked" invitation. Mock/e2e
-   * mode (no Keycloak client) and calls without an org context are unaffected.
+   * acceptance, and Keycloak deletes its invitation then. So every Keycloak invitation for this
+   * exact email (all pages) is deleted. None left — the link was already used, or invite-user
+   * failed at creation — is fine: "revoke always wins" (founder ruling, PR #1859), and {@code
+   * MemberFilter} refuses anyone whose latest invitation is revoked at first sign-in, so Kazi is
+   * the authority. Kazi does not remove the person from the Keycloak org: for a member who
+   * registered through the link Keycloak would delete the whole account. Any Keycloak failure
+   * refuses the revoke (the caller's transaction rolls back), so a live link is never left behind a
+   * "revoked" invitation. Mock/e2e mode (no Keycloak client) and calls without an org context are
+   * unaffected.
    */
   private void revokeInKeycloak(String email) {
     String orgId = RequestScopes.getOrgIdOrNull();
@@ -199,33 +200,12 @@ public class InvitationService {
 
     String kcOrgId;
     List<String> kcInvitationIds;
-    boolean alreadyAccepted = false;
     try {
       kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
       // exhaustive (every page, exact email); an error is never read as "no invitation"
       kcInvitationIds = keycloakAdminClient.findInvitationIdsByEmail(kcOrgId, email);
-      if (kcInvitationIds.isEmpty()) {
-        // An empty lookup alone proves nothing: decide explicitly. Accepted -> the person is a
-        // member of the Keycloak org (Keycloak deletes its invitation on acceptance). Not a member
-        // -> Keycloak holds no invitation record, and it refuses any invite link without one.
-        alreadyAccepted =
-            keycloakAdminClient
-                .findUserByEmail(email)
-                .map(userId -> keycloakAdminClient.listOrgMemberIds(kcOrgId).contains(userId))
-                .orElse(false);
-      }
     } catch (Exception e) {
       throw keycloakRevokeFailed(email, e);
-    }
-
-    if (alreadyAccepted) {
-      throw new ResourceConflictException(
-          "Invitation already accepted",
-          "'"
-              + email
-              + "' has already accepted the invitation email and joins with the invited role on"
-              + " their first sign-in, so it can no longer be revoked. Remove them from the team"
-              + " once they appear.");
     }
 
     for (String kcInvitationId : kcInvitationIds) {
@@ -236,8 +216,9 @@ public class InvitationService {
       }
     }
     if (kcInvitationIds.isEmpty()) {
-      log.warn(
-          "No Keycloak invitation and no org membership for email={} — revoked in Kazi only",
+      log.info(
+          "No live Keycloak invitation for email={} (link used or never sent) — revoked in Kazi;"
+              + " sign-in is refused by MemberFilter",
           email);
     } else {
       log.info("Revoked {} Keycloak invitation(s) for email={}", kcInvitationIds.size(), email);
@@ -269,6 +250,19 @@ public class InvitationService {
     }
 
     return result;
+  }
+
+  /**
+   * "Revoke always wins" (PR #1859): true when the most recent invitation for {@code email} in this
+   * tenant is REVOKED — {@code MemberFilter} then refuses to create a member at first sign-in. The
+   * email is normalised exactly as {@link #findPendingByEmail} does.
+   */
+  @Transactional(readOnly = true)
+  public boolean isLatestInvitationRevoked(String email) {
+    return invitationRepository
+        .findFirstByEmailOrderByCreatedAtDesc(email.toLowerCase().trim())
+        .map(invitation -> invitation.getStatus() == InvitationStatus.REVOKED)
+        .orElse(false);
   }
 
   @Transactional

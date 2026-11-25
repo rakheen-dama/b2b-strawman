@@ -1,0 +1,64 @@
+=== /tmp/661b-test-e2e-legal-lifecycle.log
+Running 105 tests using 1 worker
+  105 passed (2.9m)
+=== /tmp/661b-test-e2e-legal-depth-ii.log
+Running 44 tests using 1 worker
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  44 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+  4 skipped
+  40 passed (1.8m)
+=== /tmp/661b-test-e2e-exit-month.log
+Running 16 tests using 1 worker
+  ✘   1 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:775:7 › Phase 92 exit — one balanced month (§16.9.6) › 1 · fresh stack; set-up as Alice: I-A, I-B, two clients with matters and portal contacts, a sent fee note (284ms)
+  -   2 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:878:7 › Phase 92 exit — one balanced month (§16.9.6) › 2 · postings #1–11 in date order (Alice records; her own approval refused; Bob approves)
+  -   3 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1021:7 › Phase 92 exit — one balanced month (§16.9.6) › 3 · after #11: Ndlovu general R 19 000,00 · invested R 50 000,00 · total R 69 000,00 (unchanged); then #12
+  -   4 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1039:7 › Phase 92 exit — one balanced month (§16.9.6) › 4–6 · reconcile I-A to the 31st: interest gross (#13), Fund sweep, withdraw on the 30th (#14), match, complete; October list locks
+  -   5 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1135:7 › Phase 92 exit — one balanced month (§16.9.6) › 7 · reconcile I-B to the 31st: interest net (#15), complete; October list locks
+  -   6 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1170:7 › Phase 92 exit — one balanced month (§16.9.6) › 8 · payment #16 PAY-B-001 R 1 500,00 dated the 31st; Bob approves (not on the statement)
+  -   7 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1183:7 › Phase 92 exit — one balanced month (§16.9.6) › 9–11 · reconcile G: 19 lines, 12 matched / 7 unmatched; record six; one 400 (G1 + G4); record #18 → R 101 630,00
+  -   8 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1331:7 › Phase 92 exit — one balanced month (§16.9.6) › 12–13 · other trust creditors: Fund R 0,00 with five rows, two held; allocate R 7 500,00 to Khumalo / M2 on the 27th (#24), Bob approves
+  -   9 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1428:7 › Phase 92 exit — one balanced month (§16.9.6) › 14 · trust position as at the 30th for G: 102 957,50 = 102 957,50; Fund −172,50 flagged; R 57,50 charges to refund flagged; balanced
+  -  10 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1474:7 › Phase 92 exit — one balanced month (§16.9.6) › 15 · back in G's reconciliation, recalculate: the expected table (G, I-A, I-B, firm); complete; G's October list locks
+  -  11 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1564:7 › Phase 92 exit — one balanced month (§16.9.6) › 16 · Rule 54.15 list for the 31st: the three locked lists; firm-wide 121 725,00 = 101 630,00 + 20 095,00
+  -  12 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1700:7 › Phase 92 exit — one balanced month (§16.9.6) › 17 · Rule 54.28 schedule for the month: G, I-A, I-B; total gross interest 1 734,56; total gross charges 172,50
+  -  13 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1753:7 › Phase 92 exit — one balanced month (§16.9.6) › 18 · Section 35 data pack, year ending the 31st, per account (D-6): creditors, investments, schedule, the two Fund sweeps with file and line
+  -  14 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1847:7 › Phase 92 exit — one balanced month (§16.9.6) › 19 · portal: Ndlovu sees R 380,00 s86(4) interest only; Khumalo R 95,00, R 31 000,00 + R 20 095,00 = R 51 095,00; neither sees R 1 234,56
+  -  15 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1927:7 › Phase 92 exit — one balanced month (§16.9.6) › 20 · trust dashboard: integrity card "Books balance" firm-wide; flags: none
+  -  16 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1940:7 › Phase 92 exit — one balanced month (§16.9.6) › 21 · psql (read-only): per account Σ cashbook_effect = Σ ledger_effect to the 31st; the three locked lists hold the totals
+    Error: Mathebula & Partners Trust Account already has trust transactions — trust-balanced-month runs once per fresh stack: bash compose/scripts/e2e-down.sh && bash compose/scripts/e2e-up.sh
+  1 failed
+    [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:775:7 › Phase 92 exit — one balanced month (§16.9.6) › 1 · fresh stack; set-up as Alice: I-A, I-B, two clients with matters and portal contacts, a sent fee note 
+  15 did not run
+=== /tmp/661b-exit-month-fresh.log
+Running 16 tests using 1 worker
+  ✘  14 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1847:7 › Phase 92 exit — one balanced month (§16.9.6) › 19 · portal: Ndlovu sees R 380,00 s86(4) interest only; Khumalo R 95,00, R 31 000,00 + R 20 095,00 = R 51 095,00; neither sees R 1 234,56 (746ms)
+  -  15 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1927:7 › Phase 92 exit — one balanced month (§16.9.6) › 20 · trust dashboard: integrity card "Books balance" firm-wide; flags: none
+  -  16 [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1940:7 › Phase 92 exit — one balanced month (§16.9.6) › 21 · psql (read-only): per account Σ cashbook_effect = Σ ledger_effect to the 31st; the three locked lists hold the totals
+    Error: PORTAL_BASE_URL is not set — start the portal against :8081 (see qa_cycle/evidence/phase92-exit/README.md) and run with PORTAL_BASE_URL=http://localhost:3002
+  1 failed
+    [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1847:7 › Phase 92 exit — one balanced month (§16.9.6) › 19 · portal: Ndlovu sees R 380,00 s86(4) interest only; Khumalo R 95,00, R 31 000,00 + R 20 095,00 = R 51 095,00; neither sees R 1 234,56 
+  2 did not run
+  13 passed (1.2m)
+=== /tmp/661b-exit-month-fresh2.log
+Running 16 tests using 1 worker
+  16 passed (1.2m)
+=== /tmp/661b-test-e2e.log
+Running 180 tests using 5 workers
+  -    1 [chromium] › e2e/tests/auth/auth-change-password.spec.ts:35:7 › in-app change password (kc_action=UPDATE_PASSWORD) › keycloak: Account & Security renders the branded change-password page and returns to app
+  -    4 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:33:7 › Phase 69 capstone — Day 0 baseline + audit-log first render › Audit Log page renders for Owner with default view
+  -    7 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:52:7 › Phase 69 capstone — Day 5 permission denial / Security preset › Security preset renders for Owner (emission gap acknowledged)
+  -    8 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:70:7 › Phase 69 capstone — Day 10 trust approval / Financial approvals preset [legal-za] › Financial approvals preset surfaces trust_transaction.approved row
+  -   10 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:88:7 › Phase 69 capstone — Day 15 closure override (CRITICAL) + widget › Override row surfaces on Audit Log + matter detail + dashboard widget
+  -   11 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:108:7 › Phase 69 capstone — Day 20 per-entity customer Audit tab › Customer detail Audit tab renders for Admin and is scope-correct
+  -   13 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:125:7 › Phase 69 capstone — Day 22 PDF export + reflexive event › PDF export succeeds and emits audit.export.generated row
+  -   14 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:143:7 › Phase 69 capstone — Day 25 DSAR pack scope correctness › DSAR pack ships audit-trail/events.csv scoped to the subject
+  -   15 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:159:7 › Phase 69 capstone — Day 30 export-row hard cap probe › Wide window fails gracefully; narrowed window succeeds
+  -   51 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:157:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -   52 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:178:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  -  114 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API
+  -  115 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API
+  -  172 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:53:7 › ROLE-01: Roles & Capabilities › Create, edit and delete a custom role
+  14 skipped
+  166 passed (52.5s)

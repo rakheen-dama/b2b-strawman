@@ -1,0 +1,96 @@
+18:26:07.660 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/test-classes/archunit.properties
+18:26:07.768 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest]: InvitationServiceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:26:07.929 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[ERROR] Tests run: 9, Failures: 4, Errors: 0, Skipped: 0, Time elapsed: 15.33 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_revokesTheKeycloakInvitationForThatEmail -- Time elapsed: 0.027 s <<< FAILURE!
+Wanted but not invoked:
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.revokeInvitation(
+    "kc-org-uuid",
+    "kc-inv-1"
+);
+-> at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.revokeInvitation(KeycloakAdminClient.java:178)
+
+However, there were exactly 2 interactions with this mock:
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.resolveOrgId(
+    "org_inv_svc_test"
+);
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.createInvitation(InvitationService.java:123)
+
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.inviteMember(
+    "kc-org-uuid",
+    "kc-revoke1@example.com",
+    "member",
+    null
+);
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.createInvitation(InvitationService.java:124)
+
+
+	at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.revokeInvitation(KeycloakAdminClient.java:178)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_revokesTheKeycloakInvitationForThatEmail(InvitationServiceTest.java:151)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_keycloakUnreachable_refusedAndKaziInvitationStaysPending -- Time elapsed: 0.024 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual not to be null
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_keycloakUnreachable_refusedAndKaziInvitationStaysPending(InvitationServiceTest.java:193)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_keycloakRevokeFails_refusedAndKaziInvitationStaysPending -- Time elapsed: 0.054 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual not to be null
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_keycloakRevokeFails_refusedAndKaziInvitationStaysPending(InvitationServiceTest.java:171)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_linkAlreadyAcceptedInKeycloak_refusedWithConflict -- Time elapsed: 0.021 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual not to be null
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationServiceTest.revokeInvitation_linkAlreadyAcceptedInKeycloak_refusedWithConflict(InvitationServiceTest.java:215)
+
+[ERROR] Failures: 
+[ERROR]   InvitationServiceTest.revokeInvitation_keycloakRevokeFails_refusedAndKaziInvitationStaysPending:171 
+Expecting actual not to be null
+[ERROR]   InvitationServiceTest.revokeInvitation_keycloakUnreachable_refusedAndKaziInvitationStaysPending:193 
+Expecting actual not to be null
+[ERROR]   InvitationServiceTest.revokeInvitation_linkAlreadyAcceptedInKeycloak_refusedWithConflict:215 
+Expecting actual not to be null
+[ERROR]   InvitationServiceTest.revokeInvitation_revokesTheKeycloakInvitationForThatEmail:151 
+Wanted but not invoked:
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.revokeInvitation(
+    "kc-org-uuid",
+    "kc-inv-1"
+);
+-> at io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient.revokeInvitation(KeycloakAdminClient.java:178)
+
+However, there were exactly 2 interactions with this mock:
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.resolveOrgId(
+    "org_inv_svc_test"
+);
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.createInvitation(InvitationService.java:123)
+
+io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient#0.inviteMember(
+    "kc-org-uuid",
+    "kc-revoke1@example.com",
+    "member",
+    null
+);
+-> at io.b2mash.b2b.b2bstrawman.invitation.InvitationService.createInvitation(InvitationService.java:124)
+
+
+[ERROR] Tests run: 9, Failures: 4, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

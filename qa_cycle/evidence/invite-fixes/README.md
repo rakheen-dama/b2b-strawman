@@ -5,9 +5,9 @@ Founder-authorised as one PR (related invitation bugs). Local commits only: no p
 Status: **CODE-COMPLETE, TARGETED-GREEN (not merged).** The full `bash scripts/verify.sh` and a Keycloak-stack
 E2E/OBS run are still owed (see "Not done").
 
-Logs sit next to this file (`*.log` is gitignored, so they exist only in this worktree):
-`fix1-red.log`, `fix1-green.log`, `fix2-red.log`, `fix2-green.log`, `fix2b-red.log`, `fix2b-green.log`,
-`fix3-red.log`, `fix3-green.log`, `targeted-backend.log`, `frontend-gate-*.log`.
+Logs sit next to this file as `.txt` copies (the original `*.log` files are gitignored):
+`fix1-red.txt`, `fix1-green.txt`, `fix2-red.txt`, `fix2-green.txt`, `fix2b-red.txt`, `fix2b-green.txt`,
+`fix3-red.txt`, `fix3-green.txt`, `targeted-backend.txt`, `frontend-gate-*.txt`.
 
 ## Commits (tests first per fix)
 
@@ -24,7 +24,7 @@ Logs sit next to this file (`*.log` is gitignored, so they exist only in this wo
 
 ## Fix 1: a custom-role invitee gets 500s at first sign-in (plan option A)
 
-**Red** (`fix1-red.log`, on `522eb3413`): 6 failures in 15 tests.
+**Red** (`fix1-red.txt`, on `522eb3413`): 6 failures in 15 tests.
 - `MemberFilterInvitationTest.shouldAssignCustomInvitationRoleOnFirstLogin`, `…WithKeycloakFormatJwt` and
   `customInviteeIgnoresTokenRoleClaims`: `Status expected:<200> but was:<500>`. The body is ProblemDetail
   `"Member context not available"` (10 occurrences in the log).
@@ -50,7 +50,7 @@ Logs sit next to this file (`*.log` is gitignored, so they exist only in this wo
 - Why this is the safest option: the invitee always lands on the exact role the inviter chose. There is no silent fallback to Member, and no surprise role.
 - Not chosen: "fall back to Member", which would be a silent downgrade.
 
-**Green** (`fix1-green.log`): MemberFilterInvitationTest 9/9, InvitationRoleEscalationIntegrationTest 6/6, MemberFilterCacheEvictionTest 3/3.
+**Green** (`fix1-green.txt`): MemberFilterInvitationTest 9/9, InvitationRoleEscalationIntegrationTest 6/6, MemberFilterCacheEvictionTest 3/3.
 New tests:
 - custom role, Clerk-format JWT
 - custom role, Keycloak-format JWT (`organization` claim, no `o`)
@@ -88,7 +88,7 @@ Membership is not created at invite time, so there is nothing else to undo. One 
 
 This fix detects that case and refuses it (below).
 
-**Red** (`fix2-red.log`): 4 failures in 9 tests.
+**Red** (`fix2-red.txt`): 4 failures in 9 tests.
 - `revokeInvitation(...)`: *Wanted but not invoked*.
 - 3 cases: the expected refusal was not thrown (`Expecting actual not to be null`).
 
@@ -124,8 +124,8 @@ This fix detects that case and refuses it (below).
   the record). There is therefore no live link.
 - Refusing that case instead would make invitations whose Keycloak email never went out impossible to revoke. They would stay PENDING for 7 days
   and block a re-invite (Kazi 409 "Pending invitation exists"). **Flagged for the orchestrator to confirm.**
-- Red (`fix2b-red.log`): compilation fails, `cannot find symbol: method findInvitationIdsByEmail`.
-- Green (`fix2b-green.log`): KeycloakAdminClientInvitationLookupTest 3/3 (WireMock: target found on page 2 past 100 LIKE matches; no exact match → empty;
+- Red (`fix2b-red.txt`): compilation fails, `cannot find symbol: method findInvitationIdsByEmail`.
+- Green (`fix2b-green.txt`): KeycloakAdminClientInvitationLookupTest 3/3 (WireMock: target found on page 2 past 100 LIKE matches; no exact match → empty;
   503 → throws), InvitationServiceTest 10/10, InvitationControllerTest 10/10.
 
 **Tests** (`InvitationServiceTest`, `KeycloakAdminClient` as `@MockitoBean`, as the class already did):
@@ -143,7 +143,7 @@ This fix detects that case and refuses it (below).
 
 ## Fix 3: FR-7, hide "Customize for this user" in the invite form
 
-**Red** (`fix3-red.log`): 3 failures in 38 tests.
+**Red** (`fix3-red.txt`): 3 failures in 38 tests.
 - `never offers 'Customize for this user' at invite time (owner|admin)`: found the collapsible trigger.
 - `sends orgRoleId with custom role on invite`: `inviteMember` was called with a 4th (overrides) argument.
 
@@ -158,9 +158,9 @@ This fix detects that case and refuses it (below).
   - `__tests__/owner-only-capability-grants.test.tsx`: dropped the two tests that exercised the owner-only lock inside the removed panel. The role-lock tests stay.
   - `components/team/invite-member-form.test.tsx`: the submit expectation no longer has a 4th argument. This is a stale expectation of the removed parameter, fixed in the fix commit.
 
-**Green** (`fix3-green.log`): 3 files, 38 tests (invite-role-selection 5, owner-only-capability-grants 24, invite-member-form 9).
+**Green** (`fix3-green.txt`): 3 files, 38 tests (invite-role-selection 5, owner-only-capability-grants 24, invite-member-form 9).
 
-## Targeted backend sweep (`targeted-backend.log`, HEAD `46ff637f1`)
+## Targeted backend sweep (`targeted-backend.txt`, HEAD `46ff637f1`)
 
 **Scope.** 98 classes:
 - every test class in `member/`, `invitation/` and `orgrole/`
@@ -194,7 +194,7 @@ skip on `form.watch` in `invite-member-form.tsx`.
 - A review pass on the diff.
 
 ## Process notes (honesty)
-- The Fix 1 green run (`fix1-green.log`) **overlapped a live 658A Surefire run**. My guard printed the live process but did not stop the run.
+- The Fix 1 green run (`fix1-green.txt`) **overlapped a live 658A Surefire run**. My guard printed the live process but did not stop the run.
 - Two later guards were wrong in a different way: `pgrep … | cut` always exits 0, so they aborted every time.
 - From the Fix 2 runs on, the guard is a correct `if pgrep -f '[s]urefirebooter|…'` check, and every later Maven/heavy pnpm run waited for a clear machine.
 - Fix 1's result (18/18) was re-confirmed inside the targeted sweep, which ran with nothing else live.

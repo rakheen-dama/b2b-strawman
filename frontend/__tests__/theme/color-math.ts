@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 // Colour maths for the Phase 90 token tests (637A: token-contrast, chart-palette).
@@ -55,8 +56,43 @@ export function readBlock(css: string, selector: string): TokenMap {
 export const FRONTEND_ROOT = path.resolve(__dirname, "../..");
 export const SHARED_CSS = path.resolve(FRONTEND_ROOT, "../packages/ui/styles/globals.css");
 export const APP_CSS = path.resolve(FRONTEND_ROOT, "app/globals.css");
+/** Tailwind's own theme (`@theme default`): the source of `--color-white`, which `text-white`
+ *  compiles to (`.text-white { color: var(--color-white) }`). */
+export const TAILWIND_THEME_CSS = createRequire(path.join(FRONTEND_ROOT, "package.json")).resolve(
+  "tailwindcss/theme.css"
+);
+
+/** The Tailwind theme colours a token may reference (`--color-white`, `--color-black`). */
+export function readTailwindBaseColors(): TokenMap {
+  const css = fs.readFileSync(TAILWIND_THEME_CSS, "utf8");
+  const out: TokenMap = {};
+  for (const m of css.matchAll(/(--color-(?:white|black))\s*:\s*([^;]+);/g))
+    out[m[1]] = m[2].trim();
+  return out;
+}
+
+/** Selectors of every rule in app/globals.css's `@media (width >= 48rem) { … }` block — the
+ *  light-only inset CSS (ADR-392, FD-1 option c) — whitespace-normalised, comments stripped. */
+export function readInsetSelectors(): string[] {
+  const css = fs.readFileSync(APP_CSS, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const start = css.indexOf("@media (width >= 48rem)");
+  if (start < 0) throw new Error("app/globals.css: no @media (width >= 48rem) block");
+  const open = css.indexOf("{", start);
+  let depth = 0;
+  let end = -1;
+  for (let i = open; i < css.length && end < 0; i++) {
+    if (css[i] === "{") depth++;
+    if (css[i] === "}" && --depth === 0) end = i;
+  }
+  if (end < 0) throw new Error("app/globals.css: unbalanced @media block");
+  return [...css.slice(open + 1, end).matchAll(/([^{}]+)\{[^{}]*\}/g)].flatMap((m) =>
+    m[1].split(",").map((sel) => sel.replace(/\s+/g, " ").trim())
+  );
+}
 
 export interface Themes {
+  /** Tailwind's `--color-white` / `--color-black` (emitted by Tailwind, under both themes). */
+  tailwind: TokenMap;
   light: TokenMap;
   dark: TokenMap;
   /** Light inside the firm shell: light + the scoped firm block (ADR-392). */
@@ -66,7 +102,7 @@ export interface Themes {
   app: { root: TokenMap; dark: TokenMap; firmLight: TokenMap };
 }
 
-/** The cascade as the browser sees it on <html>: light = :root; dark = :root + .dark;
+/** The cascade as the browser sees it on <html>: light = Tailwind's theme + :root; dark = + .dark;
  *  firm light = :root + the scoped firm block (it never matches under .dark). */
 export function loadThemes(): Themes {
   const sharedCss = fs.readFileSync(SHARED_CSS, "utf8");
@@ -77,13 +113,15 @@ export function loadThemes(): Themes {
     dark: readBlock(appCss, ".dark"),
     firmLight: readBlock(appCss, FIRM_LIGHT_SELECTOR),
   };
-  const light = { ...shared.root, ...app.root };
+  const tailwind = readTailwindBaseColors();
+  const light = { ...tailwind, ...shared.root, ...app.root };
   const dark = { ...light, ...shared.dark, ...app.dark };
   const firmLight = { ...light, ...app.firmLight };
-  return { light, dark, firmLight, shared, app };
+  return { tailwind, light, dark, firmLight, shared, app };
 }
 
-/** Resolve `var(--x)` chains and `color-mix(in oklab|oklch, var(--a) N%, var(--b))` to OKLCH. */
+/** Resolve `var(--x)` chains, `#rgb` / `#rrggbb` and
+ *  `color-mix(in oklab|oklch, var(--a) N%, var(--b))` to OKLCH. */
 export function resolveColor(name: string, vars: TokenMap, depth = 0): Oklch {
   if (depth > 20) throw new Error(`var() cycle at ${name}`);
   const raw = vars[name];
@@ -102,6 +140,7 @@ export function resolveColor(name: string, vars: TokenMap, depth = 0): Oklch {
       p
     );
   }
+  if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw)) return hexToOklch(raw);
   const parsed = parseOklch(raw);
   if (!parsed) throw new Error(`${name}: cannot parse "${raw}"`);
   return parsed;
@@ -204,6 +243,14 @@ export function hexToLinear(hex: string): [number, number, number] {
     number,
     number,
   ];
+}
+
+/** `#rgb` / `#rrggbb` → OKLCH (opaque). */
+export function hexToOklch(hex: string): Oklch {
+  const h = hex.replace(/^#/, "");
+  const full = h.length === 3 ? [...h].map((c) => c + c).join("") : h;
+  const [L, a, b] = linearToOklab(hexToLinear(full));
+  return { L, C: Math.hypot(a, b), H: normHue(Math.atan2(b, a) / D2R), alpha: 1 };
 }
 
 /** Linear sRGB → OKLab (Ottosson's forward matrices). */

@@ -100,6 +100,14 @@ describe('firm shell inset mirrors ui/sidebar.tsx\'s variant="inset" (desktop on
       "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r",
       "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
       'const SIDEBAR_WIDTH_ICON = "3rem"',
+      // The attributes the inset selectors match on (structure: app-sidebar.test.tsx).
+      'data-slot="sidebar-wrapper"',
+      'data-slot="sidebar"',
+      'data-slot="sidebar-gap"',
+      'data-slot="sidebar-container"',
+      'data-slot="sidebar-inset"',
+      "data-state={state}",
+      'data-collapsible={state === "collapsed" ? collapsible : ""}',
     ]) {
       expect(sidebar, cls).toContain(cls);
     }

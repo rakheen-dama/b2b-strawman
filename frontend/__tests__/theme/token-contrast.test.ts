@@ -1,7 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
-  FIRM_LIGHT_SELECTOR,
   contrastRatio,
   hexHue,
   hueArc,
@@ -21,7 +20,7 @@ import {
 // pairs used as text on a surface, 3:1 for focus rings and chart marks. No value is hard-coded
 // here: a later retune that breaks AA fails this file.
 
-const { light, dark, firmLight, shared, app } = loadThemes();
+const { tailwind, light, dark, firmLight, shared, app } = loadThemes();
 const THEMES: ["light" | "dark", TokenMap][] = [
   ["light", light],
   ["dark", dark],
@@ -243,10 +242,19 @@ const SHELL_PAIRS: Pair[] = [
     bg: hex("--primary"),
   },
   {
-    name: "active indicator bar vs rail (non-text)",
+    // The §18.6.1 row: the bar against the bare rail.
+    name: "active indicator bar vs rail (non-text, §18.6.1)",
     floor: 3,
     fg: onRail("--sidebar-primary"),
     bg: rail,
+  },
+  {
+    // Where it is painted: a before: pseudo inside the active item, i.e. on its --sidebar-accent
+    // fill (SIDEBAR_ACTIVE_BAR, components/shell/sidebar-styles.ts).
+    name: "active indicator bar vs the active item fill (non-text)",
+    floor: 3,
+    fg: onFill("--sidebar-primary"),
+    bg: activeFill,
   },
   { name: "--sidebar-ring vs rail (non-text)", floor: 3, fg: onRail("--sidebar-ring"), bg: rail },
   { name: "--ring vs rail (non-text)", floor: 3, fg: hex("--ring"), bg: rail },
@@ -271,7 +279,6 @@ const ACCENT_PAIRS: Pair[] = [
 
 describe("firm light scheme — the scoped block (ADR-392, FD-1 = A1)", () => {
   it("exists and sets exactly the A1 tokens", () => {
-    expect(FIRM_LIGHT_SELECTOR).toBe(':root:not(.dark):has([data-app-shell="firm"])');
     expect(Object.keys(app.firmLight).sort()).toEqual([...FIRM_LIGHT_TOKENS].sort());
   });
 
@@ -317,8 +324,16 @@ describe("pixel identity outside the firm light block (R1, FD-2, FD-1 option c)"
   it("--button-accent is today's accent-button paint (teal-600 / white) in shared :root and .dark", () => {
     for (const block of [shared.root, shared.dark]) {
       expect(block["--button-accent"]).toBe("var(--teal-600)");
-      expect(block["--button-accent-foreground"]).toBe("oklch(100% 0 0)");
+      expect(block["--button-accent-foreground"]).toBe("var(--color-white)");
     }
+  });
+
+  it("the accent label is exactly what text-white compiled to: var(--color-white), Tailwind's #fff", () => {
+    // .text-white { color: var(--color-white) }. oklch(100% 0 0) resolves to the same #ffffff but
+    // computes to lab(100 0 0), which moved glyph-edge anti-aliasing by 1/255 (661B OBS d/e).
+    expect(tailwind["--color-white"]).toBe("#fff");
+    expect(tokenHex("--button-accent-foreground", light)).toBe("#ffffff");
+    expect(tokenHex("--button-accent-foreground", dark)).toBe("#ffffff");
   });
 
   it("the rail-text tokens are today's white /60 and /50 in the app :root and .dark", () => {

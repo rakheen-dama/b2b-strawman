@@ -160,9 +160,12 @@
   --accent: var(--teal-600);
   --accent-foreground: oklch(100% 0 0);
   /* Button variant="accent" fill, decoupled from the themed --accent (ADR-392). Today's values
-     here and in .dark; only the frontend's firm light block overrides them (portal never does). */
+     here and in .dark; only the frontend's firm light block overrides them (portal never does).
+     The label is var(--color-white), exactly what the old text-white compiled to
+     (color: var(--color-white), Tailwind's #fff): oklch(100% 0 0) computes to lab(100 0 0) and
+     shifts glyph-edge anti-aliasing by 1/255. */
   --button-accent: var(--teal-600);
-  --button-accent-foreground: oklch(100% 0 0);
+  --button-accent-foreground: var(--color-white);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(91.5% 0.008 260);
   --input: oklch(91.5% 0.008 260);
@@ -236,7 +239,7 @@
   --accent: var(--teal-500);
   --accent-foreground: oklch(100% 0 0);
   --button-accent: var(--teal-600);
-  --button-accent-foreground: oklch(100% 0 0);
+  --button-accent-foreground: var(--color-white);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(28.5% 0.014 260);
   --input: oklch(28.5% 0.014 260);

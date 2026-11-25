@@ -27,9 +27,10 @@ vi.mock("@/components/command-palette-provider", () => ({
 import { usePathname, useSearchParams } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { NAV_GROUPS } from "@/lib/nav-items";
+import { FIRM_LIGHT_SELECTOR, readInsetSelectors } from "@/__tests__/theme/color-math";
 
 const mockUsePathname = vi.mocked(usePathname);
 const mockUseSearchParams = vi.mocked(useSearchParams);
@@ -71,6 +72,8 @@ interface RenderOptions {
   extra?: React.ReactNode;
   /** `data-app-shell` on the SidebarProvider, as the org layout sets it (ADR-392). */
   appShell?: string;
+  /** Render the trigger inside <SidebarInset>, as the org layout does (header in the inset). */
+  inset?: boolean;
 }
 
 function sidebarTree({
@@ -83,6 +86,7 @@ function sidebarTree({
   groups,
   extra,
   appShell,
+  inset = false,
 }: RenderOptions = {}) {
   return (
     <OrgProfileProvider verticalProfile={null} enabledModules={modules} terminologyNamespace={null}>
@@ -99,8 +103,17 @@ function sidebarTree({
             brandColor={brandColor}
             groups={groups}
           />
-          <SidebarTrigger />
-          {extra}
+          {inset ? (
+            <SidebarInset>
+              <SidebarTrigger />
+              {extra}
+            </SidebarInset>
+          ) : (
+            <>
+              <SidebarTrigger />
+              {extra}
+            </>
+          )}
         </SidebarProvider>
       </CapabilityProvider>
     </OrgProfileProvider>
@@ -484,5 +497,70 @@ describe("AppSidebar — firm shell scope (ADR-392, FD-1 option c)", () => {
     await user.click(screen.getByRole("button", { name: "Toggle menu" }));
     expect(sidebarState()).toBe("collapsed");
     expect(sidebar()).toHaveAttribute("data-variant", "sidebar");
+  });
+});
+
+describe("AppSidebar — the light-inset CSS selectors match the real DOM (FD-1 option c)", () => {
+  // The selectors are read from app/globals.css, so a renamed data-slot, a moved element (the
+  // `>` / `~` combinators) or a CSS edit that no longer fits the DOM fails here.
+  const selectors = readInsetSelectors();
+  /** Rules for the collapsed icon rail only; every other inset rule applies in both states. */
+  const collapsedOnly = (sel: string) => /data-state="collapsed"|data-collapsible="icon"/.test(sel);
+  /** The element a selector paints: its last [data-slot], else the provider wrapper. */
+  const targetSlot = (sel: string) =>
+    [...sel.matchAll(/\[data-slot="([\w-]+)"\]/g)].at(-1)?.[1] ?? "sidebar-wrapper";
+
+  function expectMatches(state: "expanded" | "collapsed") {
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (state === "expanded" && collapsedOnly(sel)) {
+        expect(el, `${sel} (expanded)`).toBeNull();
+      } else {
+        expect(el, `${sel} (${state})`).not.toBeNull();
+        expect(el, sel).toHaveAttribute("data-slot", targetSlot(sel));
+      }
+    }
+  }
+
+  afterEach(() => {
+    document.documentElement.classList.remove("dark");
+  });
+
+  it("globals.css has the six inset rules, all light-only and scoped to the firm shell", () => {
+    expect(selectors).toHaveLength(6);
+    for (const sel of selectors)
+      expect(sel.startsWith(':root:not(.dark) [data-app-shell="firm"]'), sel).toBe(true);
+  });
+
+  it("expanded rail: wrapper, container and inset card match; the icon-rail rules do not", () => {
+    renderSidebar({ appShell: "firm", inset: true });
+    expect(sidebarState()).toBe("expanded");
+    expectMatches("expanded");
+    expect(document.documentElement.matches(FIRM_LIGHT_SELECTOR)).toBe(true);
+  });
+
+  it("collapsed rail via the real trigger: every inset rule matches", async () => {
+    const user = userEvent.setup();
+    renderSidebar({ appShell: "firm", inset: true });
+    await user.click(screen.getByRole("button", { name: "Toggle menu" }));
+    expect(sidebarState()).toBe("collapsed");
+    expectMatches("collapsed");
+  });
+
+  it("collapsed by default (defaultOpen={false}): every inset rule matches", () => {
+    renderSidebar({ appShell: "firm", inset: true, defaultOpen: false });
+    expect(sidebarState()).toBe("collapsed");
+    expectMatches("collapsed");
+  });
+
+  it("nothing matches in dark mode or outside the firm shell", () => {
+    renderSidebar({ appShell: "firm", inset: true, defaultOpen: false });
+    document.documentElement.classList.add("dark");
+    for (const sel of selectors) expect(document.querySelector(sel), sel).toBeNull();
+    expect(document.documentElement.matches(FIRM_LIGHT_SELECTOR)).toBe(false);
+    document.documentElement.classList.remove("dark");
+    cleanup();
+    renderSidebar({ inset: true, defaultOpen: false });
+    for (const sel of selectors) expect(document.querySelector(sel), sel).toBeNull();
   });
 });

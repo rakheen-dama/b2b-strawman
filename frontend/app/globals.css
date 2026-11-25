@@ -21,8 +21,9 @@
  * blocks keep winning in dark mode — dark is unchanged by Phase 91 (FD-1 option c).
  * Validation record (661B, FD-1 = A1, __tests__/theme/color-math.ts): firm light — body text
  * 17.79 on canvas and card, muted text 7.54, rail text 9.41, active item 11.60, rail labels and
- * muted rail text 6.86 (search pill 6.22), indicator bar 4.91 and --sidebar-ring /
- * --ring vs rail 3.48 (non-text), --ring vs canvas and card 3.83, primary label 17.96, accent
+ * muted rail text 6.86 (search pill 6.22), active indicator bar 4.91 vs the rail and 4.46 vs
+ * the active item fill it is painted on (non-text), --sidebar-ring / --ring vs rail 3.48
+ * (non-text), --ring vs canvas and card 3.83, primary label 17.96, accent
  * button and focused menu item 5.46 (K-04 fixed); chart-1..5 >= 3:1 on the firm canvas (= the
  * card). Pinned by __tests__/theme/{token-contrast,chart-palette,firm-shell-scheme}.test.ts.
  */
@@ -65,8 +66,9 @@
   --brand-color: var(--teal-500);
 
   /* Kazi-tuned teal steps (ADR-392, architecture §18.2.1; hue 183–190), verified as-is in 661A.
-     A raw scale consumed only by the firm light block — not Tailwind's stock teal-50/100/700/950
-     utilities, which stay stock and are different colours. */
+     A raw scale for the firm light block, which consumes 100, 700 and 950 (50 is reserved, unused
+     by A1) — not Tailwind's stock teal-50/100/700/950 utilities, which stay stock and are
+     different colours. */
   --kazi-teal-50: oklch(96.5% 0.022 183);
   --kazi-teal-100: oklch(92.5% 0.04 183);
   --kazi-teal-700: oklch(50% 0.11 184);
@@ -134,7 +136,7 @@
   --accent: var(--kazi-teal-700);
   --accent-foreground: oklch(100% 0 0);
   --button-accent: var(--kazi-teal-700);
-  --button-accent-foreground: oklch(100% 0 0);
+  --button-accent-foreground: var(--color-white); /* as the shared :root, = text-white */
 }
 
 /* Inset canvas (A) as light-only CSS (FD-1 option c). Mirrors what ui/sidebar.tsx applies for

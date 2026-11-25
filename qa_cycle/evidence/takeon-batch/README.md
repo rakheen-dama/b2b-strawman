@@ -92,7 +92,7 @@ Lowering the shared body limit to 3 MB would have regressed every other upload t
 
 ## Gates
 
-Item 4 changed only the frontend. The backend and E2E rows below are at `3266a852f`. Item 4 changes no file those runs exercised except the DOCX and receipt dialogs, which no E2E suite uploads over 3 MB.
+Item 4 changed only the frontend, so the backend and E2E rows below stay at `3266a852f`. E2E was not re-run for item 4: the coordinator scoped its gate to the frontend.
 
 | Gate | Head | Result | Evidence |
 |---|---|---|---|

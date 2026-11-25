@@ -411,7 +411,14 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   # line that mentions the slice id — dependency/unblock columns on a sibling
   # Done row caused false positives (e.g. 511B's Done row lists 512A as a
   # downstream-unblock, falsely marking 512A done before it ever ran).
-  if grep -E "^\| \*\*${slice}\*\*.*(\*\*Done\*\*|STRUCK)" "$TASK_FILE" >/dev/null; then
+  # Slices push their bookkeeping from a worktree, so the Done row can be on origin/main while
+  # this checkout is stale (658A, 2026-11-24: merged and marked Done, yet the runner stopped).
+  # Check origin/main too, then fast-forward this checkout so the next slice starts from it.
+  git fetch -q origin main >> "$LOG_FILE" 2>&1 || true
+  if grep -E "^\| \*\*${slice}\*\*.*(\*\*Done\*\*|STRUCK)" "$TASK_FILE" >/dev/null \
+    || git show "origin/main:${TASK_FILE}" 2>/dev/null \
+      | grep -E "^\| \*\*${slice}\*\*.*(\*\*Done\*\*|STRUCK)" >/dev/null; then
+    git pull --ff-only >> "$LOG_FILE" 2>&1 || log "WARNING: could not fast-forward main after ${slice}"
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
     # 137 means a timeout only when the cap was actually reached (timeout -k escalated to SIGKILL);

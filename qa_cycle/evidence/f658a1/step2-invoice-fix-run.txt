@@ -1,0 +1,80 @@
+04:17:15.840 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f658a1/backend/target/test-classes/archunit.properties
+04:17:16.196 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest]: AccountingSyncEventListenerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:17:16.939 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 38ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/clients
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"70", Idempotency-Key:"600f48f8-9849-4a39-b605-511093db9c7a"]
+             Body = {"name":"Sipho Mokoena","email":"sync.listener.created@example.test"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.customer.CustomerController
+           Method = io.b2mash.b2b.b2bstrawman.customer.CustomerController#createCustomer(CreateClientRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/clients/ea2553f3-7ee5-4f2b-b877-3677518f42c8", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"ea2553f3-7ee5-4f2b-b877-3677518f42c8","name":"Sipho Mokoena","email":"sync.listener.created@example.test","phone":null,"idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"3d5fddb4-4c2d-4292-8667-31e29c112fa8","createdByName":"Listener Owner","createdAt":"2026-11-25T04:18:11.489094Z","updatedAt":"2026-11-25T04:18:11.490456Z","customFields":{},"appliedFieldGroups":["b5a580c9-4615-4aa6-8c38-9f7a350c94a7"],"tags":[],"lifecycleStatus":"PROSPECT","clientType":"INDIVIDUAL","lifecycleStatusChangedAt":null,"registrationNumber":null,"addressLine1":null,"addressLine2":null,"city":null,"stateProvince":null,"postalCode":null,"country":null,"taxNumber":null,"contactName":null,"contactEmail":null,"contactPhone":null,"entityType":null,"financialYearEnd":null,"collectionsExempt":false}
+    Forwarded URL = null
+   Redirected URL = /api/clients/ea2553f3-7ee5-4f2b-b877-3677518f42c8
+          Cookies = []
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+[ERROR] Tests run: 5, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 56.06 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush -- Time elapsed: 0.165 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush(AccountingSyncEventListenerIntegrationTest.java:163)
+
+[ERROR] Failures: 
+[ERROR]   AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush:163 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR] Tests run: 5, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f658a1/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

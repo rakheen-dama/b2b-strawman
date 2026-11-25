@@ -31,7 +31,7 @@ Nothing else blocks it: no feature or module flag, the tenant binding is correct
 4. approve, then send while the approval push is still PENDING → still exactly one entry (no double enqueue)
 5. `POST /api/customers` → one PENDING EVENT CUSTOMER entry
 
-**RED on unchanged code** (commit `cd32d2394`, log `red-run.log`): `Tests run: 5, Failures: 5`, and every failure reads:
+**RED on unchanged code** (commit `cd32d2394`, log `red-run.txt`): `Tests run: 5, Failures: 5`, and every failure reads:
 
 ```
 java.lang.AssertionError:
@@ -40,7 +40,7 @@ Expected size: 1 but was: 0 in:
 	at ...AccountingSyncEventListenerIntegrationTest.approvingAnOrdinaryFeeNote_queuesAPendingXeroPush_inTheFirmsSchema(AccountingSyncEventListenerIntegrationTest.java:96)
 ```
 
-**Root cause, observed rather than inferred.** Test logging is ERROR-only, so the approve case was re-run with `-Dlogging.level.org.springframework.transaction=DEBUG`, `...orm.jpa.JpaTransactionManager=DEBUG` and `...integration.accounting=DEBUG` (log `red-debug-run.log`, excerpt `red-debug-excerpt.txt`):
+**Root cause, observed rather than inferred.** Test logging is ERROR-only, so the approve case was re-run with `-Dlogging.level.org.springframework.transaction=DEBUG`, `...orm.jpa.JpaTransactionManager=DEBUG` and `...integration.accounting=DEBUG` (log `red-debug-run.txt`, excerpt `red-debug-excerpt.txt`):
 
 ```
 04:02:09.582 JpaTransactionManager | Committing JPA transaction on EntityManager [SessionImpl(1535150965<open>)]
@@ -60,12 +60,12 @@ Expected size: 1 but was: 0 in:
 
 `AccountingSyncEventListener` now builds a `REQUIRES_NEW` `TransactionTemplate`, the same pattern `collections/CollectionsPaymentListener` uses. Each enqueue runs inside it, and the template is opened *inside* the tenant binding, so the new session resolves the event's tenant schema. The service's REQUIRED propagation is unchanged, so the force-resync controller and direct callers keep their semantics. Idempotency is unchanged: an active (PENDING / IN_FLIGHT / FAILED_RETRYING) or terminal (BLOCKED_TRUST_BOUNDARY / DEAD_LETTER) entry makes the enqueue a no-op, as proved by test 4. A failure rolls back only the inner transaction and is still logged at WARN.
 
-- `94d752af4`: the fee-note handlers (approve, sent, voided). After this commit the reproduction was 4/5 green, with only the client case red (`step2-invoice-fix-run.log`).
+- `94d752af4`: the fee-note handlers (approve, sent, voided). After this commit the reproduction was 4/5 green, with only the client case red (`step2-invoice-fix-run.txt`).
 - `88eddf1bb`: the client create/update handlers. This is the same defect in the same listener, kept as its own commit so it can be dropped if the client half is ruled out of scope (root CLAUDE.md §7).
 
 ## Green
 
-Targeted set (log `green-targeted-run.log`; counts are `<testcase>` elements in `target/surefire-reports`): **104 classes, 888 tests, 0 failures, 0 errors, 0 skipped.** The new class is 5/5.
+Targeted set (log `green-targeted-run.txt`; counts are `<testcase>` elements in `target/surefire-reports`): **104 classes, 888 tests, 0 failures, 0 errors, 0 skipped.** The new class is 5/5.
 
 The set: every test class under `integration/accounting/` (sync + Xero), `invoice/`, and `architecture/` (TenantScopeBindingTest, LayerDependencyRulesTest, TestConventionsTest, TerminologyRemnantScanTest, ZoneAwareTimeArchTest, PortalLinkBuilderArchTest, PortalReadModelOrgScopingGuardTest). It also includes every `*Accounting*Test`, `*Xero*Test`, `Invoice*Test`, `*TakeOn*Test` and `*BroughtForward*Test`, and every test that references the listener or the service (CollectionsPaymentCancellationTest, ClientsTakeOnIntegrationTest, and others). The full class list is in `targeted-classes.txt` (passed as `-Dtest`).
 

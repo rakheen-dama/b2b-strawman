@@ -1,0 +1,750 @@
+04:00:15.423 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f658a1/backend/target/test-classes/archunit.properties
+04:00:15.617 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest]: AccountingSyncEventListenerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:00:16.054 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 77ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"179", Idempotency-Key:"5c9a0b57-aab8-4410-b413-d8af2641bc4e"]
+             Body = {"clerkOrgId":"org_sync_listener_test","clerkUserId":"user_sync_listener_owner","email":"sync_listener_owner@test.com","name":"Listener Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/3569b271-9e27-438a-a355-a20854078d0f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"3569b271-9e27-438a-a355-a20854078d0f","clerkUserId":"user_sync_listener_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/3569b271-9e27-438a-a355-a20854078d0f
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"71", Idempotency-Key:"dbde2b7e-9e90-43ea-bb03-70c0a48bb538"]
+             Body = {"clientId": "9ee5990b-37ad-47c8-91ef-891675679526", "currency": "ZAR"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#createDraft(CreateInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"6593d7fe-7801-4bcd-8b0f-bef47bc7ce75","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":0,"taxAmount":0,"total":0,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:17.688109Z","updatedAt":"2026-11-25T04:01:17.714335Z","lines":[],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[],"taxInclusive":false,"hasPerLineTax":false,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0,"balanceDue":0,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75/lines
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"83", Idempotency-Key:"e86071dc-a362-4409-b7eb-323a752bd203"]
+             Body = {"description": "Consultation", "quantity": 1, "unitPrice": 250.00, "sortOrder": 0}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#addLineItem(UUID, AddLineItemRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"6593d7fe-7801-4bcd-8b0f-bef47bc7ce75","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:17.688109Z","updatedAt":"2026-11-25T04:01:17.967944Z","lines":[{"id":"879130ed-5e9b-472e-9da4-4e517d64ed03","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75/approve
+       Parameters = {}
+          Headers = [Idempotency-Key:"76469c55-5798-4d47-8e1a-2ab56c151b79"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#approveInvoice(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"6593d7fe-7801-4bcd-8b0f-bef47bc7ce75","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0001","status":"APPROVED","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:17.688109Z","updatedAt":"2026-11-25T04:01:18.006734Z","lines":[{"id":"879130ed-5e9b-472e-9da4-4e517d64ed03","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75/send
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"26", Idempotency-Key:"41773d58-79de-44d9-b695-f213b4c69e12"]
+             Body = {"overrideWarnings": true}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#sendInvoice(UUID, SendInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"6593d7fe-7801-4bcd-8b0f-bef47bc7ce75","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0001","status":"SENT","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:17.688109Z","updatedAt":"2026-11-25T04:01:18.214696Z","lines":[{"id":"879130ed-5e9b-472e-9da4-4e517d64ed03","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":"MOCK-SESS-321ca92f-9645-4e6d-a2bb-a5fd8c87c3f6","paymentUrl":"http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-321ca92f-9645-4e6d-a2bb-a5fd8c87c3f6&invoiceId=6593d7fe-7801-4bcd-8b0f-bef47bc7ce75&amount=287.50&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F6593d7fe-7801-4bcd-8b0f-bef47bc7ce75%2Fpayment-success%3ForgId%3Dorg_sync_listener_test","paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/6593d7fe-7801-4bcd-8b0f-bef47bc7ce75/void
+       Parameters = {}
+          Headers = [Idempotency-Key:"fa39f226-600c-4677-8d16-af61f7e505e1"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#voidInvoice(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"6593d7fe-7801-4bcd-8b0f-bef47bc7ce75","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0001","status":"VOID","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:17.688109Z","updatedAt":"2026-11-25T04:01:24.300479Z","lines":[{"id":"879130ed-5e9b-472e-9da4-4e517d64ed03","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":"MOCK-SESS-321ca92f-9645-4e6d-a2bb-a5fd8c87c3f6","paymentUrl":"http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-321ca92f-9645-4e6d-a2bb-a5fd8c87c3f6&invoiceId=6593d7fe-7801-4bcd-8b0f-bef47bc7ce75&amount=287.50&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F6593d7fe-7801-4bcd-8b0f-bef47bc7ce75%2Fpayment-success%3ForgId%3Dorg_sync_listener_test","paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"71", Idempotency-Key:"9144a02e-601d-4106-86ea-ab6bc9700a3e"]
+             Body = {"clientId": "9ee5990b-37ad-47c8-91ef-891675679526", "currency": "ZAR"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#createDraft(CreateInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"cc943b12-8097-4547-90b7-06e1f5dcde02","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":0,"taxAmount":0,"total":0,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:24.687059Z","updatedAt":"2026-11-25T04:01:24.698484Z","lines":[],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[],"taxInclusive":false,"hasPerLineTax":false,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0,"balanceDue":0,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02/lines
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"83", Idempotency-Key:"5f24addf-a602-4d99-af1b-669978c3a6cf"]
+             Body = {"description": "Consultation", "quantity": 1, "unitPrice": 250.00, "sortOrder": 0}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#addLineItem(UUID, AddLineItemRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"cc943b12-8097-4547-90b7-06e1f5dcde02","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:24.687059Z","updatedAt":"2026-11-25T04:01:24.861390Z","lines":[{"id":"41129757-7ae7-466c-b9eb-62c4288022f4","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02/approve
+       Parameters = {}
+          Headers = [Idempotency-Key:"1e6ae6d2-30cb-4344-af1c-9edfcb1f8ec8"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#approveInvoice(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"cc943b12-8097-4547-90b7-06e1f5dcde02","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0002","status":"APPROVED","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:24.687059Z","updatedAt":"2026-11-25T04:01:24.943273Z","lines":[{"id":"41129757-7ae7-466c-b9eb-62c4288022f4","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/cc943b12-8097-4547-90b7-06e1f5dcde02/send
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"26", Idempotency-Key:"0ea432a2-2871-4c47-abab-ff3cdb46dc17"]
+             Body = {"overrideWarnings": true}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#sendInvoice(UUID, SendInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"cc943b12-8097-4547-90b7-06e1f5dcde02","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0002","status":"SENT","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:24.687059Z","updatedAt":"2026-11-25T04:01:25.047231Z","lines":[{"id":"41129757-7ae7-466c-b9eb-62c4288022f4","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":"MOCK-SESS-febd124c-1fc7-42c0-b776-ebe4614ee75f","paymentUrl":"http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-febd124c-1fc7-42c0-b776-ebe4614ee75f&invoiceId=cc943b12-8097-4547-90b7-06e1f5dcde02&amount=287.50&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2Fcc943b12-8097-4547-90b7-06e1f5dcde02%2Fpayment-success%3ForgId%3Dorg_sync_listener_test","paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/clients
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"70", Idempotency-Key:"f50884e0-7cfc-48fa-a10a-2c22f510cb4d"]
+             Body = {"name":"Sipho Mokoena","email":"sync.listener.created@example.test"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.customer.CustomerController
+           Method = io.b2mash.b2b.b2bstrawman.customer.CustomerController#createCustomer(CreateClientRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/clients/dce942cf-ff76-43a4-a4ab-99fc69f9bd03", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"dce942cf-ff76-43a4-a4ab-99fc69f9bd03","name":"Sipho Mokoena","email":"sync.listener.created@example.test","phone":null,"idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","createdAt":"2026-11-25T04:01:25.406227Z","updatedAt":"2026-11-25T04:01:25.407642Z","customFields":{},"appliedFieldGroups":["0581d871-5241-416c-a2a6-6d66d6ae7667"],"tags":[],"lifecycleStatus":"PROSPECT","clientType":"INDIVIDUAL","lifecycleStatusChangedAt":null,"registrationNumber":null,"addressLine1":null,"addressLine2":null,"city":null,"stateProvince":null,"postalCode":null,"country":null,"taxNumber":null,"contactName":null,"contactEmail":null,"contactPhone":null,"entityType":null,"financialYearEnd":null,"collectionsExempt":false}
+    Forwarded URL = null
+   Redirected URL = /api/clients/dce942cf-ff76-43a4-a4ab-99fc69f9bd03
+          Cookies = []
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"71", Idempotency-Key:"9f4eff36-d6d1-4d6d-9d28-0d71117aeead"]
+             Body = {"clientId": "9ee5990b-37ad-47c8-91ef-891675679526", "currency": "ZAR"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#createDraft(CreateInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"97400975-8f6f-41c7-a777-1e984d28f5d4","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":0,"taxAmount":0,"total":0,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:25.628582Z","updatedAt":"2026-11-25T04:01:25.632228Z","lines":[],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[],"taxInclusive":false,"hasPerLineTax":false,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0,"balanceDue":0,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4/lines
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"83", Idempotency-Key:"87695b20-eac0-4b5b-9d5d-470ebc29cbaf"]
+             Body = {"description": "Consultation", "quantity": 1, "unitPrice": 250.00, "sortOrder": 0}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#addLineItem(UUID, AddLineItemRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"97400975-8f6f-41c7-a777-1e984d28f5d4","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:25.628582Z","updatedAt":"2026-11-25T04:01:25.672851Z","lines":[{"id":"e0411771-40f7-47cb-b463-a9421a157acd","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4/approve
+       Parameters = {}
+          Headers = [Idempotency-Key:"9f0df1e8-1d30-4b2b-8992-8fc4c01f1e15"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#approveInvoice(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"97400975-8f6f-41c7-a777-1e984d28f5d4","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0003","status":"APPROVED","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:25.628582Z","updatedAt":"2026-11-25T04:01:25.810668Z","lines":[{"id":"e0411771-40f7-47cb-b463-a9421a157acd","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/97400975-8f6f-41c7-a777-1e984d28f5d4/send
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"26", Idempotency-Key:"0f1e5257-a070-4442-bff0-132e42468f2f"]
+             Body = {"overrideWarnings": true}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#sendInvoice(UUID, SendInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"97400975-8f6f-41c7-a777-1e984d28f5d4","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0003","status":"SENT","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:25.628582Z","updatedAt":"2026-11-25T04:01:25.922955Z","lines":[{"id":"e0411771-40f7-47cb-b463-a9421a157acd","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":"MOCK-SESS-f1a0a216-c1fb-45fb-8067-8eb2db6734b0","paymentUrl":"http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-f1a0a216-c1fb-45fb-8067-8eb2db6734b0&invoiceId=97400975-8f6f-41c7-a777-1e984d28f5d4&amount=287.50&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F97400975-8f6f-41c7-a777-1e984d28f5d4%2Fpayment-success%3ForgId%3Dorg_sync_listener_test","paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"71", Idempotency-Key:"f170adf7-7863-4663-8991-8e6e07521b5f"]
+             Body = {"clientId": "9ee5990b-37ad-47c8-91ef-891675679526", "currency": "ZAR"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#createDraft(CreateInvoiceRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/9918644d-5060-483b-bced-a6409b7540c7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"9918644d-5060-483b-bced-a6409b7540c7","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":0,"taxAmount":0,"total":0,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:26.285049Z","updatedAt":"2026-11-25T04:01:26.311238Z","lines":[],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[],"taxInclusive":false,"hasPerLineTax":false,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0,"balanceDue":0,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/9918644d-5060-483b-bced-a6409b7540c7
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/9918644d-5060-483b-bced-a6409b7540c7/lines
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"83", Idempotency-Key:"2bf19f77-65e9-4556-9853-b5f824b4866c"]
+             Body = {"description": "Consultation", "quantity": 1, "unitPrice": 250.00, "sortOrder": 0}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#addLineItem(UUID, AddLineItemRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invoices/9918644d-5060-483b-bced-a6409b7540c7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"9918644d-5060-483b-bced-a6409b7540c7","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":null,"status":"DRAFT","currency":"ZAR","issueDate":null,"dueDate":null,"subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":null,"approvedByName":null,"createdAt":"2026-11-25T04:01:26.285049Z","updatedAt":"2026-11-25T04:01:26.369855Z","lines":[{"id":"027f365d-cbba-4ba2-8eb8-8dd4a046f3d5","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = /api/invoices/9918644d-5060-483b-bced-a6409b7540c7
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invoices/9918644d-5060-483b-bced-a6409b7540c7/approve
+       Parameters = {}
+          Headers = [Idempotency-Key:"d494a41f-f21e-466a-828e-730677ed6f84"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController
+           Method = io.b2mash.b2b.b2bstrawman.invoice.InvoiceController#approveInvoice(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"9918644d-5060-483b-bced-a6409b7540c7","clientId":"9ee5990b-37ad-47c8-91ef-891675679526","invoiceNumber":"INV-0004","status":"APPROVED","currency":"ZAR","issueDate":"2026-11-25","dueDate":"2026-12-25","subtotal":250.00,"taxAmount":37.50,"total":287.50,"notes":null,"paymentTerms":null,"paymentReference":null,"paidAt":null,"clientName":"Lindiwe Dube","clientEmail":"sync.listener.client@example.test","clientAddress":null,"orgName":"Sync Listener Attorneys","createdBy":"3569b271-9e27-438a-a355-a20854078d0f","createdByName":"Listener Owner","approvedBy":"3569b271-9e27-438a-a355-a20854078d0f","approvedByName":"Listener Owner","createdAt":"2026-11-25T04:01:26.285049Z","updatedAt":"2026-11-25T04:01:26.445936Z","lines":[{"id":"027f365d-cbba-4ba2-8eb8-8dd4a046f3d5","matterId":null,"matterName":null,"timeEntryId":null,"expenseId":null,"lineType":"MANUAL","description":"Consultation","quantity":1.0000,"unitPrice":250.00,"amount":250.00,"sortOrder":0,"taxRateId":"3ef3508c-caf0-43e1-8163-d9211f987199","taxRateName":"VAT — Standard","taxRatePercent":15.00,"taxAmount":37.50,"taxExempt":false,"tariffItemId":null,"lineSource":null,"tariffItemNumber":null}],"customFields":{},"appliedFieldGroups":[],"paymentSessionId":null,"paymentUrl":null,"paymentDestination":"OPERATING","taxBreakdown":[{"rateName":"VAT — Standard","ratePercent":15.00,"taxableAmount":250.00,"taxAmount":37.50}],"taxInclusive":false,"hasPerLineTax":true,"poNumber":null,"taxType":null,"billingPeriodStart":null,"billingPeriodEnd":null,"amountPaid":0.00,"balanceDue":287.50,"payments":[],"warnings":[],"takeOnBatchId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 5, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 71.11 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.voidingAnOrdinaryFeeNote_queuesANewPendingXeroPush -- Time elapsed: 7.837 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.voidingAnOrdinaryFeeNote_queuesANewPendingXeroPush(AccountingSyncEventListenerIntegrationTest.java:137)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.sendingAnOrdinaryFeeNote_queuesANewPendingXeroPush -- Time elapsed: 0.678 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.sendingAnOrdinaryFeeNote_queuesANewPendingXeroPush(AccountingSyncEventListenerIntegrationTest.java:123)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush -- Time elapsed: 0.274 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush(AccountingSyncEventListenerIntegrationTest.java:163)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.sendingWhileTheApprovalPushIsStillPending_doesNotQueueASecondEntry -- Time elapsed: 0.596 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.sendingWhileTheApprovalPushIsStillPending_doesNotQueueASecondEntry(AccountingSyncEventListenerIntegrationTest.java:148)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.approvingAnOrdinaryFeeNote_queuesAPendingXeroPush_inTheFirmsSchema -- Time elapsed: 0.408 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListenerIntegrationTest.approvingAnOrdinaryFeeNote_queuesAPendingXeroPush_inTheFirmsSchema(AccountingSyncEventListenerIntegrationTest.java:96)
+
+[ERROR] Failures: 
+[ERROR]   AccountingSyncEventListenerIntegrationTest.approvingAnOrdinaryFeeNote_queuesAPendingXeroPush_inTheFirmsSchema:96 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR]   AccountingSyncEventListenerIntegrationTest.creatingAClient_queuesAPendingXeroPush:163 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR]   AccountingSyncEventListenerIntegrationTest.sendingAnOrdinaryFeeNote_queuesANewPendingXeroPush:123 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR]   AccountingSyncEventListenerIntegrationTest.sendingWhileTheApprovalPushIsStillPending_doesNotQueueASecondEntry:148 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR]   AccountingSyncEventListenerIntegrationTest.voidingAnOrdinaryFeeNote_queuesANewPendingXeroPush:137 
+Expected size: 1 but was: 0 in:
+[]
+[ERROR] Tests run: 5, Failures: 5, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f658a1/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

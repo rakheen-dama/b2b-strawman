@@ -21,6 +21,10 @@ Logs sit next to this file as `.txt` copies (the original `*.log` files are giti
 | 6 | `afbaf0cf4` | fix: remove capability customisation from the invite form (FR-7) |
 | 7 | `8b1d6ce34` | test: exhaustive Keycloak invitation lookup on revoke (FR-8 review finding, red) |
 | 8 | `46ff637f1` | fix: look the Keycloak invitation up exhaustively on revoke (FR-8 review finding) |
+| 9 | `235933c7f` | test: a refused invitation revoke shows its reason (FR-8 review, red) |
+| 10 | `9c991301a` | fix: show why an invitation revoke was refused (FR-8 review) |
+
+SHAs 1–8 are from before the coordinator rebased the branch onto `origin/main` (PR #1859); 9–10 sit on the rebased head `d58626acb`.
 
 ## Fix 1: a custom-role invitee gets 500s at first sign-in (plan option A)
 
@@ -109,7 +113,9 @@ This fix detects that case and refuses it (below).
 - Why: a revoke never reports success while the link may still work, and the user is told plainly.
 - Not chosen: "revoke locally + warning", because it leaves a live link behind a revoked invitation.
 - 400 matches how `KeycloakAdminClient` already reports Keycloak errors (`InvalidStateException`).
-- The frontend's `revokeInvitationBff` shows the ProblemDetail detail.
+- The detail reaches the admin: `revokeInvitationBff` returns it as `result.error`, and since the review fix below
+  `PendingInvitations` renders it as a `role="alert"` (`data-testid="revoke-invitation-error"`). Before that fix the
+  component only `console.error`ed it, so an earlier version of this README wrongly claimed it was shown.
 - Retrying is safe: on a second attempt, invitations already deleted are simply not found.
 
 **Review finding (MEDIUM, from the coordinator's automated review) and its fix**
@@ -140,6 +146,21 @@ This fix detects that case and refuses it (below).
 
 **Files**: `invitation/InvitationService.java`, `security/keycloak/KeycloakAdminClient.java`; tests
 `invitation/InvitationServiceTest.java`, `security/keycloak/KeycloakAdminClientInvitationLookupTest.java` (new).
+
+**Review finding (MEDIUM, quality review of PR #1859): the refusal never reached the admin**
+- `components/team/pending-invitations.tsx` `handleRevoke` only `console.error`ed `result.error`. The new 409/400 refusals
+  just flipped "Revoking..." back to "Revoke" with no message.
+- Red (`fix4-red.txt`): 4 of 9 failed, with no `revoke-invitation-error` element.
+- Fix: a `revokeError` state shown above the list as `role="alert"` (`data-testid="revoke-invitation-error"`).
+  - It shows the action's ProblemDetail detail, or "Could not revoke the invitation. Please try again." when there is no detail or the action throws.
+  - It is cleared on the next attempt, and the row stays.
+  - The mock-mode variant never revokes, so it is unchanged.
+- Green (`fix4-green.txt`): `pending-invitations.test.tsx` 9/9.
+  - refusal detail shown, row kept, button re-enabled
+  - generic message without a detail
+  - generic message on a throw
+  - cleared on the next attempt
+  - the success path refreshes to the empty state with no alert
 
 ## Fix 3: FR-7, hide "Customize for this user" in the invite form
 
@@ -177,10 +198,10 @@ This fix detects that case and refuses it (below).
 
 | Step | Result | Log |
 |---|---|---|
-| `pnpm lint` | exit 0: 0 errors, 76 warnings | `frontend-gate-lint.log` |
-| `pnpm format:check` | exit 0: all files Prettier-clean | `frontend-gate-format.log` |
-| `timeout 900 pnpm build` | exit 0 | `frontend-gate-build.log` |
-| `pnpm test` | exit 0: **504 files, 4949 passed, 2 skipped** | `frontend-gate-test.log` |
+| `pnpm lint` | exit 0: 0 errors (warnings only, none new) | `frontend-gate-lint.txt` |
+| `pnpm format:check` | exit 0: all files Prettier-clean | `frontend-gate-format.txt` |
+| `timeout 900 pnpm build` | exit 0 | `frontend-gate-build.txt` |
+| `pnpm test` | exit 0: **506 files, 4963 passed, 2 skipped** (re-run 2026-11-25 on `9c991301a`, after the revoke-alert fix, with no verify live) | `frontend-gate-test.txt` |
 
 The warnings in the changed files all pre-date this branch: unused `ApiError`/`mapBffInvitation` in `invitation-actions.ts`, and the React Compiler
 skip on `form.watch` in `invite-member-form.tsx`.

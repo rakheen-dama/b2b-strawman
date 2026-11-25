@@ -1,0 +1,37 @@
+04:02:09.570 JpaTransactionManager | Participating in existing transaction
+04:02:09.571 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.571 JpaTransactionManager | Participating in existing transaction
+04:02:09.571 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.571 JpaTransactionManager | Participating in existing transaction
+04:02:09.572 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.572 JpaTransactionManager | Participating in existing transaction
+04:02:09.572 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.572 JpaTransactionManager | Participating in existing transaction
+04:02:09.573 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.573 JpaTransactionManager | Participating in existing transaction
+04:02:09.576 TransactionalApplicationListenerMethodAdapter | Registered transaction synchronization for org.springframework.context.PayloadApplicationEvent[source=org.springframework.web.context.support.GenericWebApplicationContext@76b47204, started on Wed Nov 25 04:01:55 UTC 2026]
+04:02:09.576 TransactionalApplicationListenerMethodAdapter | Registered transaction synchronization for org.springframework.context.PayloadApplicationEvent[source=org.springframework.web.context.support.GenericWebApplicationContext@76b47204, started on Wed Nov 25 04:01:55 UTC 2026]
+04:02:09.581 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.581 JpaTransactionManager | Participating in existing transaction
+04:02:09.582 JpaTransactionManager | Initiating transaction commit
+04:02:09.582 JpaTransactionManager | Committing JPA transaction on EntityManager [SessionImpl(1535150965<open>)]
+04:02:09.585 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.585 JpaTransactionManager | Participating in existing transaction
+04:02:09.591 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.591 JpaTransactionManager | Participating in existing transaction
+04:02:09.592 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.592 JpaTransactionManager | Participating in existing transaction
+04:02:09.596 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.596 JpaTransactionManager | Participating in existing transaction
+04:02:09.596 AccountingSyncService | Enqueued invoice push: invoiceId=0c0f3671-479e-4821-91a9-224ccc824b12, trigger=EVENT
+04:02:09.597 JpaTransactionManager | Found thread-bound EntityManager [SessionImpl(1535150965<open>)] for JPA transaction
+04:02:09.597 JpaTransactionManager | Suspending current transaction, creating new transaction with name [io.b2mash.b2b.b2bstrawman.notification.NotificationService.handleInvoiceApproved]
+04:02:09.597 JpaTransactionManager | Opened new EntityManager [SessionImpl(994122221<open>)] for JPA transaction
+04:02:09.601 JpaTransactionManager | Exposing JPA transaction as JDBC [org.springframework.orm.jpa.vendor.HibernateJpaDialect$HibernateConnectionHandle@5a2d6b76]
+04:02:09.604 JpaTransactionManager | Initiating transaction commit
+04:02:09.605 JpaTransactionManager | Committing JPA transaction on EntityManager [SessionImpl(994122221<open>)]
+04:02:09.605 JpaTransactionManager | Closing JPA EntityManager after transaction
+04:02:09.605 JpaTransactionManager | Resuming suspended transaction after completion of inner transaction
+04:02:09.605 JpaTransactionManager | Closing JPA EntityManager after transaction
+
+MockHttpServletRequest:

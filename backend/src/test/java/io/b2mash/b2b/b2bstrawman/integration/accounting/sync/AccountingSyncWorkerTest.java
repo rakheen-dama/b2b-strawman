@@ -30,12 +30,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+/**
+ * Drain, retry, back-off and dead-letter of push entries. Pushes are off by default ({@code
+ * kazi.accounting.push.enabled}, PR #1860 ruling) and the worker then leaves push entries untouched
+ * ({@link AccountingPushDisabledIntegrationTest}); this class tests the enabled worker, so it turns
+ * them on — a class-level property because the value genuinely differs from the suite default here.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@TestPropertySource(properties = "kazi.accounting.push.enabled=true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountingSyncWorkerTest {
 

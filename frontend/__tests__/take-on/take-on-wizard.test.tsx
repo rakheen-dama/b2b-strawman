@@ -292,17 +292,30 @@ describe("UploadStep — client-side refusals", () => {
     expect(actions.uploadTakeOnFile).not.toHaveBeenCalled();
   });
 
-  it("refuses an 11 MB file before calling the action", async () => {
+  // FR-3: the server-action body limit is 3 MB, so the take-on file limit is 3 MB (3 000 000 bytes)
+  it("refuses a file over 3 MB before calling the action", async () => {
     const user = userEvent.setup({ applyAccept: false });
     render(withSWR(<UploadStep dataset={CLIENTS} onUploaded={vi.fn()} onClose={vi.fn()} />));
     await user.upload(
       screen.getByTestId("take-on-file-input"),
-      fileOf("clients.csv", 11 * 1024 * 1024, "text/csv")
+      fileOf("clients.csv", 3_000_001, "text/csv")
     );
     expect(screen.getByTestId("take-on-upload-error")).toHaveTextContent(
-      "File exceeds the 10 MB limit (11.0 MB)"
+      "File exceeds the 3 MB limit (3.1 MB)"
     );
+    expect(screen.getByTestId("take-on-upload-submit")).toBeDisabled();
     expect(actions.uploadTakeOnFile).not.toHaveBeenCalled();
+  });
+
+  it("accepts a file of exactly 3 MB and states the 3 MB limit", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    render(withSWR(<UploadStep dataset={CLIENTS} onUploaded={vi.fn()} onClose={vi.fn()} />));
+    expect(screen.getByText(/A \.csv or \.xlsx file of up to 3 MB/)).toBeInTheDocument();
+    await user.upload(
+      screen.getByTestId("take-on-file-input"),
+      fileOf("clients.csv", 3_000_000, "text/csv")
+    );
+    expect(screen.queryByTestId("take-on-upload-error")).not.toBeInTheDocument();
   });
 
   it("requires the account, the section and the cutover date for a trust upload", async () => {

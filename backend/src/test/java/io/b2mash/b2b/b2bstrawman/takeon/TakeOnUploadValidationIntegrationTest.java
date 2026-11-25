@@ -103,13 +103,14 @@ class TakeOnUploadValidationIntegrationTest {
   }
 
   @Test
-  void aFileOverTenMegabytesIsRefused() throws Exception {
-    byte[] big = new byte[10_485_761];
+  void aFileOverThreeMegabytesIsRefused() throws Exception {
+    // FR-3: 3 MB (3 000 000 bytes), so the file fits the 3 MiB server-action body with headroom
+    byte[] big = new byte[3_000_001];
     Arrays.fill(big, (byte) 'a');
     refused("big.csv", TakeOnTestApi.CSV, big, "TAKE_ON_FILE_TOO_LARGE")
         .andExpect(
             jsonPath("$.detail")
-                .value("This file is larger than 10 MB. Split it into smaller files."));
+                .value("This file is larger than 3 MB. Split it into smaller files."));
   }
 
   @Test

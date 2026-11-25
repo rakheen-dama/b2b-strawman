@@ -25,6 +25,8 @@ Logs sit next to this file as `.txt` copies (the original `*.log` files are giti
 | 10 | `9c991301a` | fix: show why an invitation revoke was refused (FR-8 review) |
 | 11 | `ec49d7c48` | test: revoke always wins, a revoked invitee is refused at sign-in (red) |
 | 12 | `740309943` | fix: revoke always wins, refuse a revoked invitee at first sign-in |
+| 13 | `c1fb56991` | test: re-inviting someone who already has a login says no email was sent (Fix 6, red) |
+| 14 | `efa9e87dd` | fix: re-inviting someone who already has a login says no email was sent (Fix 6) |
 
 SHAs 1–8 are from before the coordinator rebased the branch onto `origin/main` (PR #1859); 9–10 sit on the rebased head `d58626acb`.
 
@@ -220,6 +222,57 @@ the team once they appear" left a revoked person able to join.
 - No Keycloak org removal (account-deletion hazard).
 - New test class `InvitationRevokeAlwaysWinsIntegrationTest`.
 
+## Fix 6: re-inviting someone who already has a login (Keycloak-stack OBS F-2, MEDIUM)
+
+**Defect** (the OBS run at `fe4e3491d`):
+- Under "revoke always wins", a revoked person stays in the Keycloak org.
+- Re-inviting them makes Keycloak `invite-user` answer **409** `{"errorMessage":"User already a member of the organization"}`.
+  That is the exact message from Keycloak 26.5 `OrganizationInvitationResource.inviteUser`, line 120.
+- The backend logged **ERROR** (the client's default status handler), swallowed it as best-effort and created the PENDING invitation.
+  The invitation works: the person is admitted on their next request.
+- But **no email was sent**, while the owner saw "Invitation sent to …".
+
+**Red** (`fix6-red.txt`, `fix6-fe-red.txt`, commit `c1fb56991`):
+- Backend: compilation fails, `cannot find symbol: class InviteResult`. The new tests need the new outcome type.
+- Frontend: 3 of 15 failed.
+  - The action did not pass a reason on.
+  - The success line had no `invite-success` test id.
+  - The form said "Invitation sent to …" for the already-has-a-login case.
+
+**Fix** (commit `efa9e87dd`)
+- **`KeycloakAdminClient.inviteMember`** now returns `InviteResult { SENT, ALREADY_MEMBER }`. It uses `RestClient.exchange()`, so the default status handler is bypassed for this call only.
+  - **Only** a 409 whose `ErrorRepresentation.errorMessage` equals `"User already a member of the organization"` counts as `ALREADY_MEMBER`, logged at INFO.
+  - Every other error goes through `apiError()`. That is the default handler's logic extracted unchanged (ERROR log + `InvalidStateException`, "Keycloak unavailable" for 401/403/5xx), and the default handler itself now calls it too.
+  - Example: the other 409, `"User already has a pending invitation"`, still throws.
+- **`InvitationService.createInvitation`**: on `ALREADY_MEMBER`, the invitation is still created and the 201 carries `emailNotSentReason: "ALREADY_HAS_LOGIN"`.
+  - Every other Keycloak failure is unchanged: best-effort WARN, invitation created, no reason. That is still a known gap: the owner is not told the email may have failed. It is not made worse here.
+- **Response shape (additive, backward compatible):** `PendingInvitationResponse` gains a trailing nullable `emailNotSentReason`.
+  - It is set only on the create response, and only to `"ALREADY_HAS_LOGIN"`.
+  - It is null in list responses, in mock mode, when an email went out, and on other failures.
+  - No contract test pins invitation DTOs. The `WireVocabularyContractTest` ratchet (legacy vocabulary) and the other `*WireContractTest`s ran green in the sweep.
+- **Frontend:**
+  - `inviteMember` (`invitation-actions.ts`) returns `emailNotSentReason`.
+  - `invite-member-form.tsx` says **"Invitation created for {email}. They already have a login, so no email was sent — ask them to sign in to Kazi to join."** in place of "Invitation sent to …".
+  - Both messages carry `data-testid="invite-success"`.
+
+**Green**
+- `fix6-green.txt`:
+  - KeycloakAdminClientInvitationLookupTest 7/7 (WireMock: 204 → SENT; the exact 409 → ALREADY_MEMBER with no "Keycloak Admin API error" in the captured output; the pending-invitation 409 and a 500 still throw)
+  - InvitationServiceTest 10/10
+  - InvitationRevokeAlwaysWinsIntegrationTest 6/6 (HTTP: revoke, re-invite → 201 `emailNotSentReason=ALREADY_HAS_LOGIN`, then the person is admitted as Member)
+  - InvitationControllerTest 10/10
+- `fix6-fe-green.txt`: 44/44.
+
+**Targeted backend sweep 3** (`targeted-backend-3.txt`, HEAD `efa9e87dd`):
+- Scope: sweep 2's scope plus `WireVocabularyContractTest`, `DataProtectionWireContractTest`, `TakeOnWireContractTest` and `TrustWireContractTest`.
+- Result: 103 classes, **1010 test cases, 0 failures, 0 errors, 14 skipped** (the `@Disabled` acceptance class).
+
+**Frontend gate** (on `efa9e87dd`, no verify live):
+- lint: 0 errors (76 warnings, none new)
+- format: clean
+- build: exit 0
+- `pnpm test`: **506 files, 4967 passed, 2 skipped**
+
 ## Fix 3: FR-7, hide "Customize for this user" in the invite form
 
 **Red** (`fix3-red.txt`): 3 failures in 38 tests.
@@ -259,7 +312,7 @@ the team once they appear" left a revoked person able to join.
 | `pnpm lint` | exit 0: 0 errors (warnings only, none new) | `frontend-gate-lint.txt` |
 | `pnpm format:check` | exit 0: all files Prettier-clean | `frontend-gate-format.txt` |
 | `timeout 900 pnpm build` | exit 0 | `frontend-gate-build.txt` |
-| `pnpm test` | exit 0: **506 files, 4964 passed, 2 skipped** (latest run on `740309943`; see the ruling section) | `frontend-gate-test.txt` |
+| `pnpm test` | exit 0: **506 files, 4967 passed, 2 skipped** (latest run on `efa9e87dd`; see Fix 6) | `frontend-gate-test.txt` |
 
 The warnings in the changed files all pre-date this branch: unused `ApiError`/`mapBffInvitation` in `invitation-actions.ts`, and the React Compiler
 skip on `form.watch` in `invite-member-form.tsx`.

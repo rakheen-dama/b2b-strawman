@@ -92,7 +92,7 @@
 
 /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/app/(app)/org/[slug]/team/invitation-actions.ts
    5:15  warning  'ApiError' is defined but never used          @typescript-eslint/no-unused-vars
-  47:10  warning  'mapBffInvitation' is defined but never used  @typescript-eslint/no-unused-vars
+  58:10  warning  'mapBffInvitation' is defined but never used  @typescript-eslint/no-unused-vars
 
 /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/app/(app)/org/[slug]/trust-accounting/investments/page.tsx
   81:17  warning  '_slug' is assigned a value but never used  @typescript-eslint/no-unused-vars

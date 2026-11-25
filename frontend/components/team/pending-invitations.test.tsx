@@ -108,13 +108,12 @@ describe("PendingInvitations (keycloak mode)", () => {
     expect(screen.queryByTestId("revoke-invitation-error")).not.toBeInTheDocument();
   });
 
-  // FR-8: the backend refuses a revoke it cannot make safe — 409 "Invitation already accepted"
-  // (the person already used the email link) or 400 "Invitation not revoked" (Keycloak error).
-  // The action returns the ProblemDetail detail; the admin must see it.
-  const ALREADY_ACCEPTED =
-    "'dave@example.com' has already accepted the invitation email and joins with the invited role" +
-    " on their first sign-in, so it can no longer be revoked. Remove them from the team once they" +
-    " appear.";
+  // FR-8: the backend refuses a revoke it cannot make safe — 400 "Invitation not revoked" when
+  // Keycloak fails (fail closed). ("Invitation already accepted" no longer exists: revoke always
+  // wins, PR #1859.) The action returns the ProblemDetail detail; the admin must see it.
+  const NOT_REVOKED =
+    "The invitation email for 'dave@example.com' could not be cancelled in Keycloak, so its link" +
+    " may still work. Nothing was changed. Please try again.";
   const dave = {
     id: "inv-2",
     emailAddress: "dave@example.com",
@@ -126,14 +125,14 @@ describe("PendingInvitations (keycloak mode)", () => {
   it("shows the refusal detail when the revoke is refused, and keeps the row", async () => {
     const user = userEvent.setup();
     mockListInvitations.mockResolvedValue([dave]);
-    mockRevokeInvitation.mockResolvedValue({ success: false, error: ALREADY_ACCEPTED });
+    mockRevokeInvitation.mockResolvedValue({ success: false, error: NOT_REVOKED });
 
     render(<PendingInvitations isAdmin={true} />);
     await user.click(await screen.findByText("Revoke"));
 
     const alert = await screen.findByTestId("revoke-invitation-error");
     expect(alert).toHaveAttribute("role", "alert");
-    expect(alert).toHaveTextContent(ALREADY_ACCEPTED);
+    expect(alert).toHaveTextContent(NOT_REVOKED);
     expect(screen.getByText("dave@example.com")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Revoke" })).toBeEnabled();
   });

@@ -9,10 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Backend file validation of a take-on upload (§17.6.2), independent of the frontend's: extension
- * {@code .csv} / {@code .xlsx} only, an accepted MIME type, {@code 0 < size <= 10 MB}, and the
- * content sniffed — an {@code .xlsx} must start with the ZIP signature, a {@code .csv} must not and
- * must hold no NUL byte. {@code .xls}, {@code .xlsm}, {@code .xlsb} and {@code .ods} are refused.
- * Every refusal is a 422 before anything is stored.
+ * {@code .csv} / {@code .xlsx} only, an accepted MIME type, {@code 0 < size <= 3 MB} (FR-3), and
+ * the content sniffed — an {@code .xlsx} must start with the ZIP signature, a {@code .csv} must not
+ * and must hold no NUL byte. {@code .xls}, {@code .xlsm}, {@code .xlsb} and {@code .ods} are
+ * refused. Every refusal is a 422 before anything is stored.
  */
 public final class TakeOnFileSniffer {
 

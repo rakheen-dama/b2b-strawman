@@ -29,6 +29,7 @@ import {
   uploadTakeOnFile,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { takeOnUploadSchema, type TakeOnUploadFormData } from "@/lib/schemas";
+import { SERVER_ACTION_FILE_MAX_LABEL } from "@/lib/server-action-upload";
 import {
   TAKE_ON_SECTION_LABEL,
   takeOnKebab,
@@ -229,7 +230,8 @@ export function UploadStep({ dataset, onUploaded, onClose }: UploadStepProps) {
             }}
           />
           <p className="text-xs text-slate-600 dark:text-slate-400">
-            A .csv or .xlsx file of up to 10 MB, exported from your previous system.
+            A .csv or .xlsx file of up to {SERVER_ACTION_FILE_MAX_LABEL}, exported from your
+            previous system.
           </p>
         </div>
         {fileError && <TakeOnError message={fileError} testId="take-on-upload-error" />}

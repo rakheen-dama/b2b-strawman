@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { BankStatementResponse } from "@/lib/types";
+import { SERVER_ACTION_FILE_MAX_LABEL, fileTooLargeError } from "@/lib/server-action-upload";
 
 /** A refused upload whose statement ends on the same date as one already imported (FU-6b). */
 interface DuplicateStatement {
@@ -88,6 +89,13 @@ export function BankStatementUpload({
   const handleFileSelect = useCallback(
     (file: File) => {
       setFileName(file.name);
+      // FR-3: a file over the server-action limit would never reach the action — refuse it here
+      const tooLarge = fileTooLargeError(file.size);
+      if (tooLarge) {
+        setResult(null);
+        setError(tooLarge);
+        return;
+      }
       void upload(file, replacesStatementId);
     },
     [upload, replacesStatementId]
@@ -113,7 +121,10 @@ export function BankStatementUpload({
     <Card data-testid="bank-statement-upload">
       <CardHeader>
         <CardTitle>Upload Bank Statement</CardTitle>
-        <CardDescription>Upload a CSV bank statement file to begin reconciliation</CardDescription>
+        <CardDescription>
+          Upload a CSV bank statement file of up to {SERVER_ACTION_FILE_MAX_LABEL} to begin
+          reconciliation
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-3">

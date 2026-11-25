@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api, API_BASE, ApiError, getAuthFetchOptions } from "@/lib/api";
+import { fileTooLargeError } from "@/lib/server-action-upload";
 import type {
   BankStatementResponse,
   ExpectedStatementRequest,
@@ -77,8 +78,6 @@ export async function fetchMonthlyList(listId: string): Promise<MonthlyList> {
 
 // ── Bank statement actions ────────────────────────────────────────
 
-const MAX_STATEMENT_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-
 /**
  * A refused import whose statement ends on the same date as one already imported for the account
  * (FU-6b, ruling F-646C-1: 409 `bank_statement.duplicate_end_date`). The upload offers to replace
@@ -113,11 +112,9 @@ export async function uploadBankStatement(
   if (!file.name.toLowerCase().endsWith(".csv")) {
     return { success: false, error: "File must have a .csv extension" };
   }
-  if (file.size > MAX_STATEMENT_SIZE_BYTES) {
-    return {
-      success: false,
-      error: `File exceeds the 10 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB)`,
-    };
+  const tooLarge = fileTooLargeError(file.size); // FR-3: the browser refuses it first
+  if (tooLarge) {
+    return { success: false, error: tooLarge };
   }
 
   try {

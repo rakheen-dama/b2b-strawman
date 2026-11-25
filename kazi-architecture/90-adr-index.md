@@ -24,6 +24,8 @@
 
 > **Phase 92 rows added 2026-11-19 (651D):** ADR-375..384 (Active, Legal vertical cluster — trust books provably right). ADR-234, ADR-235, ADR-362 and ADR-366 moved to Superseded (by ADR-375); ADR-230 and ADR-231 marked amended by ADR-378. Those status lines were already written in the ADR files themselves when ADR-375..384 were accepted (2026-11-16, `architecture/phase92-trust-books-provably-right.md` §16.15), so these rows agree with the files and need no carve-out. ADR-280..366 other than ADR-286, ADR-362 and ADR-366 are still not indexed; **the counts above were not re-tallied**.
 
+> **Phase 91 row added 2026-11-25 (661B):** ADR-392 (Active, Frontend design system cluster). Its status line was written in the ADR file at acceptance, as the ADR itself authorised (orchestrator-authorised, P-13), so the row agrees with the file and needs no carve-out. It supersedes an architecture paragraph (§15.2.5), not an ADR, so the Superseded section is unchanged. ADR-385..391 and 393..396 are not indexed yet; **the counts above were not re-tallied**.
+
 ADR numbering starts at 010; the 001–009 range is intentionally unused.
 
 ---
@@ -269,6 +271,7 @@ Canonical: **ADR-367** (layering + "new page" rule). Chart kit: ADR-370 and the 
 | ADR-371 | dark-mode-light-default | `next-themes`, light default, opt-in toggle; tokens over `dark:` pairs; long-tail debt list (Phase 90 closure C.5). Refined by ADR-374 (first paint of the stored theme) |
 | ADR-373 | detail-hero-kpi-strip | Supersedes ADR-286 for the matter and client detail pages; any future entity page follows ADR-373 (`ADR-373:75`) |
 | ADR-374 | theme-first-paint-head-script | Refines ADR-371 (blocking `<head>` script for the stored theme's first paint) |
+| ADR-392 | firm-app-light-mode-colour-scheme | Phase 91. Status line: "Accepted" (FD-1 2026-11-25: A1, dark inset option (c); K-21 backlog). Firm light tokens in one scoped `:root:not(.dark):has([data-app-shell="firm"])` block in `frontend/app/globals.css`; inset canvas as light-only CSS; additive shared `--button-accent` tokens (portal, marketing and dark unchanged). Supersedes architecture §15.2.5's light-rail paragraph ("Light keeps the slate-950 sidebar deliberately…", `phase90-ui-modernization.md:234`) and closes §15.12 OQ #3 |
 
 ### Custom field, tag, view
 

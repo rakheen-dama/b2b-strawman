@@ -284,7 +284,7 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
 - **What reads heavy:** the black rail and the black primary buttons ("New Matter", the "All" filter chip).
 - **AA failures:** the light accent button and the focused menu item fail AA (K-04, 3.16:1).
 - **Chart:** chart-4 sits just under 3:1 on the 97.2 % canvas (a WARN).
-- **Brand colour:** a dark burgundy brand barely shows on the rail (2.04).
+- **Brand colour:** a dark burgundy brand reads faintly on the rail (2.04).
 
 **A1: light rail, inset canvas, slate-900 primary (recommended).**
 
@@ -298,7 +298,7 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
   - **The inset card is a component prop**, so it also appears in **dark** mode. That breaks the "dark pixel-identical" promise for A (F-661A-3).
   - **The card's 8 px margin costs 16 px of content width.** The matters DataTable at 1440 expanded starts scrolling one column earlier (F-661A-4).
   - **It also costs 16 px of rail height.** The collapsed rail does not scroll, so at 1024×768 collapsed the current page's highlight low in the rail is cut in half (`a1/fee-notes-1024-collapsed.png`: the Fee notes item; today shows it whole). Today already hides the last FEES items at that height; A moves the cut up into the active item (F-661A-8).
-  - **A gold brand bar nearly vanishes** (1.69).
+  - **A gold brand bar reads faintly** (1.69).
 
 **A2: as A1, with teal-700 primary.**
 
@@ -313,7 +313,7 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
 - **A clear two-zone layout without a black slab.** Rail vs canvas is only **1.18:1**, so the rail border carries the separation.
 - **The tint competes with colour.** It sits beside the teal badges ("Sent", "Active"), the teal chart bars and the hard-coded teal settings-rail highlight (`b/settings-firm-general-1440-expanded.png`). It looks a little dated next to coloured status badges.
 - **Rail text:** the `/50` group labels (3.26) and the user email (4.43) fail on this rail too.
-- **Brand colour:** gold nearly vanishes (1.58).
+- **Brand colour:** gold reads faintly (1.58).
 
 **C: deep ink-teal rail, white text, teal-700 primary.**
 
@@ -322,7 +322,7 @@ How the measured numbers differ from §18.6.1's scratch table. None of these cha
 - **It is still a dark slab**, which is what the founder asked to move away from.
 - **The primary buttons are teal**, so C has A2's hierarchy problem: default and accent are the same colour.
 - **The chart-4 WARN stays**, because the canvas is unchanged.
-- **Dark brand colours fail on this rail.** A dark burgundy reads at **1.46:1** (`c/brand-burgundy.png`), so the Phase 88 problem comes back in light mode.
+- **Dark brand colours read faintly on this rail.** A dark burgundy reads at **1.46:1** (`c/brand-burgundy.png`), so the Phase 88 problem comes back in light mode.
 
 ---
 
@@ -420,3 +420,13 @@ The scripts need:
 - node 20 (nvm), with `@playwright/test` resolved from the prototype worktree's `frontend/`;
 - the stack on :3001 / :8081 / :8090;
 - the lifecycle run file at `$TMPDIR/kazi-legal-lifecycle-run.json`.
+
+---
+
+## 13. Reproducing after 661B (addendum, PR #1862 carry-over 2)
+
+661B deleted the branch `phase91/p1-scheme-prototype`; its head is kept as the tag `archive/phase91-p1-scheme-prototype` (`5caf1b74a`, D-5). To reproduce:
+
+1. Build the prototype stack from the tag: `git worktree add ../wt-scheme archive/phase91-p1-scheme-prototype`, then `cd ../wt-scheme && bash compose/scripts/e2e-down.sh && docker builder prune -f && bash compose/scripts/e2e-up.sh` (one e2e stack on the machine at a time).
+2. Run the evidence scripts from an **evidence checkout** (any checkout of `main` that has this folder), not from the prototype worktree, on nvm node 20: the static ones take the prototype worktree as an argument (`bash scripts/02-aa-tables.sh <prototype worktree> <scratch dir>`), the browser ones resolve `@playwright/test` from the prototype worktree's `frontend/` as § 12 says. They write their outputs next to themselves, so a re-run overwrites the committed 2026-11-25 outputs — copy the `scripts/` folder elsewhere first if the originals must stay untouched.
+3. The outputs of the 2026-11-25 run contain absolute local paths (carry-over 5); new capture scripts print repo-relative paths.

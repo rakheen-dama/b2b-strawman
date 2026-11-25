@@ -1,6 +1,6 @@
 # ADR-392: Firm-app light-mode colour scheme: decided design-first, scoped to the firm shell
 
-**Status**: Proposed — pending FD-1 (architecture §18.10). Decided here: the process, the scoping mechanism and the recommendation. The scheme-implement slice (E1A) records the founder's pick in this ADR and marks it Accepted (orchestrator-authorised). On acceptance it supersedes the light-sidebar ruling of [architecture §15.2.5](../architecture/phase90-ui-modernization.md) (`phase90-ui-modernization.md:234`, "Light keeps the slate-950 sidebar deliberately…") and closes §15.12 open question #3. ADR-367–ADR-374 are not edited.
+**Status**: Accepted — FD-1 ruled by the founder on 2026-11-25: **A1** (light rail, inset canvas, slate-900 primary buttons) with dark-mode inset option **(c)**; K-21 stays in the backlog. Recorded by 661B (E1A), orchestrator-authorised (P-13). Supersedes the light-sidebar ruling of [architecture §15.2.5](../architecture/phase90-ui-modernization.md) (`phase90-ui-modernization.md:234`, "Light keeps the slate-950 sidebar deliberately…") and closes §15.12 open question #3. ADR-367–ADR-374 are not edited.
 
 **Context**:
 
@@ -55,6 +55,8 @@ Facts that shape the decision (architecture §18.0 rows 19–20, 23, 29):
 - The pre-existing **dark** accent failure (kink K-21: button 3.16:1, focused menu item 2.25:1) is recorded, not fixed here, unless FD-1 decides otherwise.
 - `--brand-color` stays a decorative 3px accent bar, never text.
 - The `.dark` blocks and every existing shared `packages/ui` token value are unchanged; the only shared-file change is the two additive `--button-accent` tokens at today's values. The portal and marketing do not follow: FD-2 was ruled on 2026-11-22 — firm app only, as recommended.
+
+**Founder pick (FD-1, 2026-11-25)**: "A1, (c)" — the recommendation, with the dark-mode question F-661A-3 answered by option (c). 661B implemented it as: the scoped `:root:not(.dark):has([data-app-shell="firm"])` block with candidate A's values and a slate-900 primary (`--accent` and `--button-accent` → `--kazi-teal-700`, which fixes K-04); the inset canvas drawn by light-only CSS under the same scope — the wrapper's rail fill, the container's horizontal padding and icon-mode widths, the card's margin, radius and shadow — instead of `Sidebar variant="inset"`, which is not theme-aware and would also inset dark mode, so dark mode stays pixel-identical; the container's vertical padding dropped so the collapsed rail keeps today's height (F-661A-8); and two app tokens, `--sidebar-label-foreground` and `--sidebar-muted-foreground`, for the rail text that used opacity modifiers (F-661A-1). K-21 (dark accent contrast) is not fixed here. Evidence: `qa_cycle/evidence/phase91-ui/scheme/` (§ Decision) and `qa_cycle/evidence/phase91-ui/661B/`.
 
 **Rationale**:
 

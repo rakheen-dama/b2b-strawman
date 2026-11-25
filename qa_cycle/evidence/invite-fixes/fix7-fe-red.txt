@@ -1,0 +1,139 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend
+
+stderr | components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > a successful revoke whose list refresh fails drops the row, with no failure message
+Failed to revoke invitation: Error: refresh failed
+    at /Users/rakheendama/Projects/2026/wt-invite-fixes/frontend/components/team/pending-invitations.test.tsx:173:30
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)
+    at file:///Users/rakheendama/Projects/2026/wt-invite-fixes/node_modules/.pnpm/@vitest+runner@4.1.5/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64
+
+ ❯ components/team/pending-invitations.test.tsx (10 tests | 1 failed) 1163ms
+     × a successful revoke whose list refresh fails drops the row, with no failure message 1028ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/team/pending-invitations.test.tsx > PendingInvitations (keycloak mode) > a successful revoke whose list refresh fails drops the row, with no failure message
+Error: [2mexpect([22m[31melement[39m[2m).not.toBeInTheDocument()[22m
+
+[31mexpected document not to contain element, found <td
+  class="py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"
+>
+  dave@example.com
+</td> instead[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-3"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-destructive text-sm"[39m
+          [33mdata-testid[39m=[32m"revoke-invitation-error"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [0mCould not revoke the invitation. Please try again.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-x-auto"[39m
+        [36m>[39m
+          [36m<table[39m
+            [33mclass[39m=[32m"w-full text-sm"[39m
+          [36m>[39m
+            [36m<thead>[39m
+              [36m<tr[39m
+                [33mclass[39m=[32m"border-b border-slate-200 dark:border-slate-800"[39m
+              [36m>[39m
+                [36m<th[39m
+                  [33mclass[39m=[32m"pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+                [36m>[39m
+                  [0mEmail[0m
+                [36m</th>[39m
+                [36m<th[39m
+                  [33mclass[39m=[32m"w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+                [36m>[39m
+                  [0mRole[0m
+                [36m</th>[39m
+                [36m<th[39m
+                  [33mclass[39m=[32m"w-[140px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+                [36m>[39m
+                  [0mInvited[0m
+                [36m</th>[39m
+                [36m<th[39m
+                  [33mclass[39m=[32m"w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400"[39m
+                [36m>[39m
+                  [0mActions[0m
+                [36m</th>[39m
+              [36m</tr>[39m
+            [36m</thead>[39m
+            [36m<tbody>[39m
+              [36m<tr[39m
+                [33mclass[39m=[32m"border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"[39m
+                [33mdata-testid[39m=[32m"pending-invite-row"[39m
+              [36m>[39m
+                [36m<td[39m
+                  [33mclass[39m=[32m"py-3 pr-4 font-medium text-slate-900 dark:text-slate-100"[39m
+                [36m>[39m
+                  [0mdave@example.com[0m
+                [36m</td>[39m
+                [36m<td[39m
+                  [33mclass[39m=[32m"py-3 pr-4"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"[39m
+                    [33mdata-slot[39m=[32m"badge"[39m
+                    [33mdata-variant[39m=[32m"member"[39m
+                  [36m>[39m
+                    [0mMember[0m
+                  [36m</span>[39m
+                [36m</td>[39m
+                [36m<td[39m
+                  [33mclass[39m=[32m"py-3 pr-4 text-slate-600 dark:text-slate-400"[39m
+                [36m>[39m
+                  [0m2026-01-15[0m
+                [36m</td>[39m
+                [36m<td[39m
+                  [33mclass[39m=[32m"py-3"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"text-sm font-medium text-red-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"[39m
+                  [36m>[39m
+                    [0mRevoke[0m
+                  [36m</button>[39m
+                [36m</td>[39m
+              [36m</tr>[39m
+            [36m</tbody>[39m
+          [36m</table>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ components/team/pending-invitations.test.tsx:179:76
+    177|     await user.click(await screen.findByText("Revoke"));
+    178|
+    179|     await waitFor(() => expect(screen.queryByText("dave@example.com"))…
+       |                                                                            ^
+    180|     expect(screen.queryByTestId("revoke-invitation-error")).not.toBeIn…
+    181|     expect(screen.queryByText(/Could not revoke/)).not.toBeInTheDocume…
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  10:36:52
+   Duration  2.11s (transform 98ms, setup 113ms, import 428ms, tests 1.16s, environment 256ms)
+

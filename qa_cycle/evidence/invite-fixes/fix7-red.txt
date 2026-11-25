@@ -1,0 +1,432 @@
+08:36:18.263 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/test-classes/archunit.properties
+08:36:18.401 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest]: MemberFilterInvitationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+08:36:18.600 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+{"@timestamp":"2026-11-25T08:36:34.749928Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":522,"thread":{"name":"main"}},"service":{"name":"backend","node":{}},"message":"Unhandled exception","tenantId":"tenant_fc2d7e37c38a","userId":"user_inv_flow_owner","requestId":"8eca033a-19ae-4a30-92d2-1d54787bdcf3","memberId":"9c924da8-47f3-4fe4-9270-8c466dfa1748","error":{"type":"org.springframework.dao.DataIntegrityViolationException","message":"could not execute batch [Batch entry 0 delete from org_roles where id=('dded925e-60f2-419e-a2f5-f0f777914a1b'::uuid) was aborted: ERROR: update or delete on table \"org_roles\" violates foreign key constraint \"pending_invitations_org_role_id_fkey\" on table \"pending_invitations\"\n  Detail: Key (id)=(dded925e-60f2-419e-a2f5-f0f777914a1b) is still referenced from table \"pending_invitations\".  Call getNextException to see other errors in the batch.] [delete from org_roles where id=?]; SQL [delete from org_roles where id=?]; constraint [pending_invitations_org_role_id_fkey]","stack_trace":"org.springframework.dao.DataIntegrityViolationException: could not execute batch [Batch entry 0 delete from org_roles where id=('dded925e-60f2-419e-a2f5-f0f777914a1b'::uuid) was aborted: ERROR: update or delete on table \"org_roles\" violates foreign key constraint \"pending_invitations_org_role_id_fkey\" on table \"pending_invitations\"\n  Detail: Key (id)=(dded925e-60f2-419e-a2f5-f0f777914a1b) is still referenced from table \"pending_invitations\".  Call getNextException to see other errors in the batch.] [delete from org_roles where id=?]; SQL [delete from org_roles where id=?]; constraint [pending_invitations_org_role_id_fkey]\n\tat org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)\n\tat org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)\n\tat org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)\n\tat org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:199)\n\tat org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:557)\n\tat org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:794)\n\tat org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:757)\n\tat org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:687)\n\tat org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:408)\n\tat org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)\n\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\n\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)\n\tat io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService$$SpringCGLIB$$0.deleteRole(<generated>)\n\tat io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController.deleteRole(OrgRoleController.java:58)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:565)\n\tat org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)\n\tat org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)\n\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)\n\tat org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor.proceed(AuthorizationManagerBeforeMethodInterceptor.java:271)\n\tat org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor.attemptAuthorization(AuthorizationManagerBeforeMethodInterceptor.java:266)\n\tat org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor.invoke(AuthorizationManagerBeforeMethodInterceptor.java:197)\n\tat org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)\n\tat org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)\n\tat io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController$$SpringCGLIB$$0.deleteRole(<generated>)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:565)\n\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)\n\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)\n\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)\n\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)\n\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)\n\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)\n\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1003)\n\tat org.springframework.web.servlet.FrameworkServlet.doDelete(FrameworkServlet.java:925)\n\tat jakarta.servlet.http.HttpServlet.service(HttpServlet.java:651)\n\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)\n\tat org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)\n\tat jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)\n\tat org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyFilter.doFilterInternal(TrustIdempotencyFilter.java:70)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)\n\tat org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:493)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:354)\n\tat org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:86)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:132)\n\tat org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)\n\tat org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)\n\tat org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.authentication.AuthenticationFilter.doFilterInternal(AuthenticationFilter.java:194)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter.doFilterInternal(TenantLoggingFilter.java:44)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.lambda$runScoped$0(ScopedFilterChain.java:32)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)\n\tat java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.runScoped(ScopedFilterChain.java:29)\n\tat io.b2mash.b2b.b2bstrawman.security.PlatformAdminFilter.doFilterInternal(PlatformAdminFilter.java:38)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat io.b2mash.b2b.b2bstrawman.billing.SubscriptionGuardFilter.doFilterInternal(SubscriptionGuardFilter.java:95)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.lambda$runScoped$0(ScopedFilterChain.java:32)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)\n\tat java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.runScoped(ScopedFilterChain.java:29)\n\tat io.b2mash.b2b.b2bstrawman.member.MemberFilter.doFilterInternal(MemberFilter.java:104)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.lambda$runScoped$0(ScopedFilterChain.java:32)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)\n\tat java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)\n\tat java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain.runScoped(ScopedFilterChain.java:29)\n\tat io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter.doFilterInternal(TenantFilter.java:64)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter.doFilterInternal(BearerTokenAuthenticationFilter.java:174)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.oauth2.server.resource.web.OAuth2ProtectedResourceMetadataFilter.doFilterInternal(OAuth2ProtectedResourceMetadataFilter.java:97)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)\n\tat org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)\n\tat org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)\n\tat org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:231)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:244)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:337)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228)\n\tat org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:141)\n\tat org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)\n\tat org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)\n\tat org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)\n\tat org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)\n\tat org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)\n\tat org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)\n\tat org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)\n\tat org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)\n\tat org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\n\tat org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:160)\n\tat org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)\n\tat org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:199)\n\tat io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest.aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted(MemberFilterInvitationTest.java:363)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:565)\n\tat org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:701)\n\tat org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:502)\n\tat org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:45)\n\tat org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)\n\tat org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)\n\tat org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)\n\tat org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)\n\tat org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)\n\tat org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:123)\n\tat org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)\n\tat org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)\n\tat org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)\n\tat org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)\n\tat org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)\n\tat org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)\n\tat org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)\n\tat org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)\n\tat org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)\n\tat org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)\n\tat org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)\n\tat org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)\n\tat java.base/java.util.ArrayList.forEach(ArrayList.java:1604)\n\tat org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)\n\tat org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)\n\tat java.base/java.util.ArrayList.forEach(ArrayList.java:1604)\n\tat org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)\n\tat org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)\n\tat org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)\n\tat org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)\n\tat org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)\n\tat org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)\n\tat org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157)\n\tat org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)\n\tat org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125)\n\tat org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)\n\tat org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)\n\tat org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57)\n\tat org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)\n\tat org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56)\n\tat org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:565)\n\tat org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)\n\tat org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)\n\tat org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)\n\tat org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)\n\tat org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)\n\tat org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)\n\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)\n\tat org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)\n\tat org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)\n\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)\nCaused by: org.hibernate.exception.ConstraintViolationException: could not execute batch [Batch entry 0 delete from org_roles where id=('dded925e-60f2-419e-a2f5-f0f777914a1b'::uuid) was aborted: ERROR: update or delete on table \"org_roles\" violates foreign key constraint \"pending_invitations_org_role_id_fkey\" on table \"pending_invitations\"\n  Detail: Key (id)=(dded925e-60f2-419e-a2f5-f0f777914a1b) is still referenced from table \"pending_invitations\".  Call getNextException to see other errors in the batch.] [delete from org_roles where id=?]\n\tat org.hibernate.exception.internal.SQLStateConversionDelegate.convert(SQLStateConversionDelegate.java:73)\n\tat org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)\n\tat org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)\n\tat org.hibernate.engine.jdbc.batch.internal.BatchImpl.lambda$performExecution$0(BatchImpl.java:270)\n\tat org.hibernate.engine.jdbc.mutation.internal.PreparedStatementGroupSingleTable.forEachStatement(PreparedStatementGroupSingleTable.java:63)\n\tat org.hibernate.engine.jdbc.batch.internal.BatchImpl.performExecution(BatchImpl.java:245)\n\tat org.hibernate.engine.jdbc.batch.internal.BatchImpl.execute(BatchImpl.java:224)\n\tat org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.executeBatch(JdbcCoordinatorImpl.java:194)\n\tat org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:658)\n\tat org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:505)\n\tat org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:381)\n\tat org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40)\n\tat org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)\n\tat org.hibernate.internal.SessionImpl.fireFlush(SessionImpl.java:1489)\n\tat org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:481)\n\tat org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2116)\n\tat org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:2038)\n\tat org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:410)\n\tat org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:166)\n\tat org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commitNoRollbackOnly(JdbcResourceLocalTransactionCoordinatorImpl.java:248)\n\tat org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:242)\n\tat org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:89)\n\tat org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:553)\n\t... 303 common frames omitted\nCaused by: java.sql.BatchUpdateException: Batch entry 0 delete from org_roles where id=('dded925e-60f2-419e-a2f5-f0f777914a1b'::uuid) was aborted: ERROR: update or delete on table \"org_roles\" violates foreign key constraint \"pending_invitations_org_role_id_fkey\" on table \"pending_invitations\"\n  Detail: Key (id)=(dded925e-60f2-419e-a2f5-f0f777914a1b) is still referenced from table \"pending_invitations\".  Call getNextException to see other errors in the batch.\n\tat org.postgresql.jdbc.BatchResultHandler.handleError(BatchResultHandler.java:165)\n\tat org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2532)\n\tat org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:655)\n\tat org.postgresql.jdbc.PgStatement.internalExecuteBatch(PgStatement.java:892)\n\tat org.postgresql.jdbc.PgStatement.executeBatch(PgStatement.java:916)\n\tat org.postgresql.jdbc.PgPreparedStatement.executeBatch(PgPreparedStatement.java:1778)\n\tat com.zaxxer.hikari.pool.ProxyStatement.executeBatch(ProxyStatement.java:128)\n\tat com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeBatch(HikariProxyPreparedStatement.java)\n\tat org.hibernate.engine.jdbc.batch.internal.BatchImpl.lambda$performExecution$0(BatchImpl.java:256)\n\t... 322 common frames omitted\nCaused by: org.postgresql.util.PSQLException: ERROR: update or delete on table \"org_roles\" violates foreign key constraint \"pending_invitations_org_role_id_fkey\" on table \"pending_invitations\"\n  Detail: Key (id)=(dded925e-60f2-419e-a2f5-f0f777914a1b) is still referenced from table \"pending_invitations\".\n\tat org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2846)\n\tat org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2531)\n\t... 329 common frames omitted\n"},"ecs":{"version":"8.11"}}
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/org-roles/dded925e-60f2-419e-a2f5-f0f777914a1b
+       Parameters = {}
+          Headers = [Idempotency-Key:"ab6cb86b-44b2-40f2-a3b0-46af5921ff35"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#deleteRole(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = org.springframework.dao.DataIntegrityViolationException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 500
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"An unexpected error occurred","instance":"/api/org-roles/dded925e-60f2-419e-a2f5-f0f777914a1b","status":500,"title":"Internal server error"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/org-roles/407caf4e-7038-4e7d-8808-106da335edb8
+       Parameters = {}
+          Headers = [Idempotency-Key:"72ded9d1-b710-4183-a3f7-72b793e668d2"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#deleteRole(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 409
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Cannot delete role 'Partner Inv Delete' because it is offered in 1 pending invitation(s). Revoke the invitation(s) first.","instance":"/api/org-roles/407caf4e-7038-4e7d-8808-106da335edb8","status":409,"title":"Role in use"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 10, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 16.67 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest.aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted -- Time elapsed: 0.085 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<409> but was:<500>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest.aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted(MemberFilterInvitationTest.java:366)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest.aCustomRoleOfferedByAPendingInvitationCannotBeDeleted -- Time elapsed: 0.029 s <<< FAILURE!
+java.lang.AssertionError: JSON path "$.detail" expected:<Cannot delete role 'Partner Inv Delete' because 1 invitation(s) reference it.> but was:<Cannot delete role 'Partner Inv Delete' because it is offered in 1 pending invitation(s). Revoke the invitation(s) first.>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.util.JsonPathExpectationsHelper.assertValue(JsonPathExpectationsHelper.java:172)
+	at org.springframework.test.web.servlet.result.JsonPathResultMatchers.lambda$value$2(JsonPathResultMatchers.java:111)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.member.MemberFilterInvitationTest.aCustomRoleOfferedByAPendingInvitationCannotBeDeleted(MemberFilterInvitationTest.java:331)
+
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"2917600d-e6b9-43e8-9ff3-76832566f821","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_DISBURSEMENTS","OVERRIDE_MATTER_CLOSURE","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"},{"id":"e7f05b8c-d8b8-4714-99bc-02113addad7f","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_DISBURSEMENTS","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"},{"id":"6a8666a2-f7dc-4ff9-898e-d553147c9ab6","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"94", Idempotency-Key:"2b79c490-8994-4fd2-93a2-d47a93f0cbe0"]
+             Body = {"email": "raw_expired_pending@test.com", "orgRoleId": "6a8666a2-f7dc-4ff9-898e-d553147c9ab6"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/e26716cf-4d16-493d-ac33-1ed6f21ffbdd", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"e26716cf-4d16-493d-ac33-1ed6f21ffbdd","email":"raw_expired_pending@test.com","roleName":"Member","roleSlug":"member","invitedByName":"Raw Owner","status":"PENDING","expiresAt":"2026-12-02T08:36:41.642042Z","createdAt":"2026-11-25T08:36:41.642099Z","acceptedAt":null,"emailNotSentReason":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/e26716cf-4d16-493d-ac33-1ed6f21ffbdd
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/invitations/e26716cf-4d16-493d-ac33-1ed6f21ffbdd
+       Parameters = {}
+          Headers = [Idempotency-Key:"7462abd6-ddc3-4ec1-96d0-dd516d1fb6ca"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#revokeInvitation(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 204
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = null
+             Body = 
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"96ae3eff-5a38-4a04-8e92-45f82c2b0479"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"2917600d-e6b9-43e8-9ff3-76832566f821","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_DISBURSEMENTS","OVERRIDE_MATTER_CLOSURE","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"},{"id":"e7f05b8c-d8b8-4714-99bc-02113addad7f","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","PROJECT_MANAGEMENT","AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","AI_REVIEW","MANAGE_DISBURSEMENTS","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"},{"id":"6a8666a2-f7dc-4ff9-898e-d553147c9ab6","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":3,"createdAt":"2026-11-25T08:36:40.676119Z","updatedAt":"2026-11-25T08:36:40.676119Z"},{"id":"daf6e0f2-739c-41fe-80a5-286510e9c498","name":"Bookkeeper RAW","slug":"bookkeeper-raw","description":"t","capabilities":["INVOICING"],"isSystem":false,"memberCount":1,"createdAt":"2026-11-25T08:36:41.855668Z","updatedAt":"2026-11-25T08:36:41.855669Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"93", Idempotency-Key:"3c2ed71a-49f5-4809-ab3a-f29caeaf58ec"]
+             Body = {"email": "raw_expired_marked@test.com", "orgRoleId": "6a8666a2-f7dc-4ff9-898e-d553147c9ab6"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/96b3e004-8823-46d0-8623-f3872f7af90b", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"96b3e004-8823-46d0-8623-f3872f7af90b","email":"raw_expired_marked@test.com","roleName":"Member","roleSlug":"member","invitedByName":"Raw Owner","status":"PENDING","expiresAt":"2026-12-02T08:36:41.896858Z","createdAt":"2026-11-25T08:36:41.896920Z","acceptedAt":null,"emailNotSentReason":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/96b3e004-8823-46d0-8623-f3872f7af90b
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = DELETE
+      Request URI = /api/invitations/96b3e004-8823-46d0-8623-f3872f7af90b
+       Parameters = {}
+          Headers = [Idempotency-Key:"0129536c-2eab-4b9a-b38b-c2e76356f4eb"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#revokeInvitation(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 204
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = null
+             Body = 
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"83f5bb0e-210a-4f7c-9d7b-f75a6a1e90c8"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 6.917 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.anExpiredReInvite_doesNotLiftTheRevocation -- Time elapsed: 0.047 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.anExpiredReInvite_doesNotLiftTheRevocation(InvitationRevokeAlwaysWinsIntegrationTest.java:181)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.aReInviteAlreadyMarkedExpired_doesNotLiftTheRevocation -- Time elapsed: 0.044 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRevokeAlwaysWinsIntegrationTest.aReInviteAlreadyMarkedExpired_doesNotLiftTheRevocation(InvitationRevokeAlwaysWinsIntegrationTest.java:194)
+
+[ERROR] Failures: 
+[ERROR]   InvitationRevokeAlwaysWinsIntegrationTest.aReInviteAlreadyMarkedExpired_doesNotLiftTheRevocation:194 Status expected:<403> but was:<200>
+[ERROR]   InvitationRevokeAlwaysWinsIntegrationTest.anExpiredReInvite_doesNotLiftTheRevocation:181 Status expected:<403> but was:<200>
+[ERROR]   MemberFilterInvitationTest.aCustomRoleOfferedByAPendingInvitationCannotBeDeleted:331 JSON path "$.detail" expected:<Cannot delete role 'Partner Inv Delete' because 1 invitation(s) reference it.> but was:<Cannot delete role 'Partner Inv Delete' because it is offered in 1 pending invitation(s). Revoke the invitation(s) first.>
+[ERROR]   MemberFilterInvitationTest.aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted:366 Status expected:<409> but was:<500>
+[ERROR] Tests run: 18, Failures: 4, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-invite-fixes/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

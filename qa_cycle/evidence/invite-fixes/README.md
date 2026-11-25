@@ -1,9 +1,10 @@
 # Invitation fixes: custom-role sign-in, FR-8 revoke, FR-7 invite form
 
 Branch `fix/invitations-custom-role-revoke-and-no-invite-customisation`, base `origin/main` @ `522eb3413`.
-Founder-authorised as one PR (related invitation bugs). Local commits only: no push, no PR, no full verify, no E2E.
-Status: **CODE-COMPLETE, TARGETED-GREEN (not merged).** The full `bash scripts/verify.sh` and a Keycloak-stack
-E2E/OBS run are still owed (see "Not done").
+Founder-authorised as one PR (related invitation bugs): **PR #1859**. The coordinator pushes the branch and runs the full verify and the
+Keycloak-stack OBS; this agent commits locally only.
+Status: **open PR, in review (not merged).** Targeted backend classes and the full frontend gate are green at each round (counts below).
+The full `bash scripts/verify.sh` and Keycloak-stack OBS results are the coordinator's evidence, not this file's.
 
 Logs sit next to this file as `.txt` copies (the original `*.log` files are gitignored):
 `fix1-red.txt`, `fix1-green.txt`, `fix2-red.txt`, `fix2-green.txt`, `fix2b-red.txt`, `fix2b-green.txt`,
@@ -112,7 +113,7 @@ This fix detects that case and refuses it (below).
      - **Not a member** → Keycloak holds no invitation record, so no link can work. This happens, for example, when the best-effort invite-user call failed at creation. The Kazi revoke proceeds, with a WARN log.
 
 **Decision: what happens when the Keycloak call fails.** **The revoke fails closed.**
-- Any Keycloak error (lookup, membership check or delete) → **400** ProblemDetail `"Invitation not revoked"`:
+- Any Keycloak error (lookup or delete; the membership check was removed by the "revoke always wins" ruling) → **400** ProblemDetail `"Invitation not revoked"`:
   "The invitation email for 'x' could not be cancelled in Keycloak, so its link may still work. Nothing was changed. Please try again."
 - The Kazi revoke rolls back, so the invitation stays PENDING.
 - Why: a revoke never reports success while the link may still work, and the user is told plainly.
@@ -129,12 +130,9 @@ This fix detects that case and refuses it (below).
 - Keycloak 26.5.0 itself returns all rows when `first`/`max` are absent (`paginateQuery` with nulls), but that is not a contract to rely on.
 - Fix: the new `KeycloakAdminClient.findInvitationIdsByEmail` uses the `email` filter, pages with `first`/`max` = 100 until a short page, and keeps
   exact (case-insensitive) email matches only, because the filter is a LIKE. Errors propagate and are never read as "none".
-- An empty result is never taken as success on its own. The membership check above decides it, and any error there also fails closed.
-- On the coordinator's point (b), "empty and not a member → not reported as success": I kept a Kazi-side revoke for that case. Once the exhaustive
-  lookup is empty and the person is not an org member, Keycloak holds no invitation record and rejects every link (both acceptance paths re-check
-  the record). There is therefore no live link.
-- Refusing that case instead would make invitations whose Keycloak email never went out impossible to revoke. They would stay PENDING for 7 days
-  and block a re-invite (Kazi 409 "Pending invitation exists"). **Flagged for the orchestrator to confirm.**
+- *(Superseded, 2026-11-25.)* In this round an empty result went through an explicit membership check. The "revoke always wins" ruling removed
+  that check, so an empty exhaustive lookup now always lets the Kazi revoke go through. That is safe: no Keycloak invitation record means no link
+  can work, and `MemberFilter` refuses the person at sign-in whether or not they are still in the Keycloak org. A lookup error still fails closed.
 - Red (`fix2b-red.txt`): compilation fails, `cannot find symbol: method findInvitationIdsByEmail`.
 - Green (`fix2b-green.txt`): KeycloakAdminClientInvitationLookupTest 3/3 (WireMock: target found on page 2 past 100 LIKE matches; no exact match → empty;
   503 → throws), InvitationServiceTest 10/10, InvitationControllerTest 10/10.
@@ -143,9 +141,7 @@ This fix detects that case and refuses it (below).
 - revokes the Keycloak invitation for that email
 - delete fails → 400, stays PENDING
 - lookup unreachable → 400, stays PENDING
-- already accepted (org member) → 409, stays PENDING, nothing deleted
-- no invitation and not a member → decided explicitly (membership checked) → REVOKED
-- membership check errors → 400, stays PENDING
+- no live Keycloak invitation (link used, or never sent) → REVOKED, membership untouched (replaced the 409 and membership-check tests under the "revoke always wins" ruling)
 - no org context → Keycloak skipped
 - `InvitationControllerTest` (no Keycloak bean = mock mode): revoke still 204/400/404
 
@@ -273,6 +269,52 @@ the team once they appear" left a revoked person able to join.
 - build: exit 0
 - `pnpm test`: **506 files, 4967 passed, 2 skipped**
 
+## CodeRabbit round on PR #1859 (at `aa514362a`)
+
+**Red** (`fix7-red.txt`, `fix7-fe-red.txt`, commit `7f0657d73`):
+- Backend, 4 of 18 failed:
+  - `InvitationRevokeAlwaysWinsIntegrationTest.anExpiredReInvite_doesNotLiftTheRevocation` and `aReInviteAlreadyMarkedExpired_doesNotLiftTheRevocation`: `Status expected:<403> but was:<200>`.
+  - `MemberFilterInvitationTest.aCustomRoleReferencedOnlyByARevokedInvitationCannotBeDeleted`: `409 expected, 500` (the FK).
+  - `aCustomRoleOfferedByAPendingInvitationCannotBeDeleted`: old detail text.
+- Frontend, 1 of 10 failed: "a successful revoke whose list refresh fails drops the row, with no failure message".
+
+**Fix** (commit `259a7daab`)
+1. **MAJOR (security): an expired re-invite lifted a revocation.**
+   - `InvitationService.isLatestInvitationRevoked` now skips *lapsed* invitations: status EXPIRED, or PENDING past its expiry. The latest non-expired invitation decides.
+   - REVOKED and ACCEPTED invitations decide whatever their expiry date. A revocation does not lapse. An acceptance after a revocation means the firm let the person in, so they are not refused. Such a person normally already has a member row and never reaches this check.
+   - A live PENDING invitation is looked up first by `MemberFilter` and still wins.
+   - Repository: `findAllByEmailOrderByCreatedAtDesc` replaces `findFirstByEmailOrderByCreatedAtDesc`.
+   - Test setup: the re-invite is saved with a past `expiresAt`, the pattern the existing expiry tests use. There is no expiry helper and no raw SQL.
+2. **Minor: misleading delete guard.**
+   - `OrgRoleService.deleteRole` counts invitations of **any** status (`countByOrgRole_Id`).
+   - It answers 409 "Role in use" / "Cannot delete role 'X' because N invitation(s) reference it."
+   - A role referenced only by old invitations now gets that 409 instead of the FK's 500.
+3. **Minor: a refresh failure was reported as a revoke failure.**
+   - `PendingInvitations.handleRevoke` now separates the two steps.
+   - A successful revoke drops the row at once. A failed refresh is only logged and never shown as "Could not revoke".
+   - The stale comment about the removed 409 is gone.
+4. **README:** the status line, the empty-lookup/membership statements and open questions 1–2 are updated.
+
+**Green**
+- `fix7-green.txt`: InvitationRevokeAlwaysWinsIntegrationTest 8/8, MemberFilterInvitationTest 10/10, InvitationServiceTest 10/10, MemberFilterCacheEvictionTest 3/3.
+- `fix7-fe-green.txt`: pending-invitations 10/10.
+
+**Not fixed this round (logged)**
+- **Revoke vs first sign-in race** (`MemberFilter` lazy creation): an admin's revoke can commit after `findPendingByEmail` read the invitation as PENDING but before the member row is saved. The person is then created with the invited role although the invitation is REVOKED.
+- Closing that window needs a row lock or a re-check inside the member-creation transaction. That is a heavier change, deferred by the coordinator.
+
+**Targeted backend sweep 4** (`targeted-backend-4.txt`, HEAD `259a7daab`). Same scope as sweep 3: 103 classes, **1013 test cases, 0 failures,
+0 errors, 14 skipped** (the `@Disabled` acceptance class). That is 1010 + 3 new tests.
+
+**Frontend gate** (on `259a7daab`):
+- lint: 0 errors (76 warnings, none new)
+- format: clean
+- build: exit 0. `next build` keeps `.next/dev`; its clean step skips `cache|dev|lock|trace`, so the QA agent's dev server was not disturbed.
+- `pnpm test`, first run: **6 failures in 4 files this branch does not touch**: `dark-mode-contrast-guard`, `request-access-form`, `profitability-cost-note`, `trust-balance-trend-chart`.
+  - They were 5000 ms timeouts and elements not found, at load average ~121 (fseventsd after the build).
+  - The same 4 files passed alone (24/24).
+  - The full re-run once load fell passed: **506 files, 4968 passed, 2 skipped**.
+
 ## Fix 3: FR-7, hide "Customize for this user" in the invite form
 
 **Red** (`fix3-red.txt`): 3 failures in 38 tests.
@@ -312,7 +354,7 @@ the team once they appear" left a revoked person able to join.
 | `pnpm lint` | exit 0: 0 errors (warnings only, none new) | `frontend-gate-lint.txt` |
 | `pnpm format:check` | exit 0: all files Prettier-clean | `frontend-gate-format.txt` |
 | `timeout 900 pnpm build` | exit 0 | `frontend-gate-build.txt` |
-| `pnpm test` | exit 0: **506 files, 4967 passed, 2 skipped** (latest run on `efa9e87dd`; see Fix 6) | `frontend-gate-test.txt` |
+| `pnpm test` | exit 0: **506 files, 4968 passed, 2 skipped** (latest run on `259a7daab`; see the CodeRabbit round) | `frontend-gate-test.txt` |
 
 The warnings in the changed files all pre-date this branch: unused `ApiError`/`mapBffInvitation` in `invitation-actions.ts`, and the React Compiler
 skip on `form.watch` in `invite-member-form.tsx`.
@@ -332,13 +374,10 @@ skip on `form.watch` in `invite-member-form.tsx`.
 - Fix 1's result (18/18) was re-confirmed inside the targeted sweep, which ran with nothing else live.
 
 ## Open questions (plain English)
-1. **Revoking when Keycloak has no invitation and the person never joined.** I let the Kazi revoke go through.
-   - Why: Keycloak then has no invitation record, so no emailed link can work.
-   - The coordinator suggested not reporting this as success. If we refuse it instead, invitations whose email never went out could not be cancelled for 7 days.
-   - Please confirm which you want.
-2. **Old revoked/accepted invitations still block deleting a role.** The database link means a role stays undeletable after it has ever been offered, and the attempt fails with an error page (500).
-   - This fix only turns the *pending* case into a clear message.
-   - A small follow-up could change the database rule. That would need a migration, so it is out of scope here.
+1. ~~Revoking when Keycloak has no invitation and the person never joined~~: moot. Under "revoke always wins" that revoke succeeds, and Kazi refuses the person at sign-in.
+2. **A role that has ever been offered can never be deleted.** Every invitation row, including revoked, accepted and expired ones, holds the database link.
+   - Since the CodeRabbit round, the attempt answers a clear 409 "Role in use … invitations reference it" instead of a 500.
+   - Making such roles deletable would need a migration (an `ON DELETE` rule, or nulling old rows). That is a separate decision.
 3. ~~A person whose invitation is revoked after they already used the link~~: **ruled 2026-11-25, "revoke always wins"**, built (section below).
 4. **Revoked people stay in the Keycloak organisation.** Kazi refuses them, but Keycloak still lists them as org members. Removing them would delete
    the whole Keycloak account of anyone who registered through the link. If a clean-up is wanted, it needs its own ruling — for example a Keycloak

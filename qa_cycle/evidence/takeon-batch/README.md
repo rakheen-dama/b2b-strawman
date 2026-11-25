@@ -63,16 +63,45 @@ For each item the failing test was committed first, then the fix.
   - `item3-vitest-green-run.txt`: 15 files, 200 tests.
   - E2E take-on, step 4 observed in the browser: `04-trust-debit-block.png` shows Sign-off greyed and the reason under the table. `05-trust-r10-block.png` shows the same for step 5.
 
+## Item 4: FR-3 follow-up. The other server-action file uploads now follow the 3 MB limit
+
+Lowering the shared body limit to 3 MB would have regressed every other upload that goes through a server action. A file over 3 MB would fail with Next's unreadable body-limit error, and the DOCX screens still said 10 MB.
+
+**Every server action that takes a file** (grep of `"use server"` files for `File` / `formData.get("file")`):
+- Take-on (`take-on-actions.ts`): done in item 2.
+- Bank statement (`reconciliation/actions.ts`): done in item 2.
+- DOCX template upload (`UploadDocxDialog.tsx` → `uploadDocxTemplateAction`): fixed here.
+- DOCX template replace (`template-docx-sections.tsx` `ReplaceFileDialog` → `replaceDocxFileAction`): fixed here.
+- Disbursement receipt on the detail page (`detail-client.tsx` → `uploadReceiptAction`): fixed here.
+- Firm logo (`general-settings-form.tsx` → `uploadLogoAction`): already refused above 2 MB in the browser, which is under 3 MB, so it is unchanged.
+- The receipt picked in the *create*-disbursement dialog does not go through a server action. It is uploaded straight to S3 through a presigned URL (`initiateUpload`), so it is left as it is.
+
+**Red** (test commit `6d0c75467`, `item4-vitest-red-run.txt`): 3 failing in the new `__tests__/server-action-uploads-3mb.test.tsx`.
+- DOCX upload: the copy says Max 10 MB, not Max 3 MB.
+- DOCX replace: the copy says Max 10 MB, not Max 3 MB.
+- Receipt: no "up to 3 MB" copy, and a 3 000 001-byte receipt is sent to the action.
+
+**Fix** (`41b2ab7e1`):
+- All three use `fileTooLargeError`, so a file over the limit gets "File exceeds the 3 MB limit (x MB)".
+- All three take their copy from `SERVER_ACTION_FILE_MAX_LABEL`.
+- The receipt dialog refuses the file before calling the action.
+- The existing `UploadDocxDialog.test.tsx` case that asserted "File size exceeds 10 MB." now asserts the shared message (`63ca9b13e`).
+  The first full vitest run at `41b2ab7e1` caught that stale assertion: `fe-test-41b2ab7e1-stale-docx-test.txt`, 1 failed.
+
+**Green**: `item4-vitest-green-run.txt`, 20 files and 197 tests (the new file and `__tests__/legal`); then the full frontend gate below.
+
 ## Gates
+
+Item 4 changed only the frontend. The backend and E2E rows below are at `3266a852f`. Item 4 changes no file those runs exercised except the DOCX and receipt dialogs, which no E2E suite uploads over 3 MB.
 
 | Gate | Head | Result | Evidence |
 |---|---|---|---|
 | Targeted backend (`takeon.**`, `trustaccounting.takeon.**`) | `3266a852f` | 405 testcases, 0 failures, 0 errors | `backend-targeted-takeon.txt` |
 | Full backend `bash scripts/verify.sh -q` | `3266a852f` | exit 0; 933 report files, **8 214 testcases, 0 failures, 0 errors, 55 skipped**, counted from the `<testcase>` elements. Main at #1860 had 8 213; the +1 is the new FR-2 test. The console log (13 MB) is trimmed to its result lines and tail. Surefire printed its "kill self fork JVM … after System.exit(0)" notice once, after the run had finished. | `backend-full-verify.txt`, `verify-sha.txt` |
-| Frontend lint | `3266a852f` | 0 errors (76 warnings, none in changed files) | `fe-lint.txt` |
-| Frontend format:check | `3266a852f` | clean | `fe-format-check.txt` |
-| Frontend build (`timeout 900`) | `3266a852f` | exit 0 | `fe-build.txt` |
-| Frontend vitest (full) | `3266a852f` | 507 files, **4 975 passed, 2 skipped** | `fe-test.txt` |
+| Frontend lint | `63ca9b13e` | 0 errors (76 warnings, none in changed files) | `fe-lint.txt` |
+| Frontend format:check | `63ca9b13e` | clean | `fe-format-check.txt` |
+| Frontend build (`timeout 900`) | `63ca9b13e` | exit 0 | `fe-build.txt` |
+| Frontend vitest (full) | `63ca9b13e` | 508 files, **4 980 passed, 2 skipped** (at `3266a852f`: 507 files, 4 975 passed / 2 skipped) | `fe-test.txt` |
 | E2E take-on (stack 1, fresh, alone) | `3266a852f` | **17 passed** (2.8 min) | `e2e-take-on.txt`, `stack-1-containers.txt` |
 | E2E legal-lifecycle, attempt 1 (stack 2, fresh) | `3266a852f` | **FAILED**: 2 failed, 32 passed, 71 did not run (10-min suite timeout) | `e2e-legal-lifecycle-attempt1-FAILED.txt`, `attempt1-artifacts/`, `stack-2-containers.txt` |
 | E2E legal-lifecycle, attempt 2 (stack 3, fresh) | `3266a852f` | **105 passed** (3.5 min) | `e2e-legal-lifecycle.txt`, `stack-3-containers.txt` |

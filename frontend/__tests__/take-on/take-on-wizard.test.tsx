@@ -1075,6 +1075,38 @@ describe("TakeOnWizard — trust sign-off (657C)", () => {
     expect(screen.queryByTestId("take-on-signoff-status")).not.toBeInTheDocument();
   });
 
+  // F-660A-1 (D-264): a batch the backend refuses to sign (blocksCommit) offers no way to the
+  // Sign-off step — whose text says a partner will sign it — and says why instead.
+  it("a statutorily blocked trust batch offers no path to Sign-off and says why", () => {
+    renderWizard(
+      trustBatch({ counts: { ...trustBatch().counts, valid: 8, error: 1, blocks: 2 } }),
+      TRUST_CATALOGUE
+    );
+    expect(screen.queryByTestId("take-on-to-sign-off")).not.toBeInTheDocument();
+    expect(screen.getByTestId("take-on-step-signOff")).toBeDisabled();
+    expect(screen.getByTestId("take-on-sign-off-unavailable")).toHaveTextContent(
+      "This take-on cannot be signed off while the statutory blocks above remain. Correct them in the previous system, upload the corrected file and validate it again."
+    );
+  });
+
+  it("a trust batch with an error but no block offers no path to Sign-off either (committed whole, D-191)", () => {
+    renderWizard(
+      trustBatch({ counts: { ...trustBatch().counts, valid: 8, error: 1 } }),
+      TRUST_CATALOGUE
+    );
+    expect(screen.queryByTestId("take-on-to-sign-off")).not.toBeInTheDocument();
+    expect(screen.getByTestId("take-on-step-signOff")).toBeDisabled();
+    expect(screen.getByTestId("take-on-sign-off-unavailable")).toHaveTextContent(
+      "A trust take-on is committed whole, so it cannot be signed off while any error remains. Correct every error, upload the corrected files and validate it again."
+    );
+  });
+
+  it("an unblocked trust batch shows no sign-off refusal", () => {
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+    expect(screen.getByTestId("take-on-to-sign-off")).toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-sign-off-unavailable")).not.toBeInTheDocument();
+  });
+
   it("disables the step buttons while a position save is in flight (F-657B-6)", async () => {
     const user = userEvent.setup();
     let finishSave: (v: unknown) => void = () => {};

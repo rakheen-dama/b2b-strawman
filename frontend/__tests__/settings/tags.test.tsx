@@ -113,6 +113,9 @@ describe("getContrastColor (K-15)", () => {
     ["#3B82F6", "var(--slate-950)"],
     ["#FF0000", "var(--slate-950)"],
     ["#1E3A8A", "var(--color-white)"],
+    // Boundary: above the pure-black 0.179 threshold, but white (4.54:1) beats slate-950 (4.41:1)
+    ["#767676", "var(--color-white)"],
+    ["#808080", "var(--slate-950)"],
     ["#000000", "var(--color-white)"],
     ["not-a-hex", "var(--color-white)"],
   ])("%s → %s", (hex, expected) => {

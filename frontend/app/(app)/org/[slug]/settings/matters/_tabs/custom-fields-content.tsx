@@ -99,8 +99,10 @@ function FieldDefinitionsTable({
   canManage,
   empty,
 }: FieldDefinitionsTableProps) {
-  // Stable columns (TanStack renders each `cell` as a component): `fields` is the RSC array, whose
-  // identity only changes on navigation, when `data` changes too.
+  // Memoised columns (TanStack renders each `cell` as a component). `fields` is a dep because the
+  // actions cell passes it to the edit dialog; it is the RSC array, so it gets a new identity on
+  // navigation and after every successful mutation (the actions' `revalidatePath` re-renders the
+  // page), and the columns rebuild then, alongside the new `data`.
   const columns = useMemo(
     () =>
       defineColumns<FieldDefinitionResponse>([

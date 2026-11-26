@@ -28,12 +28,18 @@ export function ChecklistItemsTable({ items }: ChecklistItemsTableProps) {
         {
           id: "name",
           enableHiding: false,
-          meta: { label: "Name", cellClassName: "text-foreground text-sm font-medium" },
+          meta: {
+            label: "Name",
+            cellClassName: "text-foreground whitespace-normal text-sm font-medium",
+          },
           cell: ({ row }) => row.original.name,
         },
         {
           id: "description",
-          meta: { label: "Description", cellClassName: "text-muted-foreground text-sm" },
+          meta: {
+            label: "Description",
+            cellClassName: "text-muted-foreground whitespace-normal text-sm",
+          },
           cell: ({ row }) => row.original.description || "—",
         },
         {

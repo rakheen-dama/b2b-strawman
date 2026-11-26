@@ -19,15 +19,32 @@ function linear(channel: number): number {
   return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
+/** WCAG 2.x relative luminance of an sRGB colour (channels 0-255). */
+function relativeLuminance(r: number, g: number, b: number): number {
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+}
+
+/** WCAG contrast ratio between two relative luminances. */
+function contrastRatio(a: number, b: number): number {
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+const WHITE_LUMINANCE = 1;
+// `--slate-950` is oklch(13.5% 0.006 258) (packages/ui/styles/globals.css) ≈ sRGB #07080B.
+const SLATE_950_LUMINANCE = relativeLuminance(7, 8, 11);
+
 /**
- * Text colour for a tag chip filled with `hexColor` (K-15): near-black where it out-contrasts white
- * (relative luminance above 0.179, the equal-contrast point), else white. Theme tokens, no raw hex;
- * an unparseable colour gets white, as before.
+ * Text colour for a tag chip filled with `hexColor` (K-15): whichever of near-black (`--slate-950`)
+ * and white has the higher WCAG contrast ratio against the fill. Theme tokens, no raw hex; an
+ * unparseable colour gets white, as before.
  */
 export function getContrastColor(hexColor: string): string {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hexColor.slice(i, i + 2), 16));
-  const luminance = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
-  return luminance > 0.179 ? "var(--slate-950)" : "var(--color-white)";
+  const luminance = relativeLuminance(r, g, b);
+  // NaN (unparseable) compares false → white.
+  return contrastRatio(luminance, SLATE_950_LUMINANCE) > contrastRatio(luminance, WHITE_LUMINANCE)
+    ? "var(--slate-950)"
+    : "var(--color-white)";
 }
 
 const getTagId = (tag: TagResponse) => tag.id;
@@ -124,7 +141,7 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive"
                         >
                           <Trash2 className="size-4" />
                           <span className="sr-only">Delete {tag.name}</span>

@@ -174,7 +174,7 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive"
                             title="Delete template"
                           >
                             <Trash2 className="size-4" />

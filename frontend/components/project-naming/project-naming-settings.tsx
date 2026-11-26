@@ -83,19 +83,21 @@ export function ProjectNamingSettings({
         <p className="text-foreground text-sm font-medium">Available placeholders</p>
         <ul className="text-muted-foreground mt-2 space-y-1 text-sm">
           <li>
-            <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">{"{name}"}</code> — The
-            matter name entered at creation
+            <code className="bg-background rounded px-1 py-0.5 font-mono text-xs">{"{name}"}</code>{" "}
+            — The matter name entered at creation
           </li>
           <li>
-            <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">
+            <code className="bg-background rounded px-1 py-0.5 font-mono text-xs">
               {"{customer.name}"}
             </code>{" "}
             — The linked client&apos;s name
           </li>
           <li>
-            <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">{"{field_slug}"}</code>{" "}
+            <code className="bg-background rounded px-1 py-0.5 font-mono text-xs">
+              {"{field_slug}"}
+            </code>{" "}
             — Any custom field slug (e.g.,{" "}
-            <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">
+            <code className="bg-background rounded px-1 py-0.5 font-mono text-xs">
               {"{reference_number}"}
             </code>
             )

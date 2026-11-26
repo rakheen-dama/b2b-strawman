@@ -73,6 +73,13 @@ const LOW_PRIORITY_COLUMN_CLASS: Partial<Record<ClientColumnId, string>> = {
 const CLIENT_CELL_CLASS = "w-full max-w-0";
 
 /**
+ * K-11: a saved view's explicit columns are never hidden, so they can exceed the frame and leave
+ * the Client column nothing (`max-w-0` → its 16px padding). There it keeps the floor the default
+ * view's thresholds give it (see LOW_PRIORITY_COLUMN_CLASS) and the table scrolls sideways instead.
+ */
+const CLIENT_MIN_WIDTH = "14.5rem";
+
+/**
  * A multi-word header breaks after its first word ("Outstanding / fee notes"): two short lines
  * instead of one wide one. The space between the lines keeps the text content and accessible name
  * intact.
@@ -396,6 +403,7 @@ export function buildClientColumns({
         align: numeric ? "end" : undefined,
         headerClassName: width,
         cellClassName: cn(numeric && "font-mono tabular-nums", width) || undefined,
+        minWidth: column === "name" && !hideLowPriorityColumns ? CLIENT_MIN_WIDTH : undefined,
         csv: (row) => clientCsv(column, row),
       },
       cell: ({ row }) => clientCell(slug, column, row.original),

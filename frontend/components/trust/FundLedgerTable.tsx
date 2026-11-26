@@ -7,6 +7,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DateCell, EmptyCell, MoneyCell } from "@/components/data-table/cells";
 import { defineColumns } from "@/components/data-table/define-columns";
 import { formatCurrency } from "@/lib/format";
+import { buildPageHref } from "@/lib/page-href";
 import { cn } from "@/lib/utils";
 import {
   TRUST_TRANSACTION_STATUS_LABELS,
@@ -20,6 +21,12 @@ interface FundLedgerTableProps {
   currency: string;
   /** Pre-rendered by the server page. */
   empty: ReactNode;
+  /** The server page (`page.number`, `page.totalPages`), zero-based. */
+  pagination: { pageIndex: number; pageCount: number };
+  /** The page's path (`/org/{slug}/trust-accounting/other-creditors`). */
+  basePath: string;
+  /** The page's list state as a plain object; each pager link sets `page` in it. */
+  query: Record<string, string>;
 }
 
 const getFundRowId = (row: TrustTransaction) => row.id;
@@ -41,9 +48,16 @@ const POSTED_STATUSES: ReadonlySet<TrustTransactionStatus> = new Set([
  * first, each with the server-computed running balance (null on an unposted row → "—", with the
  * row's status as a badge). A bank
  * charge shows whether it is recoverable and its VAT (ADR-381). Types print the server's label,
- * never the code. Paged by the server (`pageSize={null}`).
+ * never the code. Server-paged through DataTable `pagination` (`?page=`, every other param kept).
  */
-export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps) {
+export function FundLedgerTable({
+  rows,
+  currency,
+  empty,
+  pagination,
+  basePath,
+  query,
+}: FundLedgerTableProps) {
   // Memoised: flexRender renders each cell function as a component, so a new column array would
   // remount every cell on each re-render.
   const columns = useMemo(
@@ -162,7 +176,10 @@ export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps)
       data={rows}
       getRowId={getFundRowId}
       columnVisibility={false}
-      pageSize={null}
+      pagination={{
+        ...pagination,
+        hrefFor: (pageIndex) => buildPageHref(basePath, query, pageIndex, "page"),
+      }}
       stickyHeader={false}
       frame={false}
       empty={empty}

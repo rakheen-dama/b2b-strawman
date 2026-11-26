@@ -695,6 +695,84 @@ describe("Other trust creditors page", () => {
     );
   });
 
+  it("renders each list's kit pager inside its own section: 'Page n of m', named Previous / Next", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(1, 3));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(1, 3));
+    await renderPage({ page: "1", itemsPage: "1" });
+
+    for (const section of ["fund-ledger-section", "unidentified-deposits-section"]) {
+      const scope = within(screen.getByTestId(section));
+      expect(scope.getByText("Page 2 of 3")).toBeInTheDocument();
+      expect(scope.getByRole("link", { name: /^Previous$/ })).toBeInTheDocument();
+      expect(scope.getByRole("link", { name: /^Next$/ })).toBeInTheDocument();
+    }
+    // The kit pager never takes the local pager's "Go to …" names.
+    expect(document.querySelector('[aria-label^="Go to"]')).toBeNull();
+  });
+
+  it("shows no pager when each list fits on one page", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(0, 1));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(0, 1));
+    await renderPage();
+
+    expect(screen.getByTestId("fund-ledger-table")).toBeInTheDocument();
+    expect(screen.getByTestId("unidentified-deposits-table")).toBeInTheDocument();
+    expect(screen.queryByText(/^Page \d+ of \d+$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^(Previous|Next)$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^(Previous|Next)$/ })).not.toBeInTheDocument();
+  });
+
+  it("keeps the pager beside the out-of-range message on a page past the end (parity with the old pager)", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue({
+      content: [],
+      page: { totalElements: 60, totalPages: 3, size: 25, number: 5 },
+    });
+    await renderPage({ page: "5" });
+
+    const fund = within(screen.getByTestId("fund-ledger-section"));
+    expect(screen.getByTestId("fund-ledger-page-out-of-range")).toBeInTheDocument();
+    expect(fund.getByText("Page 6 of 3")).toBeInTheDocument();
+    expect(fund.getByRole("link", { name: "Previous" })).toHaveAttribute("href", `${BASE}?page=4`);
+    expect(fund.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("goes back to the first items page without ?itemsPage=, as the page's own links do", async () => {
+    // Before-evidence (664B/before/pager.json, state itemsPage=1): items Previous → `?page=0`.
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(1, 3));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(1, 3));
+    await renderPage({ page: "1", itemsPage: "1" });
+
+    expect(pagerLink("unidentified-deposits-section", "Previous")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1`
+    );
+    expect(pagerLink("unidentified-deposits-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1&itemsPage=2`
+    );
+    expect(pagerLink("fund-ledger-section", "Previous")).toHaveAttribute(
+      "href",
+      `${BASE}?page=0&itemsPage=1`
+    );
+  });
+
+  it("keeps a past ?memoYear= on both lists' links (itemsPage is appended after it)", async () => {
+    const pastYear = Number(todayInSA().slice(0, 4)) - 1;
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(0, 3));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(0, 3));
+    await renderPage({ memoYear: String(pastYear) });
+
+    expect(pagerLink("fund-ledger-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1&memoYear=${pastYear}`
+    );
+    // Equivalent to the old `?page=0&itemsPage=1&memoYear=Y`; only the param order differs.
+    expect(pagerLink("unidentified-deposits-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=0&memoYear=${pastYear}&itemsPage=1`
+    );
+  });
+
   // ── Unidentified deposits: resolve (647D) ───────────────────────
 
   it("offers Allocate and Pay to the Fund on a held item with MANAGE_TRUST, and nothing with VIEW_TRUST only", async () => {

@@ -58,3 +58,36 @@
 - **Observed:** after K-106 the h1 is "Subscription".
 - **Not fixed here:** scenario edits are a product decision (root CLAUDE.md §6).
 - **Route:** 670A follow-up list.
+
+## F-665A-7: Compliance › Retention Policies shows policies it has no option for as a different record type / action
+
+- **Where:** `frontend/components/compliance/RetentionPolicyTable.tsx:23-25`: `RECORD_TYPES = ["CUSTOMER", "AUDIT_EVENT", "DOCUMENT", "COMMENT"]`, `ACTIONS = ["FLAG", "ANONYMIZE"]`. The cells are controlled `<select value={row.original.recordType}>` / `value={row.original.action}`. The same lists and the same controlled selects are on `main` @ `02eab076f` (`:27`, `:29`, `:207`, `:248`), so this is **pre-existing**, not caused by 665A.
+- **Observed (OBS-after, `after/measurements.json` → `probes.retention`):** on this stack (fresh, after the legal suites ran), `GET /api/retention-policies` returns 5 policies, 3 of them outside those lists:
+  - `TIME_ENTRY/RECORD_CREATED:1800:delete`
+  - `DOCUMENT/RECORD_CREATED:1800:delete`
+  - `COMMENT/RECORD_CREATED:1080:delete`
+- **What the table shows:**
+  - The TIME_ENTRY row reads **"Client"**; its select's DOM `value` is `CUSTOMER`.
+  - All three `delete` rows read **"FLAG"**; their action select's DOM `value` is `FLAG`.
+  - The browser falls back to the first option when a controlled value has no `<option>`.
+  - So the page tells the owner that time entries are a client policy and that three deleting policies only flag.
+- **Consequence (from the code; not executed):**
+  - A row's Save sends the React state, so it sends `delete` unchanged.
+  - Picking from the Action select, though, can only choose FLAG or ANONYMIZE, and the "current" value shown is wrong.
+  - The data-protection tab (665B surface) evidently writes a different vocabulary to the same API.
+- **Route:** backlog / 665B owner. The decision needed is to align the two editors' vocabularies, or render unknown values as an explicit option.
+
+## F-665A-8: Compliance › Retention Policies at 1024 px hides the Action, Active and row Save/Delete columns behind a horizontal scroll (narrowed by 665A)
+
+- **Where:** `RetentionPolicyTable.tsx` DataTable `frame={false}` inside the "Retention Policies" `SettingsSection` (`CardContent` `px-6`).
+- **Observed (OBS-after, `verdicts.json` → `7-layout.retentionTable1024`; `sheet-saves.png` "Retention Policies 1024 light/dark"):**
+  - At 1024×768 the table's scroller is **446 px of 718** (light) and **454 of 718** (dark).
+  - The **ACTION, ACTIVE and ACTIONS** columns are outside it. Every row's Delete button is off-screen (`deleteVisibleInScroller: false` ×5).
+  - The header reads "AC" / "ACT", cut at the card edge. The page itself does not overflow (0 px).
+  - At 1440 nothing is hidden (814/814, 822/822).
+- **Before (from `before/` raw tile `tab__compliance-alice-1024-dark-full`, pixel reading; before measured tables only at 1440):**
+  - The table sat outside a card, about 504 px wide (496→1000).
+  - ACTION was partly visible ("FLAG" select clipped at the edge). ACTIVE and ACTIONS were already hidden.
+  - So the hidden row actions are **pre-existing**. 665A's section padding takes about 50 px more and also hides ACTION.
+- **Not fixed here:** a layout decision for the orchestrator. Options are a priority/hide column order, stacking at < xl, or accepting the scroll. Overlay scrollbars give no affordance that the strip scrolls.
+- **Route:** orchestrator ruling (665A fix round vs backlog).

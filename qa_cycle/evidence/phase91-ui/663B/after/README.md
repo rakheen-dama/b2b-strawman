@@ -6,7 +6,9 @@ Command, run unedited from `../before/`:
 `PHASE=after node scripts/capture.cjs && PHASE=after node scripts/assemble.cjs`
 
 ## Result: after = before
-- **EmptyState boxes:** all 24 captures (6 surfaces × Alice/Carol × 1440 light/dark) match `../before/measurements.json` exactly on every `target` field: `variant` (`default`), `w`, `h`, `titleTag` (`h2`), title, description, actions, box and title computed styles, icon tile, className, viewport y, normalised outerHTML and its sha256. The comparison matched on key, persona and theme: **0 differences**.
+- **EmptyState boxes:** the comparison matched all 24 captures (6 surfaces × Alice/Carol × 1440 light/dark) to `../before/measurements.json` on key, persona and theme. **18** of them have a measured EmptyState box. All 18 match on every `target` field: `variant` (`default`), `w`, `h`, `titleTag` (`h2`), title, description, actions, box and title computed styles, icon tile, className, viewport y, normalised outerHTML and its sha256. **0 differences.** The other **6** have no box (`target: null` both before and after), so they are not part of that comparison:
+  - the 4 Activity captures, because the feed is never empty (see `../before/README.md`);
+  - Carol's 2 customer-rates captures, because Rates is gated for members and the tab falls back to Overview.
 - **Raw 1440×900 tiles** (`.tmp/663B-raw/{before,after}`, gitignored): 18 of 24 are byte-identical. The other 6:
   - 4 are the Activity tab, which shows a populated feed with relative timestamps (the Activity surface is not empty on any matter; see `../before/README.md`).
   - 1 is Carol's customer-rates capture. Rates is gated for members, so the tab falls back to Overview.

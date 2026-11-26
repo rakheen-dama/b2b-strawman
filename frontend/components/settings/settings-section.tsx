@@ -17,6 +17,11 @@ import { cn } from "@/lib/utils";
  * Server-safe (no hooks, no `"use client"`).
  */
 
+/** A slot has content unless it is empty (`null`/`undefined`), a boolean (`cond && <X/>`) or `""`. */
+function hasContent(node: ReactNode) {
+  return node != null && typeof node !== "boolean" && node !== "";
+}
+
 export interface SettingsSectionProps {
   /** Rendered as a real heading at `as` (default `h2`); absent → no heading. */
   title?: ReactNode;
@@ -24,7 +29,7 @@ export interface SettingsSectionProps {
   description?: ReactNode;
   /** Right-aligned in the header row. */
   actions?: ReactNode;
-  children?: ReactNode;
+  children: ReactNode;
   /** Per-card save etc.: right-aligned in a footer with a top border. */
   footer?: ReactNode;
   /** Left side of the footer (e.g. a "Saved" line the consumer already renders). */
@@ -50,8 +55,8 @@ export function SettingsSection({
   "data-testid": testId,
 }: SettingsSectionProps) {
   const destructive = variant === "destructive";
-  const hasHeader = title != null || description != null || actions != null;
-  const hasFooter = footer != null || status != null;
+  const hasHeader = hasContent(title) || hasContent(description) || hasContent(actions);
+  const hasFooter = hasContent(footer) || hasContent(status);
 
   return (
     <Card
@@ -70,7 +75,7 @@ export function SettingsSection({
         <CardHeader
           className={cn(destructive && "bg-destructive/5 border-destructive/20 border-b pt-6")}
         >
-          {title != null && (
+          {hasContent(title) && (
             <Heading
               className={cn(
                 "leading-none font-semibold",
@@ -80,15 +85,17 @@ export function SettingsSection({
               {title}
             </Heading>
           )}
-          {description != null && <CardDescription>{description}</CardDescription>}
-          {actions != null && <CardAction>{actions}</CardAction>}
+          {hasContent(description) && <CardDescription>{description}</CardDescription>}
+          {hasContent(actions) && <CardAction>{actions}</CardAction>}
         </CardHeader>
       )}
-      {children != null && <CardContent>{children}</CardContent>}
+      <CardContent>{children}</CardContent>
       {hasFooter && (
         <CardFooter className="gap-3 border-t">
-          {status != null && <div className="text-muted-foreground mr-auto text-sm">{status}</div>}
-          {footer != null && <div className="ml-auto flex items-center gap-2">{footer}</div>}
+          {hasContent(status) && (
+            <div className="text-muted-foreground mr-auto text-sm">{status}</div>
+          )}
+          {hasContent(footer) && <div className="ml-auto flex items-center gap-2">{footer}</div>}
         </CardFooter>
       )}
     </Card>
@@ -115,7 +122,7 @@ export function SettingsActionBar({ children, status, sticky = false }: Settings
         sticky && "bg-background/95 sticky bottom-0 z-10 border-t py-3 backdrop-blur"
       )}
     >
-      {status != null && <div className="text-muted-foreground mr-auto text-sm">{status}</div>}
+      {hasContent(status) && <div className="text-muted-foreground mr-auto text-sm">{status}</div>}
       {children}
     </div>
   );

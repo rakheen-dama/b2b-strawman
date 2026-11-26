@@ -22,8 +22,9 @@ interface SettingsSidebarProps {
  * Settings rail (Phase 87 S9, ADR-341 §12.7, §12.7.3–§12.7.4): the five families and, under the
  * active family, its permitted tabs — the same SETTINGS_FAMILIES entries filtered by the same rule
  * (lib/nav-filter.ts via visibleSettingsTabs) as the family page's tab strip, so a tab cannot be in
- * one and not the other. Desktop only: settings/layout.tsx hides the rail below `md`, where the
- * family page's own tab strip scrolls horizontally. Links only — no `role="tab"`, no headings.
+ * one and not the other. Desktop only: settings/layout.tsx hides the rail below `md`, where
+ * SettingsFamilyBar switches families (K-02) and the family page's own tab strip switches tabs,
+ * both scrolling horizontally (D11). Links only — no `role="tab"`, no headings.
  * Tokens only (664A, K-03): the current tab carries `data-active` for the shared sidebar active
  * bar (in `primary` on the page canvas); the rail sticks just under the floating header, which is
  * `sticky top-2` and `--app-header-height` tall (bottom edge at header height + 0.5rem).

@@ -92,6 +92,33 @@ describe("SettingsSection", () => {
     expect(section().querySelector('[data-slot="card-footer"]')).toBeNull();
   });
 
+  it("renders no footer for gated-off (boolean) footer and status slots", () => {
+    const canManage = false;
+    render(
+      <SettingsSection
+        title="Section lambda"
+        footer={canManage && <button type="button">Lambda save</button>}
+        status={false}
+        data-testid="sec"
+      >
+        body
+      </SettingsSection>
+    );
+    expect(section().querySelector('[data-slot="card-footer"]')).toBeNull();
+    expect(screen.queryByRole("button", { name: "Lambda save" })).not.toBeInTheDocument();
+  });
+
+  it("renders no heading (and no header) for a gated-off (boolean) title", () => {
+    render(
+      <SettingsSection title={false} data-testid="sec">
+        body
+      </SettingsSection>
+    );
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(section().querySelector('[data-slot="card-header"]')).toBeNull();
+    expect(section().querySelector('[data-slot="card-content"]')).toHaveTextContent("body");
+  });
+
   it("puts the status on the left of the footer, before the footer actions", () => {
     render(
       <SettingsSection
@@ -156,6 +183,17 @@ describe("SettingsActionBar", () => {
     expect(bar).not.toHaveAttribute("data-sticky");
     expect(bar.firstElementChild).toHaveTextContent("Bar status");
     expect(bar).toContainElement(screen.getByRole("button", { name: "Bar save" }));
+  });
+
+  it("renders no status slot for a gated-off (boolean) status", () => {
+    const { container } = render(
+      <SettingsActionBar status={false}>
+        <button type="button">Bar save</button>
+      </SettingsActionBar>
+    );
+    const bar = container.querySelector('[data-slot="settings-action-bar"]')!;
+    expect(bar.children).toHaveLength(1);
+    expect(bar.firstElementChild).toBe(screen.getByRole("button", { name: "Bar save" }));
   });
 
   it("marks a sticky bar with data-sticky", () => {

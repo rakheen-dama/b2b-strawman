@@ -22,8 +22,9 @@ interface UseEdgeFadesOptions {
  * fade booleans for the `TAB_EDGE_FADE_CLASS` overlays and an `onFocus` handler for the row.
  *
  * - The fades follow the viewport (scroll + resize of the viewport or the row). Only an actual
- *   viewport width change (window narrowed, device rotated) also keeps the active item clear of the
- *   fades, so the user's own horizontal scroll is never fought.
+ *   viewport width change (window narrowed, device rotated) also keeps an item clear of the fades —
+ *   the focused item in the row if there is one, else the active item — so the user's own
+ *   horizontal scroll is never fought.
  * - The active item is kept clear of the fades on mount and whenever `activeKey` changes (a deep
  *   link at a narrow width), by `scrollLeft` only — never `scrollIntoView`.
  * - A keyboard-focused item is kept clear of the fades too, so its focus ring is never hidden under
@@ -53,8 +54,16 @@ export function useEdgeFades(
       const width = viewport.clientWidth;
       if (width !== lastViewportWidth) {
         lastViewportWidth = width;
-        const active = viewport.querySelector<HTMLElement>(activeSelector);
-        if (active) scrollItemClearOfFades(viewport, active);
+        // A keyboard-focused item in the row wins over the active one, so its focus ring stays
+        // clear of the fades; the active item is the fallback when nothing in the row has focus.
+        const focused = document.activeElement;
+        const item =
+          focused instanceof HTMLElement &&
+          focused.matches(itemSelector) &&
+          viewport.contains(focused)
+            ? focused
+            : viewport.querySelector<HTMLElement>(activeSelector);
+        if (item) scrollItemClearOfFades(viewport, item);
       }
       update();
     };
@@ -73,7 +82,7 @@ export function useEdgeFades(
       viewport.removeEventListener("scroll", update);
       observer?.disconnect();
     };
-  }, [scrollAreaRef, activeSelector]);
+  }, [scrollAreaRef, activeSelector, itemSelector]);
 
   useEffect(() => {
     const viewport = findScrollViewport(scrollAreaRef.current);

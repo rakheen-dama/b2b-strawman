@@ -60,11 +60,11 @@ export default async function ClientsPage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const caps = await fetchMyCapabilities();
-
-  if (!caps.isAdmin && !caps.isOwner && !caps.capabilities.includes("CUSTOMER_MANAGEMENT")) {
-    return <PermissionDenied featureName="Clients" dashboardHref={`/org/${slug}/dashboard`} />;
-  }
-
+  // K-62 (FD-3, founder 2026-11-26): every member may read every client (the server's GET
+  // /api/clients is ungated), so the list is open to members. CUSTOMER_MANAGEMENT still gates the
+  // FICA review queue — the server 403s ficaStatus=REVIEW for everyone else (Phase 93 D-152).
+  const canManageClients =
+    caps.isAdmin || caps.isOwner || caps.capabilities.includes("CUSTOMER_MANAGEMENT");
   const isAdmin = caps.isAdmin || caps.isOwner;
   const param = (key: string): string | null => {
     const value = resolvedSearchParams[key];
@@ -94,6 +94,10 @@ export default async function ClientsPage({
     showIncomplete: param("showIncomplete"),
     tags: param("tags"),
   });
+
+  if (!canManageClients && listParams.ficaStatus === FICA_REVIEW_FILTER) {
+    return <PermissionDenied featureName="Clients" dashboardHref={`/org/${slug}/dashboard`} />;
+  }
 
   let rows: ClientListRow[] = [];
   try {

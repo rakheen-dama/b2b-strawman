@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { BreadcrumbLabel } from "@/components/breadcrumb-label-provider";
 import { PermissionDenied } from "@/components/permission-denied";
-import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { fetchMyCapabilities, type MyCapabilitiesResponse } from "@/lib/api/capabilities";
 import { getReportDefinition } from "@/lib/api/reports";
 import { handleApiError } from "@/lib/api";
 import { ReportRunner } from "@/components/reports/report-runner";
@@ -15,8 +15,14 @@ export default async function ReportDetailPage({
 }) {
   const { slug, reportSlug } = await params;
   // K-64: the definition read needs FINANCIAL_VISIBILITY (a member's deep link 403'd into the crash
-  // panel), so gate exactly as the /reports index does — before any read.
-  const caps = await fetchMyCapabilities();
+  // panel), so gate exactly as the /reports index does — before any read. A failing capability
+  // read goes through handleApiError like the definition read (401 → re-login, not a crash).
+  let caps: MyCapabilitiesResponse;
+  try {
+    caps = await fetchMyCapabilities();
+  } catch (error) {
+    handleApiError(error);
+  }
   if (!caps.isAdmin && !caps.isOwner && !caps.capabilities.includes("FINANCIAL_VISIBILITY")) {
     return <PermissionDenied featureName="Reports" dashboardHref={`/org/${slug}/dashboard`} />;
   }

@@ -34,6 +34,7 @@ vi.mock("next/link", () => ({
 }));
 
 import ReportDetailPage from "@/app/(app)/org/[slug]/reports/[reportSlug]/page";
+import { handleApiError } from "@/lib/api";
 
 // K-64 (663C): GET /api/report-definitions/{slug} needs FINANCIAL_VISIBILITY, so a member's deep
 // link 403'd and handleApiError re-threw it (crash panel). The runner now copies the /reports index
@@ -95,5 +96,15 @@ describe("reports/[reportSlug] — FINANCIAL_VISIBILITY gate (K-64)", () => {
     await renderPage();
     expect(screen.getByRole("heading", { level: 1, name: "Revenue Summary" })).toBeInTheDocument();
     expect(screen.getByTestId("report-runner")).toBeInTheDocument();
+  });
+
+  it("a failing capability read goes through handleApiError (401 → re-login), with no definition read", async () => {
+    const expired = Object.assign(new Error("Unauthorized"), { status: 401 });
+    mockFetchCaps.mockRejectedValue(expired);
+    await expect(
+      ReportDetailPage({ params: Promise.resolve({ slug: "acme", reportSlug: "revenue-summary" }) })
+    ).rejects.toBe(expired);
+    expect(handleApiError).toHaveBeenCalledWith(expired);
+    expect(mockGetReportDefinition).not.toHaveBeenCalled();
   });
 });

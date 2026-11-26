@@ -443,6 +443,22 @@ describe("Breadcrumbs", () => {
       expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
     });
 
+    it("K-26: a long middle crumb truncates with its full label in title", () => {
+      const CLIENT_ID = "3f2a9c1e-7b4d-4e8a-9c21-5d6f7a8b9c0d";
+      const longName = "Dlamini Family Testamentary Trust (Pty) Ltd and Associated Entities";
+      mockUsePathname.mockReturnValue(`/org/acme/customers/${CLIENT_ID}/edit`);
+      render(
+        <BreadcrumbLabelProvider>
+          <Breadcrumbs slug="acme" orgName="E2E Test Organization" />
+          <BreadcrumbLabel href={`/org/acme/customers/${CLIENT_ID}`} label={longName} />
+        </BreadcrumbLabelProvider>
+      );
+      const middle = screen.getByText(longName);
+      expect(middle).toHaveAttribute("title", longName);
+      expect(middle).toHaveClass("max-w-40", "truncate");
+      expect(middle.parentElement).toHaveClass("min-w-0", "whitespace-nowrap");
+    });
+
     it("falls back to the generic label once the publisher unmounts", () => {
       mockUsePathname.mockReturnValue(`/org/acme/matters/${MATTER_ID}`);
       const tree = (withPublisher: boolean) => (

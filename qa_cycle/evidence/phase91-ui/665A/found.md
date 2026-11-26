@@ -30,3 +30,31 @@
   - The card's single "Save Settings" saves dormancy, deadline and Phase 93's three FICA review intervals together. Changing only a FICA interval therefore also changes the effective dormancy threshold from 90 to 365 days, with no visible change on the page.
   - The deadline has the same `?? 30` fallback, but there it matches the backend: null resolves to the jurisdiction default, 30 for ZA (`DataSubjectRequestService.java:255-261`, `JurisdictionDefaults.java:20`). So only dormancy is wrong.
 - **Proposed (needs a decision):** align the fallback with the backend (90), or have the backend return its effective value. If neither, show null as empty with a "default" hint. The `compliance.tsx:74-76` comment already states the intent ("fallbacks would overwrite the firm's real dormancy … unseen"); only the load-failure path is guarded today.
+
+## F-665A-3: Subscription still tells a locked-out owner to "Contact your administrator" next to K-106's "managed by b2mash" copy
+
+- **Where:** `frontend/app/(app)/org/[slug]/settings/firm/_tabs/subscription.tsx:94` (GRACE_PERIOD suffix) and `:110` (LOCKED branch): "Contact your administrator to restore access."
+- **Observed (from the code, found in review):** K-106 rewrote the active-branch body to "Your Kazi subscription is managed by b2mash. Contact support to change your plan or …" (`:92`). The GRACE_PERIOD and LOCKED branches keep the old copy. The owner is the administrator, so this is the same owner-told-to-ask-admin defect K-106 fixed for the active branch.
+- **Not fixed here:** the new wording is a founder copy ruling (COPY-FREEZE).
+- **Route:** 670A follow-up list.
+
+## F-665A-4: DataTable has no consumer `meta` passthrough, so editable-cell tables cannot use TanStack's `updateData` pattern
+
+- **Where:** `frontend/components/data-table/data-table.tsx:341`: the kit sets its own TanStack `meta: { dataTableSort: … }` and accepts no consumer meta.
+- **Observed (from the code, found in review):** editable-cell consumers cannot reach `table.options.meta.updateData`. `RetentionPolicyTable.tsx` (`:184-185`) works around this with a latest-ref: an `actions` ref is refreshed in `useLayoutEffect`, and the memoised columns call `actions.current.*`.
+- **Proposed (needs a decision):** later editable tables reuse the latest-ref pattern, or the kit adds a meta passthrough that is merged with `dataTableSort`.
+- **Route:** backlog / 669B.
+
+## F-665A-5: The un-fixme'd e2e "Create, edit and delete a custom role" has no cleanup
+
+- **Where:** `frontend/e2e/tests/settings/roles-capabilities.spec.ts:53`. The file has no `afterEach`.
+- **Observed (from the code, found in review):** if the test fails between create and delete, an "E2E Role …" custom role stays on the stack and is visible to later runs and suites.
+- **Not fixed here:** 665A only un-fixme'd the test (K-102). Spec edits beyond that are out of scope (D-42).
+- **Route:** backlog.
+
+## F-665A-6: The demo scenario still names the Subscription page heading "Billing"
+
+- **Where:** `qa/testplan/demos/legal-za-90day-keycloak.md:191`, step 0.65: "panel heading \"Billing\"".
+- **Observed:** after K-106 the h1 is "Subscription".
+- **Not fixed here:** scenario edits are a product decision (root CLAUDE.md §6).
+- **Route:** 670A follow-up list.

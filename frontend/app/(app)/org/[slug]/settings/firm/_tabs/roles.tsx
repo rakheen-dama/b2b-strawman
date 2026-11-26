@@ -66,7 +66,7 @@ export async function renderRolesTab({ slug }: SettingsTabProps) {
           {systemRoles.map((role) => {
             const displayCaps = getDisplayCapabilities(role);
             return (
-              <div key={role.id} className="min-w-0 rounded-lg border p-6">
+              <div key={role.id} data-slot="role-card" className="min-w-0 rounded-lg border p-6">
                 <div className="flex items-center gap-2">
                   <h3 className="text-foreground font-semibold">{role.name}</h3>
                   <Badge variant="neutral">System</Badge>

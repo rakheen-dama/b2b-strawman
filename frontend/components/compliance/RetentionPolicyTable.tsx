@@ -85,7 +85,7 @@ function newEmptyRow(): EditableRow {
 const getRowKey = (row: EditableRow) => row.key;
 
 const selectClasses =
-  "rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 dark:border-slate-700 dark:bg-input/30 dark:text-slate-100";
+  "border-input text-foreground dark:bg-input/30 rounded-md border bg-transparent px-2 py-1.5 text-sm transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
 
 interface RowActions {
   updateRow: (index: number, updates: Partial<EditableRow>) => void;

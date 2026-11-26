@@ -28,7 +28,7 @@ export function CapabilityBadge({ cap }: { cap: string }) {
 
 export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   return (
-    <div className="min-w-0 rounded-lg border p-6">
+    <div data-slot="role-card" className="min-w-0 rounded-lg border p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h3 className="text-foreground font-semibold">{role.name}</h3>

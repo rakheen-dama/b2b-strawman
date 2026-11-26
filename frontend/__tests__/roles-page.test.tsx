@@ -208,7 +208,8 @@ describe("Firm › Roles tab loader", () => {
 
     const memberCard = screen
       .getByRole("heading", { level: 3, name: "Member" })
-      .closest("div.rounded-lg") as HTMLElement;
+      .closest('[data-slot="role-card"]') as HTMLElement;
+    expect(memberCard).not.toBeNull();
     for (const label of [
       "Generate statement of account",
       "View legal registers",

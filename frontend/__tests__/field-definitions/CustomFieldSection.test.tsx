@@ -245,14 +245,29 @@ describe("CustomFieldSection", () => {
   });
 
   it("shows empty state when no field groups are applied", () => {
-    render(<CustomFieldSection {...defaultProps} appliedFieldGroups={[]} />);
+    const { container } = render(<CustomFieldSection {...defaultProps} appliedFieldGroups={[]} />);
 
-    expect(screen.getByText("No custom fields configured")).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "inline"
+    );
+    // One-line inline row: the title is a <p>, not a heading.
+    expect(screen.getByText("No custom fields configured").tagName).toBe("P");
+    expect(screen.queryByRole("heading", { name: "No custom fields configured" })).toBeNull();
     expect(
       screen.getByText(
         "Custom fields let you track additional information specific to your workflow."
       )
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Configure Fields" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/matters?tab=custom-fields"
+    );
+  });
+
+  it("shows the Configure Fields link to read-only viewers too (ungated, as today)", () => {
+    render(<CustomFieldSection {...defaultProps} editable={false} appliedFieldGroups={[]} />);
+
     expect(screen.getByRole("link", { name: "Configure Fields" })).toHaveAttribute(
       "href",
       "/org/acme/settings/matters?tab=custom-fields"

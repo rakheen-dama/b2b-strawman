@@ -81,6 +81,7 @@ export function TimeEntryList({
   if (entries.length === 0) {
     return (
       <EmptyState
+        variant="compact"
         icon={Clock}
         title="No time logged yet"
         description="Use the Log Time button to record time spent on this task"
@@ -121,6 +122,7 @@ export function TimeEntryList({
 
       {filteredEntries.length === 0 ? (
         <EmptyState
+          variant="compact"
           icon={Clock}
           title="No matching time entries"
           description="Try a different billing status filter."

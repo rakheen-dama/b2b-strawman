@@ -77,6 +77,7 @@ export function CommentSectionClient({
 
       {commentList.length === 0 && !error ? (
         <EmptyState
+          variant="compact"
           icon={MessageSquare}
           title={t("comments.section.heading")}
           description={t("comments.section.description")}

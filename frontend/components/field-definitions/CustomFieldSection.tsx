@@ -525,6 +525,7 @@ export function CustomFieldSection({
   if (fieldsByGroup.size === 0) {
     return (
       <EmptyState
+        variant="inline"
         icon={ListChecks}
         title="No custom fields configured"
         description="Custom fields let you track additional information specific to your workflow."

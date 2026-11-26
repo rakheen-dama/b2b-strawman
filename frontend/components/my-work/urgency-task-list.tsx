@@ -238,6 +238,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
           <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
         </div>
         <EmptyState
+          variant="compact"
           icon={CheckCircle}
           title="No tasks assigned"
           description="Tasks assigned to you will appear here"

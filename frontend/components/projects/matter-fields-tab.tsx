@@ -1,5 +1,7 @@
 "use client";
 
+import { ListChecks } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import type {
@@ -36,13 +38,13 @@ export function MatterFieldsTab({
 
   if (!hasContent) {
     return (
-      <div className="py-12 text-center" data-testid="matter-fields-tab">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          No custom field groups have been configured for this organisation.
-        </p>
-        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-          Admins can create field groups in Settings.
-        </p>
+      <div data-testid="matter-fields-tab">
+        <EmptyState
+          variant="inline"
+          icon={ListChecks}
+          title="No custom field groups have been configured for this organisation."
+          description="Admins can create field groups in Settings."
+        />
       </div>
     );
   }

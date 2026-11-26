@@ -16,12 +16,27 @@ interface EmptyStateProps {
   actionHref?: string;
   onAction?: () => void;
   secondaryLink?: { label: string; href: string };
-  /** default = page-level; compact = widgets and chart cards; inline = one line in a table body. */
+  /** Required at every call site by `__tests__/emptystate-variant-guard.test.ts` (ADR-393); see the rule on `EmptyState`. */
   variant?: EmptyStateVariant;
 }
 
 // No "use client": RSC importers pass `icon` as a component reference, which only works while
 // this module renders in whichever environment imports it.
+/**
+ * Sizing rule (Phase 91, ADR-393). Every call site passes `variant` explicitly — enforced by
+ * `__tests__/emptystate-variant-guard.test.ts`; the `"default"` fallback stays only until 669B
+ * makes the prop required.
+ *
+ * | variant   | use when | markup |
+ * | --------- | -------- | ------ |
+ * | `default` | the empty state IS the whole content of a page or of a page-level tab panel | `gap-3 py-16`, 48px icon tile, `h2` title |
+ * | `compact` | inside a section, card, widget, chart card, dialog body or Sheet — at most a one-line description and one optional action; the box stays ≤ 13.25rem (212px) at the container's real width | `gap-2 py-8`, 40px icon tile, `h2` title |
+ * | `inline`  | a table body or a single-line slot (one row: icon, title, description, action) | `py-3 text-sm` row; the title is a `<p>`, not a heading |
+ *
+ * Budget (compact): one-line description 164px; + one action 212px; two lines 184px; two lines +
+ * action 232px (over — use `inline`). A title asserted as a heading (e.g. e2e) must stay
+ * `default`/`compact`.
+ */
 export function EmptyState({
   icon: Icon,
   title,
@@ -55,12 +70,12 @@ export function EmptyState({
         href={secondaryLink.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm text-teal-600 hover:text-teal-700"
+        className="text-primary text-sm underline underline-offset-4"
       >
         {secondaryLink.label}
       </a>
     ) : (
-      <Link href={secondaryLink.href} className="text-sm text-teal-600 hover:text-teal-700">
+      <Link href={secondaryLink.href} className="text-primary text-sm underline underline-offset-4">
         {secondaryLink.label}
       </Link>
     )

@@ -49,3 +49,24 @@ Everything here is pre-existing on `main` @ `60f67bfe3`. 665B restyles these tab
 - **Where:** `frontend/components/settings/jurisdiction-selector.tsx:98-112`. The `SelectTrigger` has no `aria-label`, no `<label>` and no `aria-labelledby`. The card's h2 "Jurisdiction" is not associated with it.
 - **Observed (`before/saves.json` → `jurisdiction`):** `ariaLabel: null`, `labelledBy: null`. The combobox's name is its value, "South Africa (POPIA)". `data-protection-settings.spec.ts:57` finds it by its text for this reason.
 - **Suggested owner:** 665B, if its SettingsSection restyle gives section controls a label. Otherwise backlog. LOW (WCAG 4.1.2). A role/name change is SEL-COMPAT relevant: the spec's `getByRole("combobox").filter({ hasText })` keeps working if only `aria-label` is added.
+
+## F-665B-6 (found in OBS-after, introduced by 665B, LOW / a11y nit): the audit "Events" h2's accessible name runs into the total: "Events289 total", and "Events285 totalLoading…" while a page loads
+
+- **Where:** `frontend/app/(app)/org/[slug]/settings/firm/_tabs/audit-log-client.tsx:939-948`. The `SettingsSection` `title` is `Events<span class="ml-2 …">{n} total</span>{isPending && <span class="ml-2 …">Loading…</span>}`. `ml-2` is visual spacing only, so there is no text separator.
+- **Observed (`after/zero-and-names.json`, `after/audit-paging.json` → `extra.pendingCrop.titleInfo`):**
+  - h2 `textContent` / `innerText` = "Events289 total".
+  - `getByRole("heading", { level: 2, name: /^Events\d/ })` = 1; `/^Events \d/` = 0.
+  - During the held page fetch the text is "Events285 totalLoading…".
+- **Why now:** before 665B the same markup was a `CardTitle` div (no heading). 665B promoted it to an h2, so it now shows up in the screen-reader heading list with this name. Visually it is fine (`crop-audit-pending.png`).
+- **Suggested fix:** a `{" "}` (or an sr-only separator) before each span, or move the total and "Loading…" out of the heading into `description` / `actions`. SEL-COMPAT: no spec reads this heading.
+- **Suggested owner:** 665B fix round, if in scope; otherwise backlog. LOW.
+
+## F-665B-7 (found in OBS-after, residual K-109, LOW): at 390 the Processing Register description is squeezed to 93 px (8 lines) beside the action column
+
+- **Where:** `frontend/components/data-protection/processing-register-table.tsx:~405-420` (`SettingsSection` `actions`) and the kit `CardHeader` grid (`grid-cols-[1fr_auto]`, `packages/ui/src/card.tsx`).
+- **Observed (`after/k109-widths.json`, `after/crop-k109-390-light.png`):**
+  - K-109's acceptance is met: "Add Activity" ends at x = 349 (≤ 390). The two buttons wrap inside the 207 px action column, and the page has no horizontal overflow at 390.
+  - But the title and the description share the remaining 93 px column. "Processing Register" wraps onto 2 lines and the description onto 8.
+  - At 1024 the description is 150 px wide (5 lines). The register said ≈ 90 px before, and the before README read ≈ 155 px off the screenshot. At 1280 and 1440 it is 358 and 518 px.
+- **Suggested fix (product/layout call):** below a breakpoint, stack the header actions under the title (e.g. a `@container` rule on `CardHeader`, or let the section's `actions` drop to a row of their own). This is a kit-level decision (every `SettingsSection` with two actions behaves this way), so it is not a 665B-local patch.
+- **Suggested owner:** backlog / kit owner. LOW.

@@ -436,18 +436,18 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
       const org = screen.getByRole("link", { name: "E2E Test Organization" });
       expect(org).toHaveAttribute("title", "E2E Test Organization");
-      expect(org).toHaveClass("max-w-40", "truncate", "min-w-6", "shrink-1000000");
+      expect(org).toHaveClass("max-w-40", "truncate", "min-w-6", "shrink-100000000");
       expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
     });
 
-    it("K-26: middle crumbs shrink next — weight 100, no floor, one line, labels capped at 160px with title", () => {
+    it("K-26: middle crumbs shrink next — weight 10,000, no floor, one line, labels capped at 160px with title", () => {
       mockUsePathname.mockReturnValue("/org/acme/trust-accounting/transactions");
       render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
       const label = screen.getByRole("link", { name: "Trust accounting" });
       expect(label).toHaveAttribute("title", "Trust accounting");
       expect(label).toHaveClass("max-w-40", "truncate");
       const wrapper = label.parentElement;
-      expect(wrapper).toHaveClass("min-w-0", "shrink-100", "whitespace-nowrap");
+      expect(wrapper).toHaveClass("min-w-0", "shrink-10000", "whitespace-nowrap");
       expect(wrapper).not.toHaveClass("shrink-0");
     });
 
@@ -464,7 +464,7 @@ describe("Breadcrumbs", () => {
       const middle = screen.getByText(longName);
       expect(middle).toHaveAttribute("title", longName);
       expect(middle).toHaveClass("max-w-40", "truncate");
-      expect(middle.parentElement).toHaveClass("min-w-0", "shrink-100", "whitespace-nowrap");
+      expect(middle.parentElement).toHaveClass("min-w-0", "shrink-10000", "whitespace-nowrap");
     });
 
     it('K-26: the last crumb shrinks last — default weight 1 and a 48px floor, so a label like "Edit" stays whole', () => {

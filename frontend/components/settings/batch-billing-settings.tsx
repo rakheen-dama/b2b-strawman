@@ -7,6 +7,7 @@ import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
 import { updateBatchBillingSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/fee-runs-actions";
 import { paymentTermsDaysSchema } from "@/lib/schemas";
+import { SettingsSection, SettingsActionBar } from "@/components/settings/settings-section";
 
 interface BatchBillingSettingsProps {
   slug: string;
@@ -102,15 +103,11 @@ export function BatchBillingSettings({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Fee note defaults
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Applies to every fee note you approve, not only batch billing runs.
-        </p>
-
-        <div className="mt-4 space-y-4">
+      <SettingsSection
+        title="Fee note defaults"
+        description="Applies to every fee note you approve, not only batch billing runs."
+      >
+        <div className="space-y-4">
           <div className="max-w-xs space-y-2">
             <Label htmlFor="default-payment-terms-days">Default payment terms (days)</Label>
             <Input
@@ -129,30 +126,27 @@ export function BatchBillingSettings({
               <p
                 id="default-payment-terms-days-error"
                 role="alert"
-                className="text-sm text-red-600 dark:text-red-400"
+                className="text-destructive text-sm"
               >
                 {termsError}
               </p>
             )}
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground text-xs">
               A fee note approved without a due date is due this many days after its issue date. A
               due date typed on the draft is kept.
             </p>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Batch Billing Configuration
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure thresholds and defaults for batch billing runs.
-        </p>
-
-        <div className="mt-4 space-y-4">
+      {/* K-124 (founder-approved copy): the section title and the three field labels below. */}
+      <SettingsSection
+        title="Fee run processing"
+        description="Configure thresholds and defaults for batch billing runs."
+      >
+        <div className="space-y-4">
           <div className="max-w-xs space-y-2">
-            <Label htmlFor="async-threshold">Async Threshold</Label>
+            <Label htmlFor="async-threshold">Process in the background above (fee notes)</Label>
             <Input
               id="async-threshold"
               type="number"
@@ -165,13 +159,13 @@ export function BatchBillingSettings({
                 setAsyncThreshold(Number.isFinite(val) ? Math.max(1, Math.min(1000, val)) : 1);
               }}
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground text-xs">
               Client count above which batch generation runs asynchronously
             </p>
           </div>
 
           <div className="max-w-xs space-y-2">
-            <Label htmlFor="email-rate-limit">Email Rate Limit</Label>
+            <Label htmlFor="email-rate-limit">Emails per second</Label>
             <Input
               id="email-rate-limit"
               type="number"
@@ -184,43 +178,41 @@ export function BatchBillingSettings({
                 setEmailRateLimit(Number.isFinite(val) ? Math.max(1, Math.min(100, val)) : 1);
               }}
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground text-xs">
               Maximum emails per second during batch send
             </p>
           </div>
 
           <div className="max-w-xs space-y-2">
-            <Label htmlFor="default-billing-currency">Default Billing Run Currency</Label>
+            <Label htmlFor="default-billing-currency">Default fee-run currency</Label>
             <Input
               id="default-billing-currency"
               type="text"
               maxLength={3}
-              placeholder="e.g. USD"
+              placeholder="e.g. ZAR"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground text-xs">
               Pre-fill currency on new billing runs. Falls back to org default currency if empty.
             </p>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      <div className="flex items-center gap-3">
+      {/* Page-level save: one "Save Settings" for both sections, as before. */}
+      <SettingsActionBar
+        status={
+          message && (
+            <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+          )
+        }
+      >
         <Button size="sm" disabled={saving} onClick={handleSave}>
           {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           Save Settings
         </Button>
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
+      </SettingsActionBar>
     </div>
   );
 }

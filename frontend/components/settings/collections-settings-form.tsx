@@ -6,6 +6,7 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateCollectionsSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/collections-actions";
 
 interface CollectionsSettingsFormProps {
@@ -102,132 +103,107 @@ export function CollectionsSettingsForm({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Collections Policy Section */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Overdue fee-note reminders
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure when overdue fee notes move through reminder stages and escalate for
-          collections.
-        </p>
-
-        <div className="mt-4 space-y-4">
-          {/* Enable toggle */}
-          <div className="flex items-center gap-3">
-            <Switch
-              id="collections-toggle"
-              checked={enabled}
-              onCheckedChange={(checked: boolean) => setEnabled(checked)}
-            />
-            <Label
-              htmlFor="collections-toggle"
-              className="text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Enable collections reminders
-            </Label>
-          </div>
-
-          {/* Stage 1 */}
-          <div>
-            <Label
-              htmlFor="stage1-days"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Stage 1 (days overdue)
-            </Label>
-            <Input
-              id="stage1-days"
-              type="number"
-              min={1}
-              step={1}
-              value={stage1}
-              onChange={(e) => setStage1(e.target.value)}
-              className="mt-1 w-40"
-            />
-          </div>
-
-          {/* Stage 2 */}
-          <div>
-            <Label
-              htmlFor="stage2-days"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Stage 2 (days overdue)
-            </Label>
-            <Input
-              id="stage2-days"
-              type="number"
-              min={1}
-              step={1}
-              value={stage2}
-              onChange={(e) => setStage2(e.target.value)}
-              className="mt-1 w-40"
-            />
-          </div>
-
-          {/* Stage 3 */}
-          <div>
-            <Label
-              htmlFor="stage3-days"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Stage 3 (days overdue)
-            </Label>
-            <Input
-              id="stage3-days"
-              type="number"
-              min={1}
-              step={1}
-              value={stage3}
-              onChange={(e) => setStage3(e.target.value)}
-              className="mt-1 w-40"
-            />
-          </div>
-
-          {/* Escalation */}
-          <div>
-            <Label
-              htmlFor="escalate-days"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Escalation (days overdue)
-            </Label>
-            <Input
-              id="escalate-days"
-              type="number"
-              min={1}
-              step={1}
-              value={escalate}
-              onChange={(e) => setEscalate(e.target.value)}
-              className="mt-1 w-40"
-            />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Thresholds must strictly increase from stage 1 through escalation.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Save button */}
-      <div className="flex items-center gap-3">
+    <SettingsSection
+      title="Overdue fee-note reminders"
+      description="Configure when overdue fee notes move through reminder stages and escalate for collections."
+      status={
+        message && (
+          <p
+            role="alert"
+            aria-live="polite"
+            className={isError ? "text-destructive" : "text-success-foreground"}
+          >
+            {message}
+          </p>
+        )
+      }
+      footer={
         <Button size="sm" disabled={saving} onClick={handleSave}>
           {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           Save Settings
         </Button>
-        {message && (
-          <p
-            role="alert"
-            aria-live="polite"
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
+      }
+    >
+      <div className="space-y-4">
+        {/* Enable toggle */}
+        <div className="flex items-center gap-3">
+          <Switch
+            id="collections-toggle"
+            checked={enabled}
+            onCheckedChange={(checked: boolean) => setEnabled(checked)}
+          />
+          <Label htmlFor="collections-toggle" className="text-foreground text-sm font-medium">
+            Enable collections reminders
+          </Label>
+        </div>
+
+        {/* Stage 1 */}
+        <div>
+          <Label htmlFor="stage1-days" className="text-foreground block text-sm font-medium">
+            Stage 1 (days overdue)
+          </Label>
+          <Input
+            id="stage1-days"
+            type="number"
+            min={1}
+            step={1}
+            value={stage1}
+            onChange={(e) => setStage1(e.target.value)}
+            className="mt-1 w-40"
+          />
+        </div>
+
+        {/* Stage 2 */}
+        <div>
+          <Label htmlFor="stage2-days" className="text-foreground block text-sm font-medium">
+            Stage 2 (days overdue)
+          </Label>
+          <Input
+            id="stage2-days"
+            type="number"
+            min={1}
+            step={1}
+            value={stage2}
+            onChange={(e) => setStage2(e.target.value)}
+            className="mt-1 w-40"
+          />
+        </div>
+
+        {/* Stage 3 */}
+        <div>
+          <Label htmlFor="stage3-days" className="text-foreground block text-sm font-medium">
+            Stage 3 (days overdue)
+          </Label>
+          <Input
+            id="stage3-days"
+            type="number"
+            min={1}
+            step={1}
+            value={stage3}
+            onChange={(e) => setStage3(e.target.value)}
+            className="mt-1 w-40"
+          />
+        </div>
+
+        {/* Escalation */}
+        <div>
+          <Label htmlFor="escalate-days" className="text-foreground block text-sm font-medium">
+            Escalation (days overdue)
+          </Label>
+          <Input
+            id="escalate-days"
+            type="number"
+            min={1}
+            step={1}
+            value={escalate}
+            onChange={(e) => setEscalate(e.target.value)}
+            className="mt-1 w-40"
+          />
+          <p className="text-muted-foreground mt-1 text-xs">
+            Thresholds must strictly increase from stage 1 through escalation.
           </p>
-        )}
+        </div>
       </div>
-    </div>
+    </SettingsSection>
   );
 }

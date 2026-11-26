@@ -146,19 +146,22 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
 
   return (
     // min-w-0: the nav sits in the fixed-height (`--app-header-height`) header beside the bell and avatar, so a long
-    // published entity name must not wrap the header or push them — the nav shrinks. Shrink order:
-    // middle crumbs are fixed (shrink-0) and capped at 160px (max-w-40, full label in title), so
-    // short ones like "Matters" stay readable; only the org crumb and the last crumb shrink and
-    // truncate, with the full name in their title. Below `sm` only the last crumb shows: on a
-    // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
+    // published entity name must not wrap the header or push them — the nav shrinks. K-26 shrink order, by flex-shrink
+    // weight (weight × width decides each crumb's share, and a crumb stops at its floor):
+    //   1. the org crumb (shrink-1000000) gives up its width first, down to a 24px floor (min-w-6);
+    //   2. then the middle crumbs (shrink-100, min-w-0), each label capped at 160px (max-w-40);
+    //   3. the last crumb (the current page; default weight 1) shrinks last, down to a 48px floor including its
+    //      chevron (min-w-12), so a short label such as "Edit" stays whole.
+    // The org weight is 10,000× the middle weight: at 1,000× a short middle crumb ("Matters") still lost a sub-pixel
+    // and drew an ellipsis while the org was shrinking. Every crumb truncates with an ellipsis and keeps its full
+    // label in title. Below `sm` only the last crumb shows: on a phone the org root and middle crumbs would draw
+    // under the org switcher.
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
-      {/* Org name as root link (falls back to slug). K-26: it shrinks and truncates (full name in
-          title); middle crumbs stay on one line at their natural width, capped at 160px, so the
-          breadcrumb never wraps the fixed-height header. */}
+      {/* Org name as root link (falls back to slug); shrinks first (see the shrink order above). */}
       <Link
         href={`/org/${slug}/dashboard`}
         title={orgName ?? slug}
-        className="text-muted-foreground hover:text-foreground hidden max-w-40 truncate transition-colors sm:inline"
+        className="text-muted-foreground hover:text-foreground hidden max-w-40 min-w-6 shrink-1000000 truncate transition-colors sm:inline"
       >
         {orgName ?? slug}
       </Link>
@@ -186,8 +189,8 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
             key={href}
             className={
               isLast
-                ? "flex min-w-0 items-center gap-1"
-                : "hidden shrink-0 items-center gap-1 whitespace-nowrap sm:flex"
+                ? "flex min-w-12 items-center gap-1"
+                : "hidden min-w-0 shrink-100 items-center gap-1 whitespace-nowrap sm:flex"
             }
           >
             <ChevronRight

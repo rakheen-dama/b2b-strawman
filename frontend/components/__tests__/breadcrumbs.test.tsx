@@ -431,19 +431,27 @@ describe("Breadcrumbs", () => {
       expect(lastChevron).toHaveClass("hidden", "sm:block");
     });
 
-    it("K-26: the org crumb truncates with its full name in title; middle crumbs never wrap or shrink", () => {
+    it("K-26: the org crumb shrinks first — far larger shrink weight than any other crumb, 24px floor, full name in title", () => {
       mockUsePathname.mockReturnValue("/org/acme/trust-accounting/transactions");
       render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
       const org = screen.getByRole("link", { name: "E2E Test Organization" });
       expect(org).toHaveAttribute("title", "E2E Test Organization");
-      expect(org).toHaveClass("max-w-40", "truncate");
-      const short = screen.getByRole("link", { name: "Trust accounting" }).parentElement;
-      expect(short).toHaveClass("shrink-0", "whitespace-nowrap");
-      expect(short).not.toHaveClass("min-w-0");
+      expect(org).toHaveClass("max-w-40", "truncate", "min-w-6", "shrink-1000000");
       expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
     });
 
-    it("K-26: a long middle crumb is capped at 160px with its full label in title, but never shrinks", () => {
+    it("K-26: middle crumbs shrink next — weight 100, no floor, one line, labels capped at 160px with title", () => {
+      mockUsePathname.mockReturnValue("/org/acme/trust-accounting/transactions");
+      render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
+      const label = screen.getByRole("link", { name: "Trust accounting" });
+      expect(label).toHaveAttribute("title", "Trust accounting");
+      expect(label).toHaveClass("max-w-40", "truncate");
+      const wrapper = label.parentElement;
+      expect(wrapper).toHaveClass("min-w-0", "shrink-100", "whitespace-nowrap");
+      expect(wrapper).not.toHaveClass("shrink-0");
+    });
+
+    it("K-26: a long middle crumb is capped at 160px with its full label in title", () => {
       const CLIENT_ID = "3f2a9c1e-7b4d-4e8a-9c21-5d6f7a8b9c0d";
       const longName = "Dlamini Family Testamentary Trust (Pty) Ltd and Associated Entities";
       mockUsePathname.mockReturnValue(`/org/acme/customers/${CLIENT_ID}/edit`);
@@ -456,8 +464,19 @@ describe("Breadcrumbs", () => {
       const middle = screen.getByText(longName);
       expect(middle).toHaveAttribute("title", longName);
       expect(middle).toHaveClass("max-w-40", "truncate");
-      expect(middle.parentElement).toHaveClass("shrink-0", "whitespace-nowrap");
-      expect(middle.parentElement).not.toHaveClass("min-w-0");
+      expect(middle.parentElement).toHaveClass("min-w-0", "shrink-100", "whitespace-nowrap");
+    });
+
+    it('K-26: the last crumb shrinks last — default weight 1 and a 48px floor, so a label like "Edit" stays whole', () => {
+      mockUsePathname.mockReturnValue(`/org/acme/settings/documents/templates/${MATTER_ID}/edit`);
+      render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
+      const last = screen.getByText("Edit");
+      expect(last).toHaveAttribute("title", "Edit");
+      expect(last).toHaveClass("truncate", "font-medium");
+      const wrapper = last.parentElement;
+      expect(wrapper).toHaveClass("flex", "min-w-12");
+      expect(wrapper).not.toHaveClass("min-w-0");
+      expect(wrapper?.className).not.toMatch(/\bshrink-/);
     });
 
     it("falls back to the generic label once the publisher unmounts", () => {

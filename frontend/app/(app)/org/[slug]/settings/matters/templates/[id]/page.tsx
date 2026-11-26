@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { redirect } from "next/navigation";
@@ -68,14 +70,12 @@ export default async function TemplateEditorPage({
       <div className="space-y-8">
         <Link
           href={settingsHref(slug, "matters", "templates")}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
           <ChevronLeft className="size-4" />
           Matter Templates
         </Link>
-        <p className="text-slate-600 dark:text-slate-400">
-          Template not found. It may have been deleted.
-        </p>
+        <p className="text-muted-foreground">Template not found. It may have been deleted.</p>
       </div>
     );
   }
@@ -84,25 +84,23 @@ export default async function TemplateEditorPage({
     <div className="space-y-8">
       <Link
         href={settingsHref(slug, "matters", "templates")}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
         Matter Templates
       </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {template ? template.name : "New Matter Template"}
-        </h1>
-      </div>
+      <PageHeader title={template ? template.name : "New Matter Template"} />
 
-      <TemplateEditor
-        slug={slug}
-        template={template}
-        availableTags={tags}
-        availableCustomerFields={availableCustomerFields}
-        availableRequestTemplates={requestTemplates.map((rt) => ({ id: rt.id, name: rt.name }))}
-      />
+      <SettingsSection>
+        <TemplateEditor
+          slug={slug}
+          template={template}
+          availableTags={tags}
+          availableCustomerFields={availableCustomerFields}
+          availableRequestTemplates={requestTemplates.map((rt) => ({ id: rt.id, name: rt.name }))}
+        />
+      </SettingsSection>
     </div>
   );
 }

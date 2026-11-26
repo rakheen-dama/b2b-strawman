@@ -754,7 +754,7 @@
 | 661 | Light-Mode Colour Scheme — Prototype, Founder Pick, Scoped Firm-Shell Tokens (E1) | Evidence; Frontend + packages/ui | Phase 93 on `main`; FD-1 for 661B | M | 661A (evidence only), 661B (0 verifies; PORTAL-GATE) | **Done** (PRs #1862, #1863) |
 | 662 | Kinks Register — Real-Browser Walk on the Final Scheme (E2) | QA / Docs | 661B | M | 662A (evidence only) | **Done** (PR #1864) |
 | 663 | EmptyState Sizing Rule, Variant Guard and Sweep + Cross-Cutting Shell Kinks (E3) | Frontend | 662A + FD-3 | M | 663A, 663B, 663C (0 verifies) | **Done** — 663A **Done** (PR #1865), 663B **Done** (PR #1866), 663C **Done** (PR #1867) |
-| 664 | Settings Shell (SettingsSection, Rail, Mobile Family Bar, Underline Tabs) + DataTable Server-Paged Mode (E4) | Frontend | 663A | M | 664A, 664B (0 verifies) | |
+| 664 | Settings Shell (SettingsSection, Rail, Mobile Family Bar, Underline Tabs) + DataTable Server-Paged Mode (E4) | Frontend | 663A | M | 664A, 664B (0 verifies) | **In progress** — 664A **Done** (PR #1868), 664B not started |
 | 665 | Settings Content — 32 Tabs and 11 Sub-Pages on SettingsSection + DataTable (E5) | Frontend | 664A; 664B for 665B, 665F; Phase 93 for 665C | XL | 665A–665F (0 verifies) | |
 | 666 | Fee Notes — List, Billing Runs, Collections, Unbilled on the Kit + Client-Derived Fee-Note Hero (E6) | Frontend | 663A, 664A | L | 666A, 666B (0 verifies) | |
 | 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | |

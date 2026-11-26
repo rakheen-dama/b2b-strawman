@@ -1,6 +1,10 @@
+import { Plus } from "lucide-react";
+import { Button } from "@b2mash/ui/button";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getTags } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
+import { TagDialog } from "@/components/tags/TagDialog";
 import { TagsContent } from "./tags-content";
 import type { TagResponse } from "@/lib/types";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -20,15 +24,25 @@ export async function renderTagsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Tags
-          <HelpTip code="tags.overview" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage tags for matters, tasks, and clients.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Tags
+            <HelpTip code="tags.overview" />
+          </span>
+        }
+        description="Manage tags for matters, tasks, and clients."
+        actions={
+          isAdmin && (
+            <TagDialog slug={slug}>
+              <Button size="sm">
+                <Plus className="mr-1.5 size-4" />
+                Add Tag
+              </Button>
+            </TagDialog>
+          )
+        }
+      />
 
       <TagsContent slug={slug} tags={tags} canManage={isAdmin} />
     </div>

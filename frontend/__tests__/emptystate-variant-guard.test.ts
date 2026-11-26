@@ -15,9 +15,6 @@ const SHARED_MODULE = "components/empty-state";
 
 /** File (relative to `frontend/`) → the Phase 91 slice that sets its variants and deletes the line. */
 const ALLOWLIST: Record<string, string> = {
-  // 665C — Settings › Matters
-  "app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content.tsx": "665C",
-  "app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx": "665C",
   // 665D — Settings › Fees & Trust
   "components/rates/member-rates-table.tsx": "665D",
   // 665E — Settings › Documents

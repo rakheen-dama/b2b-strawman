@@ -2,7 +2,16 @@
 
 import { useEffect, useOptimistic, useRef, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  TAB_EDGE_FADE_CLASS,
+  TAB_STRIP_SCROLLBAR_CLASS,
+  TAB_STRIP_SCROLL_AREA_CLASS,
+  TAB_UNDERLINE_SELECTED,
+} from "@/components/shared/tab-underline";
+import { useEdgeFades } from "@/components/shared/use-edge-fades";
 
 export interface SettingsFamilyTabItem {
   id: string;
@@ -24,6 +33,19 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
+ * The shadcn `line` list with the shared 642C underline (664A, K-101). The trigger overrides drop
+ * what the shadcn trigger brings for its own pill/line looks — `flex-1`, the fixed height, the
+ * border and the outside focus outline (both would be clipped by the scroll viewport) and its own
+ * underline at `bottom: -5px`, which the viewport would clip — so exactly one 2px underline,
+ * keyed on `aria-selected`, sits at the bottom edge inside the scroll area.
+ */
+const LIST_CLASS = "w-max gap-2 p-0 group-data-[orientation=horizontal]/tabs:h-auto";
+const TRIGGER_CLASS = cn(
+  TAB_UNDERLINE_SELECTED,
+  "h-auto flex-none border-0 focus-visible:outline-none group-data-[orientation=horizontal]/tabs:after:bottom-0"
+);
+
+/**
  * Tab strip for a settings family page (Phase 87 S9, ADR-341 §12.7.4). The URL is the single
  * source of truth: `activeTab` is resolved on the server from `?tab=`, a click only calls
  * `router.replace` (`scroll: false`) and shows the clicked tab optimistically until the new server
@@ -42,6 +64,12 @@ export function SettingsFamilyTabs({ label, tabs, activeTab, children }: Setting
   const panelRef = useRef<HTMLDivElement>(null);
   /** The tab the user just selected here; null on load and for URL-driven changes. */
   const focusOnCommitRef = useRef<string | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { fades, onFocus } = useEdgeFades(scrollAreaRef, {
+    activeSelector: '[role="tab"][aria-selected="true"]',
+    itemSelector: '[role="tab"]',
+    activeKey: shownTab,
+  });
 
   // The new panel arrives with the server render, not with the click, so focus moves when the
   // selected `activeTab` commits (not in the handler, while the old panel is still mounted). A fast
@@ -76,19 +104,35 @@ export function SettingsFamilyTabs({ label, tabs, activeTab, children }: Setting
     // move focus only and Enter/Space or a click selects, so arrowing across the strip does not
     // fire one server navigation per tab — and a click navigates once, not on mousedown + focus.
     <Tabs value={shownTab} onValueChange={handleValueChange} activationMode="manual">
-      {/* The strip scrolls on its own at narrow widths: the settings rail is desktop-only
-          (settings/layout.tsx wraps it in `hidden md:block`; it has no mobile pill row — D11).
-          The app shell's content column and <main> carry `min-w-0` (Phase 88 628B), so the `w-max`
-          strip scrolls inside this box instead of widening the page; 616A's `@container`
-          workaround for the missing `min-w-0` is retired. */}
-      <div className="-mx-1 overflow-x-auto px-1 pb-1">
-        <TabsList aria-label={label} className="w-max">
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* The strip scrolls on its own in a horizontal ScrollArea with edge fades over the tabs
+          hidden past either end (664A, K-101); the active tab is kept clear of the fades. The
+          settings rail is desktop-only (settings/layout.tsx wraps it in `hidden md:block`); below
+          `md` the family link bar switches families and this strip switches tabs (D11). The app
+          shell's content column and <main> carry `min-w-0` (Phase 88 628B), so the `w-max` strip
+          scrolls inside the viewport instead of widening the page. Not sticky (ADR-394). */}
+      <div className="border-border relative border-b">
+        <ScrollArea ref={scrollAreaRef} type="auto" className={TAB_STRIP_SCROLL_AREA_CLASS}>
+          <TabsList aria-label={label} variant="line" className={LIST_CLASS} onFocus={onFocus}>
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className={TRIGGER_CLASS}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <ScrollBar orientation="horizontal" className={TAB_STRIP_SCROLLBAR_CLASS} />
+        </ScrollArea>
+        <div
+          aria-hidden="true"
+          data-slot="settings-family-tabs-fade-start"
+          data-visible={fades.start}
+          className={cn(TAB_EDGE_FADE_CLASS, "left-0 bg-linear-to-r")}
+        />
+        <div
+          aria-hidden="true"
+          data-slot="settings-family-tabs-fade-end"
+          data-visible={fades.end}
+          className={cn(TAB_EDGE_FADE_CLASS, "right-0 bg-linear-to-l")}
+        />
       </div>
       {/* forceMount keeps the current panel visible while the next server render is pending. */}
       <TabsContent

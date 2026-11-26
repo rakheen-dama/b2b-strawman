@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SIDEBAR_ACTIVE_BAR } from "@/components/shell/sidebar-styles";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
 import type { NavFilterAccess } from "@/lib/nav-filter";
@@ -21,8 +22,12 @@ interface SettingsSidebarProps {
  * Settings rail (Phase 87 S9, ADR-341 §12.7, §12.7.3–§12.7.4): the five families and, under the
  * active family, its permitted tabs — the same SETTINGS_FAMILIES entries filtered by the same rule
  * (lib/nav-filter.ts via visibleSettingsTabs) as the family page's tab strip, so a tab cannot be in
- * one and not the other. Desktop only: settings/layout.tsx hides the rail below `md`, where the
- * family page's own tab strip scrolls horizontally. Links only — no `role="tab"`, no headings.
+ * one and not the other. Desktop only: settings/layout.tsx hides the rail below `md`, where
+ * SettingsFamilyBar switches families (K-02) and the family page's own tab strip switches tabs,
+ * both scrolling horizontally (D11). Links only — no `role="tab"`, no headings.
+ * Tokens only (664A, K-03): the current tab carries `data-active` for the shared sidebar active
+ * bar (in `primary` on the page canvas); the rail sticks just under the floating header, which is
+ * `sticky top-2` and `--app-header-height` tall (bottom edge at header height + 0.5rem).
  */
 export function SettingsSidebar({ slug }: SettingsSidebarProps) {
   const pathname = usePathname();
@@ -40,7 +45,7 @@ export function SettingsSidebar({ slug }: SettingsSidebarProps) {
   return (
     <nav
       aria-label="Settings navigation"
-      className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
+      className="sticky top-[calc(var(--app-header-height)+0.5rem)] h-[calc(100svh-var(--app-header-height)-1rem)] overflow-y-auto py-4"
     >
       <ul className="space-y-0.5">
         {SETTINGS_FAMILIES.map((family) => {
@@ -62,8 +67,8 @@ export function SettingsSidebar({ slug }: SettingsSidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
                   isActive
-                    ? "font-medium text-slate-900 dark:text-white"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <family.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -78,11 +83,13 @@ export function SettingsSidebar({ slug }: SettingsSidebarProps) {
                         <Link
                           href={settingsHref(slug, family.id, tab.id)}
                           aria-current={isCurrent ? "true" : undefined}
+                          data-active={isCurrent || undefined}
                           className={cn(
-                            "block rounded-r-md border-l-2 py-1.5 pr-3 pl-9 text-sm transition-colors",
+                            SIDEBAR_ACTIVE_BAR,
+                            "block rounded-md py-1.5 pr-3 pl-9 text-sm transition-colors",
                             isCurrent
-                              ? "border-teal-600 bg-teal-50 font-medium text-slate-900 dark:bg-slate-800 dark:text-white"
-                              : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                              ? "bg-muted text-foreground data-[active=true]:before:bg-primary font-medium"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
                           {tab.label}

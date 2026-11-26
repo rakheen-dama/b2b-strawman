@@ -564,3 +564,46 @@ describe("AppSidebar — the light-inset CSS selectors match the real DOM (FD-1 
     for (const sel of selectors) expect(document.querySelector(sel), sel).toBeNull();
   });
 });
+
+describe("AppSidebar — K-05 density keeps the IA (FD-9, ADR-339)", () => {
+  // K-05 tightens row height and group spacing only (className); the zones, their collapsed
+  // defaults and the ordered link list are the FD-9 invariant, on the rail and in the 390 Sheet.
+  it("keeps the zone order, each zone's default aria-expanded and the ordered link list", async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+
+    const triggers = within(nav()).getAllByRole("button");
+    expect(triggers.map((b) => b.textContent)).toEqual(ZONE_LABELS);
+    NAV_GROUPS.forEach((zone, i) => {
+      expect(triggers[i]).toHaveAttribute("aria-expanded", String(zone.defaultExpanded));
+    });
+
+    await expandCollapsedZones(user);
+    expect(navLinkLabels()).toEqual(ALL_ITEM_LABELS);
+    expect(ALL_ITEM_LABELS).toHaveLength(28);
+  });
+
+  it("holds the same ordered link list inside the mobile Sheet", async () => {
+    mobile.value = true;
+    const user = userEvent.setup();
+    renderSidebar();
+
+    await user.click(screen.getByRole("button", { name: "Toggle menu" }));
+    const dialog = screen.getByRole("dialog", { name: "Kazi" });
+    const sheetNav = within(dialog).getByRole("navigation", { name: "Main navigation" });
+    for (const zone of NAV_GROUPS) {
+      expect(within(sheetNav).getByRole("button", { name: zone.label })).toHaveAttribute(
+        "aria-expanded",
+        String(zone.defaultExpanded)
+      );
+    }
+    for (const zone of NAV_GROUPS.filter((g) => !g.defaultExpanded)) {
+      await user.click(within(sheetNav).getByRole("button", { name: zone.label }));
+    }
+    expect(
+      within(sheetNav)
+        .getAllByRole("link")
+        .map((link) => link.textContent)
+    ).toEqual(ALL_ITEM_LABELS);
+  });
+});

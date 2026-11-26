@@ -11,7 +11,7 @@ export default async function SettingsLayout({
 
   return (
     <div className="flex gap-6">
-      <aside className="hidden w-60 shrink-0 md:block">
+      <aside className="hidden w-48 shrink-0 md:block xl:w-60">
         <SettingsSidebar slug={slug} />
       </aside>
       <div className="min-w-0 flex-1">{children}</div>

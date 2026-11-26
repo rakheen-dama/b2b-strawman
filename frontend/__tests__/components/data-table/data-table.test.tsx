@@ -171,6 +171,7 @@ function pagedTableProps(
   overrides: Partial<DataTableBaseProps<Row>> & {
     paginationLabel?: string;
     paginationShowSingle?: boolean;
+    paginationEmptyLabel?: React.ReactNode;
   } = {}
 ): DataTableProps<Row> {
   return {
@@ -1241,6 +1242,61 @@ describe("DataTable — server-paged mode (ADR-395)", () => {
     expect(screen.getByText("Page 1 of 1")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  describe("paginationEmptyLabel (F-664B-2)", () => {
+    const callback = (pageIndex: number, pageCount: number): DataTableServerPagination => ({
+      pageIndex,
+      pageCount,
+      onPageChange: vi.fn(),
+    });
+
+    it("set: at zero pages it replaces 'Page {n} of {m}', both buttons disabled", () => {
+      render(
+        <DataTable
+          {...pagedTableProps(callback(0, 0), {
+            data: [],
+            paginationShowSingle: true,
+            paginationLabel: "Audit log pagination",
+            paginationEmptyLabel: "No events",
+          })}
+        />
+      );
+      const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+      expect(within(nav).getByText("No events")).toBeInTheDocument();
+      expect(within(nav).queryByText(/^Page \d+ of \d+$/)).toBeNull();
+      expect(within(nav).getByRole("button", { name: "Previous" })).toBeDisabled();
+      expect(within(nav).getByRole("button", { name: "Next" })).toBeDisabled();
+    });
+
+    it("unset: zero pages with paginationShowSingle still reads 'Page 1 of 0' (default kept)", () => {
+      render(
+        <DataTable {...pagedTableProps(callback(0, 0), { data: [], paginationShowSingle: true })} />
+      );
+      expect(screen.getByText("Page 1 of 0")).toBeInTheDocument();
+      expect(screen.queryByText("No events")).toBeNull();
+      expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    });
+
+    it("ignored when there are pages: 'Page 2 of 3' renders, not the empty label", () => {
+      render(
+        <DataTable
+          {...pagedTableProps(callback(1, 3), {
+            paginationShowSingle: true,
+            paginationEmptyLabel: "No events",
+          })}
+        />
+      );
+      expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+      expect(screen.queryByText("No events")).toBeNull();
+    });
+
+    it("is type-exclusive with client paging", () => {
+      // @ts-expect-error -- the zero-page label belongs to the server pager only
+      const local: LocalOverrides = { paginationEmptyLabel: "No events" };
+      expect(local.paginationEmptyLabel).toBe("No events");
+    });
   });
 
   it("paginationLabel wraps the pager in a named nav; without it there is no nav", () => {

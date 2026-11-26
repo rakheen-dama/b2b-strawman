@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { ApiError } from "@/lib/api/client";
 import {
   getAuditMetadata,
@@ -114,8 +115,8 @@ export async function renderAuditTrailTab({ slug, searchParams }: SettingsTabPro
     if (error instanceof ApiError && error.status === 403) {
       return (
         <div className="space-y-8">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <PageHeader title="Audit log" />
+          <p className="text-muted-foreground">
             Not authorised. The audit log is only visible to members with the{" "}
             <code className="font-mono text-xs">TEAM_OVERSIGHT</code> capability.
           </p>
@@ -127,16 +128,11 @@ export async function renderAuditTrailTab({ slug, searchParams }: SettingsTabPro
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Read-only feed of audit events. Filter by date range, severity, actor, event type, or
-            entity.
-          </p>
-        </div>
-        <ExportDropdown filter={filter} />
-      </div>
+      <PageHeader
+        title="Audit log"
+        description="Read-only feed of audit events. Filter by date range, severity, actor, event type, or entity."
+        actions={<ExportDropdown filter={filter} />}
+      />
 
       <AuditLogClient
         slug={slug}

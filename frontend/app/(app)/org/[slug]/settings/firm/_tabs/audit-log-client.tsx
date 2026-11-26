@@ -2,16 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronRight, ChevronsUpDown } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Check, ChevronDown, ChevronRight, ChevronsUpDown, ScrollText } from "lucide-react";
 import { Input } from "@b2mash/ui/input";
 import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,6 +46,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 
 const ALL_SEVERITIES: AuditSeverity[] = ["INFO", "NOTICE", "WARNING", "CRITICAL"];
 
@@ -405,7 +400,6 @@ export function AuditLogClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   /**
    * When a group-preset (Compliance/Security/Financial approvals) is active,
    * this holds the resolved event-type list so the banner can list them. The
@@ -531,23 +525,6 @@ export function AuditLogClient({
     [updateUrl, flushPendingInputs]
   );
 
-  const toggleRow = useCallback((id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  // Clear stale expanded ids when the page (or filter set) changes — the
-  // event ids on the new page are different. Deps only change on server
-  // refresh, so this can't cause a render loop.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Resets ephemeral UI selection on page change; not a render loop.
-    setExpanded(new Set());
-  }, [currentPage]);
-
   // Drop the multi-event banner if the URL no longer carries the sentinel
   // (e.g. the user typed a real event-type, hit Clear filters, or applied a
   // single-eventType preset).
@@ -655,13 +632,89 @@ export function AuditLogClient({
     ? entityTypeLabel(initialFilter.entityType)
     : "All entity types";
 
+  const columns = useMemo(
+    () =>
+      defineColumns<AuditEventResponse>([
+        {
+          id: "toggle",
+          header: () => null,
+          meta: { label: "", headerClassName: "w-10" },
+          cell: ({ row }) => {
+            const isExpanded = row.getIsExpanded();
+            return (
+              <button
+                type="button"
+                onClick={row.getToggleExpandedHandler()}
+                aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                aria-expanded={isExpanded}
+                data-testid={`audit-row-toggle-${row.original.id}`}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="size-4" />
+                ) : (
+                  <ChevronRight className="size-4" />
+                )}
+              </button>
+            );
+          },
+        },
+        {
+          id: "time",
+          meta: {
+            label: "Time",
+            cellClassName: "font-mono text-xs whitespace-nowrap text-slate-700 dark:text-slate-300",
+          },
+          // SSR (UTC server) and hydration (browser) must print the same string → SA-pinned.
+          cell: ({ row }) => formatDateTime(row.original.occurredAt),
+        },
+        {
+          id: "severity",
+          meta: { label: "Severity" },
+          cell: ({ row }) => <SeverityPill severity={row.original.severity} />,
+        },
+        {
+          id: "event",
+          meta: { label: "Event", cellClassName: "text-xs" },
+          // The label only: the stored key is never user-visible (ADR-357, G-D10a); it stays
+          // searchable through the Event-type filter (G-D10b ruling).
+          cell: ({ row }) => (
+            <div className="text-foreground font-medium">{row.original.label}</div>
+          ),
+        },
+        {
+          id: "actor",
+          meta: { label: "Actor" },
+          cell: ({ row }) => (
+            <ActorDisplay
+              actorDisplayName={row.original.actorDisplayName}
+              actorId={row.original.actorId}
+              actorType={row.original.actorType}
+              source={row.original.source}
+              ipAddress={row.original.ipAddress}
+            />
+          ),
+        },
+        {
+          id: "entity",
+          meta: { label: "Entity" },
+          cell: ({ row }) => (
+            <EntityCell
+              entityType={row.original.entityType}
+              entityId={row.original.entityId}
+              slug={slug}
+              details={row.original.details}
+            />
+          ),
+        },
+      ]),
+    [slug]
+  );
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Preset</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <SettingsSection title="Preset">
+        <div className="space-y-3">
           <label htmlFor="audit-preset-select" className="sr-only">
             Filter preset
           </label>
@@ -720,356 +773,249 @@ export function AuditLogClient({
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4" data-testid="audit-filter-row">
-            <div className={FILTER_FIELD_CLASS}>
-              <label htmlFor="audit-filter-from" className={FILTER_LABEL_CLASS}>
-                From
-              </label>
-              {/* UTC-day semantics: we map the picker's local YYYY-MM-DD to
+      <SettingsSection title="Filters">
+        <div className="flex flex-wrap gap-4" data-testid="audit-filter-row">
+          <div className={FILTER_FIELD_CLASS}>
+            <label htmlFor="audit-filter-from" className={FILTER_LABEL_CLASS}>
+              From
+            </label>
+            {/* UTC-day semantics: we map the picker's local YYYY-MM-DD to
                   the start of that UTC day (00:00:00.000Z). */}
-              <Input
-                id="audit-filter-from"
-                type="date"
-                value={isoDateInputValue(initialFilter.from)}
-                onChange={(e) =>
-                  setParam(
-                    "from",
-                    e.target.value
-                      ? new Date(e.target.value + "T00:00:00.000Z").toISOString()
-                      : undefined
-                  )
-                }
-              />
-            </div>
-            <div className={FILTER_FIELD_CLASS}>
-              <label htmlFor="audit-filter-to" className={FILTER_LABEL_CLASS}>
-                To
-              </label>
-              {/* UTC-day semantics: pin the upper bound to the very last
-                  millisecond of the chosen UTC day so events that occur in
-                  the final second of the day are not dropped. */}
-              <Input
-                id="audit-filter-to"
-                type="date"
-                value={isoDateInputValue(initialFilter.to)}
-                onChange={(e) =>
-                  setParam(
-                    "to",
-                    e.target.value
-                      ? new Date(e.target.value + "T23:59:59.999Z").toISOString()
-                      : undefined
-                  )
-                }
-              />
-            </div>
-            <div className={FILTER_FIELD_CLASS}>
-              <label htmlFor="audit-filter-actor" className={FILTER_LABEL_CLASS}>
-                Actor
-              </label>
-              <Select
-                value={currentActorId ?? ALL_VALUE}
-                onValueChange={(v) => setParam("actorId", v === ALL_VALUE ? undefined : v)}
-              >
-                <SelectTrigger id="audit-filter-actor" size="sm" className="w-full">
-                  <SelectValue>{currentActor?.option.label ?? "All actors"}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_VALUE}>All actors</SelectItem>
-                  {currentActor?.unknown && (
-                    <SelectItem value={currentActor.option.value}>
-                      {currentActor.option.label}
-                    </SelectItem>
-                  )}
-                  {ACTOR_GROUPS.filter((g) => actorGroups[g].length > 0).map((g) => (
-                    <SelectGroup key={g}>
-                      <SelectLabel>{g}</SelectLabel>
-                      {actorGroups[g].map((o) => (
-                        <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
-                          <OptionText option={o} />
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className={FILTER_FIELD_CLASS}>
-              <label htmlFor="audit-filter-entity-type" className={FILTER_LABEL_CLASS}>
-                Entity type
-              </label>
-              {/* ADR-342: the value is always the stored literal (`project`); only the label is
-                  the legal word ("Matter"). */}
-              <Select
-                value={initialFilter.entityType ?? ALL_VALUE}
-                onValueChange={(v) => setParam("entityType", v === ALL_VALUE ? undefined : v)}
-              >
-                <SelectTrigger id="audit-filter-entity-type" size="sm" className="w-full">
-                  <SelectValue>{currentEntityTypeLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_VALUE}>All entity types</SelectItem>
-                  {entityTypeOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
-                      <OptionText option={o} />
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className={FILTER_FIELD_CLASS}>
-              <label htmlFor="audit-filter-event-type" className={FILTER_LABEL_CLASS}>
-                Event type
-              </label>
-              <EventTypeCombobox
-                value={initialFilter.eventType}
-                facets={eventTypeFacets}
-                presetEventCount={multiEventBanner?.eventTypes.length || undefined}
-                onCommit={(v) => setParam("eventType", v)}
-              />
-            </div>
-            <FilterTextInput
-              id="audit-filter-entity-id"
-              label="Entity ID"
-              placeholder="UUID"
-              initialValue={initialFilter.entityId ?? ""}
-              inputRef={entityIdRef}
-              validate={entityIdError}
-              onCommit={(v) => setParam("entityId", v || undefined)}
+            <Input
+              id="audit-filter-from"
+              type="date"
+              value={isoDateInputValue(initialFilter.from)}
+              onChange={(e) =>
+                setParam(
+                  "from",
+                  e.target.value
+                    ? new Date(e.target.value + "T00:00:00.000Z").toISOString()
+                    : undefined
+                )
+              }
             />
           </div>
-
-          <div className="mt-4">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Severity</span>
-            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Severity filter">
-              {ALL_SEVERITIES.map((sev) => {
-                const active = selectedSeverities.has(sev);
-                return (
-                  <button
-                    key={sev}
-                    type="button"
-                    onClick={() => toggleSeverity(sev)}
-                    aria-pressed={active}
-                    data-testid={`severity-toggle-${sev}`}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs transition",
-                      active
-                        ? "border-teal-600 bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
-                    )}
-                  >
-                    {sev}
-                  </button>
-                );
-              })}
-            </div>
+          <div className={FILTER_FIELD_CLASS}>
+            <label htmlFor="audit-filter-to" className={FILTER_LABEL_CLASS}>
+              To
+            </label>
+            {/* UTC-day semantics: pin the upper bound to the very last
+                  millisecond of the chosen UTC day so events that occur in
+                  the final second of the day are not dropped. */}
+            <Input
+              id="audit-filter-to"
+              type="date"
+              value={isoDateInputValue(initialFilter.to)}
+              onChange={(e) =>
+                setParam(
+                  "to",
+                  e.target.value
+                    ? new Date(e.target.value + "T23:59:59.999Z").toISOString()
+                    : undefined
+                )
+              }
+            />
           </div>
+          <div className={FILTER_FIELD_CLASS}>
+            <label htmlFor="audit-filter-actor" className={FILTER_LABEL_CLASS}>
+              Actor
+            </label>
+            <Select
+              value={currentActorId ?? ALL_VALUE}
+              onValueChange={(v) => setParam("actorId", v === ALL_VALUE ? undefined : v)}
+            >
+              <SelectTrigger id="audit-filter-actor" size="sm" className="w-full">
+                <SelectValue>{currentActor?.option.label ?? "All actors"}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All actors</SelectItem>
+                {currentActor?.unknown && (
+                  <SelectItem value={currentActor.option.value}>
+                    {currentActor.option.label}
+                  </SelectItem>
+                )}
+                {ACTOR_GROUPS.filter((g) => actorGroups[g].length > 0).map((g) => (
+                  <SelectGroup key={g}>
+                    <SelectLabel>{g}</SelectLabel>
+                    {actorGroups[g].map((o) => (
+                      <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
+                        <OptionText option={o} />
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className={FILTER_FIELD_CLASS}>
+            <label htmlFor="audit-filter-entity-type" className={FILTER_LABEL_CLASS}>
+              Entity type
+            </label>
+            {/* ADR-342: the value is always the stored literal (`project`); only the label is
+                  the legal word ("Matter"). */}
+            <Select
+              value={initialFilter.entityType ?? ALL_VALUE}
+              onValueChange={(v) => setParam("entityType", v === ALL_VALUE ? undefined : v)}
+            >
+              <SelectTrigger id="audit-filter-entity-type" size="sm" className="w-full">
+                <SelectValue>{currentEntityTypeLabel}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>All entity types</SelectItem>
+                {entityTypeOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
+                    <OptionText option={o} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className={FILTER_FIELD_CLASS}>
+            <label htmlFor="audit-filter-event-type" className={FILTER_LABEL_CLASS}>
+              Event type
+            </label>
+            <EventTypeCombobox
+              value={initialFilter.eventType}
+              facets={eventTypeFacets}
+              presetEventCount={multiEventBanner?.eventTypes.length || undefined}
+              onCommit={(v) => setParam("eventType", v)}
+            />
+          </div>
+          <FilterTextInput
+            id="audit-filter-entity-id"
+            label="Entity ID"
+            placeholder="UUID"
+            initialValue={initialFilter.entityId ?? ""}
+            inputRef={entityIdRef}
+            validate={entityIdError}
+            onCommit={(v) => setParam("entityId", v || undefined)}
+          />
+        </div>
 
-          {hasActiveFilters && (
-            <div className="mt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                data-testid="audit-clear-filters"
-              >
-                Clear filters
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <div className="mt-4">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Severity</span>
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Severity filter">
+            {ALL_SEVERITIES.map((sev) => {
+              const active = selectedSeverities.has(sev);
+              return (
+                <button
+                  key={sev}
+                  type="button"
+                  onClick={() => toggleSeverity(sev)}
+                  aria-pressed={active}
+                  data-testid={`severity-toggle-${sev}`}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs transition",
+                    active
+                      ? "border-teal-600 bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
+                  )}
+                >
+                  {sev}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
+        {hasActiveFilters && (
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              data-testid="audit-clear-filters"
+            >
+              Clear filters
+            </Button>
+          </div>
+        )}
+      </SettingsSection>
+
+      <SettingsSection
+        title={
+          <>
             Events
             <span className="ml-2 font-mono text-xs font-normal text-slate-500">
               {page.totalElements.toLocaleString("en-ZA")} total
             </span>
             {isPending && <span className="ml-2 text-xs text-slate-400">Loading…</span>}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {content.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">
-              {hasActiveFilters
-                ? "No audit events in this range. Try widening the date range or changing filters."
-                : "The audit log is empty. Activity is logged automatically once team members start working in Kazi."}
-            </p>
-          ) : (
-            // `contain-inline-size`: the table scrolls inside its own wrapper instead of widening
-            // the page — its nowrap min-content otherwise propagated through the app shell and
-            // overflowed the page at 1280 px (625D overflow baseline).
-            <div className="contain-inline-size">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Actor</TableHead>
-                    <TableHead>Entity</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {content.map((event: AuditEventResponse) => {
-                    const isExpanded = expanded.has(event.id);
-                    return (
-                      <Row
-                        key={event.id}
-                        event={event}
-                        slug={slug}
-                        expanded={isExpanded}
-                        onToggle={() => toggleRow(event.id)}
-                      />
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <nav
-        aria-label="Audit log pagination"
-        className="flex items-center justify-between gap-3 text-sm"
+          </>
+        }
       >
-        <div className="text-slate-500">
-          {totalPages > 0 ? (
-            <>
-              Page <span className="font-medium">{currentPage + 1}</span> of {totalPages}
-            </>
-          ) : (
-            <>No events</>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={currentPage <= 0}
-            onClick={() => goToPage(currentPage - 1)}
-            className={cn(
-              "rounded-md border px-3 py-1.5",
-              currentPage > 0
-                ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800"
-            )}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={currentPage + 1 >= totalPages}
-            onClick={() => goToPage(currentPage + 1)}
-            className={cn(
-              "rounded-md border px-3 py-1.5",
-              currentPage + 1 < totalPages
-                ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800"
-            )}
-          >
-            Next
-          </button>
-        </div>
-      </nav>
+        {/* `key`: a new page collapses every open detail row, as before (the kit keeps expanded
+            rows across a new `data` array). The kit's `@container` frame keeps the wide table
+            scrolling inside the section instead of widening the page (625D overflow baseline). */}
+        <DataTable
+          key={currentPage}
+          columns={columns}
+          data={content}
+          getRowId={getEventId}
+          rowTestId={auditRowTestId}
+          getRowCanExpand={canExpand}
+          renderExpandedRow={renderDetails}
+          pagination={{ pageIndex: currentPage, pageCount: totalPages, onPageChange: goToPage }}
+          paginationLabel="Audit log pagination"
+          paginationShowSingle
+          paginationEmptyLabel="No events"
+          stickyHeader={false}
+          frame={false}
+          empty={
+            hasActiveFilters ? (
+              <EmptyState
+                variant="compact"
+                icon={ScrollText}
+                title="No audit events in this range."
+                description="Try widening the date range or changing filters."
+              />
+            ) : (
+              <EmptyState
+                variant="compact"
+                icon={ScrollText}
+                title="The audit log is empty."
+                description="Activity is logged automatically once team members start working in Kazi."
+              />
+            )
+          }
+        />
+      </SettingsSection>
     </div>
   );
 }
 
-interface RowProps {
-  event: AuditEventResponse;
-  slug: string;
-  expanded: boolean;
-  onToggle: () => void;
-}
+const getEventId = (event: AuditEventResponse) => event.id;
+const auditRowTestId = (event: AuditEventResponse) => `audit-row-${event.id}`;
+const canExpand = () => true;
 
-function Row({ event, slug, expanded, onToggle }: RowProps) {
+/** The detail row under an expanded event; `pl-10` aligns it under "Time" (past the toggle). */
+function renderDetails(event: AuditEventResponse) {
   return (
-    <>
-      <TableRow data-testid={`audit-row-${event.id}`}>
-        <TableCell>
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={expanded ? "Collapse details" : "Expand details"}
-            aria-expanded={expanded}
-            data-testid={`audit-row-toggle-${event.id}`}
-            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-          >
-            {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-          </button>
-        </TableCell>
-        <TableCell className="font-mono text-xs whitespace-nowrap text-slate-700 dark:text-slate-300">
-          {/* SSR (UTC server) and hydration (browser) must print the same string → SA-pinned. */}
-          {formatDateTime(event.occurredAt)}
-        </TableCell>
-        <TableCell>
-          <SeverityPill severity={event.severity} />
-        </TableCell>
-        <TableCell className="text-xs">
-          {/* The label only: the stored key is never user-visible (ADR-357, G-D10a); it stays
-              searchable through the Event-type filter (G-D10b ruling). */}
-          <div className="font-medium text-slate-900 dark:text-slate-100">{event.label}</div>
-        </TableCell>
-        <TableCell>
-          <ActorDisplay
-            actorDisplayName={event.actorDisplayName}
-            actorId={event.actorId}
-            actorType={event.actorType}
-            source={event.source}
-            ipAddress={event.ipAddress}
-          />
-        </TableCell>
-        <TableCell>
-          <EntityCell
-            entityType={event.entityType}
-            entityId={event.entityId}
-            slug={slug}
-            details={event.details}
-          />
-        </TableCell>
-      </TableRow>
-      {expanded && (
-        <TableRow data-testid={`audit-row-details-${event.id}`}>
-          <TableCell></TableCell>
-          <TableCell colSpan={5} className="bg-slate-50/50 dark:bg-slate-900/30">
-            <div className="space-y-3 py-2">
-              <AuditDetailsViewer details={event.details} />
-              <dl className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
-                {event.source && (
-                  <div>
-                    <dt className="inline font-semibold">Source: </dt>
-                    <dd className="inline font-mono">{event.source}</dd>
-                  </div>
-                )}
-                {event.ipAddress && (
-                  <div>
-                    <dt className="inline font-semibold">IP: </dt>
-                    <dd className="inline font-mono">{event.ipAddress}</dd>
-                  </div>
-                )}
-                {event.userAgent && (
-                  <div>
-                    <dt className="inline font-semibold">Agent: </dt>
-                    <dd className="inline font-mono">{event.userAgent}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          </TableCell>
-        </TableRow>
-      )}
-    </>
+    <div data-testid={`audit-row-details-${event.id}`} className="space-y-3 py-2 pl-10">
+      <AuditDetailsViewer details={event.details} />
+      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+        {event.source && (
+          <div>
+            <dt className="inline font-semibold">Source: </dt>
+            <dd className="inline font-mono">{event.source}</dd>
+          </div>
+        )}
+        {event.ipAddress && (
+          <div>
+            <dt className="inline font-semibold">IP: </dt>
+            <dd className="inline font-mono">{event.ipAddress}</dd>
+          </div>
+        )}
+        {event.userAgent && (
+          <div>
+            <dt className="inline font-semibold">Agent: </dt>
+            <dd className="inline font-mono">{event.userAgent}</dd>
+          </div>
+        )}
+      </dl>
+    </div>
   );
 }

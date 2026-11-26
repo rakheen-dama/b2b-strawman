@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
+import { ClipboardList, Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,14 +25,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 import {
   createProcessingActivity,
   updateProcessingActivity,
@@ -283,6 +279,13 @@ function ProcessingActivityDialog({
 
 // --- Main Table Component ---
 
+const getActivityId = (activity: ProcessingActivity) => activity.id;
+
+interface ActivityHandlers {
+  handleEdit: (activity: ProcessingActivity) => void;
+  handleDelete: (id: string) => Promise<void>;
+}
+
 interface ProcessingRegisterTableProps {
   activities: ProcessingActivity[];
   slug: string;
@@ -321,94 +324,118 @@ export function ProcessingRegisterTable({ activities, slug }: ProcessingRegister
     toast.info("Export register is coming soon.");
   }
 
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Processing Register
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Maintain a register of all personal data processing activities as required by your
-            jurisdiction.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="mr-1.5 size-4" />
-            Export Register
-          </Button>
-          <Button size="sm" onClick={handleAdd}>
-            <Plus className="mr-1.5 size-4" />
-            Add Activity
-          </Button>
-        </div>
-      </div>
+  // Cells reach today's handlers through a ref refreshed after each render; the columns rebuild
+  // only when `deletingId` changes (the Delete cell reads it during render).
+  const handlers = useRef<ActivityHandlers>({ handleEdit, handleDelete });
+  useLayoutEffect(() => {
+    handlers.current = { handleEdit, handleDelete };
+  });
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Legal Basis</TableHead>
-              <TableHead>Data Subjects</TableHead>
-              <TableHead>Retention Period</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {activities.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-slate-500 dark:text-slate-400"
+  const columns = useMemo(
+    () =>
+      defineColumns<ProcessingActivity>([
+        {
+          id: "category",
+          meta: { label: "Category", cellClassName: "font-medium" },
+          cell: ({ row }) => row.original.category,
+        },
+        {
+          id: "description",
+          meta: { label: "Description", cellClassName: "max-w-xs truncate" },
+          cell: ({ row }) => row.original.description,
+        },
+        {
+          id: "legalBasis",
+          meta: { label: "Legal Basis" },
+          cell: ({ row }) => row.original.legalBasis,
+        },
+        {
+          id: "dataSubjects",
+          meta: { label: "Data Subjects" },
+          cell: ({ row }) => row.original.dataSubjects,
+        },
+        {
+          id: "retentionPeriod",
+          meta: { label: "Retention Period" },
+          cell: ({ row }) => row.original.retentionPeriod,
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) => {
+            const activity = row.original;
+            return (
+              <div className="flex items-center justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handlers.current.handleEdit(activity)}
+                  aria-label={`Edit ${activity.category}`}
                 >
-                  No processing activities recorded. Click &ldquo;Add Activity&rdquo; to create one.
-                </TableCell>
-              </TableRow>
-            ) : (
-              activities.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="font-medium">{activity.category}</TableCell>
-                  <TableCell className="max-w-xs truncate">{activity.description}</TableCell>
-                  <TableCell>{activity.legalBasis}</TableCell>
-                  <TableCell>{activity.dataSubjects}</TableCell>
-                  <TableCell>{activity.retentionPeriod}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(activity)}
-                        aria-label={`Edit ${activity.category}`}
-                      >
-                        <Pencil className="size-4" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={deletingId === activity.id}
-                        onClick={() => handleDelete(activity.id)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                        aria-label={`Delete ${activity.category}`}
-                      >
-                        {deletingId === activity.id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-4" />
-                        )}
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  <Pencil className="size-4" />
+                  <span className="sr-only">Edit</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={deletingId === activity.id}
+                  onClick={() => handlers.current.handleDelete(activity.id)}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={`Delete ${activity.category}`}
+                >
+                  {deletingId === activity.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                  <span className="sr-only">Delete</span>
+                </Button>
+              </div>
+            );
+          },
+        },
+      ]),
+    [deletingId]
+  );
+
+  return (
+    <>
+      <SettingsSection
+        title="Processing Register"
+        description="Maintain a register of all personal data processing activities as required by your jurisdiction."
+        actions={
+          // K-109: the two buttons wrap inside the header's action column on a narrow screen.
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="mr-1.5 size-4" />
+              Export Register
+            </Button>
+            <Button size="sm" onClick={handleAdd}>
+              <Plus className="mr-1.5 size-4" />
+              Add Activity
+            </Button>
+          </div>
+        }
+      >
+        <DataTable
+          columns={columns}
+          data={activities}
+          getRowId={getActivityId}
+          columnVisibility={false}
+          pageSize={null}
+          stickyHeader={false}
+          frame={false}
+          empty={
+            <EmptyState
+              variant="inline"
+              icon={ClipboardList}
+              title="No processing activities recorded."
+              description="Click “Add Activity” to create one."
+            />
+          }
+        />
+      </SettingsSection>
 
       <ProcessingActivityDialog
         key={editingActivity?.id ?? "new"}
@@ -417,6 +444,6 @@ export function ProcessingRegisterTable({ activities, slug }: ProcessingRegister
         slug={slug}
         activity={editingActivity}
       />
-    </div>
+    </>
   );
 }

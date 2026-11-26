@@ -8,6 +8,8 @@ interface DataTablePageLinksProps {
   pagination: DataTableServerPagination;
   /** Wraps the pager in `<nav aria-label>` (only where one exists today, e.g. the audit log). */
   label?: string;
+  /** Replaces "Page {n} of {m}" when `pageCount` is 0 (the audit log's "No events", F-664B-2). */
+  emptyLabel?: ReactNode;
 }
 
 /**
@@ -16,12 +18,18 @@ interface DataTablePageLinksProps {
  * local pager's "Go to …" `aria-label`s). Links (`hrefFor`) with a disabled button at each end, or
  * buttons calling `onPageChange`. Rendered only by `DataTable`, which decides when it shows.
  */
-export function DataTablePageLinks({ pagination, label }: DataTablePageLinksProps) {
+export function DataTablePageLinks({ pagination, label, emptyLabel }: DataTablePageLinksProps) {
   const { pageIndex, pageCount } = pagination;
   const pager = (
     <div className="mt-4 flex items-center justify-between border-t pt-4">
       <p className="text-muted-foreground text-sm">
-        Page {pageIndex + 1} of {pageCount}
+        {pageCount === 0 && emptyLabel !== undefined ? (
+          emptyLabel
+        ) : (
+          <>
+            Page {pageIndex + 1} of {pageCount}
+          </>
+        )}
       </p>
       <div className="flex items-center gap-2">
         <PageControl pagination={pagination} target={pageIndex - 1} enabled={pageIndex > 0}>

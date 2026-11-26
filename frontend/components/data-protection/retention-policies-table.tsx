@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Save, Loader2, Play } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Archive, Save, Loader2, Play } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { formatDateTime } from "@/lib/format";
 import {
   updateRetentionPolicy,
   evaluateRetentionPolicies,
@@ -64,15 +61,19 @@ function formatRecordType(type: string): string {
     .join(" ");
 }
 
+// SA-pinned date and time: SSR (UTC) and hydration print the same string.
 function formatDate(iso: string | null): string {
-  if (!iso) return "Never";
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return iso ? formatDateTime(iso) : "Never";
+}
+
+const selectClasses =
+  "border-input text-foreground dark:bg-input/30 rounded-md border bg-transparent px-2 py-1.5 text-sm transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
+
+const getRowId = (row: EditableRow) => row.id;
+
+interface RowActions {
+  updateRow: (index: number, updates: Partial<EditableRow>) => void;
+  saveRow: (index: number) => Promise<void>;
 }
 
 interface RetentionPoliciesTableProps {
@@ -180,142 +181,155 @@ export function RetentionPoliciesTable({
     setIsEvaluating(false);
   }
 
-  const selectClasses =
-    "rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 dark:border-slate-700 dark:bg-input/30 dark:text-slate-100";
+  // TanStack renders each column's `cell` as a component, so the column array must keep its
+  // identity across edits (a new `cell` function would remount the row's inputs on every
+  // keystroke). Cells reach today's index-based handlers through a ref refreshed after each render.
+  const actions = useRef<RowActions>({ updateRow, saveRow });
+  useLayoutEffect(() => {
+    actions.current = { updateRow, saveRow };
+  });
+
+  const columns = useMemo(
+    () =>
+      defineColumns<EditableRow>([
+        {
+          id: "recordType",
+          meta: { label: "Entity Type", cellClassName: "font-medium" },
+          cell: ({ row }) => formatRecordType(row.original.recordType),
+        },
+        {
+          id: "retentionDays",
+          meta: { label: "Retention Period" },
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={row.original.retentionDays}
+                onChange={(e) =>
+                  actions.current.updateRow(row.index, {
+                    retentionDays: Math.max(1, parseInt(e.target.value) || 1),
+                    error: null,
+                  })
+                }
+                className="w-24"
+                aria-label={`Retention days for ${formatRecordType(row.original.recordType)}`}
+              />
+              <span className="text-muted-foreground text-sm">days</span>
+            </div>
+          ),
+        },
+        {
+          id: "action",
+          meta: { label: "Action" },
+          cell: ({ row }) => (
+            <select
+              value={row.original.action}
+              onChange={(e) => actions.current.updateRow(row.index, { action: e.target.value })}
+              className={selectClasses}
+              aria-label={`Action for ${formatRecordType(row.original.recordType)}`}
+            >
+              {ACTIONS.map((a) => (
+                <option key={a} value={a}>
+                  {a === "ANONYMIZE" ? "Anonymize" : "Flag"}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          id: "active",
+          meta: { label: "Enabled" },
+          cell: ({ row }) => (
+            <Switch
+              checked={row.original.active}
+              onCheckedChange={(checked) =>
+                actions.current.updateRow(row.index, { active: checked })
+              }
+              aria-label={`Toggle ${formatRecordType(row.original.recordType)} policy`}
+            />
+          ),
+        },
+        {
+          id: "lastEvaluatedAt",
+          meta: { label: "Last Evaluated", cellClassName: "text-muted-foreground text-sm" },
+          cell: ({ row }) => formatDate(row.original.lastEvaluatedAt),
+        },
+        {
+          id: "save",
+          enableHiding: false,
+          meta: { label: "Save", align: "end" },
+          cell: ({ row }) => (
+            <div className="flex flex-col items-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={row.original.saving}
+                onClick={() => actions.current.saveRow(row.index)}
+                aria-label={`Save ${formatRecordType(row.original.recordType)} policy`}
+              >
+                {row.original.saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Save className="size-4" />
+                )}
+                <span className="sr-only">Save</span>
+              </Button>
+              {row.original.error && (
+                <p className="text-destructive mt-1 max-w-48 text-xs" role="alert">
+                  {row.original.error}
+                </p>
+              )}
+            </div>
+          ),
+        },
+      ]),
+    []
+  );
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Retention Policies
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure how long different types of data are retained before automatic anonymisation or
-          deletion.
-        </p>
-      </div>
+    <SettingsSection
+      title="Retention Policies"
+      description="Configure how long different types of data are retained before automatic anonymisation or deletion."
+    >
+      <div className="space-y-4">
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={getRowId}
+          columnVisibility={false}
+          pageSize={null}
+          stickyHeader={false}
+          frame={false}
+          empty={
+            <EmptyState
+              variant="inline"
+              icon={Archive}
+              title="No retention policies configured."
+              description={null}
+            />
+          }
+        />
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Entity Type</TableHead>
-              <TableHead>Retention Period</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Enabled</TableHead>
-              <TableHead>Last Evaluated</TableHead>
-              <TableHead className="text-right">Save</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-slate-500 dark:text-slate-400"
-                >
-                  No retention policies configured.
-                </TableCell>
-              </TableRow>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleEvaluate}>
+            {isEvaluating ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
             ) : (
-              rows.map((row, index) => (
-                <TableRow key={row.id}>
-                  <TableCell className="font-medium">{formatRecordType(row.recordType)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        value={row.retentionDays}
-                        onChange={(e) =>
-                          updateRow(index, {
-                            retentionDays: Math.max(1, parseInt(e.target.value) || 1),
-                            error: null,
-                          })
-                        }
-                        className="w-24"
-                        aria-label={`Retention days for ${formatRecordType(row.recordType)}`}
-                      />
-                      <span className="text-sm text-slate-500 dark:text-slate-400">days</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <select
-                      value={row.action}
-                      onChange={(e) => updateRow(index, { action: e.target.value })}
-                      className={selectClasses}
-                      aria-label={`Action for ${formatRecordType(row.recordType)}`}
-                    >
-                      {ACTIONS.map((a) => (
-                        <option key={a} value={a}>
-                          {a === "ANONYMIZE" ? "Anonymize" : "Flag"}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={row.active}
-                      onCheckedChange={(checked) => updateRow(index, { active: checked })}
-                      aria-label={`Toggle ${formatRecordType(row.recordType)} policy`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-500 dark:text-slate-400">
-                    {formatDate(row.lastEvaluatedAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex flex-col items-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={row.saving}
-                        onClick={() => saveRow(index)}
-                        aria-label={`Save ${formatRecordType(row.recordType)} policy`}
-                      >
-                        {row.saving ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Save className="size-4" />
-                        )}
-                        <span className="sr-only">Save</span>
-                      </Button>
-                      {row.error && (
-                        <p
-                          className="mt-1 max-w-48 text-xs text-red-600 dark:text-red-400"
-                          role="alert"
-                        >
-                          {row.error}
-                        </p>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              <Play className="mr-1.5 size-4" />
             )}
-          </TableBody>
-        </Table>
-      </div>
+            Run Retention Check
+          </Button>
+          <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleExecutePurge}>
+            Execute Purge
+          </Button>
+        </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleEvaluate}>
-          {isEvaluating ? (
-            <Loader2 className="mr-1.5 size-4 animate-spin" />
-          ) : (
-            <Play className="mr-1.5 size-4" />
-          )}
-          Run Retention Check
-        </Button>
-        <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleExecutePurge}>
-          Execute Purge
-        </Button>
+        {evaluateMessage && (
+          <p className="text-sm text-teal-600 dark:text-teal-400">{evaluateMessage}</p>
+        )}
+        {evaluateError && <p className="text-destructive text-sm">{evaluateError}</p>}
       </div>
-
-      {evaluateMessage && (
-        <p className="mt-3 text-sm text-teal-600 dark:text-teal-400">{evaluateMessage}</p>
-      )}
-      {evaluateError && (
-        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{evaluateError}</p>
-      )}
-    </div>
+    </SettingsSection>
   );
 }

@@ -129,6 +129,7 @@ export interface DataTableLocalPagingProps {
   pagination?: never;
   paginationLabel?: never;
   paginationShowSingle?: never;
+  paginationEmptyLabel?: never;
   /**
    * `null` (default) renders every row; a positive integer paginates locally with a page-size
    * select. Any other value (0, negative, `NaN`, fractional) is treated as `null`.
@@ -155,6 +156,11 @@ export interface DataTableServerPagingProps {
   paginationLabel?: string;
   /** Show the pager at one page (or none) too (default: nothing when `pageCount <= 1`). */
   paginationShowSingle?: boolean;
+  /**
+   * Replaces "Page {n} of {m}" when `pageCount` is 0; only where a zero-page label exists today
+   * (the audit log's "No events", F-664B-2). Absent → "Page 1 of 0" as before.
+   */
+  paginationEmptyLabel?: ReactNode;
   pageSize?: never;
   selectable?: never;
   exportCsv?: never;
@@ -267,6 +273,7 @@ export function DataTable<T, K extends string = string>({
   pagination: serverPagination,
   paginationLabel,
   paginationShowSingle = false,
+  paginationEmptyLabel,
   pageSize: pageSizeProp = null,
   selectable = false,
   exportCsv,
@@ -497,7 +504,11 @@ export function DataTable<T, K extends string = string>({
         </div>
       )}
       {showServerPager && (
-        <DataTablePageLinks pagination={serverPagination} label={paginationLabel} />
+        <DataTablePageLinks
+          pagination={serverPagination}
+          label={paginationLabel}
+          emptyLabel={paginationEmptyLabel}
+        />
       )}
       {showRows && paginated && <DataTablePagination table={table} />}
       {showRows && footer}

@@ -903,4 +903,157 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(pushedUrl()).toContain("eventType=invoice.sent");
     });
   });
+
+  describe("Audit log pager (DataTable server-paged, callback)", () => {
+    function pagedEvents(number: number, totalPages: number) {
+      return {
+        content: [makeEvent({ id: "evt-p1", label: "Paged event" })],
+        page: { totalElements: totalPages * 50, totalPages, size: 50, number },
+      };
+    }
+
+    it("renders one h1 'Audit log' and the Preset / Filters / Events sections as h2s", async () => {
+      mockListAuditEvents.mockResolvedValue(pagedEvents(0, 3));
+
+      await renderTab();
+
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveTextContent(/^Audit log$/);
+      expect(screen.getByRole("heading", { level: 2, name: "Preset" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 2, name: "Filters" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 2, name: /^Events/ })).toBeInTheDocument();
+    });
+
+    it("the 403 branch keeps exactly one h1 'Audit log'", async () => {
+      mockListAuditEvents.mockRejectedValue(new ApiError(403, "Forbidden"));
+
+      await renderTab();
+
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveTextContent(/^Audit log$/);
+    });
+
+    it("page 1 of 3: Previous disabled; Next pushes page=1 on the tab with scroll: false", async () => {
+      mockListAuditEvents.mockResolvedValue(pagedEvents(0, 3));
+
+      await renderTab();
+
+      const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+      expect(within(nav).getByText("Page 1 of 3")).toBeInTheDocument();
+      expect(within(nav).getByRole("button", { name: "Previous" })).toBeDisabled();
+      fireEvent.click(within(nav).getByRole("button", { name: "Next" }));
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      const [url, options] = pushMock.mock.calls[0];
+      expect(url).toContain("/org/acme/settings/firm?");
+      expect(url).toContain("page=1");
+      expect(url).toContain("tab=audit-trail");
+      expect(options).toEqual({ scroll: false });
+    });
+
+    it("Previous from page 2 to page 1 removes the page param", async () => {
+      mockListAuditEvents.mockResolvedValue(pagedEvents(1, 3));
+
+      await renderTab({ page: "1", severities: "INFO" });
+
+      const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+      expect(within(nav).getByText("Page 2 of 3")).toBeInTheDocument();
+      fireEvent.click(within(nav).getByRole("button", { name: "Previous" }));
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      const url = pushedUrl();
+      expect(url).not.toContain("page=");
+      // Filters are kept across pages.
+      expect(url).toContain("severities=INFO");
+      expect(url).toContain("tab=audit-trail");
+    });
+
+    it("one page: the pager still shows 'Page 1 of 1' with both buttons disabled", async () => {
+      mockListAuditEvents.mockResolvedValue(pagedEvents(0, 1));
+
+      await renderTab();
+
+      const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+      expect(within(nav).getByText("Page 1 of 1")).toBeInTheDocument();
+      expect(within(nav).getByRole("button", { name: "Previous" })).toBeDisabled();
+      expect(within(nav).getByRole("button", { name: "Next" })).toBeDisabled();
+    });
+
+    it("no results: the pager reads 'No events' (never 'Page 1 of 0'), both buttons disabled", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+      expect(within(nav).getByText("No events")).toBeInTheDocument();
+      expect(within(nav).queryByText(/^Page \d+ of \d+$/)).toBeNull();
+      expect(within(nav).getByRole("button", { name: "Previous" })).toBeDisabled();
+      expect(within(nav).getByRole("button", { name: "Next" })).toBeDisabled();
+      expect(screen.queryByRole("table")).toBeNull();
+      expect(
+        screen.getByRole("heading", { level: 2, name: "The audit log is empty." })
+      ).toBeInTheDocument();
+    });
+
+    it("no results with a filter: the empty copy is the filtered one", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab({ severities: "CRITICAL" });
+
+      expect(
+        screen.getByRole("heading", { level: 2, name: "No audit events in this range." })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Try widening the date range or changing filters.")
+      ).toBeInTheDocument();
+    });
+
+    it("a filter change on page 3 drops the page param", async () => {
+      mockListAuditEvents.mockResolvedValue(pagedEvents(2, 3));
+
+      await renderTab({ page: "2" });
+
+      fireEvent.click(screen.getByTestId("severity-toggle-WARNING"));
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      const url = pushedUrl();
+      expect(url).toContain("severities=WARNING");
+      expect(url).not.toContain("page=");
+    });
+
+    it("the row <tr> carries audit-row-<id>; the expanded details container carries audit-row-details-<id>", async () => {
+      mockListAuditEvents.mockResolvedValue({
+        content: [
+          makeEvent({ id: "evt-1", details: { name: { from: "Old", to: "New" } } }),
+          makeEvent({ id: "evt-2", label: "Second event" }),
+        ],
+        page: { totalElements: 2, totalPages: 1, size: 50, number: 0 },
+      });
+
+      await renderTab();
+
+      const row = screen.getByTestId("audit-row-evt-1");
+      expect(row.tagName).toBe("TR");
+      // The first `audit-row-` match in DOM order is the row itself (the e2e `.first()` contract).
+      expect(document.querySelector('[data-testid^="audit-row-"]')).toBe(row);
+      expect(screen.queryByTestId("audit-row-details-evt-1")).toBeNull();
+
+      fireEvent.click(within(row).getByRole("button", { name: "Expand details" }));
+
+      const details = screen.getByTestId("audit-row-details-evt-1");
+      expect(within(details).getByTestId("audit-details-diff")).toBeInTheDocument();
+      expect(details).toHaveTextContent("Old");
+      expect(details).toHaveTextContent("New");
+      // The details sit right after their row, before the next event's row.
+      const detailsRow = details.closest("tr")!;
+      expect(row.nextElementSibling).toBe(detailsRow);
+      expect(detailsRow.nextElementSibling).toBe(screen.getByTestId("audit-row-evt-2"));
+      expect(within(row).getByRole("button", { name: "Collapse details" })).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
+    });
+  });
 });

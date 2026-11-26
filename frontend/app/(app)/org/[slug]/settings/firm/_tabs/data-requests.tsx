@@ -1,7 +1,9 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchDsarRequests } from "./data-requests-actions";
 import { DsarRequestsTable } from "@/components/data-protection/dsar-requests-table";
 import { LogDsarRequestDialog } from "@/components/data-protection/log-dsar-dialog";
+import { SettingsSection } from "@/components/settings/settings-section";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 /**
@@ -14,8 +16,8 @@ export async function renderDataRequestsTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="DSAR Requests" />
+        <p className="text-muted-foreground">
           You do not have permission to manage DSAR requests. Only admins and owners can access this
           page.
         </p>
@@ -34,23 +36,21 @@ export async function renderDataRequestsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Track and manage data subject access requests.
-          </p>
-        </div>
-        <LogDsarRequestDialog slug={slug} />
-      </div>
+      <PageHeader
+        title="DSAR Requests"
+        description="Track and manage data subject access requests."
+        actions={<LogDsarRequestDialog slug={slug} />}
+      />
 
       {fetchError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-          <p className="text-sm text-red-700 dark:text-red-300">{fetchError}</p>
+          <p className="text-destructive text-sm">{fetchError}</p>
         </div>
       )}
 
-      <DsarRequestsTable requests={requests} slug={slug} />
+      <SettingsSection>
+        <DsarRequestsTable requests={requests} slug={slug} />
+      </SettingsSection>
     </div>
   );
 }

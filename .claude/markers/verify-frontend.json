@@ -1,7 +1,7 @@
 {
-  "commit": "bf2b15f51",
-  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20, worktree-epic-665A, PR #1870)",
+  "commit": "a8720ea0c",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, worktree-epic-665B, PR #1871)",
   "exit": 0,
-  "ts": "2026-11-26T16:04:23Z",
-  "summary": "PR #1870 @bf2b15f51 (head de8c19a42 adds only qa_cycle evidence; frontend diff empty) — lint 0, typecheck 0, format clean, vitest 525 files / 5208 passed / 2 skipped, build 0; orchestrator run (fixer run identical)"
+  "ts": "2026-11-26T17:50:30Z",
+  "summary": "PR #1871 @a8720ea0c (final head) — lint 0 (0 errors, 76 warnings), typecheck 0, format clean, vitest 526 files / 5248 passed / 2 skipped, build 0; orchestrator run (fixer run identical)"
 }

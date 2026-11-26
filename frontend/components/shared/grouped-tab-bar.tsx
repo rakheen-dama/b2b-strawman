@@ -19,6 +19,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { TabGroup } from "@/lib/constants/tab-group-types";
+import {
+  TAB_UNDERLINE_SELECTED as TRIGGER_CLASS,
+  TAB_STRIP_SCROLL_AREA_CLASS as SCROLL_AREA_CLASS,
+  TAB_STRIP_SCROLLBAR_CLASS as SCROLLBAR_CLASS,
+  TAB_EDGE_FADE_CLASS as FADE_CLASS,
+  findScrollViewport as findViewport,
+  scrollItemClearOfFades as scrollTriggerClearOfFades,
+  type EdgeFades,
+} from "@/components/shared/tab-underline";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +40,7 @@ export interface GroupedTabBarProps {
 }
 
 // ---------------------------------------------------------------------------
-// Styles (tokens only — the shadcn `line` tab variant in components/ui/tabs.tsx)
+// Styles (tokens only — the trigger underline, scroll area and edge fades: shared/tab-underline.ts)
 // ---------------------------------------------------------------------------
 
 /**
@@ -42,78 +51,6 @@ export interface GroupedTabBarProps {
  */
 const STICKY_BAR_CLASS =
   "bg-background border-border sticky top-[calc(var(--app-header-height)+0.5rem)] z-20 border-b";
-
-/**
- * Active state keys on `aria-selected` — not `data-state`, which Radix's DropdownMenuTrigger sets
- * to `open|closed` on the multi-tab triggers. The 2px underline is an `after:` pseudo-element in
- * `foreground` (as the line variant); the focus ring is inset so the scroll viewport can't clip it.
- */
-const TRIGGER_CLASS = cn(
-  "relative shrink-0 cursor-pointer rounded-sm px-2 pt-2 pb-3 text-sm font-medium whitespace-nowrap outline-none transition-colors motion-reduce:transition-none",
-  "text-muted-foreground hover:text-foreground aria-selected:text-foreground",
-  "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-foreground after:opacity-0 after:transition-opacity aria-selected:after:opacity-100 motion-reduce:after:transition-none",
-  "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset"
-);
-
-/**
- * `type="auto"`: Radix mounts the horizontal scrollbar whenever the row overflows (not only while it
- * is being scrolled), so a mouse with a vertical wheel only can still drag it to reach hidden tabs.
- * Radix positions the scrollbar absolutely at the bottom of the root. Only while it is mounted, the
- * root reserves a strip of the same height (`pb-1.5` = `h-1.5`), so the scrollbar sits under the
- * row and never covers the 2px active underline.
- */
-const SCROLL_AREA_CLASS =
-  "w-full has-[[data-slot=scroll-area-scrollbar][data-orientation=horizontal]]:pb-1.5";
-const SCROLLBAR_CLASS = "h-1.5";
-
-/**
- * Edge fade overlays: shown only while there is tab content hidden past that edge. They stop above
- * the scrollbar strip (`bottom-1.5`), so they never wash out the thumb. They are only visible
- * while the row overflows, which is also when the scrollbar is mounted.
- */
-const FADE_CLASS =
-  "from-background pointer-events-none absolute top-0 bottom-1.5 w-8 opacity-0 transition-opacity data-[visible=true]:opacity-100 motion-reduce:transition-none";
-
-/** Width of an edge fade (`w-8`); keeping a trigger in view clears it, not just the edge. */
-const EDGE_FADE_PX = 32;
-
-function findViewport(scrollArea: HTMLElement | null) {
-  return scrollArea?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]') ?? null;
-}
-
-/**
- * Scroll the row horizontally just far enough that `trigger` sits fully clear of the edge fades.
- * A fade only covers an edge with hidden content past it, so near the row's ends the target clamps
- * (at 0 here, at the maximum by the browser) and that fade is gone. Only `scrollLeft` changes:
- * never `scrollIntoView`, which can also scroll the page vertically. Changing `scrollLeft` makes
- * the viewport fire `scroll`, and the edge-fade listener then refreshes the fades.
- *
- * Positions are measured with `getBoundingClientRect()`, relative to the scroll content (trigger
- * rect minus viewport rect, plus `scrollLeft`), not with `offsetLeft`/`offsetWidth`/`clientWidth`:
- * those round to whole pixels, which left a trigger up to a pixel short of clearing a fade. The
- * trigger's start is rounded down, its end up, and the viewport width down, so the integer target
- * always errs on the side of clearing the fade.
- */
-function scrollTriggerClearOfFades(viewport: HTMLElement, trigger: HTMLElement) {
-  const { scrollLeft } = viewport;
-  const viewportRect = viewport.getBoundingClientRect();
-  const triggerRect = trigger.getBoundingClientRect();
-  const width = Math.floor(viewportRect.width);
-  const start = Math.floor(triggerRect.left - viewportRect.left + scrollLeft);
-  const end = Math.ceil(triggerRect.right - viewportRect.left + scrollLeft);
-  if (start < scrollLeft + EDGE_FADE_PX) {
-    const target = Math.max(0, start - EDGE_FADE_PX);
-    if (target < scrollLeft) viewport.scrollLeft = target;
-  } else if (end > scrollLeft + width - EDGE_FADE_PX) {
-    const target = Math.min(start, end - width + EDGE_FADE_PX);
-    if (target > scrollLeft) viewport.scrollLeft = target;
-  }
-}
-
-interface EdgeFades {
-  start: boolean;
-  end: boolean;
-}
 
 // ---------------------------------------------------------------------------
 // Component

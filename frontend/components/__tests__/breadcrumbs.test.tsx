@@ -431,6 +431,18 @@ describe("Breadcrumbs", () => {
       expect(lastChevron).toHaveClass("hidden", "sm:block");
     });
 
+    it("K-26: the org crumb truncates with its full name in title; middle crumbs never wrap", () => {
+      mockUsePathname.mockReturnValue("/org/acme/trust-accounting/transactions");
+      render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
+      const org = screen.getByRole("link", { name: "E2E Test Organization" });
+      expect(org).toHaveAttribute("title", "E2E Test Organization");
+      expect(org).toHaveClass("max-w-40", "truncate");
+      expect(screen.getByRole("link", { name: "Trust accounting" }).parentElement).toHaveClass(
+        "whitespace-nowrap"
+      );
+      expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
+    });
+
     it("falls back to the generic label once the publisher unmounts", () => {
       mockUsePathname.mockReturnValue(`/org/acme/matters/${MATTER_ID}`);
       const tree = (withPublisher: boolean) => (

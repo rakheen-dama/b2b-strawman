@@ -150,10 +150,12 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
     // crumb truncates, with the full name in its title. Below `sm` only the last crumb shows: on a
     // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
-      {/* Org name as root link (falls back to slug) */}
+      {/* Org name as root link (falls back to slug). K-26: it truncates (full name in title) and
+          middle crumbs stay on one line, so the breadcrumb never wraps the fixed-height header. */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="text-muted-foreground hover:text-foreground hidden transition-colors sm:inline"
+        title={orgName ?? slug}
+        className="text-muted-foreground hover:text-foreground hidden max-w-40 truncate transition-colors sm:inline"
       >
         {orgName ?? slug}
       </Link>
@@ -180,7 +182,9 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
           <span
             key={href}
             className={
-              isLast ? "flex min-w-0 items-center gap-1" : "hidden items-center gap-1 sm:flex"
+              isLast
+                ? "flex min-w-0 items-center gap-1"
+                : "hidden items-center gap-1 whitespace-nowrap sm:flex"
             }
           >
             <ChevronRight

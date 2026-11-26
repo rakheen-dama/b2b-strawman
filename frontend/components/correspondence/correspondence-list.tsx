@@ -32,6 +32,7 @@ export function CorrespondenceList({ items, slug, projectId }: CorrespondenceLis
   if (items.length === 0) {
     return (
       <EmptyState
+        variant="default"
         icon={Mail}
         title="No correspondence yet"
         description="Inbound correspondence filed against this matter will appear here. Email is filed via your firm's own Claude using the Kazi MCP tools — Kazi never reads your mailbox."

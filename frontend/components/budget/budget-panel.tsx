@@ -87,6 +87,7 @@ export function BudgetPanel({
   if (!budget) {
     return (
       <EmptyState
+        variant="default"
         icon={PiggyBank}
         title={t("budget.tab.heading")}
         description={t("budget.tab.description")}

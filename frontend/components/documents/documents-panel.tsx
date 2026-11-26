@@ -424,6 +424,7 @@ export function DocumentsPanel({
 
       {documents.length === 0 && uploads.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={FileText}
           title={t("documents.list.heading")}
           description={t("documents.list.description")}

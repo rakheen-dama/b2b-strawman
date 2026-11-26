@@ -69,6 +69,7 @@ export function ProjectRatesTab({
     return (
       <div className="space-y-4">
         <EmptyState
+          variant="default"
           icon={DollarSign}
           title="No matter rate overrides"
           description="Add billing rate overrides for specific team members on this matter."

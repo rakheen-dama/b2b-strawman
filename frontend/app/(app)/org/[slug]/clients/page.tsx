@@ -249,12 +249,14 @@ export default async function ClientsPage({
             </div>
           ) : showIncomplete ? (
             <EmptyState
+              variant="default"
               icon={UserRound}
               title="All clients are complete"
               description="All clients have 100% completeness."
             />
           ) : (
             <EmptyState
+              variant="default"
               icon={Users}
               title="No clients yet"
               description={

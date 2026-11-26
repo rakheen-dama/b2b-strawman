@@ -53,6 +53,7 @@ export function CustomerInvoicesTab({
       <div className="space-y-4">
         {header}
         <EmptyState
+          variant="default"
           icon={FileText}
           title="No fee notes yet"
           description="Generate fee note from unbilled time entries"

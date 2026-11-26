@@ -332,6 +332,7 @@ export function TaskListPanel({
         {header}
         {viewSelector}
         <EmptyState
+          variant="default"
           icon={ClipboardList}
           title="No tasks yet"
           description="Create a task to start tracking work on this matter"
@@ -353,6 +354,7 @@ export function TaskListPanel({
       )}
       {tasks.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={ClipboardList}
           title="No tasks match this filter"
           description="Try a different filter or clear the selection."

@@ -68,6 +68,7 @@ export function ProjectCustomersPanel({
       <div className="space-y-4">
         {header}
         <EmptyState
+          variant="default"
           icon={Users}
           title="No linked clients"
           description="Link clients to this matter to track client work"

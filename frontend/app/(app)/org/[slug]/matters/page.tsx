@@ -265,6 +265,7 @@ export default async function MattersPage({
             </div>
           ) : (
             <EmptyState
+              variant="default"
               icon={FolderOpen}
               title={t("projects.list.heading")}
               description={

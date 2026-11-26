@@ -70,6 +70,7 @@ export function CustomerRatesTab({
     return (
       <div className="space-y-4">
         <EmptyState
+          variant="default"
           icon={DollarSign}
           title="No client rate overrides"
           description="Add billing rate overrides for team members when working for this client."

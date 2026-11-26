@@ -127,6 +127,7 @@ export function ProjectMembersPanel({
       <div data-testid="matter-team-panel" className="space-y-4">
         {header}
         <EmptyState
+          variant="default"
           icon={Users}
           title="No members yet"
           description="Add team members to collaborate on this matter"

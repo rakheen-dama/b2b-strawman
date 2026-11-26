@@ -22,6 +22,7 @@ export async function ActivityFeed({ projectId }: ActivityFeedProps) {
     const { t } = createMessages("empty-states");
     return (
       <EmptyState
+        variant="default"
         icon={Activity}
         title={t("activity.feed.heading")}
         description={t("activity.feed.description")}

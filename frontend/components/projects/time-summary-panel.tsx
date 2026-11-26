@@ -120,6 +120,7 @@ export function TimeSummaryPanel({
       {/* Empty State */}
       {isEmpty ? (
         <EmptyState
+          variant="default"
           icon={Clock}
           title="No time tracked yet"
           description="Log time on tasks to see matter time summaries here"

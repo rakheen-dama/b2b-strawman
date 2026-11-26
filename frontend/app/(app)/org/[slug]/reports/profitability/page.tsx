@@ -75,6 +75,7 @@ export default async function ReportsProfitabilityPage({
 
       {utilization.members.length === 0 && profitability.matters.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={TrendingUp}
           title={t("profitability.page.heading")}
           description={t("profitability.page.description")}

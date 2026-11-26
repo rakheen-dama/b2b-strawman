@@ -6,7 +6,7 @@ import { ExternalLink, Link2Off, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { SettingsSection } from "@/components/settings/settings-section";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,26 +90,29 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-[#13B5EA]/10">
-                <span className="text-lg font-bold text-[#13B5EA]">X</span>
-              </div>
-              <CardTitle className="font-display text-lg">Xero Connection</CardTitle>
-            </div>
-            {getStatusBadge(status)}
-          </div>
-          <CardDescription>
-            {isConnected
-              ? `Connected to ${connection?.xeroOrgName}`
-              : needsReconnect
-                ? "Your Xero connection needs to be re-established."
-                : "Connect your Xero account to sync fee notes and contacts."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <SettingsSection
+        as="h3"
+        title={
+          <span className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#13B5EA]/10"
+            >
+              <span className="text-lg font-bold text-[#13B5EA]">X</span>
+            </span>
+            Xero Connection
+          </span>
+        }
+        description={
+          isConnected
+            ? `Connected to ${connection?.xeroOrgName}`
+            : needsReconnect
+              ? "Your Xero connection needs to be re-established."
+              : "Connect your Xero account to sync fee notes and contacts."
+        }
+        actions={getStatusBadge(status)}
+      >
+        <div className="space-y-4">
           {error && (
             <p className="text-destructive text-sm" role="alert">
               {error}
@@ -133,8 +136,8 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
             </div>
           )}
 
-          <div className="flex gap-2">
-            {!isConnected && (
+          {!isConnected && (
+            <div className="flex gap-2">
               <Button
                 onClick={handleConnect}
                 disabled={isConnecting}
@@ -152,22 +155,26 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
                   </>
                 )}
               </Button>
-            )}
+            </div>
+          )}
+        </div>
+      </SettingsSection>
 
-            {(isConnected || needsReconnect) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDisconnectDialog(true)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Link2Off className="mr-2 size-4" />
-                Disconnect
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Disconnect: its own untitled destructive section (DA-9; no new words), on the button's
+          own condition. The AlertDialog below is unchanged. */}
+      {(isConnected || needsReconnect) && (
+        <SettingsSection variant="destructive">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDisconnectDialog(true)}
+            className="text-destructive hover:text-destructive dark:text-destructive"
+          >
+            <Link2Off className="mr-2 size-4" />
+            Disconnect
+          </Button>
+        </SettingsSection>
+      )}
 
       <AlertDialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
         <AlertDialogContent>

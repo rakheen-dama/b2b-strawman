@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { McpConnectorCard } from "./mcp-connector-card";
 import { getMcpStatusAction } from "./mcp-actions";
@@ -11,14 +12,10 @@ export async function renderMcpTab({ slug }: SettingsTabProps) {
   if (!isAdmin && !caps.capabilities.includes("INTEGRATION_MANAGE")) {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Claude / MCP Connector
-          </h1>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-            You do not have permission to manage integrations. Contact your administrator.
-          </p>
-        </div>
+        <PageHeader title="MCP" />
+        <p className="text-muted-foreground text-sm">
+          You do not have permission to manage integrations. Contact your administrator.
+        </p>
       </div>
     );
   }
@@ -32,15 +29,16 @@ export async function renderMcpTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Claude / MCP Connector
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Connect your firm&apos;s own Claude (Desktop or Code) to Kazi over the Model Context
-          Protocol, behind a POPIA data-egress acknowledgement.
-        </p>
-      </div>
+      {/* K-124: the h1 is the tab label ("MCP"); the card keeps "Claude / MCP Connector". */}
+      <PageHeader
+        title="MCP"
+        description={
+          <>
+            Connect your firm&apos;s own Claude (Desktop or Code) to Kazi over the Model Context
+            Protocol, behind a POPIA data-egress acknowledgement.
+          </>
+        }
+      />
 
       <div className="space-y-6">
         <McpConnectorCard status={status} slug={slug} serverUrl={serverUrl} />

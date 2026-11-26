@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { settingsHref } from "@/lib/settings-nav";
 import { getAiExecutions } from "@/lib/api/ai";
@@ -23,19 +24,15 @@ export default async function ExecutionHistoryPage({
       <div className="space-y-8">
         <Link
           href={settingsHref(slug, "connections", "ai")}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
           <ChevronLeft className="size-4" />
           AI Configuration
         </Link>
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Execution History
-          </h1>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-            You do not have permission to view execution history. Contact your administrator.
-          </p>
-        </div>
+        <PageHeader title="Execution History" />
+        <p className="text-muted-foreground text-sm">
+          You do not have permission to view execution history. Contact your administrator.
+        </p>
       </div>
     );
   }
@@ -63,20 +60,16 @@ export default async function ExecutionHistoryPage({
     <div className="space-y-6">
       <Link
         href={settingsHref(slug, "connections", "ai")}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
         AI Configuration
       </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Execution History
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          View all AI skill executions, costs, and outcomes.
-        </p>
-      </div>
+      <PageHeader
+        title="Execution History"
+        description="View all AI skill executions, costs, and outcomes."
+      />
 
       <ExecutionHistoryClient
         slug={slug}

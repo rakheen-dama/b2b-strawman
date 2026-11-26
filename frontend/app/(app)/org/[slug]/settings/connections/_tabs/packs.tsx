@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listPackCatalog, listInstalledPacks } from "@/lib/api/packs";
 import { PacksPageClient } from "./packs-page-client";
@@ -15,13 +16,13 @@ export async function renderPacksTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Packs</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Extend your workspace with pre-built content from Kazi Packs.
-        </p>
+      <div className="space-y-2">
+        <PageHeader
+          title="Packs"
+          description="Extend your workspace with pre-built content from Kazi Packs."
+        />
         {!canManage && (
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground text-sm">
             Only admins and owners can install or uninstall packs.
           </p>
         )}

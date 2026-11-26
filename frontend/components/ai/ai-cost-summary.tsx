@@ -1,5 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { formatCurrencyFromCents } from "@/lib/format";
+import { SettingsSection } from "@/components/settings/settings-section";
 
 interface AiCostSummaryProps {
   costSummary: {
@@ -20,12 +21,11 @@ function formatPeriod(dateStr: string): string {
 export function AiCostSummary({ costSummary }: AiCostSummaryProps) {
   if (!costSummary || costSummary.invocationCount === 0) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Usage Summary</h2>
-        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+      <SettingsSection title="Usage Summary">
+        <p className="text-muted-foreground text-sm">
           No AI invocations this month. Usage data will appear here once you start using AI skills.
         </p>
-      </div>
+      </SettingsSection>
     );
   }
 
@@ -44,13 +44,8 @@ export function AiCostSummary({ costSummary }: AiCostSummaryProps) {
         : "text-teal-600 dark:text-teal-400";
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Usage Summary</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        {formatPeriod(costSummary.periodStart)}
-      </p>
-
-      <div className="mt-4 space-y-4">
+    <SettingsSection title="Usage Summary" description={formatPeriod(costSummary.periodStart)}>
+      <div className="space-y-4">
         {/* Current Spend */}
         <div>
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Current Spend</p>
@@ -88,6 +83,6 @@ export function AiCostSummary({ costSummary }: AiCostSummaryProps) {
           </p>
         </div>
       </div>
-    </div>
+    </SettingsSection>
   );
 }

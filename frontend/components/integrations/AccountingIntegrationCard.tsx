@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Calculator, ExternalLink } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { IntegrationSectionTitle } from "@/components/integrations/integration-section-title";
 import { settingsHref } from "@/lib/settings-nav";
 import type { XeroConnectionStatus } from "@/lib/types";
 
@@ -31,31 +32,21 @@ export function AccountingIntegrationCard({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <Calculator className="size-5 text-slate-600 dark:text-slate-400" />
-            </div>
-            <CardTitle className="font-display text-lg">Accounting</CardTitle>
-          </div>
-          {getStatusBadge()}
-        </div>
-        <CardDescription>
-          {xeroStatus === "CONNECTED" && xeroOrgName
-            ? `Connected to ${xeroOrgName} via Xero`
-            : "Connect your accounting software for fee note sync"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`${settingsHref(slug, "connections", "xero")}#xero`}>
-            <ExternalLink className="mr-2 size-4" />
-            Configure Xero
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+    <SettingsSection
+      title={<IntegrationSectionTitle icon={Calculator}>Accounting</IntegrationSectionTitle>}
+      description={
+        xeroStatus === "CONNECTED" && xeroOrgName
+          ? `Connected to ${xeroOrgName} via Xero`
+          : "Connect your accounting software for fee note sync"
+      }
+      actions={getStatusBadge()}
+    >
+      <Button variant="outline" size="sm" asChild>
+        <Link href={`${settingsHref(slug, "connections", "xero")}#xero`}>
+          <ExternalLink className="mr-2 size-4" />
+          Configure Xero
+        </Link>
+      </Button>
+    </SettingsSection>
   );
 }

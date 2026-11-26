@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
 import { Switch } from "@/components/ui/switch";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { toggleRuleAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/automations-actions";
@@ -17,6 +12,13 @@ import { toast } from "sonner";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Zap } from "lucide-react";
 import type { AutomationRuleResponse } from "@/lib/api/automations";
+
+/** A table row: the rule plus the render-time switch state (so the columns never re-memo). */
+interface RuleRow {
+  rule: AutomationRuleResponse;
+  enabled: boolean;
+  disabled: boolean;
+}
 
 interface RuleListProps {
   slug: string;
@@ -58,81 +60,117 @@ export function RuleList({ slug, rules, canManage }: RuleListProps) {
     });
   }
 
+  // TanStack renders each `cell` as a component: the column array keeps its identity so a toggle
+  // does not remount the Switch (focus stays on it). Cells reach the handler through a ref
+  // refreshed after each render (F-665A-4); checked/disabled travel in the rows (DA-21).
+  const actions = useRef({ toggle: handleToggle });
+  useLayoutEffect(() => {
+    actions.current = { toggle: handleToggle };
+  });
+
+  const columns = useMemo(
+    () =>
+      defineColumns<RuleRow>([
+        {
+          id: "name",
+          enableHiding: false,
+          // K-114: the name/description cell wraps instead of widening the table.
+          meta: { label: "Name", cellClassName: "whitespace-normal max-w-[28rem]" },
+          cell: ({ row }) => (
+            <>
+              <p className="text-foreground font-medium">{row.original.rule.name}</p>
+              {row.original.rule.description && (
+                <p className="text-muted-foreground text-xs">{row.original.rule.description}</p>
+              )}
+            </>
+          ),
+        },
+        {
+          id: "trigger",
+          meta: { label: "Trigger" },
+          cell: ({ row }) => <TriggerTypeBadge triggerType={row.original.rule.triggerType} />,
+        },
+        {
+          id: "enabled",
+          meta: { label: "Enabled" },
+          cell: ({ row }) => (
+            <Switch
+              checked={row.original.enabled}
+              size="sm"
+              onCheckedChange={() =>
+                actions.current.toggle(row.original.rule.id, row.original.enabled)
+              }
+              disabled={row.original.disabled}
+              aria-label={`Toggle ${row.original.rule.name}`}
+            />
+          ),
+        },
+        {
+          id: "updatedAt",
+          meta: { label: "Last Updated" },
+          cell: ({ row }) => (
+            <span className="text-muted-foreground text-sm">
+              {row.original.rule.updatedAt ? (
+                <RelativeDate iso={row.original.rule.updatedAt} />
+              ) : (
+                "Never"
+              )}
+            </span>
+          ),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions" },
+          cell: ({ row }) => (
+            <span className="text-muted-foreground font-mono text-sm tabular-nums">
+              {row.original.rule.actions.length}
+            </span>
+          ),
+        },
+      ]),
+    []
+  );
+
+  const rows = useMemo(
+    () =>
+      rules.map((rule) => ({
+        rule,
+        enabled: optimisticToggles[rule.id] ?? rule.enabled,
+        disabled: !canManage || isPending,
+      })),
+    [rules, optimisticToggles, canManage, isPending]
+  );
+
   return (
     <div className="space-y-6">
-      {/* Rules Table or Empty State */}
-      {rules.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Zap className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
-            No automation rules yet
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Automation rules are installed with your practice packs and will appear here.
-          </p>
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.rule.id}
+        rowTestId="automation-row"
+        pageSize={null}
+        columnVisibility={false}
+        stickyHeader={false}
+        empty={
+          <EmptyState
+            variant="default"
+            icon={Zap}
+            title="No automation rules yet"
+            description="Automation rules are installed with your practice packs and will appear here."
+          />
+        }
+      />
+      {/* DA-20: this second link stays (dropping it is an IA call, backlog). Empty list → none. */}
+      {canManage && rules.length > 0 && (
+        <div className="flex justify-end">
+          <Link
+            href={`/org/${slug}/settings/connections/automations/executions`}
+            className="text-sm text-(--button-accent) underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+          >
+            View Execution Log &rarr;
+          </Link>
         </div>
-      ) : (
-        <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Trigger</TableHead>
-                <TableHead>Enabled</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rules.map((rule) => (
-                <TableRow key={rule.id} data-testid="automation-row">
-                  <TableCell>
-                    <p className="font-medium text-slate-950 dark:text-slate-50">{rule.name}</p>
-                    {rule.description && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {rule.description}
-                      </p>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <TriggerTypeBadge triggerType={rule.triggerType} />
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={optimisticToggles[rule.id] ?? rule.enabled}
-                      size="sm"
-                      onCheckedChange={() =>
-                        handleToggle(rule.id, optimisticToggles[rule.id] ?? rule.enabled)
-                      }
-                      disabled={!canManage || isPending}
-                      aria-label={`Toggle ${rule.name}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {rule.updatedAt ? <RelativeDate iso={rule.updatedAt} /> : "Never"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-mono text-sm text-slate-600 tabular-nums dark:text-slate-400">
-                      {rule.actions.length}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {canManage && (
-            <div className="flex justify-end">
-              <Link
-                href={`/org/${slug}/settings/connections/automations/executions`}
-                className="text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-              >
-                View Execution Log &rarr;
-              </Link>
-            </div>
-          )}
-        </>
       )}
     </div>
   );

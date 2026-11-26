@@ -28,8 +28,15 @@ function formatPackType(type: string): string {
   }
 }
 
+/** K-121 (founder-approved copy): profile ids with a display name; others keep the split rendering. */
+const PROFILE_LABELS: Record<string, string> = {
+  "legal-za": "Legal (South Africa)",
+};
+
 function formatProfileAffinity(profile: string | null): string {
   if (!profile) return "Universal";
+  const label = PROFILE_LABELS[profile];
+  if (label) return label;
   return profile
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -87,12 +94,12 @@ export function PackCard({
         <CardContent className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1">
-              <h3 className="font-semibold text-slate-950 dark:text-slate-50">{pack.name}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">v{pack.version}</p>
+              <h3 className="text-foreground font-semibold">{pack.name}</h3>
+              <p className="text-muted-foreground text-xs">v{pack.version}</p>
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 dark:text-slate-400">{pack.description}</p>
+          <p className="text-muted-foreground text-sm">{pack.description}</p>
 
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary">
@@ -124,7 +131,7 @@ export function PackCard({
 
           {variant === "installed" && (
             <div className="flex items-center justify-between pt-1">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-muted-foreground text-xs">
                 Installed on {pack.installedAt ? formatDate(pack.installedAt) : "unknown"}
               </p>
               <TooltipProvider>

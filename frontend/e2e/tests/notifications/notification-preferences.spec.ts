@@ -52,9 +52,9 @@ async function restoreDefault() {
 async function openPreferences(page: Page) {
   await page.goto(`${base}/settings/notifications`);
   await expect(page).toHaveURL(/\/settings\/connections\?tab=notifications/);
-  await expect(
-    page.getByRole("heading", { level: 1, name: /^Notification Preferences/ })
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { level: 1, name: /^Notifications/ })).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 /**

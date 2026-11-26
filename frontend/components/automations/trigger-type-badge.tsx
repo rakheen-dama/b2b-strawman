@@ -17,6 +17,35 @@ const TRIGGER_TYPE_CONFIG: Record<
   SCHEDULED: { label: "Scheduled", variant: "outline" },
 };
 
+/**
+ * K-122: executions record the Java event class (`AutomationEventListener`
+ * `event.getClass().getSimpleName()`; scheduled rules record `"ScheduledTrigger"`), not the rule's
+ * trigger type. Mirrors `TriggerTypeMapping.java`, so the execution log shows the same badge label
+ * as the rule list.
+ */
+const EVENT_CLASS_TRIGGER: Record<string, TriggerType> = {
+  TaskStatusChangedEvent: "TASK_STATUS_CHANGED",
+  TaskCompletedEvent: "TASK_STATUS_CHANGED",
+  ProjectCompletedEvent: "PROJECT_STATUS_CHANGED",
+  ProjectArchivedEvent: "PROJECT_STATUS_CHANGED",
+  ProjectReopenedEvent: "PROJECT_STATUS_CHANGED",
+  BudgetThresholdEvent: "BUDGET_THRESHOLD_REACHED",
+  TimeEntryChangedEvent: "TIME_ENTRY_CREATED",
+  DocumentUploadedEvent: "DOCUMENT_ACCEPTED",
+  InvoiceSentEvent: "INVOICE_STATUS_CHANGED",
+  InvoicePaidEvent: "INVOICE_STATUS_CHANGED",
+  InvoiceVoidedEvent: "INVOICE_STATUS_CHANGED",
+  InformationRequestCompletedEvent: "INFORMATION_REQUEST_COMPLETED",
+  CustomerStatusChangedEvent: "CUSTOMER_STATUS_CHANGED",
+  FieldDateApproachingEvent: "FIELD_DATE_APPROACHING",
+  ScheduledTrigger: "SCHEDULED",
+};
+
+/** The trigger type for a recorded event class; anything else (already a type, unknown) as is. */
+export function triggerTypeFromEvent(eventType: string): string {
+  return EVENT_CLASS_TRIGGER[eventType] ?? eventType;
+}
+
 interface TriggerTypeBadgeProps {
   triggerType: TriggerType;
 }

@@ -127,9 +127,8 @@ describe("AI surfaces kept after the assistant removal (Epic 601)", () => {
 
   it("renders Settings → Connections → MCP (Claude / MCP Connector)", async () => {
     render(await renderMcpTab({ slug: "acme", searchParams: {} }));
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Claude / MCP Connector" })
-    ).toBeInTheDocument();
+    // K-124 (665F): the h1 is the tab label "MCP"; the card keeps "Claude / MCP Connector".
+    expect(screen.getByRole("heading", { level: 1, name: "MCP" })).toBeInTheDocument();
     expect(screen.getByTestId("mcp-connector-card")).toBeInTheDocument();
   });
 });

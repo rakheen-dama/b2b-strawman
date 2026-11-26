@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { settingsHref } from "@/lib/settings-nav";
 import { redirect } from "next/navigation";
@@ -53,18 +54,16 @@ export default async function ExecutionLogPage({
     <div className="space-y-8">
       <Link
         href={settingsHref(slug, "connections", "automations")}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
         Automations
       </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Execution Log</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          View the history of all automation rule executions.
-        </p>
-      </div>
+      <PageHeader
+        title="Execution Log"
+        description="View the history of all automation rule executions."
+      />
 
       <ExecutionLog initialExecutions={executions} rules={rules} />
     </div>

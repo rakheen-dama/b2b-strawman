@@ -142,13 +142,11 @@ export function PacksPageClient({
       </div>
 
       <TabsContent value="available" className="space-y-6">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Kazi Packs &mdash; extend your workspace with pre-built content
-          </p>
+        {/* K-121: the repeated subtitle is dropped (the PageHeader description says it). */}
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             <Switch id="show-all-packs" checked={showAll} onCheckedChange={setShowAll} />
-            <Label htmlFor="show-all-packs" className="text-sm text-slate-600 dark:text-slate-400">
+            <Label htmlFor="show-all-packs" className="text-muted-foreground text-sm">
               Show all packs
             </Label>
           </div>
@@ -159,6 +157,7 @@ export function PacksPageClient({
             icon={Package}
             title="No packs available"
             description="No Kazi Packs available for your current profile. Toggle 'Show all packs' to browse everything."
+            variant="default"
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,13 +175,14 @@ export function PacksPageClient({
       </TabsContent>
 
       <TabsContent value="installed" className="space-y-6">
-        <p className="text-sm text-slate-600 dark:text-slate-400">Installed Packs</p>
+        <p className="text-muted-foreground text-sm">Installed Packs</p>
 
         {installed.length === 0 ? (
           <EmptyState
             icon={Package}
             title="No packs installed"
             description="No packs installed yet. Browse the Available tab to add templates and workflow automations to your workspace."
+            variant="default"
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

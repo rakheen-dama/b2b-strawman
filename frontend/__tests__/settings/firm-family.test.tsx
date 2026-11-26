@@ -127,13 +127,26 @@ describe("Firm settings family page", () => {
 
   // Browser-found (1024px: document 1250px wide): the w-max strip must scroll inside its own box.
   // 616A worked around the app shell's missing `min-w-0` with `@container`; 628B put `min-w-0` on
-  // the shell column and <main>, so the plain overflow box is enough. jsdom has no layout, so this
-  // pins the scroll box (the scrollWidth A/B in the browser is the authority).
+  // the shell column and <main>; 664A (K-101) moved the strip into a horizontal ScrollArea with
+  // edge fades. jsdom has no layout, so this pins the scroll box structure (the scrollWidth A/B in
+  // the browser is the authority).
   it("keeps the tab strip in its own scroll box", async () => {
     await renderFirm();
-    const box = screen.getByRole("tablist", { name: "Firm settings" }).parentElement!;
-    expect(box).toHaveClass("overflow-x-auto");
-    expect(box).not.toHaveClass("@container");
+    const list = screen.getByRole("tablist", { name: "Firm settings" });
+    const viewport = list.closest('[data-slot="scroll-area-viewport"]');
+    const scrollArea = list.closest('[data-slot="scroll-area"]');
+    expect(viewport).not.toBeNull();
+    expect(scrollArea).not.toBeNull();
+    // The panel is outside the scroller: only the strip scrolls sideways.
+    expect(scrollArea!.contains(screen.getByRole("tabpanel"))).toBe(false);
+    // No `@container` workaround anywhere between the strip and the Tabs root.
+    for (
+      let el: HTMLElement | null = list;
+      el && el.dataset.slot !== "tabs";
+      el = el.parentElement
+    ) {
+      expect(el).not.toHaveClass("@container");
+    }
   });
 
   it("gives an admin the same eight tabs", async () => {

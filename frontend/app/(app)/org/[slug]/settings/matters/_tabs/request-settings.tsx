@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { RequestReminderSettingsForm } from "@/components/information-requests/request-reminder-settings-form";
@@ -11,10 +12,8 @@ export async function renderRequestSettingsTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Request Settings
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Request Settings" />
+        <p className="text-muted-foreground">
           You do not have permission to manage request settings. Only admins and owners can access
           this page.
         </p>
@@ -26,14 +25,10 @@ export async function renderRequestSettingsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Request Settings
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure default reminder interval for information requests.
-        </p>
-      </div>
+      <PageHeader
+        title="Request Settings"
+        description="Configure default reminder interval for information requests."
+      />
 
       <RequestReminderSettingsForm
         slug={slug}

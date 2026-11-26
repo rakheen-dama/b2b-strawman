@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { ProjectNamingSettings } from "@/components/project-naming/project-naming-settings";
@@ -11,8 +12,8 @@ export async function renderNamingTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Matter Naming</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Matter Naming" />
+        <p className="text-muted-foreground">
           You do not have permission to manage matter naming settings. Only admins and owners can
           access this page.
         </p>
@@ -24,12 +25,10 @@ export async function renderNamingTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Matter Naming</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure an auto-naming pattern for new matters.
-        </p>
-      </div>
+      <PageHeader
+        title="Matter Naming"
+        description="Configure an auto-naming pattern for new matters."
+      />
 
       <ProjectNamingSettings
         slug={slug}

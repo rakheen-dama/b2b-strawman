@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -115,6 +116,43 @@ describe("ErrorBoundary", () => {
     await user.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(screen.getByText("Recovered content")).toBeInTheDocument();
+
+    spy.mockRestore();
+  });
+
+  it("re-throws Next 16 control-flow errors (NEXT_HTTP_ERROR_FALLBACK;404, NEXT_REDIRECT) to the parent boundary (K-63)", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    class OuterBoundary extends Component<{ children: ReactNode }, { digest: string | null }> {
+      state = { digest: null as string | null };
+      static getDerivedStateFromError(error: Error) {
+        return { digest: (error as { digest?: string }).digest ?? "none" };
+      }
+      render() {
+        return this.state.digest ? <p>outer caught {this.state.digest}</p> : this.props.children;
+      }
+    }
+
+    function ThrowDigest({ digest }: { digest: string }): ReactNode {
+      throw Object.assign(new Error(digest), { digest });
+    }
+
+    for (const digest of [
+      "NEXT_HTTP_ERROR_FALLBACK;404",
+      "NEXT_HTTP_ERROR_FALLBACK;403",
+      "NEXT_REDIRECT;replace;/org/acme/dashboard;307;",
+    ]) {
+      render(
+        <OuterBoundary>
+          <ErrorBoundary>
+            <ThrowDigest digest={digest} />
+          </ErrorBoundary>
+        </OuterBoundary>
+      );
+      expect(screen.getByText(`outer caught ${digest}`)).toBeInTheDocument();
+      expect(screen.queryByText("Something went wrong")).not.toBeInTheDocument();
+      cleanup();
+    }
 
     spy.mockRestore();
   });

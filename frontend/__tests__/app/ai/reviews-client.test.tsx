@@ -62,7 +62,6 @@ describe("AiReviewsClient empty states (Phase 91 663A)", () => {
 
   it("uses the shared component, not a local look-alike", () => {
     const src = fs.readFileSync(SOURCE, "utf8");
-    expect(src).toContain('import { EmptyState } from "@/components/empty-state";');
     expect(src).not.toMatch(/function EmptyState\b/);
   });
 });

@@ -70,8 +70,11 @@ function isSharedModule(rel: string, specifier: string): boolean {
   return resolved === SHARED_MODULE;
 }
 
-/** 1-based lines of every shared-EmptyState JSX element in one file that has no `variant` attribute. */
-function missingVariantLines(rel: string, text: string): number[] {
+/**
+ * One file's shared-EmptyState JSX elements: `total` found through the import-resolving matcher,
+ * and the 1-based lines of those without a `variant` attribute.
+ */
+function scanFile(rel: string, text: string): { total: number; missing: number[] } {
   const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const names = new Set<string>(); // `import { EmptyState }` / `import { EmptyState as X }`
   const namespaces = new Set<string>(); // `import * as ns` → `<ns.EmptyState>`
@@ -87,7 +90,7 @@ function missingVariantLines(rel: string, text: string): number[] {
       namespaces.add(bindings.name.text);
     }
   }
-  if (names.size === 0 && namespaces.size === 0) return [];
+  if (names.size === 0 && namespaces.size === 0) return { total: 0, missing: [] };
 
   const isShared = (tag: ts.JsxTagNameExpression): boolean => {
     if (ts.isIdentifier(tag)) return names.has(tag.text);
@@ -98,28 +101,38 @@ function missingVariantLines(rel: string, text: string): number[] {
       tag.name.text === "EmptyState"
     );
   };
-  const lines: number[] = [];
+  let total = 0;
+  const missing: number[] = [];
   const visit = (n: ts.Node) => {
     if ((ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) && isShared(n.tagName)) {
+      total += 1;
       // A spread (`{...props}`) does not count: the variant must be visible at the call site.
       const hasVariant = n.attributes.properties.some(
         (p) => ts.isJsxAttribute(p) && p.name.getText(sf) === "variant"
       );
-      if (!hasVariant) lines.push(sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1);
+      if (!hasVariant) missing.push(sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1);
     }
     ts.forEachChild(n, visit);
   };
   visit(sf);
-  return lines;
+  return { total, missing };
+}
+
+/** `scanFile` for every candidate file under the scan roots. */
+function scanTree(): Map<string, { total: number; missing: number[] }> {
+  const out = new Map<string, { total: number; missing: number[] }>();
+  for (const { rel, text } of readSourceTree(SCAN_ROOTS)) {
+    if (!rel.endsWith(".tsx") || !text.includes("EmptyState")) continue;
+    out.set(rel, scanFile(rel, text));
+  }
+  return out;
 }
 
 /** Shared-EmptyState calls without `variant`, per file, across the scan roots. */
 function offendersByFile(): Map<string, number[]> {
   const out = new Map<string, number[]>();
-  for (const { rel, text } of readSourceTree(SCAN_ROOTS)) {
-    if (!rel.endsWith(".tsx") || !text.includes("EmptyState")) continue;
-    const lines = missingVariantLines(rel, text);
-    if (lines.length > 0) out.set(rel, lines);
+  for (const [rel, { missing }] of scanTree()) {
+    if (missing.length > 0) out.set(rel, missing);
   }
   return out;
 }
@@ -140,8 +153,7 @@ function stale(offenders: Map<string, number[]>, allowlist: Record<string, strin
 
 describe("EmptyState variant guard (Phase 91 E3A, ADR-393)", () => {
   it("self-test: matches only the shared component and requires an explicit variant", () => {
-    const lines = (src: string, rel = "components/x/self-test.tsx") =>
-      missingVariantLines(rel, src);
+    const lines = (src: string, rel = "components/x/self-test.tsx") => scanFile(rel, src).missing;
     const shared = 'import { EmptyState } from "@/components/empty-state";\n';
 
     // Single-line and multi-line JSX; with and without a variant.
@@ -225,13 +237,14 @@ describe("EmptyState variant guard (Phase 91 E3A, ADR-393)", () => {
   });
 
   it("the scan finds the app's shared EmptyState calls", () => {
-    // Sanity floor so a broken import match cannot pass vacuously: at 663A's HEAD the scan sees
-    // 36 allowlisted files; the live count only shrinks as slices land.
+    // Sanity floor so the guard cannot pass vacuously: it counts the shared <EmptyState> elements
+    // the guard's own matcher (scan roots + file filter + import resolution) finds, with or without
+    // a variant. At 663A's HEAD that is ~65 elements in ~55 files; the floor sits below that so
+    // ordinary deletions do not trip it, but a broken scan root, filter or import match (→ 0) does.
+    // It does not depend on the allowlist, so it still holds once 669B empties it.
     let calls = 0;
-    for (const { rel, text } of readSourceTree(SCAN_ROOTS)) {
-      if (rel.endsWith(".tsx") && text.includes('from "@/components/empty-state"')) calls += 1;
-    }
-    expect(calls, "files importing the shared EmptyState").toBeGreaterThan(40);
+    for (const { total } of scanTree().values()) calls += total;
+    expect(calls, "shared EmptyState elements found by the guard's matcher").toBeGreaterThan(50);
   });
 
   it("every shared EmptyState call passes an explicit variant (outside the allowlist)", () => {

@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getCollectionsSettings } from "@/lib/api/collections";
 import { CollectionsSettingsForm } from "@/components/settings/collections-settings-form";
@@ -10,8 +11,8 @@ export async function renderCollectionsTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Collections</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Collections" />
+        <p className="text-muted-foreground">
           You do not have permission to manage collections settings. Only admins and owners can
           access this page.
         </p>
@@ -26,12 +27,10 @@ export async function renderCollectionsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Collections</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure overdue fee-note reminder stages and escalation for your organization.
-        </p>
-      </div>
+      <PageHeader
+        title="Collections"
+        description="Configure overdue fee-note reminder stages and escalation for your organization."
+      />
 
       <CollectionsSettingsForm
         slug={slug}

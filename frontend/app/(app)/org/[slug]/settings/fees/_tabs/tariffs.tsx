@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { MemberRatesTable } from "@/components/rates/member-rates-table";
@@ -19,10 +20,8 @@ export async function renderTariffsTab({ slug }: SettingsTabProps) {
   ) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Rates & Currency
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Rates" />
+        <p className="text-muted-foreground">
           You do not have permission to manage rates and currency settings. Only admins and owners
           can access this page.
         </p>
@@ -49,15 +48,15 @@ export async function renderTariffsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Rates & Currency
-          <HelpTip code="rates.hierarchy" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage billing rates, cost rates, and the default currency for your organization.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Rates
+            <HelpTip code="rates.hierarchy" />
+          </span>
+        }
+        description="Manage billing rates, cost rates, and the default currency for your organization."
+      />
 
       <MemberRatesTable
         slug={slug}

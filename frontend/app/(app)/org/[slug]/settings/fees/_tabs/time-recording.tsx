@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { TimeTrackingSettingsForm } from "@/components/settings/time-tracking-settings-form";
@@ -11,8 +12,8 @@ export async function renderTimeRecordingTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Time Tracking</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Time recording" />
+        <p className="text-muted-foreground">
           You do not have permission to manage time tracking settings. Only admins and owners can
           access this page.
         </p>
@@ -24,12 +25,10 @@ export async function renderTimeRecordingTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Time Tracking</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure time reminders and default expense markup for your organization.
-        </p>
-      </div>
+      <PageHeader
+        title="Time recording"
+        description="Configure time reminders and default expense markup for your organization."
+      />
 
       <TimeTrackingSettingsForm
         slug={slug}

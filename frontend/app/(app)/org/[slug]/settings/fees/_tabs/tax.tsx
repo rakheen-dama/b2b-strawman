@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { TaxSettingsForm } from "@/components/settings/TaxSettingsForm";
@@ -12,10 +13,8 @@ export async function renderTaxTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Tax Settings</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage tax settings.
-        </p>
+        <PageHeader title="Tax" />
+        <p className="text-muted-foreground">You do not have permission to manage tax settings.</p>
       </div>
     );
   }
@@ -28,12 +27,10 @@ export async function renderTaxTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Tax Settings</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure tax registration details, labels, and inclusive pricing.
-        </p>
-      </div>
+      <PageHeader
+        title="Tax"
+        description="Configure tax registration details, labels, and inclusive pricing."
+      />
       <TaxSettingsForm
         slug={slug}
         taxRegistrationNumber={settings.taxRegistrationNumber ?? ""}

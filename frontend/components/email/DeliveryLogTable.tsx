@@ -51,7 +51,9 @@ const getEntryId = (entry: EmailDeliveryLogEntry) => entry.id;
 
 // F-665E-B2: the kit's cells are nowrap, so a long recipient, template name, message id or error
 // widened the table to 1045 px. Those columns wrap (wrap-anywhere for the unbroken email addresses
-// and ids) so the table fits its section; the date stays on one line as before.
+// and ids); the date stays on one line as before. Measured (OBS-after): the table fits its section
+// at >= 1440 (814/814 px); at 1024 it is still wider than its 446 px scroller (540 px), so the
+// scroller scrolls — accepted under D-44, routed 669A/670A. No column hiding.
 const WRAP = "whitespace-normal";
 const WRAP_ANYWHERE = "wrap-anywhere whitespace-normal";
 

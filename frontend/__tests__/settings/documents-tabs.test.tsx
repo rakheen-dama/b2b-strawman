@@ -326,7 +326,7 @@ describe("Templates: one section per category (K-117) and the Branding section",
     expect(buttons[buttons.length - 1]).toHaveAttribute("aria-haspopup", "menu");
   });
 
-  it("aligns the columns: every category table has the same header set", async () => {
+  it("every category table has the same header set", async () => {
     h.mockCaps.mockResolvedValue(OWNER);
     render(await renderTemplatesTab(TAB));
 

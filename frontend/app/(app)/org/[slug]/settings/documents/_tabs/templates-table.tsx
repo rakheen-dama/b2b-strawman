@@ -19,14 +19,20 @@ const getTemplateId = (template: TemplateListResponse) => template.id;
 const ENTITY_BADGE_FALLBACK: Record<string, string> = { ORGANIZATION: "Firm" };
 
 // K-117 (DA-3): every category is its own table, so each non-name column gets the same fixed width
-// in every table (each >= the column's measured max-content width at 1024, OBS-before) and the
+// in every table (each >= the column's widest content, e.g. Format fits the "Word" badge) and the
 // width-less Name column absorbs the rest — the columns line up across sections without
-// `table-fixed` (the kit has no <table> class prop). Viewport hiding is unchanged.
-const FORMAT_WIDTH = "w-20";
-const ENTITY_WIDTH = "w-28 hidden md:table-cell";
-const SOURCE_WIDTH = "w-24 hidden lg:table-cell";
-const STATUS_WIDTH = "w-20";
-const ACTIONS_WIDTH = "w-20";
+// `table-fixed` (the kit has no <table> class prop). Auto layout treats `width` as a hint and falls
+// back to min-content when the table overflows its scroller (1024, D-44), so each width is pinned
+// with the matching `min-w-*` (F-665E-A1). Width and viewport hiding are kept apart.
+const FORMAT_WIDTH = "w-24 min-w-24";
+const ENTITY_WIDTH = "w-28 min-w-28";
+const SOURCE_WIDTH = "w-24 min-w-24";
+const STATUS_WIDTH = "w-20 min-w-20";
+const ACTIONS_WIDTH = "w-20 min-w-20";
+const ENTITY_VISIBILITY = "hidden md:table-cell";
+const SOURCE_VISIBILITY = "hidden lg:table-cell";
+const ENTITY_COL = `${ENTITY_WIDTH} ${ENTITY_VISIBILITY}`;
+const SOURCE_COL = `${SOURCE_WIDTH} ${SOURCE_VISIBILITY}`;
 
 interface TemplatesTableProps {
   slug: string;
@@ -105,7 +111,7 @@ export function TemplatesTable({ slug, templates, canManage }: TemplatesTablePro
       },
       {
         id: "entityType",
-        meta: { label: "Entity Type", headerClassName: ENTITY_WIDTH, cellClassName: ENTITY_WIDTH },
+        meta: { label: "Entity Type", headerClassName: ENTITY_COL, cellClassName: ENTITY_COL },
         cell: ({ row }) => {
           const type = row.original.primaryEntityType;
           return (
@@ -117,7 +123,7 @@ export function TemplatesTable({ slug, templates, canManage }: TemplatesTablePro
       },
       {
         id: "source",
-        meta: { label: "Source", headerClassName: SOURCE_WIDTH, cellClassName: SOURCE_WIDTH },
+        meta: { label: "Source", headerClassName: SOURCE_COL, cellClassName: SOURCE_COL },
         cell: ({ row }) =>
           row.original.source === "PLATFORM" ? (
             <Badge variant="neutral">Platform</Badge>

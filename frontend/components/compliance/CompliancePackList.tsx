@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
+import { DataTable } from "@/components/data-table/data-table";
+import { StatusBadgeCell } from "@/components/data-table/cells";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { formatDate } from "@/lib/format";
 import { getCompliancePackDetail } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 import type { CompliancePackEntry, CompliancePackDetail } from "@/lib/types";
@@ -35,66 +38,53 @@ export function CompliancePackList({ packs }: CompliancePackListProps) {
   }
 
   if (packs.length === 0) {
-    return (
-      <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-        No compliance packs applied.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">No compliance packs applied.</p>;
   }
 
   return (
-    <div className="mt-4 space-y-2">
+    <div className="space-y-2">
       {packs.map((pack) => {
         const isExpanded = expandedPackId === pack.packId;
         const detail = packDetails[pack.packId];
         const isLoading = loadingPackId === pack.packId;
 
         return (
-          <div
-            key={pack.packId}
-            className="rounded-md border border-slate-100 dark:border-slate-800"
-          >
+          <div key={pack.packId} className="rounded-md border">
             <button
               type="button"
               onClick={() => handleToggle(pack.packId)}
-              className="flex w-full items-center justify-between rounded-md px-4 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
+              className="hover:bg-muted flex w-full items-center justify-between rounded-md px-4 py-2 text-left transition-colors"
             >
               <div className="flex items-center gap-2">
                 {isExpanded ? (
-                  <ChevronDown className="size-4 shrink-0 text-slate-400" />
+                  <ChevronDown className="text-muted-foreground size-4 shrink-0" />
                 ) : (
-                  <ChevronRight className="size-4 shrink-0 text-slate-400" />
+                  <ChevronRight className="text-muted-foreground size-4 shrink-0" />
                 )}
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {detail?.name ?? pack.packId}
-                  </p>
-                  {detail?.name && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{pack.packId}</p>
-                  )}
+                  <p className="text-foreground font-medium">{detail?.name ?? pack.packId}</p>
+                  {detail?.name && <p className="text-muted-foreground text-xs">{pack.packId}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant="neutral">v{pack.version}</Badge>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-muted-foreground text-xs">
                   Applied {formatDate(pack.appliedAt)}
                 </p>
               </div>
             </button>
 
             {isExpanded && (
-              <div className="border-t border-slate-100 px-4 py-4 dark:border-slate-800">
+              <div className="border-t px-4 py-4">
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     <Loader2 className="size-4 animate-spin" />
                     Loading pack details...
                   </div>
                 ) : detail ? (
                   <PackDetailView detail={detail} />
                 ) : (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Could not load pack details.
-                  </p>
+                  <p className="text-muted-foreground text-sm">Could not load pack details.</p>
                 )}
               </div>
             )}
@@ -105,12 +95,88 @@ export function CompliancePackList({ packs }: CompliancePackListProps) {
   );
 }
 
+type ChecklistItem = NonNullable<CompliancePackDetail["checklistTemplate"]>["items"][number];
+type RetentionOverride = NonNullable<CompliancePackDetail["retentionOverrides"]>[number];
+/** Pack rows have no id; the position in the pack is their key (as the raw tables used). */
+type Keyed<T> = T & { rowKey: string };
+
+const getRowKey = (row: { rowKey: string }) => row.rowKey;
+
+const itemColumns = defineColumns<Keyed<ChecklistItem>>([
+  {
+    id: "name",
+    meta: { label: "Name", cellClassName: "text-foreground" },
+    cell: ({ row }) => row.original.name,
+  },
+  {
+    id: "description",
+    meta: { label: "Description", cellClassName: "text-muted-foreground whitespace-normal" },
+    cell: ({ row }) => row.original.description,
+  },
+  {
+    id: "required",
+    meta: { label: "Required" },
+    cell: ({ row }) => (
+      <StatusBadgeCell
+        label={row.original.required ? "Yes" : "No"}
+        variant={row.original.required ? "success" : "neutral"}
+      />
+    ),
+  },
+  {
+    id: "documentRequired",
+    meta: { label: "Document Required" },
+    cell: ({ row }) =>
+      row.original.requiresDocument ? (
+        <StatusBadgeCell label={row.original.requiredDocumentLabel ?? "Yes"} variant="warning" />
+      ) : (
+        <StatusBadgeCell label="No" variant="neutral" />
+      ),
+  },
+]);
+
+const overrideColumns = defineColumns<Keyed<RetentionOverride>>([
+  {
+    id: "recordType",
+    meta: { label: "Record Type", cellClassName: "text-foreground" },
+    cell: ({ row }) => row.original.recordType,
+  },
+  {
+    id: "triggerEvent",
+    meta: { label: "Trigger", cellClassName: "text-muted-foreground" },
+    cell: ({ row }) => row.original.triggerEvent,
+  },
+  {
+    id: "retentionDays",
+    meta: { label: "Days", cellClassName: "text-foreground" },
+    cell: ({ row }) => row.original.retentionDays,
+  },
+  {
+    id: "action",
+    meta: { label: "Action" },
+    cell: ({ row }) => <StatusBadgeCell label={row.original.action} variant="outline" />,
+  },
+]);
+
 function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
+  // Sorted on a copy (the old in-place `.sort` mutated the cached detail) — same order (DA-20).
+  const items = useMemo<Keyed<ChecklistItem>[]>(
+    () =>
+      [...(detail.checklistTemplate?.items ?? [])]
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((item, idx) => ({ ...item, rowKey: String(idx) })),
+    [detail.checklistTemplate]
+  );
+  const overrides = useMemo<Keyed<RetentionOverride>[]>(
+    () => (detail.retentionOverrides ?? []).map((o, idx) => ({ ...o, rowKey: String(idx) })),
+    [detail.retentionOverrides]
+  );
+
   return (
     <div className="space-y-5">
       {/* Description and metadata */}
       <div>
-        <p className="text-sm text-slate-700 dark:text-slate-300">{detail.description}</p>
+        <p className="text-foreground text-sm">{detail.description}</p>
         <div className="mt-2 flex items-center gap-2">
           {detail.jurisdiction && <Badge variant="outline">{detail.jurisdiction}</Badge>}
           <Badge variant="outline">{detail.customerType}</Badge>
@@ -118,57 +184,20 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
       </div>
 
       {/* Checklist Items */}
-      {detail.checklistTemplate && detail.checklistTemplate.items.length > 0 && (
+      {items.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Checklist Items
-          </h4>
-          <div className="mt-2 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Name
-                  </th>
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Description
-                  </th>
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Required
-                  </th>
-                  <th className="pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Document Required
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.checklistTemplate.items
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                    >
-                      <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">{item.name}</td>
-                      <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
-                        {item.description}
-                      </td>
-                      <td className="py-2 pr-4">
-                        <Badge variant={item.required ? "success" : "neutral"}>
-                          {item.required ? "Yes" : "No"}
-                        </Badge>
-                      </td>
-                      <td className="py-2">
-                        {item.requiresDocument ? (
-                          <Badge variant="warning">{item.requiredDocumentLabel ?? "Yes"}</Badge>
-                        ) : (
-                          <Badge variant="neutral">No</Badge>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+          <h4 className="text-foreground text-sm font-semibold">Checklist Items</h4>
+          <div className="mt-2">
+            <DataTable
+              columns={itemColumns}
+              data={items}
+              getRowId={getRowKey}
+              columnVisibility={false}
+              pageSize={null}
+              stickyHeader={false}
+              frame={false}
+              empty={null}
+            />
           </div>
         </div>
       )}
@@ -176,20 +205,15 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
       {/* Field Definitions */}
       {detail.fieldDefinitions && detail.fieldDefinitions.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Field Definitions
-          </h4>
+          <h4 className="text-foreground text-sm font-semibold">Field Definitions</h4>
           <ul className="mt-2 space-y-1">
             {detail.fieldDefinitions.map((field, idx) => (
-              <li
-                key={idx}
-                className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
-              >
+              <li key={idx} className="text-foreground flex items-center gap-2 text-sm">
                 <span className="font-medium">{field.label}</span>
                 <Badge variant="outline">{field.fieldType}</Badge>
                 {field.required && <Badge variant="success">Required</Badge>}
                 {field.groupName && (
-                  <span className="text-xs text-slate-500">({field.groupName})</span>
+                  <span className="text-muted-foreground text-xs">({field.groupName})</span>
                 )}
               </li>
             ))}
@@ -198,51 +222,20 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
       )}
 
       {/* Retention Overrides */}
-      {detail.retentionOverrides && detail.retentionOverrides.length > 0 && (
+      {overrides.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Retention Overrides
-          </h4>
-          <div className="mt-2 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Record Type
-                  </th>
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Trigger
-                  </th>
-                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Days
-                  </th>
-                  <th className="pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.retentionOverrides.map((override, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                  >
-                    <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">
-                      {override.recordType}
-                    </td>
-                    <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
-                      {override.triggerEvent}
-                    </td>
-                    <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">
-                      {override.retentionDays}
-                    </td>
-                    <td className="py-2">
-                      <Badge variant="outline">{override.action}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h4 className="text-foreground text-sm font-semibold">Retention Overrides</h4>
+          <div className="mt-2">
+            <DataTable
+              columns={overrideColumns}
+              data={overrides}
+              getRowId={getRowKey}
+              columnVisibility={false}
+              pageSize={null}
+              stickyHeader={false}
+              frame={false}
+              empty={null}
+            />
           </div>
         </div>
       )}

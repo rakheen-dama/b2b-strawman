@@ -31,6 +31,7 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
       {entries.length === 0 ? (
         <div className="mt-4">
           <EmptyState
+            variant="compact"
             icon={Clock}
             title={t("timeEntries.list.heading")}
             description={t("timeEntries.list.description")}

@@ -156,9 +156,14 @@ describe("UrgencyTaskList grouping", () => {
     expect(screen.getByText("No date task")).toBeInTheDocument();
   });
 
-  it("renders empty state when no tasks", () => {
-    render(<UrgencyTaskList tasks={[]} slug="acme" />);
+  it("renders a compact empty state under the My Tasks heading when no tasks", () => {
+    const { container } = render(<UrgencyTaskList tasks={[]} slug="acme" />);
+    expect(screen.getByRole("heading", { level: 2, name: "My Tasks" })).toBeInTheDocument();
     expect(screen.getByText("No tasks assigned")).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "compact"
+    );
   });
 
   it("groupByUrgency correctly categorizes tasks", () => {

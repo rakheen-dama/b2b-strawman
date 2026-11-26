@@ -198,6 +198,7 @@ export default async function MyWorkPage({
         <div className="lg:col-span-3">
           {hasNoTasks ? (
             <EmptyState
+              variant="compact"
               icon={ClipboardList}
               title={t("myWork.list.heading")}
               description={t("myWork.list.description")}

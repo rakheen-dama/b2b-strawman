@@ -58,10 +58,17 @@ describe("AssignedTaskList", () => {
     expect(screen.getByText("Task Two")).toBeInTheDocument();
   });
 
-  it("shows empty state when no tasks assigned", () => {
-    render(<AssignedTaskList tasks={[]} slug="acme" />);
+  it("shows a compact empty state under the My Tasks heading when no tasks assigned", () => {
+    const { container } = render(<AssignedTaskList tasks={[]} slug="acme" />);
 
-    expect(screen.getByText("No tasks assigned")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "My Tasks" })).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "compact"
+    );
+    expect(
+      screen.getByRole("heading", { level: 2, name: "No tasks assigned" })
+    ).toBeInTheDocument();
     expect(screen.getByText("Tasks assigned to you will appear here")).toBeInTheDocument();
   });
 

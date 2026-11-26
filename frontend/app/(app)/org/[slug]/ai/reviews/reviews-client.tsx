@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
+import { EmptyState } from "@/components/empty-state";
 import type { CorrespondenceOrigin } from "@/lib/types";
 import { approveGateAction, rejectGateAction } from "./actions";
 import type { AiGateListItem } from "@/lib/api/ai";
@@ -41,6 +42,8 @@ export function AiReviewsClient({
       <TabsContent value="pending" className="mt-4">
         {pendingGates.length === 0 ? (
           <EmptyState
+            variant="default"
+            icon={ShieldCheck}
             title="No pending reviews"
             description="All AI-proposed actions have been reviewed. New proposals will appear here when AI skills request approval."
           />
@@ -63,6 +66,8 @@ export function AiReviewsClient({
       <TabsContent value="history" className="mt-4">
         {historyGates.length === 0 ? (
           <EmptyState
+            variant="default"
+            icon={ShieldCheck}
             title="No review history"
             description="Previously reviewed AI actions will appear here once gates have been approved or rejected."
           />
@@ -82,15 +87,5 @@ export function AiReviewsClient({
         )}
       </TabsContent>
     </Tabs>
-  );
-}
-
-function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 px-6 py-12 text-center dark:border-slate-800">
-      <ShieldCheck className="mb-3 size-10 text-slate-300 dark:text-slate-600" />
-      <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">{description}</p>
-    </div>
   );
 }

@@ -55,7 +55,7 @@ describe("EmptyState", () => {
     expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
-  it("renders secondaryLink with correct href and label", () => {
+  it("renders secondaryLink as an underlined link with the same href and name", () => {
     render(
       <EmptyState
         icon={Users}
@@ -65,10 +65,9 @@ describe("EmptyState", () => {
       />
     );
 
-    const link = screen.getByText("Learn more");
-    expect(link).toBeInTheDocument();
-    expect(link.closest("a")).toHaveAttribute("href", "/help");
-    expect(link).toHaveClass("text-teal-600");
+    const link = screen.getByRole("link", { name: "Learn more" });
+    expect(link).toHaveAttribute("href", "/help");
+    expect(link).toHaveClass("underline", "underline-offset-4");
   });
 
   it("applies max-w-md to description paragraph", () => {
@@ -278,6 +277,6 @@ describe("EmptyState", () => {
     const help = screen.getByRole("link", { name: "Task help" });
     expect(help).toHaveAttribute("target", "_blank");
     expect(help).toHaveAttribute("rel", "noopener noreferrer");
-    expect(help).toHaveClass("text-teal-600");
+    expect(help).toHaveClass("underline", "underline-offset-4");
   });
 });

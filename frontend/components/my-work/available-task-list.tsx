@@ -65,6 +65,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
         <>
           {tasks.length === 0 ? (
             <EmptyState
+              variant="compact"
               icon={Inbox}
               title="No available tasks"
               description="Unassigned tasks in your matters will appear here"

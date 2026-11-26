@@ -31,3 +31,21 @@ All seen on the e2e mock-auth stack on 2026-11-26, between 20:09Z and 20:17Z. Th
 - **No EmptyState is rendered** on any tab for any persona, because every list has rows. The code-level empty states that weren't observable: Tax rates "No tax rates yet" (hand-rolled, `tax-rate-table.tsx`), Trust "No trust accounts configured." (`<p>` in `CardContent`), and Rates `EmptyState` (only when the firm has no members).
 - **The tab strip at 1024 scrolls.** It sits in a ScrollArea viewport 496 / 538 px, so "Trust accounting" is partly out of view until it is scrolled to (`before/crop-tabstrip-fees-1024.png`, `scripts/06b-tabstrip-probe.cjs`). This is shared `SettingsFamilyTabs` behaviour across families, not specific to Fees.
 - **Backend (outside 665D):** `GET /api/billing-rates` returns 200 for Member and for the INVOICING-only role (no FINANCIAL_VISIBILITY), while `GET /api/cost-rates` returns 403 for them (`discover-pre.json`, `measurements.json` → `customRoles`). Not investigated.
+
+## OBS-after (2026-11-26, 20:43Z–20:52Z, frontend rebuilt from `5d3430e06`; `after/README.md`)
+
+- **No new defect introduced by 665D.** No F-665D-12+ rows were added.
+- **F-665D-1 is still open and worse at 1024, as the routing note predicted.**
+  - The Billing scroller went from 494/725 to **446/725** (dark: 502 to 454), and Cost from 494/728 to 446/728.
+  - "EFFECTIVE FROM" is now cut **50 px** (Cost 53 px), against 2 / 5 px before. EFFECTIVE TO and ACTIONS are still fully hidden, and 3 of 3 row actions are out of view.
+  - Evidence: `after/crop-defect-rates-billing-table-1024.png`, `after/measurements.json` → `overflowProbe.tariffs`.
+  - Owner unchanged: 669A / 670A (ruling 1).
+- **F-665D-2 is closed.**
+  - The Tax rates scroller is **446/446** (dark 454/454), nothing is cut, and **0 of 12** row actions are out of view.
+  - The Name column wraps (`whitespace-normal`).
+  - Evidence: `after/crop-defect-tax-rates-table-1024.png`, `after/sheet-dark-and-dialogs.png`.
+- **F-665D-3:** the save messages still have no `role` / `aria-live`; Collections keeps `role="alert" aria-live="polite"`. The text is unchanged. The message now sits in the footer / action-bar status slot.
+- **F-665D-4, -5, -6, -7: unchanged.** "You don't have access to Fee runs" still shows with `bulk_billing` off, and `trust_accounting` still can't be toggled in the UI.
+- **F-665D-10:** the account badge now reads "Active". No `CLOSED` account exists to observe.
+- **K-13 (already registered):** the kit `Badge variant="success"` measures 4.496:1 in light on Tax "Default" and on Trust "Primary" / "Active". `packages/` is unchanged by 665D.
+- **Observation (not a 665D defect):** the backend rejects a tax-rate name that an *inactive* rate already uses ("A tax rate with this name already exists."). The UI can only deactivate rates, so a deactivated name can never be used again. Because of this, OBS-after created "OBS 665D Rate after" and "OBS 665D Rate after-2" instead of a second "OBS 665D Rate". Whether this is intended was not investigated.

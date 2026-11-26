@@ -201,6 +201,34 @@ describe("LetterheadSettingsForm — submit payload (full replace)", () => {
     expect(screen.getByRole("button", SAVE)).toBeDisabled();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+
+  it("665A: Save letterhead is the section's footer submit, still inside the <form>", async () => {
+    mockUpdateLetterhead.mockResolvedValue({
+      success: true,
+      letterhead: { ...EMPTY, city: "Durban" },
+    });
+    const user = userEvent.setup();
+    render(<LetterheadSettingsForm slug="acme" letterhead={EMPTY} />);
+
+    const save = screen.getByRole("button", SAVE) as HTMLButtonElement;
+    expect(save).toHaveAttribute("type", "submit");
+    const form = save.closest("form") as HTMLFormElement;
+    expect(form).not.toBeNull();
+    const footer = save.closest('[data-slot="card-footer"]') as HTMLElement;
+    expect(footer).not.toBeNull();
+    const section = footer.closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(section.querySelector("h2")).toHaveTextContent("Letterhead");
+    // (closest() rather than toContainElement: happy-dom's <form>.contains is unreliable)
+    expect(footer.closest("form")).toBe(form);
+    expect(screen.getByLabelText("City").closest("form")).toBe(form);
+
+    // A real submit: the footer button submits the form and the status renders in the footer.
+    await user.type(screen.getByLabelText("City"), "Durban");
+    await user.click(save);
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("Letterhead saved.");
+    expect(footer).toContainElement(status);
+  });
 });
 
 describe("LetterheadSettingsForm — validation", () => {

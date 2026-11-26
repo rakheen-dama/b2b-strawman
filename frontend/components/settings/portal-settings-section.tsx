@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@b2mash/ui/label";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updatePortalDigestCadence } from "@/app/(app)/org/[slug]/settings/firm/_tabs/general-portal-actions";
 import type { PortalDigestCadence } from "@/lib/types/settings";
 
@@ -64,13 +65,12 @@ export function PortalSettingsSection({ slug, currentCadence }: PortalSettingsSe
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Client Portal</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Control how often your clients receive portal digest emails.
-      </p>
-
-      <div className="mt-6 max-w-xs space-y-2">
+    <SettingsSection
+      title="Client Portal"
+      description="Control how often your clients receive portal digest emails."
+    >
+      {/* Instant save: the Select saves on change, so the section has no footer (665A DA-8). */}
+      <div className="max-w-xs space-y-2">
         <Label htmlFor="portal-digest-cadence">Portal digest cadence</Label>
         <Select value={cadence} disabled={isSavingCadence} onValueChange={handleCadenceChange}>
           <SelectTrigger id="portal-digest-cadence" className="w-full">
@@ -84,7 +84,7 @@ export function PortalSettingsSection({ slug, currentCadence }: PortalSettingsSe
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-muted-foreground text-xs">
           How often clients receive the weekly activity digest email.
         </p>
       </div>
@@ -97,6 +97,6 @@ export function PortalSettingsSection({ slug, currentCadence }: PortalSettingsSe
           {error}
         </p>
       )}
-    </div>
+    </SettingsSection>
   );
 }

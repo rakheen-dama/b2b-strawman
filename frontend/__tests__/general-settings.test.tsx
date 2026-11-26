@@ -124,6 +124,58 @@ describe("GeneralSettingsForm", () => {
   });
 });
 
+describe("GeneralSettingsForm — 665A sections + page-level save", () => {
+  it("renders Currency, Tax Configuration and Branding as h2 settings sections", () => {
+    renderForm();
+
+    for (const name of ["Currency", "Tax Configuration", "Branding"]) {
+      const heading = screen.getByRole("heading", { level: 2, name });
+      expect(heading.closest('[data-slot="settings-section"]')).not.toBeNull();
+    }
+    // Page-level save: none of the three sections has its own footer.
+    expect(document.querySelector('[data-slot="card-footer"]')).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: "Branding" }).closest('[data-slot="settings-section"]')
+    ).toContainElement(screen.getByLabelText("Document Footer Text"));
+  });
+
+  it("keeps the one Save Settings in the page-level action bar, outside every section", async () => {
+    mockUpdateGeneralSettings.mockResolvedValue({ success: true });
+    mockUpdateGeneralTaxSettings.mockResolvedValue({ success: true });
+    renderForm();
+
+    const saves = screen.getAllByRole("button", { name: "Save Settings" });
+    expect(saves).toHaveLength(1);
+    const bar = saves[0].closest('[data-slot="settings-action-bar"]') as HTMLElement;
+    expect(bar).not.toBeNull();
+    expect(bar.closest('[data-slot="settings-section"]')).toBeNull();
+    expect(bar).not.toHaveAttribute("data-sticky");
+
+    fireEvent.click(saves[0]);
+    const message = await screen.findByText("Settings saved successfully.");
+    expect(bar).toContainElement(message);
+  });
+
+  it("disables Save Settings while the brand colour is invalid", () => {
+    renderForm();
+    fireEvent.change(screen.getByLabelText("Brand Color"), { target: { value: "#12" } });
+    expect(screen.getByRole("button", { name: "Save Settings" })).toBeDisabled();
+    expect(screen.getByText("Must be a valid hex color")).toBeInTheDocument();
+  });
+
+  it("removes the logo straight away (no confirm), reporting in the action bar", async () => {
+    mockDeleteLogoAction.mockResolvedValue({ success: true });
+    renderForm({ logoUrl: "https://example.com/logo.png" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove logo" }));
+
+    await waitFor(() => expect(mockDeleteLogoAction).toHaveBeenCalledWith("acme"));
+    const message = await screen.findByText("Logo removed.");
+    expect(message.closest('[data-slot="settings-action-bar"]')).not.toBeNull();
+    expect(screen.queryByAltText("Organization logo")).not.toBeInTheDocument();
+  });
+});
+
 describe("renderGeneralTab — letterhead mount (626C)", () => {
   const LETTERHEAD: LetterheadSettings = {
     addressLine1: "12 Rissik Street",
@@ -208,5 +260,37 @@ describe("renderGeneralTab — letterhead mount (626C)", () => {
 
     expect(screen.getByRole("button", { name: "Save Settings" })).toBeInTheDocument();
     expect(screen.queryByTestId("letterhead-form-mount")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["owner", OWNER],
+    ["member", MEMBER],
+  ])(
+    "665A: %s sees exactly one h1 'General' (with its HelpTip) via PageHeader",
+    async (_, caps) => {
+      mockCaps.mockResolvedValue(caps);
+
+      render(await renderGeneralTab({ slug: "acme", searchParams: {} }));
+
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveAccessibleName(/^General/);
+      expect(h1s[0].closest('[data-slot="page-header"]')).not.toBeNull();
+      expect(h1s[0].querySelector("button")).not.toBeNull(); // HelpTip stays inside the h1
+      expect(screen.getByTestId("org-documents-section")).toBeInTheDocument();
+    }
+  );
+
+  it("665A: the admin description sits under the h1; the member branch has none", async () => {
+    mockCaps.mockResolvedValue(OWNER);
+    render(await renderGeneralTab({ slug: "acme", searchParams: {} }));
+    expect(
+      screen.getByText("Manage your firm's currency, tax configuration, branding and letterhead.")
+    ).toHaveAttribute("data-slot", "page-header-description");
+    cleanup();
+
+    mockCaps.mockResolvedValue(MEMBER);
+    render(await renderGeneralTab({ slug: "acme", searchParams: {} }));
+    expect(document.querySelector('[data-slot="page-header-description"]')).toBeNull();
   });
 });

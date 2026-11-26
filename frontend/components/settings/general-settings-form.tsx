@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Upload, X } from "lucide-react";
+import { SettingsActionBar, SettingsSection } from "@/components/settings/settings-section";
 import {
   updateGeneralSettings,
   updateGeneralTaxSettings,
@@ -176,13 +177,11 @@ export function GeneralSettingsForm({
 
   return (
     <div className="space-y-8">
-      {/* Currency */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Currency</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set the default currency for fee notes, rates, and financial reports.
-        </p>
-        <div className="mt-4 max-w-xs">
+      <SettingsSection
+        title="Currency"
+        description="Set the default currency for fee notes, rates, and financial reports."
+      >
+        <div className="max-w-xs">
           <Label htmlFor="default-currency">Default Currency</Label>
           <Select value={currency} onValueChange={setCurrency}>
             <SelectTrigger id="default-currency" className="mt-1" data-testid="default-currency">
@@ -197,17 +196,13 @@ export function GeneralSettingsForm({
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Tax Settings */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Tax Configuration
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure your organization&apos;s tax registration and display settings.
-        </p>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <SettingsSection
+        title="Tax Configuration"
+        description="Configure your organization's tax registration and display settings."
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="tax-reg-number">Tax Registration Number</Label>
             <Input
@@ -231,7 +226,7 @@ export function GeneralSettingsForm({
               onChange={(e) => setTaxLabel(e.target.value)}
               className="mt-1 w-full"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground mt-1 text-xs">
               Label shown on fee notes and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
             </p>
           </div>
@@ -240,17 +235,14 @@ export function GeneralSettingsForm({
             <Label htmlFor="tax-inclusive">Tax-inclusive pricing</Label>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Branding */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Branding</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Customize your organization&apos;s branding for generated documents.
-        </p>
-
+      <SettingsSection
+        title="Branding"
+        description="Customize your organization's branding for generated documents."
+      >
         {/* Logo */}
-        <div className="mt-4 space-y-3">
+        <div className="space-y-3">
           <Label>Logo</Label>
           <div className="flex items-center gap-4">
             {logoUrl ? (
@@ -259,21 +251,21 @@ export function GeneralSettingsForm({
                 <img
                   src={logoUrl}
                   alt="Organization logo"
-                  className="size-16 rounded-lg border border-slate-200 object-contain dark:border-slate-800"
+                  className="size-16 rounded-lg border object-contain"
                 />
                 <button
                   type="button"
                   aria-label="Remove logo"
                   onClick={handleDeleteLogo}
                   disabled={isUploading}
-                  className="absolute -top-2 -right-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
+                  className="bg-foreground text-background hover:bg-foreground/80 absolute -top-2 -right-2 rounded-full p-0.5"
                 >
                   <X className="size-3" />
                 </button>
               </div>
             ) : (
-              <div className="flex size-16 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
-                <Upload className="size-6 text-slate-400" />
+              <div className="border-border flex size-16 items-center justify-center rounded-lg border-2 border-dashed">
+                <Upload className="text-muted-foreground size-6" />
               </div>
             )}
             <div>
@@ -293,7 +285,7 @@ export function GeneralSettingsForm({
               >
                 {isUploading ? "Uploading..." : "Upload Logo"}
               </Button>
-              <p className="mt-1 text-xs text-slate-400">PNG, JPG, or SVG. Max 2 MB.</p>
+              <p className="text-muted-foreground mt-1 text-xs">PNG, JPG, or SVG. Max 2 MB.</p>
             </div>
           </div>
         </div>
@@ -306,7 +298,7 @@ export function GeneralSettingsForm({
               type="color"
               value={brandColor || "#000000"}
               onChange={(e) => setBrandColor(e.target.value)}
-              className="size-9 cursor-pointer rounded border border-slate-200 dark:border-slate-800"
+              className="size-9 cursor-pointer rounded border"
             />
             <Input
               id="brand-color"
@@ -332,24 +324,23 @@ export function GeneralSettingsForm({
             rows={3}
             maxLength={500}
           />
-          <p className="text-xs text-slate-400">{footerText.length}/500 characters</p>
+          <p className="text-muted-foreground text-xs">{footerText.length}/500 characters</p>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Status Message + Save */}
-      <div className="flex items-center gap-3">
+      {/* Page-level save for Currency, Tax Configuration and Branding (sticky off: 665A DA-6) */}
+      <SettingsActionBar
+        status={
+          message && (
+            <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+          )
+        }
+      >
         <Button disabled={saving || !colorValid} onClick={handleSave}>
           {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           Save Settings
         </Button>
-        {message && (
-          <p
-            className={`text-sm ${isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
+      </SettingsActionBar>
     </div>
   );
 }

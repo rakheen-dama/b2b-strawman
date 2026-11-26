@@ -62,4 +62,23 @@ describe("PortalSettingsSection — cadence select", () => {
 
     await screen.findByText("Only admins can update");
   });
+
+  it("665A: is a Client Portal settings section (h2) with no footer — the Select saves instantly", async () => {
+    mockUpdateCadence.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(<PortalSettingsSection slug="acme" currentCadence="WEEKLY" />);
+
+    const section = screen
+      .getByRole("heading", { level: 2, name: "Client Portal" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(section).not.toBeNull();
+    expect(section.querySelector('[data-slot="card-footer"]')).toBeNull();
+    expect(screen.queryByRole("button", { name: /save/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox"));
+    await user.click(screen.getByRole("option", { name: /Bi-weekly/i }));
+    const status = await screen.findByText("Portal digest cadence updated.");
+    expect(section).toContainElement(status);
+    expect(section.querySelector('[data-slot="card-footer"]')).toBeNull();
+  });
 });

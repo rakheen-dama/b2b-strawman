@@ -1,40 +1,9 @@
-import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
-import { Badge } from "@b2mash/ui/badge";
+import { FileText } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { OrgDocumentUpload } from "@/components/documents/org-document-upload";
-import { formatDate, formatFileSize } from "@/lib/format";
-import { FileText, FileImage, FileSpreadsheet, FileArchive, File } from "lucide-react";
-
-function getFileIcon(contentType: string) {
-  if (contentType.startsWith("image/")) return FileImage;
-  if (contentType.includes("pdf")) return FileText;
-  if (
-    contentType.includes("spreadsheet") ||
-    contentType.includes("excel") ||
-    contentType.includes("csv")
-  )
-    return FileSpreadsheet;
-  if (contentType.includes("zip") || contentType.includes("gzip") || contentType.includes("tar"))
-    return FileArchive;
-  return File;
-}
-
-const STATUS_BADGE: Record<
-  DocumentStatus,
-  { label: string; variant: "success" | "warning" | "destructive" }
-> = {
-  UPLOADED: { label: "Uploaded", variant: "success" },
-  PENDING: { label: "Pending", variant: "warning" },
-  FAILED: { label: "Failed", variant: "destructive" },
-};
-
-const SCOPE_BADGE: Record<
-  DocumentScope,
-  { label: string; variant: "neutral" | "default" | "lead" }
-> = {
-  ORG: { label: "Org", variant: "neutral" },
-  PROJECT: { label: "Matter", variant: "default" },
-  CUSTOMER: { label: "Client", variant: "lead" },
-};
+import { OrgDocumentsTable } from "@/components/settings/org-documents-table";
+import { SettingsSection } from "@/components/settings/settings-section";
+import type { Document } from "@/lib/types";
 
 interface OrgDocumentsSectionProps {
   slug: string;
@@ -42,96 +11,41 @@ interface OrgDocumentsSectionProps {
   isAdmin: boolean;
 }
 
+/**
+ * Firm › General "Org Documents" (server). The table is a "use client" DataTable wrapper; the
+ * empty state renders here (the icon is a component reference, so it never crosses into the
+ * client wrapper — only the rendered node does).
+ */
 export function OrgDocumentsSection({ slug, documents, isAdmin }: OrgDocumentsSectionProps) {
   return (
-    <div
+    <SettingsSection
       data-testid="org-documents-section"
-      className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
-    >
-      <div className="flex items-center justify-between">
+      title="Org Documents"
+      description="Organization-level documents shared across all matters."
+      actions={
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Org Documents</h2>
-          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-sm">
             {documents.length}
           </span>
+          {isAdmin && <OrgDocumentUpload slug={slug} />}
         </div>
-        {isAdmin && <OrgDocumentUpload slug={slug} />}
-      </div>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Organization-level documents shared across all matters.
-      </p>
-
-      {documents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <FileText className="size-12 text-slate-300 dark:text-slate-700" />
-          <h3 className="mt-4 text-sm font-medium text-slate-900 dark:text-slate-100">
-            No organization documents yet
-          </h3>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {isAdmin
-              ? "Upload your first organization-level document to get started."
-              : "No organization documents have been uploaded yet."}
-          </p>
-        </div>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  File
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Size
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Scope
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Status
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
-                  Uploaded
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {documents.map((doc) => {
-                const Icon = getFileIcon(doc.contentType);
-                const statusBadge = STATUS_BADGE[doc.status];
-                const scopeBadge = SCOPE_BADGE[doc.scope];
-                return (
-                  <tr
-                    key={doc.id}
-                    className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                        <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
-                          {doc.fileName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                      {formatFileSize(doc.size)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                    </td>
-                    <td className="text-muted-foreground hidden px-4 py-3 text-sm lg:table-cell">
-                      {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+      }
+    >
+      <OrgDocumentsTable
+        documents={documents}
+        empty={
+          <EmptyState
+            variant="compact"
+            icon={FileText}
+            title="No organization documents yet"
+            description={
+              isAdmin
+                ? "Upload your first organization-level document to get started."
+                : "No organization documents have been uploaded yet."
+            }
+          />
+        }
+      />
+    </SettingsSection>
   );
 }

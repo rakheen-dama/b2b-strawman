@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import {
@@ -17,8 +17,19 @@ import {
 import { AddTaxRateDialog } from "@/components/settings/add-tax-rate-dialog";
 import { EditTaxRateDialog } from "@/components/settings/edit-tax-rate-dialog";
 import { Pencil, Plus, Ban, Percent } from "lucide-react";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { deactivateTaxRate } from "./tax-actions";
 import type { TaxRateResponse } from "@/lib/types";
+
+const getTaxRateId = (taxRate: TaxRateResponse) => taxRate.id;
+
+// The destructive ghost icon needs the dark-variant overrides too: the kit ghost's dark text and
+// hover classes would otherwise win (twMerge keeps one class per variant group; D-55 / F-665C-10).
+const DESTRUCTIVE_GHOST =
+  "text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-destructive dark:hover:bg-destructive/10 dark:hover:text-destructive";
 
 interface TaxRateTableProps {
   slug: string;
@@ -85,126 +96,129 @@ function DeactivateDialog({
   );
 }
 
+/** Fees › Tax rates (Phase 91 665D): DataTable client mode in the "Tax Rates" section. */
 export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
+  // Stable columns: EditTaxRateDialog / DeactivateDialog own their open state, and a rebuilt `cell`
+  // would remount them (closing an open dialog). The component has no state of its own.
+  const columns = useMemo(
+    () =>
+      defineColumns<TaxRateResponse>([
+        {
+          id: "name",
+          enableHiding: false,
+          meta: { label: "Name", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+              <span className="text-foreground text-sm font-medium" data-testid="tax-rate-name">
+                {row.original.name}
+              </span>
+              {row.original.isExempt && <Badge variant="neutral">Exempt</Badge>}
+            </div>
+          ),
+        },
+        {
+          id: "rate",
+          meta: { label: "Rate", cellClassName: "text-muted-foreground text-sm" },
+          cell: ({ row }) => (
+            <span data-testid="tax-rate-value">{row.original.rate.toFixed(2)}%</span>
+          ),
+        },
+        {
+          id: "default",
+          meta: {
+            label: "Default",
+            headerClassName: "hidden sm:table-cell",
+            cellClassName: "hidden sm:table-cell",
+          },
+          cell: ({ row }) => (
+            <span data-testid="tax-rate-default">
+              {row.original.isDefault && <Badge variant="success">Default</Badge>}
+            </span>
+          ),
+        },
+        {
+          id: "status",
+          meta: {
+            label: "Status",
+            headerClassName: "hidden md:table-cell",
+            cellClassName: "hidden text-sm md:table-cell",
+          },
+          cell: ({ row }) =>
+            row.original.active ? (
+              <span className="text-success-foreground">Active</span>
+            ) : (
+              <span className="text-muted-foreground">Inactive</span>
+            ),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) => {
+            const taxRate = row.original;
+            return (
+              <div className="flex items-center justify-end gap-1">
+                <EditTaxRateDialog slug={slug} taxRate={taxRate}>
+                  <Button variant="ghost" size="sm">
+                    <Pencil className="size-4" />
+                    <span className="sr-only">Edit {taxRate.name}</span>
+                  </Button>
+                </EditTaxRateDialog>
+                {taxRate.active && !taxRate.isDefault && (
+                  <DeactivateDialog slug={slug} taxRate={taxRate}>
+                    <Button variant="ghost" size="sm" className={DESTRUCTIVE_GHOST}>
+                      <Ban className="size-4" />
+                      <span className="sr-only">Deactivate {taxRate.name}</span>
+                    </Button>
+                  </DeactivateDialog>
+                )}
+              </div>
+            );
+          },
+        },
+      ]),
+    [slug]
+  );
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Tax Rates</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Manage the tax rates applied to fee note line items.
-          </p>
-        </div>
+    <SettingsSection
+      title="Tax Rates"
+      description="Manage the tax rates applied to fee note line items."
+      actions={
         <AddTaxRateDialog slug={slug}>
           <Button size="sm">
             <Plus className="mr-1.5 size-4" />
             Add Tax Rate
           </Button>
         </AddTaxRateDialog>
-      </div>
-
-      {taxRates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Percent className="size-12 text-slate-300 dark:text-slate-700" />
-          <h3 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
-            No tax rates yet
-          </h3>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Create your first tax rate to apply taxes to fee notes.
-          </p>
-          <div className="mt-4">
-            <AddTaxRateDialog slug={slug}>
-              <Button size="sm">
-                <Plus className="mr-1.5 size-4" />
-                Add Tax Rate
-              </Button>
-            </AddTaxRateDialog>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Rate
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Default
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {taxRates.map((taxRate) => (
-                <tr
-                  key={taxRate.id}
-                  data-testid="tax-rate-row"
-                  className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="text-sm font-medium text-slate-900 dark:text-slate-100"
-                        data-testid="tax-rate-name"
-                      >
-                        {taxRate.name}
-                      </span>
-                      {taxRate.isExempt && <Badge variant="neutral">Exempt</Badge>}
-                    </div>
-                  </td>
-                  <td
-                    className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400"
-                    data-testid="tax-rate-value"
-                  >
-                    {taxRate.rate.toFixed(2)}%
-                  </td>
-                  <td className="hidden px-4 py-3 sm:table-cell" data-testid="tax-rate-default">
-                    {taxRate.isDefault && <Badge variant="success">Default</Badge>}
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm md:table-cell">
-                    {taxRate.active ? (
-                      <span className="text-green-600 dark:text-green-400">Active</span>
-                    ) : (
-                      <span className="text-muted-foreground">Inactive</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <EditTaxRateDialog slug={slug} taxRate={taxRate}>
-                        <Button variant="ghost" size="sm">
-                          <Pencil className="size-4" />
-                          <span className="sr-only">Edit {taxRate.name}</span>
-                        </Button>
-                      </EditTaxRateDialog>
-                      {taxRate.active && !taxRate.isDefault && (
-                        <DeactivateDialog slug={slug} taxRate={taxRate}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                          >
-                            <Ban className="size-4" />
-                            <span className="sr-only">Deactivate {taxRate.name}</span>
-                          </Button>
-                        </DeactivateDialog>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+      }
+    >
+      <DataTable
+        columns={columns}
+        data={taxRates}
+        getRowId={getTaxRateId}
+        rowTestId="tax-rate-row"
+        columnVisibility={false}
+        pageSize={null}
+        stickyHeader={false}
+        frame={false}
+        empty={
+          <EmptyState
+            variant="compact"
+            icon={Percent}
+            title="No tax rates yet"
+            description="Create your first tax rate to apply taxes to fee notes."
+            action={
+              <AddTaxRateDialog slug={slug}>
+                <Button size="sm">
+                  <Plus className="mr-1.5 size-4" />
+                  Add Tax Rate
+                </Button>
+              </AddTaxRateDialog>
+            }
+          />
+        }
+      />
+    </SettingsSection>
   );
 }

@@ -5,6 +5,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateTaxSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions";
 
 interface TaxSettingsFormProps {
@@ -51,16 +52,26 @@ export function TaxSettingsForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Tax Configuration</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Configure your organization&apos;s tax registration and display settings.
-      </p>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="Tax Configuration"
+      description="Configure your organization's tax registration and display settings."
+      status={
+        message && (
+          <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+        )
+      }
+      footer={
+        <Button size="sm" disabled={saving} onClick={handleSave}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+          Save Settings
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label
             htmlFor="tax-registration-number"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Tax Registration Number
           </label>
@@ -77,7 +88,7 @@ export function TaxSettingsForm({
         <div>
           <label
             htmlFor="tax-registration-label"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Registration Label
           </label>
@@ -92,10 +103,7 @@ export function TaxSettingsForm({
           />
         </div>
         <div>
-          <label
-            htmlFor="tax-label"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
+          <label htmlFor="tax-label" className="text-foreground block text-sm font-medium">
             Tax Label
           </label>
           <Input
@@ -107,33 +115,17 @@ export function TaxSettingsForm({
             onChange={(e) => setTaxLabel(e.target.value)}
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Label shown on fee notes and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
           </p>
         </div>
         <div className="flex items-center gap-3 self-center">
           <Switch id="tax-inclusive" checked={taxInclusive} onCheckedChange={setTaxInclusive} />
-          <label
-            htmlFor="tax-inclusive"
-            className="text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
+          <label htmlFor="tax-inclusive" className="text-foreground text-sm font-medium">
             Tax-inclusive pricing
           </label>
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="sm" disabled={saving} onClick={handleSave}>
-          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-          Save Settings
-        </Button>
-        {message && (
-          <p
-            className={`text-sm ${isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
-    </div>
+    </SettingsSection>
   );
 }

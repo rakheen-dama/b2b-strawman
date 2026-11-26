@@ -431,19 +431,19 @@ describe("Breadcrumbs", () => {
       expect(lastChevron).toHaveClass("hidden", "sm:block");
     });
 
-    it("K-26: the org crumb truncates with its full name in title; middle crumbs never wrap", () => {
+    it("K-26: the org crumb truncates with its full name in title; middle crumbs never wrap or shrink", () => {
       mockUsePathname.mockReturnValue("/org/acme/trust-accounting/transactions");
       render(<Breadcrumbs slug="acme" orgName="E2E Test Organization" />);
       const org = screen.getByRole("link", { name: "E2E Test Organization" });
       expect(org).toHaveAttribute("title", "E2E Test Organization");
       expect(org).toHaveClass("max-w-40", "truncate");
-      expect(screen.getByRole("link", { name: "Trust accounting" }).parentElement).toHaveClass(
-        "whitespace-nowrap"
-      );
+      const short = screen.getByRole("link", { name: "Trust accounting" }).parentElement;
+      expect(short).toHaveClass("shrink-0", "whitespace-nowrap");
+      expect(short).not.toHaveClass("min-w-0");
       expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
     });
 
-    it("K-26: a long middle crumb truncates with its full label in title", () => {
+    it("K-26: a long middle crumb is capped at 160px with its full label in title, but never shrinks", () => {
       const CLIENT_ID = "3f2a9c1e-7b4d-4e8a-9c21-5d6f7a8b9c0d";
       const longName = "Dlamini Family Testamentary Trust (Pty) Ltd and Associated Entities";
       mockUsePathname.mockReturnValue(`/org/acme/customers/${CLIENT_ID}/edit`);
@@ -456,7 +456,8 @@ describe("Breadcrumbs", () => {
       const middle = screen.getByText(longName);
       expect(middle).toHaveAttribute("title", longName);
       expect(middle).toHaveClass("max-w-40", "truncate");
-      expect(middle.parentElement).toHaveClass("min-w-0", "whitespace-nowrap");
+      expect(middle.parentElement).toHaveClass("shrink-0", "whitespace-nowrap");
+      expect(middle.parentElement).not.toHaveClass("min-w-0");
     });
 
     it("falls back to the generic label once the publisher unmounts", () => {

@@ -146,13 +146,15 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
 
   return (
     // min-w-0: the nav sits in the fixed-height (`--app-header-height`) header beside the bell and avatar, so a long
-    // published entity name must not wrap the header or push them — the nav shrinks and the last
-    // crumb truncates, with the full name in its title. Below `sm` only the last crumb shows: on a
+    // published entity name must not wrap the header or push them — the nav shrinks. Shrink order:
+    // middle crumbs are fixed (shrink-0) and capped at 160px (max-w-40, full label in title), so
+    // short ones like "Matters" stay readable; only the org crumb and the last crumb shrink and
+    // truncate, with the full name in their title. Below `sm` only the last crumb shows: on a
     // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
-      {/* Org name as root link (falls back to slug). K-26: it truncates (full name in title) and
-          middle crumbs stay on one line and truncate the same way, so the breadcrumb never wraps
-          the fixed-height header. */}
+      {/* Org name as root link (falls back to slug). K-26: it shrinks and truncates (full name in
+          title); middle crumbs stay on one line at their natural width, capped at 160px, so the
+          breadcrumb never wraps the fixed-height header. */}
       <Link
         href={`/org/${slug}/dashboard`}
         title={orgName ?? slug}
@@ -185,7 +187,7 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
             className={
               isLast
                 ? "flex min-w-0 items-center gap-1"
-                : "hidden min-w-0 items-center gap-1 whitespace-nowrap sm:flex"
+                : "hidden shrink-0 items-center gap-1 whitespace-nowrap sm:flex"
             }
           >
             <ChevronRight

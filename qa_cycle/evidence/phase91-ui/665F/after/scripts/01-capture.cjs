@@ -1,0 +1,441 @@
+// 665F OBS step 1: capture Settings › Connections (the 6 `?tab=` ids + the Packs inner "Installed" tab
+// + the 3 log sub-pages xero/sync-log, ai/history, automations/executions) for ONE persona on the
+// running e2e mock-auth stack (:3001). Adapted from 665E/before/scripts/01-capture.cjs (not edited;
+// its HELPERS block is reused with the rail selector pointed at /settings/connections).
+// Playwright library, headless Chromium, DPR 1, reduced motion, timezone Africa/Johannesburg, app
+// rail expanded (`sidebar_state=true`), theme via localStorage `kazi-theme`.
+// Usage: PHASE=before node 01-capture.cjs <persona>
+//   persona = alice | carol | carol-cr-holder | carol-cr-lacker (the cr-* keys log in as Carol while
+//   she holds the custom role set by 02-roles.cjs; the script checks her role name first).
+// Read-only: no clicks except the Packs inner tab "Installed" (a client-side tab switch). Per
+// surface × 1024×768/1440×900 × light/dark: a full-page shot (raw, /tmp, never committed) and a
+// compact probe (h1s, the Connections tab bar, the settings-rail Connections links, notice, main /
+// content width, document h-overflow, every table's scroller visible vs scroll width + per-column cut,
+// every card grid / card's client vs scroll width and descendants spilling past the card, targeted
+// contrast (links, badges, pack h3s, notification category headers) and the generic < AA probe); at
+// 1440 light the full probe (headings, cards, tables, testids, buttons, links, controls, chips,
+// surface specifics: notification groups, pack cards, rule / execution trigger cells, pagers); at
+// 1024 light the spec selectors (SEL-COMPAT) and the legacy-route redirects.
+// Output: $RAW/persona-<persona>.json + tiles (05 merges).
+const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+const L = require("./lib.cjs");
+
+const KEY = process.argv[2];
+const EXPECT_ROLE = { alice: "Owner", carol: "Member", "carol-cr-holder": L.NAMES.roleHolder, "carol-cr-lacker": L.NAMES.roleLacker };
+if (!EXPECT_ROLE[KEY]) throw new Error("persona?");
+const WHO = KEY.startsWith("carol") ? "carol" : "alice";
+const VIEWPORTS = [[1024, 768], [1440, 900]];
+const U = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
+const LEGACY = ["/settings/integrations", "/settings/integrations/xero", "/settings/integrations/mcp", "/settings/ai", "/settings/notifications", "/settings/packs", "/settings/automations", "/settings/integrations/xero/sync-log", "/settings/ai/history", "/settings/automations/executions"];
+
+const R = { persona: KEY, login: WHO, capturedAt: new Date().toISOString(), caps: null, surfaces: {}, variants: {}, selCompat: {}, legacy: {} };
+const consoleSink = [];
+const tiles = [];
+const lab = { label: "" };
+let pagesOpened = 0;
+
+const HELPERS = (TABLIST) => {
+  window.__TABLIST = TABLIST;
+  window.__v = (e) => { const b = e.getBoundingClientRect(); const cs = getComputedStyle(e); return b.width > 0 && b.height > 0 && cs.visibility !== "hidden" && cs.display !== "none"; };
+  window.__t = (e) => (e.innerText || e.textContent || "").replace(/\s+/g, " ").trim();
+  window.__scroller = (t) => {
+    for (let e = t.parentElement; e && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (/(auto|scroll|hidden|clip)/.test(cs.overflowX) || /inline-size/.test(cs.contain || "") || /inline-size/.test(cs.containerType || "")) return e;
+    }
+    return null;
+  };
+  window.__tableMeasure = (t) => {
+    const sc = window.__scroller(t);
+    const tb = t.getBoundingClientRect();
+    const sr = sc ? sc.getBoundingClientRect() : null;
+    const visRight = sr ? sr.left + sc.clientWidth : innerWidth;
+    const cols = [...t.querySelectorAll("thead th")].filter(window.__v).map((th) => { const r = th.getBoundingClientRect(); return { h: window.__t(th) || "(blank)", w: Math.round(r.width), cutPx: Math.max(0, Math.round(r.right - visRight)), hidden: r.left >= visRight }; });
+    const cellClip = [...t.querySelectorAll("tbody td")].filter((td) => window.__v(td) && td.scrollWidth > td.clientWidth + 1).length;
+    return {
+      dataSlot: t.getAttribute("data-slot"),
+      visible: window.__v(t),
+      headers: [...t.querySelectorAll("thead th")].map(window.__t),
+      bodyRows: t.querySelectorAll("tbody tr").length,
+      tableWidth: Math.round(tb.width),
+      cols,
+      cellsWithInternalClip: cellClip,
+      scroller: sc ? { tag: sc.tagName.toLowerCase(), dataSlot: sc.getAttribute("data-slot"), cls: (sc.className || "").toString().slice(0, 80), overflowX: getComputedStyle(sc).overflowX, position: getComputedStyle(sc).position, clientWidth: sc.clientWidth, scrollWidth: sc.scrollWidth, overflowPx: sc.scrollWidth - sc.clientWidth } : null,
+    };
+  };
+  window.__empties = (root) => [...root.querySelectorAll("p,td,h2,h3,div")].filter((e) => window.__v(e) && e.children.length <= 2 && /^(No |Nothing |There are no )/.test(window.__t(e)) && window.__t(e).length < 200).map((e) => {
+    const box = e.closest('[data-slot="empty-state"]') || e.closest('[data-slot="card-content"]') || e.closest("td") || e.closest("div.rounded-lg") || e.parentElement;
+    return { tag: e.tagName.toLowerCase(), text: window.__t(e).slice(0, 160), cls: (e.className || "").toString().slice(0, 60), height: Math.round(e.getBoundingClientRect().height), containerHeight: Math.round(box.getBoundingClientRect().height), containerSlot: box.getAttribute("data-slot"), outerHTML: box.outerHTML.slice(0, 4000) };
+  });
+  window.__rail = () => {
+    const nav = document.querySelector('nav[aria-label="Settings navigation"]');
+    if (!nav) return null;
+    return [...nav.querySelectorAll('a[href*="/settings/connections"]')].filter(window.__v).map((a) => `${window.__t(a)}${a.getAttribute("aria-current") ? "*" : ""}`);
+  };
+  // WCAG contrast of each visible text element's own text (direct text nodes) against its composited
+  // background (the ancestor background chain down from the first opaque one). Returns < 4.5 only.
+  const cv = document.createElement("canvas"); cv.width = cv.height = 1; const cx = cv.getContext("2d", { willReadFrequently: true });
+  const px = (c, base) => { cx.globalCompositeOperation = "copy"; cx.fillStyle = base; cx.fillRect(0, 0, 1, 1); cx.globalCompositeOperation = "source-over"; cx.fillStyle = "rgba(0,0,0,0)"; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); const d = cx.getImageData(0, 0, 1, 1).data; return `rgb(${d[0]},${d[1]},${d[2]})`; };
+  const trip = (s) => s.match(/\d+/g).slice(0, 3).map(Number);
+  const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const isClear = (c) => { cx.globalCompositeOperation = "copy"; cx.fillStyle = "rgba(0,0,0,0)"; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); return cx.getImageData(0, 0, 1, 1).data[3] === 0; };
+  const alphaOf = (c) => { cx.globalCompositeOperation = "copy"; cx.fillStyle = "rgba(0,0,0,0)"; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); return cx.getImageData(0, 0, 1, 1).data[3]; };
+  window.__bg = (e) => { const chain = []; for (let x = e; x; x = x.parentElement) { const b = getComputedStyle(x).backgroundColor; if (!isClear(b)) { chain.push(b); if (alphaOf(b) === 255) break; } } let base = "rgb(255,255,255)"; for (const b of chain.reverse()) base = px(b, base); return base; };
+  window.__contrast = (root) => {
+    const out = [];
+    for (const e of root.querySelectorAll("*")) {
+      if (!window.__v(e)) continue;
+      const own = [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("").replace(/\s+/g, " ").trim();
+      if (!own || own.length < 2) continue;
+      const cs = getComputedStyle(e);
+      if (cs.opacity === "0") continue;
+      const bg = window.__bg(e);
+      const fg = px(cs.color, bg);
+      const [l1, l2] = [lum(trip(fg)), lum(trip(bg))].sort((a, b) => b - a);
+      const ratio = +((l1 + 0.05) / (l2 + 0.05)).toFixed(2);
+      const large = parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.66 && +cs.fontWeight >= 700);
+      if (ratio < (large ? 3 : 4.5)) out.push({ text: own.slice(0, 60), tag: e.tagName.toLowerCase(), cls: (e.className || "").toString().slice(0, 90), fg, bg, ratio, fontPx: parseFloat(cs.fontSize), disabled: !!e.closest("button:disabled,[aria-disabled=true],[data-disabled]") });
+    }
+    const m = new Map(); for (const x of out) { const k = `${x.text}|${x.cls}`; if (!m.has(k)) m.set(k, x); }
+    return [...m.values()].sort((a, b) => a.ratio - b.ratio).slice(0, 25);
+  };
+};
+
+// 665F additions: the contrast of one element (any ratio), card-grid / card overflow, targeted contrast.
+const HELPERS2 = () => {
+  const cv = document.createElement("canvas"); cv.width = cv.height = 1; const cx = cv.getContext("2d", { willReadFrequently: true });
+  const px = (c, base) => { cx.globalCompositeOperation = "copy"; cx.fillStyle = base; cx.fillRect(0, 0, 1, 1); cx.globalCompositeOperation = "source-over"; cx.fillStyle = "rgba(0,0,0,0)"; cx.fillStyle = c; cx.fillRect(0, 0, 1, 1); const d = cx.getImageData(0, 0, 1, 1).data; return `rgb(${d[0]},${d[1]},${d[2]})`; };
+  const trip = (s) => s.match(/\d+/g).slice(0, 3).map(Number);
+  const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  window.__contrastOf = (e) => {
+    const cs = getComputedStyle(e);
+    const bg = window.__bg(e);
+    const fg = px(cs.color, bg);
+    const [l1, l2] = [lum(trip(fg)), lum(trip(bg))].sort((a, b) => b - a);
+    return { text: window.__t(e).slice(0, 60), tag: e.tagName.toLowerCase(), cls: (e.className || "").toString().slice(0, 120), color: cs.color, fg, bg, ratio: +((l1 + 0.05) / (l2 + 0.05)).toFixed(2), fontPx: parseFloat(cs.fontSize), fontWeight: cs.fontWeight };
+  };
+  const dd = (arr, key) => { const m = new Map(); for (const x of arr) { const k = key(x); if (!m.has(k)) m.set(k, { ...x, n: 0 }); m.get(k).n++; } return [...m.values()]; };
+  window.__targets = () => {
+    const main = document.querySelector("main#main-content");
+    if (!main) return null;
+    const vis = window.__v;
+    const links = [...main.querySelectorAll("a")].filter((a) => vis(a) && /→|View |Manage |Open /.test(window.__t(a))).map(window.__contrastOf);
+    const badges = dd([...main.querySelectorAll('[data-slot="badge"]')].filter(vis).map((b) => ({ ...window.__contrastOf(b), variant: b.getAttribute("data-variant") || null })), (x) => `${x.text}|${x.fg}|${x.bg}`);
+    const packTitles = [...main.querySelectorAll('[data-testid^="pack-card-"] h3')].filter(vis).map((h) => ({ testid: h.closest("[data-testid]").dataset.testid, ...window.__contrastOf(h) }));
+    const form = [...main.querySelectorAll("div.rounded-lg.border")].find((d) => /Notification Type/.test(d.textContent) && /In-App/.test(d.textContent));
+    const notifCategoryHeaders = form ? dd([...form.querySelectorAll("p.uppercase")].filter(vis).map(window.__contrastOf), (x) => `${x.fg}|${x.bg}`).map((x) => ({ ...x, sample: x.text })) : null;
+    const subtle = dd([...main.querySelectorAll("p,span,label,td,th,dd,dt")].filter((e) => vis(e) && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1) && /text-(slate|muted)-?(400|500|foreground)?/.test((e.className || "").toString())).map(window.__contrastOf), (x) => `${x.cls}|${x.fg}|${x.bg}`).sort((a, b) => a.ratio - b.ratio).slice(0, 12);
+    return { links, badges, packTitles, notifCategoryHeaders, subtle };
+  };
+  // Card grids and cards: client vs scroll width, and descendants that spill past the card's right edge.
+  window.__cards = () => {
+    const main = document.querySelector("main#main-content");
+    if (!main) return null;
+    const vis = window.__v;
+    const grids = [...main.querySelectorAll("div.grid")].filter((g) => vis(g) && g.children.length > 1 && getComputedStyle(g).display === "grid" && !g.closest("table")).map((g) => {
+      const gr = g.getBoundingClientRect();
+      const kids = [...g.children].filter(vis);
+      return { cls: (g.className || "").toString().slice(0, 90), cols: getComputedStyle(g).gridTemplateColumns.split(" ").length, template: getComputedStyle(g).gridTemplateColumns.slice(0, 80), children: kids.length, width: Math.round(gr.width), clientWidth: g.clientWidth, scrollWidth: g.scrollWidth, overflowPx: g.scrollWidth - g.clientWidth, childMaxRight: Math.round(Math.max(...kids.map((k) => k.getBoundingClientRect().right))) - Math.round(gr.right), childMinWidth: Math.round(Math.min(...kids.map((k) => k.getBoundingClientRect().width))) };
+    }).filter((g) => g.children > 1).slice(0, 12);
+    const cardEls = [...main.querySelectorAll('[data-slot="card"], div.rounded-lg.border')].filter((c) => vis(c) && !c.parentElement.closest('[data-slot="card"]'));
+    const cards = cardEls.map((c) => {
+      const r = c.getBoundingClientRect();
+      const head = c.querySelector('h1,h2,h3,h4,[data-slot="card-title"]');
+      const spill = [...c.querySelectorAll("*")].filter((e) => vis(e) && e.getBoundingClientRect().right > r.right + 1).map((e) => ({ tag: e.tagName.toLowerCase(), text: window.__t(e).slice(0, 40), cls: (e.className || "").toString().slice(0, 60), pastPx: Math.round(e.getBoundingClientRect().right - r.right) }));
+      const clipped = [...c.querySelectorAll("*")].filter((e) => vis(e) && e.children.length === 0 && e.scrollWidth > e.clientWidth + 1 && /truncate|overflow-hidden|text-ellipsis/.test((e.className || "").toString())).length;
+      return { head: head ? window.__t(head).slice(0, 50) : window.__t(c).slice(0, 30), width: Math.round(r.width), clientWidth: c.clientWidth, scrollWidth: c.scrollWidth, overflowPx: c.scrollWidth - c.clientWidth, spillCount: spill.length, spillMaxPx: spill.length ? Math.max(...spill.map((s) => s.pastPx)) : 0, spill: spill.sort((a, b) => b.pastPx - a.pastPx).slice(0, 3), truncatedLeaves: clipped };
+    });
+    const col = main.querySelector('[role="tabpanel"]') || main.firstElementChild;
+    return { column: col ? { role: col.getAttribute("role"), clientWidth: col.clientWidth, scrollWidth: col.scrollWidth, overflowPx: col.scrollWidth - col.clientWidth } : null, grids, cards: cards.slice(0, 20) };
+  };
+};
+
+// Surface specifics (1440 light, full probe).
+const SPECIFIC = () => {
+  const main = document.querySelector("main#main-content");
+  const t = window.__t, vis = window.__v;
+  const out = {};
+  const form = [...main.querySelectorAll("div.rounded-lg.border")].find((d) => /Notification Type/.test(d.textContent) && /In-App/.test(d.textContent));
+  if (form) {
+    out.notificationGroups = [...form.querySelectorAll("p.uppercase")].map((h) => {
+      const grp = h.parentElement.parentElement;
+      return { category: t(h), rows: [...grp.querySelectorAll("label")].map((l) => t(l)) };
+    });
+    out.notificationSwitches = [...form.querySelectorAll('[role="switch"]')].map((s) => ({ id: s.id, checked: s.getAttribute("aria-checked"), name: s.id && document.querySelector(`label[for="${CSS.escape(s.id)}"]`) ? t(document.querySelector(`label[for="${CSS.escape(s.id)}"]`)) : s.getAttribute("aria-label") })).slice(0, 100);
+  }
+  const packs = [...main.querySelectorAll('[data-testid^="pack-card-"]')].filter(vis);
+  if (packs.length) out.packCards = packs.map((c) => ({ testid: c.dataset.testid, h3: c.querySelector("h3") ? t(c.querySelector("h3")) : null, text: t(c).slice(0, 220), paragraphs: [...c.querySelectorAll("p")].map(t).filter(Boolean).slice(0, 6), buttons: [...c.querySelectorAll("button")].map((b) => `${t(b) || b.getAttribute("aria-label") || "(unnamed)"}${b.disabled ? "[disabled]" : ""}`), badges: [...c.querySelectorAll('[data-slot="badge"]')].map(t) }));
+  const rows = [...main.querySelectorAll("table")].filter(vis).map((tb) => ({ headers: [...tb.querySelectorAll("thead th")].map(t), rows: [...tb.querySelectorAll("tbody tr")].map((tr) => [...tr.children].map((c) => t(c).slice(0, 60))) }));
+  if (rows.length) out.tableCells = rows.map((x) => ({ headers: x.headers, nRows: x.rows.length, rows: x.rows.slice(0, 12) }));
+  const pagerText = [...main.querySelectorAll("p,span,div")].filter((e) => vis(e) && e.children.length === 0 && /^Page \d+ of \d+/.test(t(e))).map(t);
+  out.pager = { text: pagerText, prev: [...main.querySelectorAll("button,a")].filter((b) => vis(b) && /^(Previous|Previous page)$/.test(b.getAttribute("aria-label") || t(b))).map((b) => ({ tag: b.tagName.toLowerCase(), disabled: !!b.disabled })), next: [...main.querySelectorAll("button,a")].filter((b) => vis(b) && /^(Next|Next page)$/.test(b.getAttribute("aria-label") || t(b))).map((b) => ({ tag: b.tagName.toLowerCase(), disabled: !!b.disabled })) };
+  out.comboboxes = [...main.querySelectorAll('[role="combobox"]')].filter(vis).map((c) => ({ text: t(c), ariaLabel: c.getAttribute("aria-label"), id: c.id || null, labelled: !!(c.getAttribute("aria-label") || c.getAttribute("aria-labelledby") || (c.id && document.querySelector(`label[for="${CSS.escape(c.id)}"]`))) }));
+  out.emptyHeadings = [...main.querySelectorAll("h2,h3")].filter((h) => vis(h) && /^No /.test(t(h))).map(t);
+  return out;
+};
+
+const FULL = () => {
+  const main = document.querySelector("main#main-content");
+  const vis = window.__v, txt = window.__t;
+  const name = (e) => e.getAttribute("aria-label") || (e.getAttribute("aria-labelledby") ? e.getAttribute("aria-labelledby").split(/\s+/).map((id) => document.getElementById(id)).filter(Boolean).map(txt).join(" ") : "") || txt(e) || e.getAttribute("title") || "";
+  const labelFor = (e) => {
+    if (e.getAttribute("aria-label")) return e.getAttribute("aria-label");
+    if (e.id) { const l = document.querySelector(`label[for="${CSS.escape(e.id)}"]`); if (l) return txt(l); }
+    const wrap = e.closest("label"); if (wrap) return txt(wrap).slice(0, 80);
+    return null;
+  };
+  if (!main) return { error: "no main#main-content" };
+  const U = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
+  const strip = main.querySelector(`[role="tablist"][aria-label="${window.__TABLIST}"]`);
+  const notice = [...main.querySelectorAll('p[role="status"]')].find((p) => /have access to/.test(p.textContent));
+  const headings = [...main.querySelectorAll("h1,h2,h3,h4,h5,h6,[role=heading]")].filter(vis).map((h) => ({ level: h.getAttribute("aria-level") ? +h.getAttribute("aria-level") : +h.tagName[1], tag: h.tagName.toLowerCase(), text: txt(h).slice(0, 100) }));
+  const h1s = [...main.querySelectorAll("h1")];
+  const slotCards = [...main.querySelectorAll('[data-slot="card"]')].filter(vis);
+  const handCards = [...main.querySelectorAll("div.rounded-lg.border, div.rounded-md.border")].filter((e) => vis(e) && !e.closest('[role="tablist"]') && e.getAttribute("data-slot") !== "card" && !e.closest('[data-slot="card"]'));
+  const cardHead = (c) => { const h = c.querySelector("h1,h2,h3,h4,legend,[data-slot=card-title]"); return h ? txt(h).slice(0, 60) : txt(c).slice(0, 40); };
+  const testids = {};
+  for (const e of main.querySelectorAll("[data-testid]")) { const k = e.dataset.testid.replace(U, "{uuid}"); testids[k] = (testids[k] || 0) + 1; }
+  const dedupe = (arr) => { const m = new Map(); for (const x of arr) { const k = JSON.stringify(x); m.set(k, (m.get(k) || 0) + 1); } return [...m].map(([k, n]) => ({ ...JSON.parse(k), n })); };
+  const buttons = dedupe([...main.querySelectorAll('button,[role="button"],a[data-slot="button"]')].filter((b) => !b.closest(`[role="tablist"][aria-label="${window.__TABLIST}"]`)).map((b) => ({ name: name(b).replace(U, "{uuid}").slice(0, 80), visible: vis(b), disabled: b.disabled || b.getAttribute("aria-disabled") === "true" || undefined, role: b.getAttribute("role") || undefined })));
+  const links = dedupe([...main.querySelectorAll("a[href]")].filter((a) => !a.closest('[role="tablist"]')).map((a) => ({ name: name(a).slice(0, 60), href: a.getAttribute("href").replace(U, "{uuid}"), testid: a.dataset.testid ? a.dataset.testid.replace(U, "{uuid}") : undefined }))).slice(0, 40);
+  const controls = [...main.querySelectorAll('input,textarea,select,[role="combobox"],[role="switch"],[role="checkbox"],[contenteditable]')].filter((e) => e.type !== "hidden" && !(e.tagName === "INPUT" && e.getAttribute("aria-hidden") === "true")).map((e) => ({ tag: e.tagName.toLowerCase(), type: e.getAttribute("type") || e.getAttribute("role") || undefined, id: e.id || undefined, testid: e.dataset.testid, label: labelFor(e), placeholder: e.getAttribute("placeholder") || undefined, value: e.tagName === "BUTTON" ? (e.getAttribute("aria-checked") ?? txt(e).slice(0, 60)) : (e.type === "file" ? undefined : (e.value || "").slice(0, 80)), options: e.tagName === "SELECT" ? [...e.options].map((o) => `${o.value}${o.selected ? "*" : ""}`) : undefined, disabled: e.disabled || undefined, visible: vis(e) })).slice(0, 120);
+  const tables = [...main.querySelectorAll("table")].map((t) => ({ firstRow: t.querySelector("tbody tr") ? [...t.querySelector("tbody tr").children].map((c) => txt(c).slice(0, 50)) : null, ...window.__tableMeasure(t) }));
+  const chips = dedupe([...main.querySelectorAll('[data-slot="badge"]')].filter(vis).map((b) => ({ text: txt(b).slice(0, 40), variant: b.getAttribute("data-variant") || undefined })));
+  const innerTabs = [...main.querySelectorAll('[role="tablist"]')].filter((t) => t !== strip).map((t) => ({ label: t.getAttribute("aria-label"), tabs: [...t.querySelectorAll('[role="tab"]')].map((x) => `${txt(x)}:${x.getAttribute("aria-selected")}`) }));
+  return {
+    title: document.title,
+    url: location.pathname.replace(U, "{uuid}") + location.search.replace(U, "{uuid}"),
+    tabBar: strip ? [...strip.querySelectorAll('[role="tab"]')].map((t) => `${txt(t)}:${t.getAttribute("aria-selected")}`) : null,
+    rail: window.__rail(),
+    notice: notice ? txt(notice) : null,
+    mainCount: document.querySelectorAll("main#main-content").length,
+    mainElCount: document.querySelectorAll("main").length,
+    h1: h1s.map((h) => ({ text: txt(h), visible: vis(h), cls: h.className })),
+    h1Count: h1s.length,
+    h1OutsideMain: [...document.querySelectorAll("h1")].filter((h) => !main.contains(h)).map(txt),
+    headings, innerTabs,
+    cards: { slotCard: slotCards.length, handRolled: handCards.length, slotCardHeads: slotCards.map(cardHead).slice(0, 40), handRolledHeads: handCards.map(cardHead).slice(0, 40) },
+    tables, testids, buttons, links, controls, chips,
+    emptyStates: window.__empties(main).map(({ outerHTML, ...e }) => e),
+    statusAlerts: [...main.querySelectorAll('[role="status"],[role="alert"]')].filter(vis).map((e) => txt(e).slice(0, 160)),
+    docHeight: document.scrollingElement.scrollHeight,
+  };
+};
+const COMPACT = () => {
+  const main = document.querySelector("main#main-content");
+  const txt = window.__t;
+  const strip = main && main.querySelector(`[role="tablist"][aria-label="${window.__TABLIST}"]`);
+  const sel = strip && strip.querySelector('[role="tab"][aria-selected="true"]');
+  const notice = main && [...main.querySelectorAll('p[role="status"]')].find((p) => /have access to/.test(p.textContent));
+  const se = document.scrollingElement;
+  const b = main ? main.getBoundingClientRect() : null;
+  const panel = main && (main.querySelector('[role="tabpanel"]') || main.firstElementChild);
+  const pb = panel ? panel.getBoundingClientRect() : null;
+  const wide = main ? [...main.querySelectorAll("*")].filter((e) => window.__v(e) && e.getBoundingClientRect().right > b.right + 1 && !window.__scroller(e)).slice(0, 5).map((e) => ({ tag: e.tagName.toLowerCase(), cls: (e.className || "").toString().slice(0, 60), right: Math.round(e.getBoundingClientRect().right), text: txt(e).slice(0, 40) })) : [];
+  return {
+    h1: main ? [...main.querySelectorAll("h1")].map(txt) : [],
+    h1Count: main ? main.querySelectorAll("h1").length : 0,
+    mainCount: document.querySelectorAll("main#main-content").length,
+    mainElCount: document.querySelectorAll("main").length,
+    selectedTab: sel ? txt(sel) : null,
+    tabs: strip ? [...strip.querySelectorAll('[role="tab"]')].map(txt) : [],
+    tabStrip: strip ? { clientWidth: strip.clientWidth, scrollWidth: strip.scrollWidth } : null,
+    rail: window.__rail(),
+    notice: notice ? txt(notice) : null,
+    docHeight: se.scrollHeight,
+    hOverflow: se.scrollWidth > se.clientWidth ? se.scrollWidth - se.clientWidth : 0,
+    mainBox: b ? { left: Math.round(b.left), width: Math.round(b.width), right: Math.round(b.right) } : null,
+    contentBox: pb ? { tag: panel.tagName.toLowerCase(), role: panel.getAttribute("role"), left: Math.round(pb.left), width: Math.round(pb.width) } : null,
+    beyondMainRight: wide,
+    tables: main ? [...main.querySelectorAll("table")].filter(window.__v).map(window.__tableMeasure) : [],
+    cards: window.__cards(),
+    targets: window.__targets(),
+    emptyStates: main ? window.__empties(main) : [],
+    lowContrast: main ? window.__contrast(main) : [],
+    somethingWentWrong: document.body.innerText.includes("Something went wrong"),
+  };
+};
+
+const LEGAL_ZA_RULES = [["Matter Onboarding Reminder", "Client Status"], ["Investment Maturity Reminder", "Date Approaching"], ["Reconciliation Overdue Reminder", "Date Approaching"], ["Pending Approval Aging", "Date Approaching"]];
+// Spec selectors (counts; strict = the spec acts on it, so it must be exactly 1).
+async function selCompat(p, surface) {
+  const c = (loc) => loc.count();
+  const main = p.locator("#main-content");
+  const out = {
+    "main#main-content": await c(p.locator("main#main-content")),
+    "main (strict locator('main'))": await c(p.locator("main")),
+    "h1 in #main-content": await c(p.locator("#main-content h1")),
+    "h1 page-wide": await c(p.locator("h1")),
+    [`tablist '${L.TABLIST}' exact`]: await c(p.getByRole("tablist", { name: L.TABLIST, exact: true })),
+    "body 'Something went wrong'": await c(p.getByText("Something went wrong")),
+    "status notice 'You don't have access to'": await c(p.getByRole("status").filter({ hasText: "You don't have access to" })),
+  };
+  if (surface === "packs" || surface === "packs-installed") {
+    out["packs.spec:111 locator('h1').filter({hasText:'Packs'}) (strict toBeVisible)"] = await c(p.locator("h1").filter({ hasText: "Packs" }));
+    out["packs.spec:116/167/196 tab /Installed/i (strict)"] = await c(p.getByRole("tab", { name: /Installed/i }));
+    out["tab /Installed/i text"] = (await c(p.getByRole("tab", { name: /Installed/i }))) === 1 ? (await p.getByRole("tab", { name: /Installed/i }).innerText()).trim() : null;
+    out["tab 'Available'"] = await c(p.getByRole("tab", { name: "Available" }));
+    out["testid pack-card-* (visible panel)"] = await c(p.locator('[data-testid^="pack-card-"]:visible'));
+    out["testid pack-card-* with an h3"] = await c(p.locator('[data-testid^="pack-card-"]:visible').filter({ has: p.locator("h3") }));
+    const card = p.locator('[data-testid="pack-card-legal-za"]');
+    out["packs.spec:120/169 testid pack-card-legal-za (visible)"] = await c(p.locator('[data-testid="pack-card-legal-za"]:visible'));
+    out["packs.spec:122/198 pack-card-legal-za h3 text (toContainText 'SA Legal Templates')"] = (await c(card.locator("h3:visible"))) ? (await card.locator("h3:visible").first().innerText()).trim() : null;
+    out["packs.spec:172 pack-card-legal-za button 'Uninstall' (count / disabled)"] = (await c(card.getByRole("button", { name: "Uninstall" }))) ? `${await c(card.getByRole("button", { name: "Uninstall" }))}/${await card.getByRole("button", { name: "Uninstall" }).first().isDisabled()}` : 0;
+    out["switch 'Show all packs'"] = await c(p.getByRole("switch", { name: "Show all packs" }));
+    out["text 'Only admins and owners can install or uninstall packs.'"] = await c(p.getByText("Only admins and owners can install or uninstall packs."));
+  }
+  if (surface === "notifications") {
+    out["notification-preferences.spec:55 heading h1 /^Notification Preferences/ (strict toBeVisible)"] = await c(p.getByRole("heading", { level: 1, name: /^Notification Preferences/ }));
+    out["notification-preferences.spec:94 getByRole('tabpanel') (strict)"] = await c(p.getByRole("tabpanel"));
+    for (const cat of ["Tasks", "Matters", "Billing", "Time Tracking", "Other"]) out[`notification-preferences.spec:96 tabpanel getByText('${cat}', exact)`] = await c(p.getByRole("tabpanel").getByText(cat, { exact: true }));
+    out["notification-preferences.spec:99 switch 'Time Reminders' (aria-checked)"] = (await c(p.getByRole("switch", { name: "Time Reminders" }))) + ((await c(p.getByRole("switch", { name: "Time Reminders" }))) === 1 ? ` ${await p.getByRole("switch", { name: "Time Reminders" }).getAttribute("aria-checked")}` : "");
+    out["notification-preferences.spec:66 #email-TIME_REMINDER (aria-checked)"] = (await c(p.locator("#email-TIME_REMINDER"))) + ((await c(p.locator("#email-TIME_REMINDER"))) === 1 ? ` ${await p.locator("#email-TIME_REMINDER").getAttribute("aria-checked")}` : "");
+    out["notification-preferences.spec:74 button 'Save preferences'"] = await c(p.getByRole("button", { name: "Save preferences" }));
+    out["switches (all) / unnamed email switches"] = `${await c(main.getByRole("switch"))}/${await c(main.locator('[role="switch"][id^="email-"]'))}`;
+  }
+  if (surface === "automations") {
+    out["automation-crud.spec:46 / triggers:43 heading h1 'Automations' (strict toBeVisible)"] = await c(p.getByRole("heading", { level: 1, name: "Automations" }));
+    out["automation-crud.spec:85 testid automation-row"] = await c(p.getByTestId("automation-row"));
+    for (const [n, trig] of LEGAL_ZA_RULES) {
+      const row = p.getByTestId("automation-row").filter({ hasText: n });
+      out[`automation-crud.spec:88 row '${n}' (toHaveCount 1) / switch 'Toggle ${n}' / triggers:49 text '${trig}' exact`] = `${await c(row)}/${await c(row.getByRole("switch", { name: `Toggle ${n}` }))}/${await c(row.getByText(trig, { exact: true }))}`;
+    }
+    out["automation-crud.spec:53 switch 'Toggle Investment Maturity Reminder' aria-checked / disabled"] = (await c(p.getByRole("switch", { name: "Toggle Investment Maturity Reminder" }))) ? `${await p.getByRole("switch", { name: "Toggle Investment Maturity Reminder" }).getAttribute("aria-checked")} / ${await p.getByRole("switch", { name: "Toggle Investment Maturity Reminder" }).isDisabled()}` : 0;
+    out["automation-crud.spec:108 link /View Execution Log/ (.first())"] = await c(p.getByRole("link", { name: /View Execution Log/ }));
+    out["text 'You do not have permission to view automation rules.'"] = await c(p.getByText("You do not have permission to view automation rules."));
+  }
+  if (surface === "executions") {
+    out["automation-crud.spec:112 / triggers:31 heading h1 'Execution Log' (strict toBeVisible)"] = await c(p.getByRole("heading", { level: 1, name: "Execution Log" }));
+    out["automation-triggers.spec:55 combobox hasText 'All Rules' (strict click)"] = await c(p.getByRole("combobox").filter({ hasText: "All Rules" }));
+    out["automation-triggers.spec:65 combobox hasText 'All Statuses' (strict click)"] = await c(p.getByRole("combobox").filter({ hasText: "All Statuses" }));
+    out["table rows"] = await c(main.locator("table tbody tr"));
+    out["button 'Previous' / 'Next'"] = `${await c(p.getByRole("button", { name: "Previous" }))}/${await c(p.getByRole("button", { name: "Next" }))}`;
+    out["button 'Refresh'"] = await c(main.getByRole("button", { name: /Refresh/ }));
+    out["link 'Automations' (back)"] = await c(main.getByRole("link", { name: "Automations", exact: true }));
+  }
+  if (surface === "sync-log") {
+    out["heading h1 'Sync Log'"] = await c(p.getByRole("heading", { level: 1, name: "Sync Log" }));
+    out["text 'You do not have permission to view the sync log.'"] = await c(p.getByText("You do not have permission to view the sync log."));
+    out["heading h2 'No sync entries found'"] = await c(p.getByRole("heading", { level: 2, name: "No sync entries found" }));
+    out["table rows"] = await c(main.locator("table tbody tr"));
+    out["comboboxes (filters)"] = await c(main.getByRole("combobox"));
+    out["link 'Xero Settings' (back)"] = await c(main.getByRole("link", { name: "Xero Settings", exact: true }));
+  }
+  if (surface === "ai-history") {
+    out["heading h1 'Execution History'"] = await c(p.getByRole("heading", { level: 1, name: "Execution History" }));
+    out["text 'You do not have permission to view execution history.'"] = await c(p.getByText(/You do not have permission to view execution history/));
+    out["table rows"] = await c(main.locator("table tbody tr"));
+    out["button 'Previous page' / 'Next page'"] = `${await c(p.getByRole("button", { name: "Previous page" }))}/${await c(p.getByRole("button", { name: "Next page" }))}`;
+    out["link 'AI Configuration' (back)"] = await c(main.getByRole("link", { name: "AI Configuration", exact: true }));
+  }
+  if (surface === "xero") {
+    out["heading h1 /^Integrations/"] = await c(p.getByRole("heading", { level: 1, name: /^Integrations/ }));
+    out["heading h2 'Xero Integration'"] = await c(p.getByRole("heading", { level: 2, name: "Xero Integration" }));
+    out["text 'You do not have permission to manage integrations.'"] = await c(p.getByText(/You do not have permission to manage integrations/));
+    out["link /Sync Log/"] = await c(main.getByRole("link", { name: /Sync Log/i }));
+    out["switches"] = await c(main.getByRole("switch"));
+  }
+  if (surface === "mcp") {
+    out["heading h1 'Claude / MCP Connector'"] = await c(p.getByRole("heading", { level: 1, name: "Claude / MCP Connector" }));
+    out["switch 'Enabled' (aria-checked)"] = (await c(main.getByRole("switch", { name: "Enabled" }))) + ((await c(main.getByRole("switch", { name: "Enabled" }))) === 1 ? ` ${await main.getByRole("switch", { name: "Enabled" }).getAttribute("aria-checked")}` : "");
+    out["button 'Revoke access'"] = await c(main.getByRole("button", { name: "Revoke access" }));
+    out["text 'You do not have permission to manage integrations.'"] = await c(p.getByText(/You do not have permission to manage integrations/));
+  }
+  if (surface === "ai") {
+    out["heading h1 'Set Up AI' / 'AI Configuration'"] = `${await c(p.getByRole("heading", { level: 1, name: "Set Up AI" }))}/${await c(p.getByRole("heading", { level: 1, name: "AI Configuration" }))}`;
+    out["link 'View execution history →'"] = await c(main.getByRole("link", { name: /View execution history/ }));
+    out["link 'Manage integrations →'"] = await c(main.getByRole("link", { name: /Manage integrations/ }));
+  }
+  return out;
+}
+
+async function page(browser, S, w, h, theme) {
+  const ctx = await L.newCtx(browser, S, { width: w, height: h, theme, extra: L.EXTRA });
+  const p = await ctx.newPage();
+  L.watch(p, consoleSink, lab);
+  return { ctx, p };
+}
+const shot = async (p, key, caption, opt = {}) => {
+  const f = path.join(L.RAW, `${key}.png`);
+  await p.screenshot({ path: f, ...opt });
+  tiles.push([key, f, caption]);
+};
+const hashEmpties = (arr) => arr.map(({ outerHTML, ...e }) => ({ ...e, outerHTMLsha1: crypto.createHash("sha1").update(outerHTML.replace(U, "{uuid}")).digest("hex").slice(0, 12), outerHTMLlen: outerHTML.length }));
+
+(async () => {
+  const browser = await L.chromium.launch();
+  const S = await L.loginState(browser, WHO);
+  const tok = await L.idpToken(WHO);
+  const caps = await L.apiGet(tok, "/api/me/capabilities");
+  R.caps = caps.json ? { role: caps.json.role, isAdmin: caps.json.isAdmin, isOwner: caps.json.isOwner, capabilities: caps.json.capabilities } : caps;
+  if (!caps.json || caps.json.role !== EXPECT_ROLE[KEY]) throw new Error(`persona ${KEY} expects role ${EXPECT_ROLE[KEY]}, /api/me/capabilities says ${caps.json && caps.json.role}`);
+  const SURF = L.TABS.map((t) => [t, `/settings/connections?tab=${t}`]);
+  SURF.splice(5, 0, ["packs-installed", "/settings/connections?tab=packs"]);
+  for (const [k, u] of Object.entries(L.SUBPAGES)) SURF.push([k, u]);
+  SURF.push(["no-tab", "/settings/connections"]);
+  const ONLY1024L = ["no-tab"];
+  for (const [w, h] of VIEWPORTS)
+    for (const theme of ["light", "dark"]) {
+      const { ctx, p } = await page(browser, S, w, h, theme);
+      for (const [sk, url] of SURF) {
+        if (ONLY1024L.includes(sk) && !(w === 1024 && theme === "light")) continue;
+        const v = `${w}-${theme}`;
+        lab.label = `${KEY}|${sk}|${v}`;
+        const resp = await p.goto(`${L.BASE}${url}`, { waitUntil: "load" });
+        await p.waitForLoadState("networkidle").catch(() => {});
+        await p.waitForTimeout(600);
+        pagesOpened++;
+        if (sk === "packs-installed") {
+          const t = p.getByRole("tab", { name: /Installed/i });
+          if ((await t.count()) === 1) { await t.click(); await p.waitForLoadState("networkidle").catch(() => {}); await p.waitForTimeout(1200); }
+        }
+        await p.evaluate(HELPERS, L.TABLIST);
+        await p.evaluate(HELPERS2);
+        const m = await p.evaluate(COMPACT);
+        m.emptyStates = hashEmpties(m.emptyStates);
+        m.status = resp ? resp.status() : null;
+        m.url = p.url().replace(L.BASE, "").replace(U, "{id}");
+        m.title = await p.title();
+        (R.variants[sk] = R.variants[sk] || {})[v] = m;
+        const gate = m.notice ? `DENIED → ${m.selectedTab}` : m.selectedTab ? `tab ${m.selectedTab}` : `→ ${m.url}`;
+        await shot(p, `s__${sk}-${KEY}-${v}`, `${KEY} ${sk} ${w}×${h} ${theme} full page (${m.docHeight}px) — ${gate}; h1 ${JSON.stringify(m.h1)}; docHOverflow ${m.hOverflow}`, { fullPage: true });
+        if (w === 1440 && theme === "light") {
+          const f = await p.evaluate(FULL);
+          f.specific = await p.evaluate(SPECIFIC);
+          f.requested = url;
+          if (L.TABS.includes(sk)) {
+            f.inTabBar = !!(f.tabBar && f.tabBar.some((t) => t.startsWith(`${L.LABELS[sk]}:`)));
+            f.gateOutcome = f.notice ? "forbidden-notice" : f.inTabBar ? "rendered" : "not-in-tab-bar";
+          }
+          R.surfaces[sk] = f;
+        }
+        if (w === 1024 && theme === "light") R.selCompat[sk] = await selCompat(p, sk);
+      }
+      if (w === 1024 && theme === "light")
+        for (const u of LEGACY) {
+          lab.label = `${KEY}|legacy|${u}`;
+          const resp = await p.goto(`${L.BASE}${u}`, { waitUntil: "load" });
+          await p.waitForLoadState("networkidle").catch(() => {});
+          pagesOpened++;
+          const h1 = await p.locator("#main-content h1").allInnerTexts().catch(() => []);
+          R.legacy[u] = { finalUrl: p.url().replace(L.BASE, ""), status: resp ? resp.status() : null, h1: h1.map((x) => x.replace(/\s+/g, " ").trim()) };
+        }
+      await ctx.close();
+    }
+  await browser.close();
+  R.console = { pagesOpened, errors: consoleSink.filter((c) => c.type === "error" || c.type === "pageerror").length, warnings: consoleSink.filter((c) => c.type === "warning").length, hydration: consoleSink.filter((c) => /hydrat/i.test(c.text)).length, messages: consoleSink };
+  R.tiles = tiles;
+  fs.writeFileSync(path.join(L.RAW, `persona-${KEY}.json`), JSON.stringify(R));
+  console.log(KEY, "tiles", tiles.length, "pages", pagesOpened, "console", consoleSink.length, "caps", JSON.stringify({ role: R.caps.role, n: (R.caps.capabilities || []).length }));
+  for (const [sk] of SURF) {
+    const f = R.surfaces[sk] || {};
+    const v = R.variants[sk]["1024-light"];
+    const cd = v.cards || {};
+    console.log(sk, JSON.stringify({ gate: f.gateOutcome, url: v.url, h1: v.h1, notice: v.notice, tabs: v.tabs.join("|"), main: v.mainBox && v.mainBox.width, content: v.contentBox && v.contentBox.width, hOverflow: v.hOverflow, dark1024: R.variants[sk]["1024-dark"] && R.variants[sk]["1024-dark"].hOverflow, col: cd.column, grids: (cd.grids || []).map((g) => `${g.cols}c ${g.clientWidth}/${g.scrollWidth} kidMax+${g.childMaxRight}`), cardSpill: (cd.cards || []).filter((c) => c.spillCount || c.overflowPx).map((c) => `${c.head}:${c.overflowPx}/${c.spillMaxPx}`), tables1024: v.tables.map((x) => `${x.scroller ? x.scroller.clientWidth + "/" + x.scroller.scrollWidth : "-"} tbl${x.tableWidth} cut:${x.cols.filter((c) => c.cutPx).map((c) => c.h + "=" + c.cutPx).join(",")}`), lowC: v.lowContrast.slice(0, 3).map((x) => `${x.text}:${x.ratio}`) }));
+  }
+  console.log("legacy", JSON.stringify(R.legacy));
+  const cByLabel = {}; for (const m of consoleSink) cByLabel[m.label.split("|")[1]] = (cByLabel[m.label.split("|")[1]] || 0) + 1;
+  console.log("console by surface", JSON.stringify(cByLabel));
+})();

@@ -181,11 +181,12 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
             const activeSubTab = isActive ? group.tabs.find((t) => t.id === activeTab) : null;
             const isSingle = group.tabs.length === 1;
 
-            // Build the label: "Finance · Time" when a sub-tab is active
+            // Build the label: "Fees · Time recording" when a sub-tab is active — but just
+            // "Activity" when the sub-tab is labelled like its group (K-20: no "Activity · Activity")
             const label = (
               <>
                 {group.label}
-                {activeSubTab && !isSingle && (
+                {activeSubTab && !isSingle && activeSubTab.label !== group.label && (
                   <span className="text-muted-foreground"> &middot; {activeSubTab.label}</span>
                 )}
               </>

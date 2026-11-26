@@ -104,7 +104,7 @@ export async function renderSettingsFamilyPage<F extends SettingsFamilyId>(
       {forbidden && (
         <p
           role="status"
-          className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          className="border-border bg-muted text-muted-foreground mb-6 rounded-lg border px-4 py-3 text-sm"
         >
           You don&apos;t have access to {forbidden.label} — showing {tab.label} instead.
         </p>

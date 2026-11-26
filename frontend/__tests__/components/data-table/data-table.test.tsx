@@ -1395,12 +1395,16 @@ describe("DataTable — sortable header slot (F1)", () => {
   it("reserves the icon slot on sortable headers only", () => {
     const { rerender } = renderTable({ sort: { key: "name", dir: "asc", hrefFor } });
     for (const name of ["Matter", "Client", "Amount"]) {
-      expect(screen.getByRole("columnheader", { name })).toHaveClass("relative", "pr-5");
+      const th = screen.getByRole("columnheader", { name });
+      expect(th).toHaveClass("pr-5");
+      // D-38: the icon is anchored to the label (the link), not to the th.
+      expect(th).not.toHaveClass("relative");
+      expect(within(th).getByRole("link", { name })).toHaveClass("relative");
+      expect(th.querySelector("svg")).toHaveClass("left-full");
     }
     expect(screen.getByRole("columnheader", { name: "Note" })).not.toHaveClass("pr-5");
     expect(screen.getByRole("columnheader", { name: "Actions" })).not.toHaveClass("pr-5");
-    expect(screen.getByRole("columnheader", { name: "Note" })).not.toHaveClass("relative");
-    expect(SORTABLE_HEAD_CLASS).toBe("relative pr-5");
+    expect(SORTABLE_HEAD_CLASS).toBe("pr-5");
 
     // No `sort`: no header is sortable, none reserves the slot.
     rerender(<DataTable {...tableProps()} />);

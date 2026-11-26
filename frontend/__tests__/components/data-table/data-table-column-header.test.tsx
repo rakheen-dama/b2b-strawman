@@ -99,6 +99,18 @@ describe("DataTableColumnHeader — F1 sort icon slot (K-06)", () => {
     expect(header("Reference")).toHaveClass(...SORTABLE_HEAD_CLASS.split(" "));
   });
 
+  it("anchors the icon to its label, not to the cell edge (D-38)", () => {
+    renderWithSort(urlSort("amount"));
+    const link = within(header("Reference")).getByRole("link", { name: "Reference" });
+    // The link is the icon's containing block; the icon starts 2px past the label's right edge.
+    expect(link).toHaveClass("relative");
+    expect(icon("Reference")).toHaveClass("left-full", "ml-0.5", "top-1/2", "size-3.5");
+    expect(icon("Reference")).not.toHaveClass("right-1");
+    // The th only reserves the padding; it is no longer the icon's containing block.
+    expect(header("Reference")).toHaveClass("pr-5");
+    expect(header("Reference")).not.toHaveClass("relative");
+  });
+
   it("the active and inactive icons share one absolute slot, so sorting never shifts the column", () => {
     const { rerender } = renderWithSort(urlSort("amount"));
     const inactive = slotClasses(icon("Reference"));
@@ -129,8 +141,11 @@ describe("DataTableColumnHeader — F1 sort icon slot (K-06)", () => {
     expect(link).toHaveAttribute("href", "/x?sort=amount");
     expect(link).not.toHaveClass("gap-1");
     expect(link.contains(icon("Amount"))).toBe(true);
-    // Right-aligned headers keep the icon in the same right-hand slot.
-    expect(header("Amount")).toHaveClass("text-right", "relative", "pr-5");
+    // Right-aligned headers: the label ends at the content edge, so the label-anchored icon lands
+    // in the th's 20px right padding (2px gap + 14px icon).
+    expect(link).toHaveClass("relative");
+    expect(icon("Amount")).toHaveClass("left-full", "ml-0.5", "size-3.5");
+    expect(header("Amount")).toHaveClass("text-right", "pr-5");
     expect(header("Amount")).toHaveAttribute("aria-sort", "none");
   });
 
@@ -143,9 +158,12 @@ describe("DataTableColumnHeader — F1 sort icon slot (K-06)", () => {
     expect(button.contains(svg)).toBe(true);
     expect(slotClasses(svg)).toEqual(slotClasses(icon("Reference")));
 
+    expect(button).toHaveClass("relative");
+    expect(svg).toHaveClass("left-full");
+
     fireEvent.click(svg);
     expect(onSort).toHaveBeenCalledWith("amount");
-    expect(header("Amount")).toHaveClass("relative", "pr-5");
+    expect(header("Amount")).toHaveClass("pr-5");
     expect(header("Reference")).toHaveAttribute("aria-sort", "ascending");
   });
 });

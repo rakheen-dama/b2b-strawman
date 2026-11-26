@@ -244,11 +244,12 @@ function minWidthStyle<T>(meta: Meta<T>): CSSProperties | undefined {
  * Client-mode list table on TanStack Table 8.21.3 (ADR-369, architecture §15.2.4 / §15.3.3).
  *
  * The URL (or, for a local-state table, the consumer) owns view, filters, search and sort: TanStack
- * runs with `manualSorting` and never sorts or filters. A server-paged table (`pagination`,
- * ADR-395) also owns its page: the rows are that page and the kit draws only the pager. TanStack owns only ephemeral state — column
- * visibility, row selection, page index — and all three reset when `data` changes identity (every
- * RSC navigation sends a new array). Expanded detail rows (`getRowCanExpand`) are keyed by row id
- * and deliberately survive a new `data` array.
+ * runs with `manualSorting` and never sorts or filters. With `pagination` (ADR-395) the URL or
+ * the consumer also owns the page: `data` is that page, the kit draws only the pager, and TanStack
+ * holds no page index. TanStack owns only ephemeral state — column visibility, row selection and,
+ * with `pageSize`, the page index — and all of it resets when `data` changes identity (every RSC
+ * navigation sends a new array). Expanded detail rows (`getRowCanExpand`) are keyed by row id and
+ * deliberately survive a new `data` array.
  *
  * Markup is the semantic `ui/table` (`table`/`row`/`columnheader`/`cell`; never `role="grid"`). The
  * frame uses tokens and is NOT a `data-slot="card"` (finance specs count cards). Narrow screens use

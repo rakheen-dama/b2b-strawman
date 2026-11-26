@@ -1,0 +1,4 @@
+Previous system ID,Client name,Email,Phone,ID number,Registration number,Tax number,Client type,Address line 1,Address line 2,City,Postal code,Country,CDD completed date,Last review date,Risk rating,Beneficial ownership,Screening,Screening date,Source of funds,CDD records location
+OBS665C-01,Thandiwe Obs665c,thandiwe.obs665c@example.test,+27 82 555 6651,,,,NATURAL_PERSON,1 OBS Street,,Pretoria,0181,ZA,2025-06-10,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-06-10,DONE,OBS archive box 1
+OBS665C-02,Pieter Obs665c,pieter.obs665c@example.test,+27 82 555 6652,,,,NATURAL_PERSON,2 OBS Street,,Durban,4001,ZA,2025-07-01,,MEDIUM,NOT_APPLICABLE,SCREENED_CLEAR,2025-07-01,DONE,OBS archive box 2
+OBS665C-03,Obs665c Holdings (Pty) Ltd,office.obs665c@example.test,+27 21 555 6653,,2019/123456/07,,COMPANY,3 OBS Road,,Cape Town,8001,ZA,,,,,,,,

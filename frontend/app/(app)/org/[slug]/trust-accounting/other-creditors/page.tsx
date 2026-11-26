@@ -187,6 +187,12 @@ export default async function OtherTrustCreditorsPage({
   const pageUrl = (page: number) => listUrl(page, itemsPageNumber, memoYear);
   const itemsPageUrl = (itemsPage: number) => listUrl(pageNumber, itemsPage, memoYear);
   const memoYearUrl = (year: number) => listUrl(pageNumber, itemsPageNumber, year);
+  // The same list state as a plain object for the tables' pagers (`buildPageHref`), in `listUrl`'s
+  // form: `page` always, `itemsPage` only past the first page, `memoYear` only when not this year.
+  const basePath = `/org/${slug}/trust-accounting/other-creditors`;
+  const listQuery: Record<string, string> = { page: String(pageNumber) };
+  if (itemsPageNumber > 0) listQuery.itemsPage = String(itemsPageNumber);
+  if (memoYear !== currentYear) listQuery.memoYear = String(memoYear);
 
   return (
     <div className="space-y-8" data-testid="other-creditors-page">
@@ -265,38 +271,41 @@ export default async function OtherTrustCreditorsPage({
               </p>
             )}
             {fundRows && (
-              <>
-                <FundLedgerTable
-                  rows={fundRows.content}
-                  currency={currency}
-                  empty={
-                    // A `?page=` past the last page is not an empty ledger: say so and link back.
-                    pageNumber > 0 ? (
-                      <p
-                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
-                        data-testid="fund-ledger-page-out-of-range"
+              <FundLedgerTable
+                rows={fundRows.content}
+                currency={currency}
+                pagination={{
+                  pageIndex: fundRows.page.number,
+                  pageCount: fundRows.page.totalPages,
+                }}
+                basePath={basePath}
+                query={listQuery}
+                empty={
+                  // A `?page=` past the last page is not an empty ledger: say so and link back.
+                  pageNumber > 0 ? (
+                    <p
+                      className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                      data-testid="fund-ledger-page-out-of-range"
+                    >
+                      No entries on this page.{" "}
+                      <Link
+                        href={pageUrl(0)}
+                        className="text-foreground font-medium underline underline-offset-4"
                       >
-                        No entries on this page.{" "}
-                        <Link
-                          href={pageUrl(0)}
-                          className="text-foreground font-medium underline underline-offset-4"
-                        >
-                          Go to the first page
-                        </Link>
-                      </p>
-                    ) : (
-                      <p
-                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
-                        data-testid="fund-ledger-empty"
-                      >
-                        No entries on the Fund ledger yet. Record interest, transfers and bank
-                        charges from the bank statement when you reconcile.
-                      </p>
-                    )
-                  }
-                />
-                <LedgerPager page={fundRows.page} hrefFor={pageUrl} />
-              </>
+                        Go to the first page
+                      </Link>
+                    </p>
+                  ) : (
+                    <p
+                      className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                      data-testid="fund-ledger-empty"
+                    >
+                      No entries on the Fund ledger yet. Record interest, transfers and bank charges
+                      from the bank statement when you reconcile.
+                    </p>
+                  )
+                }
+              />
             )}
           </CardContent>
         </Card>
@@ -406,93 +415,43 @@ export default async function OtherTrustCreditorsPage({
               </p>
             )}
             {items && (
-              <>
-                <UnidentifiedDepositsTable
-                  items={items.content}
-                  currency={currency}
-                  canManage={canManageTrust}
-                  customers={pickerCustomers}
-                  empty={
-                    itemsPageNumber > 0 ? (
-                      <p
-                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
-                        data-testid="unidentified-deposits-page-out-of-range"
+              <UnidentifiedDepositsTable
+                items={items.content}
+                currency={currency}
+                canManage={canManageTrust}
+                customers={pickerCustomers}
+                pagination={{ pageIndex: items.page.number, pageCount: items.page.totalPages }}
+                basePath={basePath}
+                query={listQuery}
+                empty={
+                  itemsPageNumber > 0 ? (
+                    <p
+                      className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                      data-testid="unidentified-deposits-page-out-of-range"
+                    >
+                      No unidentified deposits on this page.{" "}
+                      <Link
+                        href={itemsPageUrl(0)}
+                        className="text-foreground font-medium underline underline-offset-4"
                       >
-                        No unidentified deposits on this page.{" "}
-                        <Link
-                          href={itemsPageUrl(0)}
-                          className="text-foreground font-medium underline underline-offset-4"
-                        >
-                          Go to the first page
-                        </Link>
-                      </p>
-                    ) : (
-                      <p
-                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
-                        data-testid="unidentified-deposits-empty"
-                      >
-                        No unidentified deposits. Record an unknown credit from the bank statement
-                        when you reconcile.
-                      </p>
-                    )
-                  }
-                />
-                <LedgerPager page={items.page} hrefFor={itemsPageUrl} />
-              </>
+                        Go to the first page
+                      </Link>
+                    </p>
+                  ) : (
+                    <p
+                      className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                      data-testid="unidentified-deposits-empty"
+                    >
+                      No unidentified deposits. Record an unknown credit from the bank statement
+                      when you reconcile.
+                    </p>
+                  )
+                }
+              />
             )}
           </CardContent>
         </Card>
       )}
-    </div>
-  );
-}
-
-// ── Pager ─────────────────────────────────────────────────────────
-
-/** Previous / next links for one server-paged list; nothing when it fits on one page. */
-function LedgerPager({
-  page,
-  hrefFor,
-}: {
-  page: { number: number; totalPages: number };
-  hrefFor: (page: number) => string;
-}) {
-  if (page.totalPages <= 1) {
-    return null;
-  }
-  return (
-    <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        Page {page.number + 1} of {page.totalPages}
-      </p>
-      <div className="flex items-center gap-2">
-        {page.number > 0 ? (
-          <Button asChild variant="outline" size="sm">
-            <Link href={hrefFor(page.number - 1)}>
-              <ChevronLeft className="mr-1 size-4" />
-              Previous
-            </Link>
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" disabled>
-            <ChevronLeft className="mr-1 size-4" />
-            Previous
-          </Button>
-        )}
-        {page.number < page.totalPages - 1 ? (
-          <Button asChild variant="outline" size="sm">
-            <Link href={hrefFor(page.number + 1)}>
-              Next
-              <ChevronRight className="ml-1 size-4" />
-            </Link>
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" disabled>
-            Next
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-        )}
-      </div>
     </div>
   );
 }

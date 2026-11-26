@@ -2,11 +2,18 @@
 // Used under the purchased admincn licence (founder-confirmed 2026-11-11); translated Base UI → Radix per ADR-368.
 "use client";
 // RSC boundary (Phase 90 OQ #19): DataTable takes function props (columns, sort.hrefFor/onSort,
-// rowHref, getRowCanExpand, renderExpandedRow, meta.csv), so render it ONLY from a "use client"
-// module — a thin per-page wrapper that receives serializable props and builds the functions
-// itself. See define-columns.tsx.
+// pagination.hrefFor/onPageChange, rowHref, a function rowTestId, getRowCanExpand,
+// renderExpandedRow, meta.csv), so render it ONLY from a "use client" module — a thin per-page
+// wrapper that receives serializable props and builds the functions itself. See define-columns.tsx.
 
-import { Fragment, useMemo, useState, type MouseEvent, type ReactNode } from "react";
+import {
+  Fragment,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   flexRender,
@@ -31,17 +38,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableColumnHeader, SORTABLE_HEAD_CLASS } from "./data-table-column-header";
 import { DataTableCsvButton } from "./data-table-csv";
+import { DataTablePageLinks } from "./data-table-page-links";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar, type DataTableToolbarSlots } from "./data-table-toolbar";
 import { DataTableViewOptions } from "./data-table-view-options";
-import type { DataTableColumn, DataTableSort } from "./define-columns";
+import type { DataTableColumn, DataTableServerPagination, DataTableSort } from "./define-columns";
 
-export type { DataTableSort } from "./define-columns";
+export type { DataTableServerPagination, DataTableSort } from "./define-columns";
 export type { DataTableToolbarSlots } from "./data-table-toolbar";
 
-export interface DataTableProps<T, K extends string = string> {
+/** The props every `DataTable` takes, whichever way it pages. */
+export interface DataTableBaseProps<T, K extends string = string> {
   /** Built with `defineColumns<T>()` inside the consumer's client module. */
   columns: DataTableColumn<T>[];
   /**
@@ -61,24 +70,19 @@ export interface DataTableProps<T, K extends string = string> {
    */
   sort?: DataTableSort<K>;
   toolbar?: DataTableToolbarSlots;
-  /** "Columns" menu (default on). Local state; resets when `data` changes (navigation). */
+  /**
+   * "Columns" menu (default on; default off with `pagination`, where its state would reset on every
+   * page navigation). Local state; resets when `data` changes (navigation).
+   */
   columnVisibility?: boolean;
   /** Row click opens this href unless the click lands on a link, button, input or menu. */
   rowHref?: (row: T) => string;
-  /** Forwarded to every body `<tr>` (`matter-row`, `client-row`); never on skeleton rows. */
-  rowTestId?: string;
   /**
-   * `null` (default) renders every row; a positive integer paginates locally with a page-size
-   * select. Any other value (0, negative, `NaN`, fractional) is treated as `null`.
+   * The body `<tr>`'s `data-testid`: a string is the same on every row (`matter-row`,
+   * `client-row`); a function gives each row its own (`transaction-row-<id>`). Never on skeleton
+   * or expanded rows.
    */
-  pageSize?: number | null;
-  /**
-   * Checkbox column whose selection only scopes the CSV export (no bulk actions). Turning it off
-   * clears the selection, so the export falls back to the rendered rows.
-   */
-  selectable?: boolean;
-  /** "Export CSV" of the visible columns × the selected (else rendered) rows, client-side. */
-  exportCsv?: { filename: string };
+  rowTestId?: string | ((row: T) => string);
   /** Rendered INSTEAD of the table (no `<table>`, no footer) when not loading and `data` is empty. */
   empty: ReactNode;
   /** Renders 8 skeleton rows (and never the `empty` slot). */
@@ -118,6 +122,46 @@ export interface DataTableProps<T, K extends string = string> {
    */
   frame?: boolean;
 }
+
+/** Client paging (the default): every row, or a local page size; CSV and selection allowed. */
+export interface DataTableLocalPagingProps {
+  /** Exclusive with `pageSize`, `selectable` and `exportCsv`: see `DataTableServerPagingProps`. */
+  pagination?: never;
+  paginationLabel?: never;
+  paginationShowSingle?: never;
+  /**
+   * `null` (default) renders every row; a positive integer paginates locally with a page-size
+   * select. Any other value (0, negative, `NaN`, fractional) is treated as `null`.
+   */
+  pageSize?: number | null;
+  /**
+   * Checkbox column whose selection only scopes the CSV export (no bulk actions). Turning it off
+   * clears the selection, so the export falls back to the rendered rows.
+   */
+  selectable?: boolean;
+  /** "Export CSV" of the visible columns × the selected (else rendered) rows, client-side. */
+  exportCsv?: { filename: string };
+}
+
+/**
+ * Server paging (ADR-395): `data` is the page the server sent and the kit renders only the pager
+ * ("Page {n} of {m}", Previous / Next) under the table. TanStack gets no page state. A CSV of one
+ * page would be a false export and a selection would not survive a page, so both are excluded.
+ */
+export interface DataTableServerPagingProps {
+  /** Zero-based; links (`hrefFor`, built with `buildPageHref`) or buttons (`onPageChange`). */
+  pagination: DataTableServerPagination;
+  /** Wraps the pager in `<nav aria-label>`; only where a named pager exists today. */
+  paginationLabel?: string;
+  /** Show the pager at one page (or none) too (default: nothing when `pageCount <= 1`). */
+  paginationShowSingle?: boolean;
+  pageSize?: never;
+  selectable?: never;
+  exportCsv?: never;
+}
+
+export type DataTableProps<T, K extends string = string> = DataTableBaseProps<T, K> &
+  (DataTableLocalPagingProps | DataTableServerPagingProps);
 
 /** Clicks on these (or inside them) keep their own behaviour instead of opening the row. */
 const INTERACTIVE_SELECTOR =
@@ -191,11 +235,17 @@ function selectColumn<T>(): DataTableColumn<T> {
 
 type Meta<T> = ColumnMeta<T, unknown> | undefined;
 
+/** `meta.minWidth` as the inline `min-width` of a column's header and cells (K-11). */
+function minWidthStyle<T>(meta: Meta<T>): CSSProperties | undefined {
+  return meta?.minWidth ? { minWidth: meta.minWidth } : undefined;
+}
+
 /**
  * Client-mode list table on TanStack Table 8.21.3 (ADR-369, architecture §15.2.4 / §15.3.3).
  *
  * The URL (or, for a local-state table, the consumer) owns view, filters, search and sort: TanStack
- * runs with `manualSorting` and never sorts or filters. TanStack owns only ephemeral state — column
+ * runs with `manualSorting` and never sorts or filters. A server-paged table (`pagination`,
+ * ADR-395) also owns its page: the rows are that page and the kit draws only the pager. TanStack owns only ephemeral state — column
  * visibility, row selection, page index — and all three reset when `data` changes identity (every
  * RSC navigation sends a new array). Expanded detail rows (`getRowCanExpand`) are keyed by row id
  * and deliberately survive a new `data` array.
@@ -210,9 +260,12 @@ export function DataTable<T, K extends string = string>({
   getRowId,
   sort,
   toolbar,
-  columnVisibility: showColumnMenu = true,
+  columnVisibility: columnVisibilityProp,
   rowHref,
   rowTestId,
+  pagination: serverPagination,
+  paginationLabel,
+  paginationShowSingle = false,
   pageSize: pageSizeProp = null,
   selectable = false,
   exportCsv,
@@ -228,7 +281,9 @@ export function DataTable<T, K extends string = string>({
 }: DataTableProps<T, K>) {
   const router = useRouter();
   const pageSize = normalisePageSize(pageSizeProp);
+  // Local paging only; a server-paged table has no `pageSize` (type-exclusive), so it stays off.
   const paginated = pageSize !== null;
+  const showColumnMenu = columnVisibilityProp ?? serverPagination === undefined;
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -287,6 +342,11 @@ export function DataTable<T, K extends string = string>({
 
   const isEmpty = !loading && data.length === 0;
   const showRows = !isEmpty && !loading;
+  // The server pager shows with or without rows (a `?page=` past the end keeps its way back).
+  const showServerPager =
+    serverPagination !== undefined &&
+    !loading &&
+    (serverPagination.pageCount > 1 || paginationShowSingle);
 
   function priorityClass(meta: Meta<T>): string | undefined {
     if (!meta?.priority || meta.priority === "high") return undefined;
@@ -354,10 +414,13 @@ export function DataTable<T, K extends string = string>({
                         aria-sort={ariaSort(meta)}
                         className={cn(
                           meta?.align === "end" && "text-right",
+                          // F1: the sort icon's slot (same condition as `aria-sort`).
+                          sort && meta?.sortKey && SORTABLE_HEAD_CLASS,
                           priorityClass(meta),
                           stickyHeader && STICKY_HEAD_CLASS,
                           meta?.headerClassName
                         )}
+                        style={minWidthStyle(meta)}
                       >
                         {header.isPlaceholder
                           ? null
@@ -373,7 +436,11 @@ export function DataTable<T, K extends string = string>({
                 ? Array.from({ length: SKELETON_ROWS }, (_, index) => (
                     <TableRow key={`loading-${index}`} className="hover:bg-transparent">
                       {visibleColumns.map((column) => (
-                        <TableCell key={column.id} className={priorityClass(column.columnDef.meta)}>
+                        <TableCell
+                          key={column.id}
+                          className={priorityClass(column.columnDef.meta)}
+                          style={minWidthStyle(column.columnDef.meta)}
+                        >
                           <Skeleton className="h-4 w-full" />
                         </TableCell>
                       ))}
@@ -382,7 +449,9 @@ export function DataTable<T, K extends string = string>({
                 : table.getRowModel().rows.map((row) => (
                     <Fragment key={row.id}>
                       <TableRow
-                        data-testid={rowTestId}
+                        data-testid={
+                          typeof rowTestId === "function" ? rowTestId(row.original) : rowTestId
+                        }
                         data-state={row.getIsSelected() ? "selected" : undefined}
                         className={cn(rowHref && "cursor-pointer")}
                         onClick={
@@ -403,6 +472,7 @@ export function DataTable<T, K extends string = string>({
                                 priorityClass(meta),
                                 meta?.cellClassName
                               )}
+                              style={minWidthStyle(meta)}
                             >
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
@@ -424,6 +494,9 @@ export function DataTable<T, K extends string = string>({
             </TableBody>
           </Table>
         </div>
+      )}
+      {showServerPager && (
+        <DataTablePageLinks pagination={serverPagination} label={paginationLabel} />
       )}
       {showRows && paginated && <DataTablePagination table={table} />}
       {showRows && footer}

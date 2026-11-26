@@ -413,4 +413,50 @@ describe("CreateViewDialog", () => {
       expect(screen.queryByTestId("carried-filters")).not.toBeInTheDocument();
     });
   });
+
+  describe("K-47: bounded to the viewport", () => {
+    // `ui/dialog.tsx` puts DialogContent's className on the card, the first child of the Radix
+    // content (the motion.div carries data-slot="dialog-content").
+    const card = () =>
+      document.querySelector<HTMLElement>('[data-slot="dialog-content"] > div') as HTMLElement;
+    const body = () =>
+      card().querySelector<HTMLElement>(":scope > .overflow-y-auto") as HTMLElement;
+
+    it("caps the dialog's height and scrolls only the step body; title and footer stay outside it", async () => {
+      const user = userEvent.setup();
+      render(
+        <CreateViewDialog
+          slug="acme"
+          entityType="PROJECT"
+          allTags={allTags}
+          fieldDefinitions={fieldDefs}
+          canCreateShared={true}
+          onSave={mockOnSave}
+        >
+          <button>K-47 bound trigger</button>
+        </CreateViewDialog>
+      );
+
+      await user.click(screen.getByText("K-47 bound trigger"));
+      await screen.findByText("Configure Filters");
+
+      expect(card()).toHaveClass("flex", "max-h-[90vh]", "flex-col", "sm:max-w-lg");
+      expect(card()).not.toHaveClass("grid");
+      expect(body()).not.toBeNull();
+      expect(body()).toHaveClass("min-h-0", "flex-1", "overflow-y-auto");
+      // Step 1's filters live in the scrolling body; the title and Next do not.
+      expect(body().contains(screen.getByText("Tags"))).toBe(true);
+      expect(body().contains(screen.getByText("Configure Filters"))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Next" }))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Close" }))).toBe(false);
+
+      // Step 2: the Previous / Next footer is outside the body too.
+      await user.click(screen.getByRole("button", { name: "Next" }));
+      await screen.findByText("Select Columns");
+      expect(body().contains(screen.getByText("Visible Columns"))).toBe(true);
+      expect(body().contains(screen.getByText("Select Columns"))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Previous" }))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Next" }))).toBe(false);
+    });
+  });
 });

@@ -10,6 +10,7 @@ import {
   type UnidentifiedDeposit,
   type UnidentifiedDepositStatus,
 } from "@/lib/types";
+import { buildPageHref } from "@/lib/page-href";
 import { AllocateUnidentifiedDialog } from "./AllocateUnidentifiedDialog";
 import { PayToFundDialog } from "./PayToFundDialog";
 import type { TrustPickerCustomer } from "./TrustEntityPickers";
@@ -24,6 +25,28 @@ interface UnidentifiedDepositsTableProps {
   canManage?: boolean;
   /** The active client roster for the allocation picker (server-fetched; only when canManage). */
   customers?: TrustPickerCustomer[];
+  /** The server page (`page.number`, `page.totalPages`), zero-based. */
+  pagination: { pageIndex: number; pageCount: number };
+  /** The page's path (`/org/{slug}/trust-accounting/other-creditors`). */
+  basePath: string;
+  /**
+   * The page's list state as a plain object; each pager link sets `itemsPage` in it. `itemsPage`
+   * is present only past the first items page, as in the page's own links.
+   */
+  query: Record<string, string>;
+}
+
+/**
+ * The href of items page `pageIndex`. The first items page drops `itemsPage` instead of writing
+ * `itemsPage=0`, as the page's own links do (other-creditors' `listUrl`), so Previous back to it
+ * keeps today's URL (`?page=N`).
+ */
+function itemsPageHref(basePath: string, query: Record<string, string>, pageIndex: number) {
+  if (pageIndex > 0) return buildPageHref(basePath, query, pageIndex, "itemsPage");
+  const listQuery = { ...query };
+  delete listQuery.itemsPage;
+  // Re-setting `page` to its own value keeps it in place: the URL is the list URL itself.
+  return buildPageHref(basePath, listQuery, Number(listQuery.page ?? 0), "page");
 }
 
 const getItemId = (item: UnidentifiedDeposit) => item.id;
@@ -49,7 +72,7 @@ function ageText(days: number) {
  * credits whose owner is not yet known, oldest first — received date, the bank's description and
  * reference, amount, age and status. The age is shown only while an item is held, with an "Over
  * one year" flag from the server's `olderThanOneYear`. The status prints its label, never the
- * code. Paged by the server (`pageSize={null}`).
+ * code. Server-paged through DataTable `pagination` (`?itemsPage=`, every other param kept).
  *
  * <p>647D: with MANAGE_TRUST, a held item with no pending resolution offers Allocate and Pay to the
  * Fund (each dialog owns its trigger); a held item awaiting approval says so, with no actions; an
@@ -61,6 +84,9 @@ export function UnidentifiedDepositsTable({
   empty,
   canManage = false,
   customers = EMPTY_CUSTOMERS,
+  pagination,
+  basePath,
+  query,
 }: UnidentifiedDepositsTableProps) {
   // Memoised: flexRender renders each cell function as a component, so a new column array would
   // remount every cell on each re-render.
@@ -165,7 +191,10 @@ export function UnidentifiedDepositsTable({
       data={items}
       getRowId={getItemId}
       columnVisibility={false}
-      pageSize={null}
+      pagination={{
+        ...pagination,
+        hrefFor: (pageIndex) => itemsPageHref(basePath, query, pageIndex),
+      }}
       stickyHeader={false}
       frame={false}
       empty={empty}

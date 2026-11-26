@@ -6,10 +6,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Link from "next/link";
-import { DataTable, type DataTableProps } from "@/components/data-table/data-table";
+import {
+  DataTable,
+  type DataTableBaseProps,
+  type DataTableLocalPagingProps,
+  type DataTableProps,
+  type DataTableServerPagination,
+} from "@/components/data-table/data-table";
 import { CSV_BOM, toCsvField } from "@/components/data-table/data-table-csv";
 import { EmptyCell, MoneyCell } from "@/components/data-table/cells";
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import {
+  DataTableColumnHeader,
+  SORTABLE_HEAD_CLASS,
+} from "@/components/data-table/data-table-column-header";
 import { defineColumns, type DataTableSort } from "@/components/data-table/define-columns";
 import {
   DropdownMenu,
@@ -138,7 +147,10 @@ const columns = defineColumns<Row>([
 
 const hrefFor = (key: string) => `/x?sort=${key}`;
 
-function tableProps(overrides: Partial<DataTableProps<Row>> = {}): DataTableProps<Row> {
+/** Overrides of a client-paged table (the props are a union; server paging has its own helper). */
+type LocalOverrides = Partial<DataTableBaseProps<Row>> & DataTableLocalPagingProps;
+
+function tableProps(overrides: LocalOverrides = {}): DataTableProps<Row> {
   return {
     columns,
     data: ROWS,
@@ -149,8 +161,27 @@ function tableProps(overrides: Partial<DataTableProps<Row>> = {}): DataTableProp
   };
 }
 
-function renderTable(overrides: Partial<DataTableProps<Row>> = {}) {
+function renderTable(overrides: LocalOverrides = {}) {
   return render(<DataTable {...tableProps(overrides)} />);
+}
+
+/** A server-paged table (ADR-395) with `pagination` and base-prop overrides. */
+function pagedTableProps(
+  pagination: DataTableServerPagination,
+  overrides: Partial<DataTableBaseProps<Row>> & {
+    paginationLabel?: string;
+    paginationShowSingle?: boolean;
+  } = {}
+): DataTableProps<Row> {
+  return {
+    columns,
+    data: ROWS,
+    getRowId: (row) => row.id,
+    empty: <p>Nothing in this fixture.</p>,
+    rowTestId: "fixture-row",
+    pagination,
+    ...overrides,
+  };
 }
 
 /** Captures the CSV Blob and the download name of the next "Export CSV" click. */
@@ -431,7 +462,7 @@ describe("DataTable — expandable rows", () => {
       cell: ({ row }) => <MoneyCell amount={row.original.amount} />,
     },
   ]);
-  const expandProps = (overrides: Partial<DataTableProps<Row>> = {}) =>
+  const expandProps = (overrides: LocalOverrides = {}) =>
     tableProps({
       columns: expandColumns,
       // Row "b" has no amount: it cannot expand.
@@ -1138,3 +1169,241 @@ function importsDataTableValue(source: { rel: string; text: string }): boolean {
     return resolved?.replace(/\.tsx?$/, "") === DATA_TABLE_MODULE;
   });
 }
+
+describe("DataTable — server-paged mode (ADR-395)", () => {
+  const pageHref = (pageIndex: number) => `/x?status=HELD&page=${pageIndex}`;
+  const links = (pageIndex: number, pageCount: number): DataTableServerPagination => ({
+    pageIndex,
+    pageCount,
+    hrefFor: pageHref,
+  });
+
+  it("links mode, middle page: 'Page 2 of 3' and Previous / Next links to hrefFor(i ± 1)", () => {
+    render(<DataTable {...pagedTableProps(links(1, 3))} />);
+    expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", pageHref(0));
+    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute("href", pageHref(2));
+    expect(screen.queryByRole("button", { name: /previous|next/i })).toBeNull();
+  });
+
+  it("links mode, at each end the control is a disabled button, never a link", () => {
+    const { rerender } = render(<DataTable {...pagedTableProps(links(0, 3))} />);
+    expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.queryByRole("link", { name: "Previous" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute("href", pageHref(1));
+
+    rerender(<DataTable {...pagedTableProps(links(2, 3))} />);
+    expect(screen.getByText("Page 3 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", pageHref(1));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(screen.queryByRole("link", { name: "Next" })).toBeNull();
+  });
+
+  it("callback mode: buttons call onPageChange(i ± 1), disabled at the ends, no links", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    const { rerender } = render(
+      <DataTable {...pagedTableProps({ pageIndex: 1, pageCount: 3, onPageChange })} />
+    );
+    expect(screen.queryByRole("link", { name: /previous|next/i })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(onPageChange).toHaveBeenLastCalledWith(2);
+    await user.click(screen.getByRole("button", { name: "Previous" }));
+    expect(onPageChange).toHaveBeenLastCalledWith(0);
+    expect(screen.getByRole("button", { name: "Next" })).toHaveAttribute("type", "button");
+
+    rerender(<DataTable {...pagedTableProps({ pageIndex: 0, pageCount: 3, onPageChange })} />);
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    rerender(<DataTable {...pagedTableProps({ pageIndex: 2, pageCount: 3, onPageChange })} />);
+    expect(screen.getByRole("button", { name: "Previous" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("names are exactly 'Previous' / 'Next' (visible text), never the local pager's 'Go to …'", () => {
+    render(<DataTable {...pagedTableProps(links(1, 3))} />);
+    expect(screen.getByRole("link", { name: /^Previous$/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Next$/ })).toBeInTheDocument();
+    expect(document.querySelector('[aria-label^="Go to"]')).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "Rows per page" })).toBeNull();
+  });
+
+  it.each([1, 0])("renders no pager at %s page(s)", (pageCount) => {
+    render(<DataTable {...pagedTableProps(links(0, pageCount))} />);
+    expect(screen.queryByText(/^Page \d+ of \d+$/)).toBeNull();
+    expect(screen.queryByRole("link", { name: /previous|next/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /previous|next/i })).toBeNull();
+  });
+
+  it("paginationShowSingle shows the pager at one page, both ends disabled", () => {
+    render(<DataTable {...pagedTableProps(links(0, 1), { paginationShowSingle: true })} />);
+    expect(screen.getByText("Page 1 of 1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("paginationLabel wraps the pager in a named nav; without it there is no nav", () => {
+    const { rerender } = render(<DataTable {...pagedTableProps(links(1, 3))} />);
+    expect(screen.queryByRole("navigation")).toBeNull();
+
+    rerender(
+      <DataTable {...pagedTableProps(links(1, 3), { paginationLabel: "Audit log pagination" })} />
+    );
+    const nav = screen.getByRole("navigation", { name: "Audit log pagination" });
+    expect(within(nav).getByText("Page 2 of 3")).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "Next" })).toBeInTheDocument();
+  });
+
+  it("keeps the pager with no rows (a page past the end) but not while loading", () => {
+    const { rerender } = render(<DataTable {...pagedTableProps(links(5, 3), { data: [] })} />);
+    expect(screen.getByText("Nothing in this fixture.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.getByText("Page 6 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", pageHref(4));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    rerender(<DataTable {...pagedTableProps(links(1, 3), { loading: true })} />);
+    expect(screen.queryByText(/^Page \d+ of \d+$/)).toBeNull();
+  });
+
+  it("puts the pager after the table and before the footer", () => {
+    render(<DataTable {...pagedTableProps(links(1, 3), { footer: <p>Fixture footer</p> })} />);
+    const table = screen.getByRole("table");
+    const pager = screen.getByText("Page 2 of 3");
+    const footer = screen.getByText("Fixture footer");
+    expect(table.compareDocumentPosition(pager) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(pager.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("TanStack holds no page: every row the server sent renders, no Columns menu by default", () => {
+    const { rerender } = render(
+      <DataTable {...pagedTableProps(links(0, 4), { data: makeRows(30) })} />
+    );
+    expect(screen.getAllByTestId("fixture-row")).toHaveLength(30);
+    expect(screen.queryByRole("combobox", { name: "Rows per page" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Columns" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /export csv/i })).toBeNull();
+
+    // An explicit `columnVisibility` still wins.
+    rerender(
+      <DataTable
+        {...pagedTableProps(links(0, 4), { data: makeRows(30), columnVisibility: true })}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Columns" })).toBeInTheDocument();
+  });
+
+  it("server paging is type-exclusive with pageSize, exportCsv and selectable", () => {
+    const base = {
+      columns,
+      data: ROWS,
+      getRowId: (row: Row) => row.id,
+      empty: null,
+      pagination: links(0, 2),
+    };
+    // @ts-expect-error -- server paging excludes local paging
+    const withPageSize: DataTableProps<Row> = { ...base, pageSize: 25 };
+    // @ts-expect-error -- `never` does not take `null` either: a server-paged table drops it
+    const withNullPageSize: DataTableProps<Row> = { ...base, pageSize: null };
+    // @ts-expect-error -- a CSV of one page would be a false export
+    const withCsv: DataTableProps<Row> = { ...base, exportCsv: { filename: "x.csv" } };
+    // @ts-expect-error -- a selection would not survive a page
+    const withSelection: DataTableProps<Row> = { ...base, selectable: true };
+    const both = { pageIndex: 0, pageCount: 2, hrefFor: () => "", onPageChange: () => {} };
+    // @ts-expect-error -- a pager is URL-owned (`hrefFor`) or callback-owned, never both
+    const bothPagers: DataTableServerPagination = both;
+    const valid: DataTableProps<Row> = base;
+    expect(
+      [withPageSize, withNullPageSize, withCsv, withSelection, valid].map(
+        (props) => props.pagination !== undefined
+      )
+    ).toEqual([true, true, true, true, true]);
+    // Runtime narrowing matches the pager's: `onPageChange !== undefined` → callback variant.
+    expect(bothPagers.onPageChange !== undefined).toBe(true);
+  });
+});
+
+describe("DataTable — rowTestId function", () => {
+  it("gives each body row its own id; header, skeleton and expanded rows get none", () => {
+    const { rerender } = render(
+      <DataTable
+        {...tableProps({
+          rowTestId: (row) => `fixture-row-${row.id}`,
+          getRowCanExpand: () => true,
+          renderExpandedRow: (row) => <p>Detail for {row.name}</p>,
+          columns: defineColumns<Row>([
+            {
+              id: "name",
+              meta: { label: "Matter" },
+              cell: ({ row }) => (
+                <button type="button" onClick={row.getToggleExpandedHandler()}>
+                  Expand {row.original.id}
+                </button>
+              ),
+            },
+          ]),
+        })}
+      />
+    );
+    expect(screen.getByTestId("fixture-row-a").tagName).toBe("TR");
+    expect(screen.getByTestId("fixture-row-b")).toBeInTheDocument();
+    expect(screen.getByTestId("fixture-row-c")).toBeInTheDocument();
+    expect(screen.getAllByRole("row")[0]).not.toHaveAttribute("data-testid");
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand a" }));
+    const expanded = document.querySelector('[data-slot="data-table-expanded-row"]');
+    expect(expanded).not.toBeNull();
+    expect(expanded).not.toHaveAttribute("data-testid");
+
+    rerender(
+      <DataTable {...tableProps({ rowTestId: (row) => `fixture-row-${row.id}`, loading: true })} />
+    );
+    screen.getAllByRole("row").forEach((tr) => expect(tr).not.toHaveAttribute("data-testid"));
+  });
+});
+
+describe("DataTable — meta.minWidth (K-11)", () => {
+  it("sets the column's inline min-width on its header and every body cell, and no other's", () => {
+    const sized = defineColumns<Row>([
+      {
+        id: "name",
+        meta: { label: "Matter", minWidth: "14.5rem", headerClassName: "w-full max-w-0" },
+        cell: ({ row }) => row.original.name,
+      },
+      { id: "note", meta: { label: "Note" }, cell: ({ row }) => row.original.note },
+    ]);
+    const { rerender } = render(<DataTable {...tableProps({ columns: sized })} />);
+    const [matter, note] = screen.getAllByRole("columnheader");
+    expect(matter.style.minWidth).toBe("14.5rem");
+    expect(matter).toHaveClass("w-full", "max-w-0");
+    expect(note.style.minWidth).toBe("");
+    screen.getAllByTestId("fixture-row").forEach((tr) => {
+      const [nameCell, noteCell] = within(tr).getAllByRole("cell");
+      expect(nameCell.style.minWidth).toBe("14.5rem");
+      expect(noteCell.style.minWidth).toBe("");
+    });
+
+    // The skeleton keeps the floor, so the loading table does not jump.
+    rerender(<DataTable {...tableProps({ columns: sized, loading: true })} />);
+    const skeletonRow = screen.getAllByRole("row")[1];
+    expect(within(skeletonRow).getAllByRole("cell")[0].style.minWidth).toBe("14.5rem");
+  });
+});
+
+describe("DataTable — sortable header slot (F1)", () => {
+  it("reserves the icon slot on sortable headers only", () => {
+    const { rerender } = renderTable({ sort: { key: "name", dir: "asc", hrefFor } });
+    for (const name of ["Matter", "Client", "Amount"]) {
+      expect(screen.getByRole("columnheader", { name })).toHaveClass("relative", "pr-5");
+    }
+    expect(screen.getByRole("columnheader", { name: "Note" })).not.toHaveClass("pr-5");
+    expect(screen.getByRole("columnheader", { name: "Actions" })).not.toHaveClass("pr-5");
+    expect(screen.getByRole("columnheader", { name: "Note" })).not.toHaveClass("relative");
+    expect(SORTABLE_HEAD_CLASS).toBe("relative pr-5");
+
+    // No `sort`: no header is sortable, none reserves the slot.
+    rerender(<DataTable {...tableProps()} />);
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("pr-5"));
+  });
+});

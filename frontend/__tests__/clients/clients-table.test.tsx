@@ -403,6 +403,21 @@ describe("ClientsDataTable — responsive columns (D-8)", () => {
     renderTable([row()]);
     expect(headerCell("Client")).toHaveClass("w-full", "max-w-0");
     expect(cellUnder("Client")).toHaveClass("w-full", "max-w-0");
+    // K-11: the default view's container queries keep the column wide; no floor is set.
+    expect(headerCell("Client")!.style.minWidth).toBe("");
+    expect(cellUnder("Client")!.style.minWidth).toBe("");
+  });
+
+  it("K-11: keeps the Client column at least 14.5rem wide in a saved view's explicit columns", () => {
+    // Nothing is hidden there, so the other columns can exceed the frame and `max-w-0` alone would
+    // collapse the Client column to its padding (16px at 1024).
+    renderTable([row()], { hideLowPriorityColumns: false });
+    expect(headerCell("Client")!.style.minWidth).toBe("14.5rem");
+    expect(cellUnder("Client")!.style.minWidth).toBe("14.5rem");
+    expect(headerCell("Client")).toHaveClass("w-full", "max-w-0");
+    // Only the row-header column gets a floor.
+    expect(headerCell("Lifecycle")!.style.minWidth).toBe("");
+    expect(cellUnder("Lifecycle")!.style.minWidth).toBe("");
   });
 
   it("breaks a multi-word header after its first word, keeping its text", () => {

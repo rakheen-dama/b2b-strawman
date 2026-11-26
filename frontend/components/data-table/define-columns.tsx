@@ -8,7 +8,9 @@
  * "use client" wrapper (e.g. `MattersDataTable`) that receives the SERIALIZABLE props today's
  * tables take (`slug`, `rows`, `columns` (ids), `customFieldNames`, `sort` ({ key, dir }), `query`,
  * `caption`, …) and builds the column defs (`defineColumns`), `hrefFor` (from `buildSortHref` /
- * `buildClientSortHref`), `rowHref` and `meta.csv` INSIDE that module. Toolbar slots, `empty` and
+ * `buildClientSortHref`), `rowHref`, `meta.csv`, a function `rowTestId` and a server-paged table's
+ * `pagination.hrefFor` (from `buildPageHref`, given `pageIndex`, `pageCount`, the query as a plain
+ * object and the base path) INSIDE that module. Toolbar slots, `empty` and
  * `footer` are pre-rendered ReactNodes from the RSC (allowed). Memoise the column array in the
  * wrapper (`useMemo`).
  *
@@ -69,6 +71,36 @@ export interface DataTableClientSort<K extends string = string> {
 /** Sort state of a `DataTable`: URL-owned (`hrefFor`) or local-state (`onSort`). */
 export type DataTableSort<K extends string = string> = DataTableUrlSort<K> | DataTableClientSort<K>;
 
+interface DataTablePagingBase {
+  /** The page shown, zero-based like every backend page (`page.number`). */
+  pageIndex: number;
+  /** The number of pages (`page.totalPages`). */
+  pageCount: number;
+}
+
+/**
+ * URL-owned server paging (ADR-395): Previous / Next are links to `hrefFor(pageIndex ± 1)`, built in
+ * the client wrapper with `buildPageHref` (`lib/page-href.ts`), so every other param is kept.
+ */
+export interface DataTableLinkPagination extends DataTablePagingBase {
+  hrefFor: (pageIndex: number) => string;
+  /** Exclusive with `hrefFor`: a pager is URL-owned or callback-owned, never both. */
+  onPageChange?: never;
+}
+
+/** Callback-owned server paging (ADR-395): Previous / Next are buttons calling `onPageChange`. */
+export interface DataTableCallbackPagination extends DataTablePagingBase {
+  onPageChange: (pageIndex: number) => void;
+  /** Exclusive with `onPageChange`: a pager is URL-owned or callback-owned, never both. */
+  hrefFor?: never;
+}
+
+/**
+ * Server paging of a `DataTable` (ADR-395): the rows are the page the server sent; the kit renders
+ * the pager only. Links (`hrefFor`) or buttons (`onPageChange`), mirroring `DataTableSort`.
+ */
+export type DataTableServerPagination = DataTableLinkPagination | DataTableCallbackPagination;
+
 /**
  * Column priority (container queries on the table frame, as today's tables do):
  * - `"high"` (default): always shown;
@@ -95,6 +127,12 @@ declare module "@tanstack/react-table" {
     csv?: (row: TData) => string | number | null;
     headerClassName?: string;
     cellClassName?: string;
+    /**
+     * A CSS length (e.g. `"14.5rem"`) set as the inline `min-width` of the header and every body
+     * cell: a floor for a flexible column (`w-full max-w-0`) that would otherwise collapse to its
+     * padding when the other columns already exceed the frame (K-11).
+     */
+    minWidth?: string;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TData is required by the merged interface

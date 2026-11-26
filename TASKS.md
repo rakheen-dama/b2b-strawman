@@ -755,7 +755,7 @@
 | 662 | Kinks Register — Real-Browser Walk on the Final Scheme (E2) | QA / Docs | 661B | M | 662A (evidence only) | **Done** (PR #1864) |
 | 663 | EmptyState Sizing Rule, Variant Guard and Sweep + Cross-Cutting Shell Kinks (E3) | Frontend | 662A + FD-3 | M | 663A, 663B, 663C (0 verifies) | **Done** — 663A **Done** (PR #1865), 663B **Done** (PR #1866), 663C **Done** (PR #1867) |
 | 664 | Settings Shell (SettingsSection, Rail, Mobile Family Bar, Underline Tabs) + DataTable Server-Paged Mode (E4) | Frontend | 663A | M | 664A, 664B (0 verifies) | **Done** — 664A (PR #1868), 664B (PR #1869) |
-| 665 | Settings Content — 32 Tabs and 11 Sub-Pages on SettingsSection + DataTable (E5) | Frontend | 664A; 664B for 665B, 665F; Phase 93 for 665C | XL | 665A–665F (0 verifies) | **In progress** — 665A **Done** (PR #1870), 665B **Done** (PR #1871), 665C **Done** (PR #1872), 665D **Done** (PR #1873) |
+| 665 | Settings Content — 32 Tabs and 11 Sub-Pages on SettingsSection + DataTable (E5) | Frontend | 664A; 664B for 665B, 665F; Phase 93 for 665C | XL | 665A–665F (0 verifies) | **In progress** — 665A **Done** (PR #1870), 665B **Done** (PR #1871), 665C **Done** (PR #1872), 665D **Done** (PR #1873), 665E **Done** (PR #1874) |
 | 666 | Fee Notes — List, Billing Runs, Collections, Unbilled on the Kit + Client-Derived Fee-Note Hero (E6) | Frontend | 663A, 664A | L | 666A, 666B (0 verifies) | |
 | 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | |
 | 668 | Diary, My Work, Timesheet, Notifications on the Kit (E8) | Frontend | 663A, 664B | M | 668A (0 verifies) | |

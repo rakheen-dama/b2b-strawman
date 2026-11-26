@@ -1,17 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Badge } from "@b2mash/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +21,11 @@ import {
   PREREQUISITE_CONTEXT_LABELS,
 } from "@/components/prerequisite/types";
 import { EmptyState } from "@/components/empty-state";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { StatusBadgeCell } from "@/components/data-table/cells";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { FIELD_TYPES } from "@/components/field-definitions/field-definition-constants";
 import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 
@@ -50,9 +47,12 @@ interface GroupMemberListProps {
 function GroupMemberList({ groupName, members }: GroupMemberListProps) {
   if (members.length === 0) {
     return (
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        No fields in this group yet.
-      </p>
+      <EmptyState
+        variant="inline"
+        icon={Settings2}
+        title="No fields in this group yet."
+        description={null}
+      />
     );
   }
   return (
@@ -73,6 +73,167 @@ function GroupMemberList({ groupName, members }: GroupMemberListProps) {
         </li>
       ))}
     </ul>
+  );
+}
+
+const getFieldId = (field: FieldDefinitionResponse) => field.id;
+
+/** The type's existing label from the Add Field dialog (K-107a), else the raw enum. */
+function fieldTypeLabel(fieldType: FieldDefinitionResponse["fieldType"]) {
+  return FIELD_TYPES.find((t) => t.value === fieldType)?.label ?? fieldType;
+}
+
+interface FieldDefinitionsTableProps {
+  slug: string;
+  entityType: EntityType;
+  fields: FieldDefinitionResponse[];
+  canManage: boolean;
+  empty: ReactNode;
+}
+
+/** One entity tab's field definitions (Phase 91 665C): DataTable client mode inside its section. */
+function FieldDefinitionsTable({
+  slug,
+  entityType,
+  fields,
+  canManage,
+  empty,
+}: FieldDefinitionsTableProps) {
+  // Memoised columns (TanStack renders each `cell` as a component). `fields` is a dep because the
+  // actions cell passes it to the edit dialog; it is the RSC array, so it gets a new identity on
+  // navigation and after every successful mutation (the actions' `revalidatePath` re-renders the
+  // page), and the columns rebuild then, alongside the new `data`.
+  const columns = useMemo(
+    () =>
+      defineColumns<FieldDefinitionResponse>([
+        {
+          id: "name",
+          enableHiding: false,
+          meta: { label: "Name", cellClassName: "font-medium" },
+          cell: ({ row }) => (
+            <>
+              {row.original.name}
+              {row.original.description && (
+                <p className="text-muted-foreground text-xs">{row.original.description}</p>
+              )}
+            </>
+          ),
+        },
+        {
+          id: "type",
+          meta: { label: "Type" },
+          cell: ({ row }) => (
+            <Badge variant="neutral">{fieldTypeLabel(row.original.fieldType)}</Badge>
+          ),
+        },
+        {
+          id: "required",
+          meta: { label: "Required" },
+          cell: ({ row }) =>
+            row.original.required ? (
+              <Badge variant="warning">Required</Badge>
+            ) : (
+              <span className="text-muted-foreground text-sm">Optional</span>
+            ),
+        },
+        {
+          id: "requiredFor",
+          meta: { label: "Required For" },
+          cell: ({ row }) =>
+            row.original.requiredForContexts && row.original.requiredForContexts.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {row.original.requiredForContexts.map((ctx) => (
+                  <Badge key={ctx} variant="lead">
+                    {PREREQUISITE_CONTEXT_LABELS[ctx as PrerequisiteContext] ?? ctx}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted-foreground text-sm">None</span>
+            ),
+        },
+        {
+          id: "pack",
+          meta: { label: "Pack" },
+          cell: ({ row }) =>
+            row.original.packId ? (
+              <Badge variant="neutral">Pack</Badge>
+            ) : (
+              <span className="text-muted-foreground text-sm">Custom</span>
+            ),
+        },
+        {
+          id: "status",
+          meta: { label: "Status" },
+          cell: ({ row }) =>
+            row.original.active ? (
+              <StatusBadgeCell label="Active" variant="success" />
+            ) : (
+              <StatusBadgeCell label="Inactive" variant="neutral" />
+            ),
+        },
+        ...(canManage
+          ? defineColumns<FieldDefinitionResponse>([
+              {
+                id: "actions",
+                enableHiding: false,
+                meta: { label: "Actions", headerClassName: "w-12" },
+                cell: ({ row }) => {
+                  const field = row.original;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="plain"
+                          size="icon"
+                          className="size-8"
+                          aria-label={`Actions for ${field.name}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <FieldDefinitionDialog
+                          slug={slug}
+                          entityType={entityType}
+                          field={field}
+                          allFieldsForType={fields}
+                        >
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            Edit
+                          </DropdownMenuItem>
+                        </FieldDefinitionDialog>
+                        <DeleteFieldDialog slug={slug} fieldId={field.id} fieldName={field.name}>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DeleteFieldDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                },
+              },
+            ])
+          : []),
+      ]),
+    [slug, entityType, fields, canManage]
+  );
+
+  return (
+    <DataTable
+      columns={columns}
+      data={fields}
+      getRowId={getFieldId}
+      rowTestId="field-row"
+      columnVisibility={false}
+      pageSize={null}
+      stickyHeader={false}
+      frame={false}
+      empty={empty}
+    />
   );
 }
 
@@ -129,13 +290,10 @@ export function CustomFieldsContent({
 
       {entityTypeTabs.map((tab) => (
         <TabsContent key={tab.value} value={tab.value} className="space-y-8">
-          {/* Field Definitions Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                Field Definitions
-              </h2>
-              {canManage && (
+          <SettingsSection
+            title="Field Definitions"
+            actions={
+              canManage && (
                 <FieldDefinitionDialog
                   slug={slug}
                   entityType={tab.value}
@@ -146,130 +304,29 @@ export function CustomFieldsContent({
                     Add Field
                   </Button>
                 </FieldDefinitionDialog>
-              )}
-            </div>
+              )
+            }
+          >
+            <FieldDefinitionsTable
+              slug={slug}
+              entityType={tab.value}
+              fields={fieldsByType[tab.value]}
+              canManage={canManage}
+              empty={
+                <EmptyState
+                  variant="compact"
+                  icon={Settings2}
+                  title={tMsg("customFields.settings.heading")}
+                  description={tMsg("customFields.settings.description")}
+                />
+              }
+            />
+          </SettingsSection>
 
-            {fieldsByType[tab.value].length === 0 ? (
-              <EmptyState
-                icon={Settings2}
-                title={tMsg("customFields.settings.heading")}
-                description={tMsg("customFields.settings.description")}
-              />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Required</TableHead>
-                    <TableHead>Required For</TableHead>
-                    <TableHead>Pack</TableHead>
-                    <TableHead>Status</TableHead>
-                    {canManage && <TableHead className="w-12">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fieldsByType[tab.value].map((field) => (
-                    <TableRow key={field.id} data-testid="field-row">
-                      <TableCell className="font-medium">
-                        {field.name}
-                        {field.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {field.description}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="neutral">{field.fieldType}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {field.required ? (
-                          <Badge variant="warning">Required</Badge>
-                        ) : (
-                          <span className="text-sm text-slate-400">Optional</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {field.requiredForContexts && field.requiredForContexts.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {field.requiredForContexts.map((ctx) => (
-                              <Badge key={ctx} variant="lead">
-                                {PREREQUISITE_CONTEXT_LABELS[ctx as PrerequisiteContext] ?? ctx}
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-slate-400">None</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {field.packId ? (
-                          <Badge variant="neutral">Pack</Badge>
-                        ) : (
-                          <span className="text-sm text-slate-400">Custom</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {field.active ? (
-                          <Badge variant="success">Active</Badge>
-                        ) : (
-                          <Badge variant="neutral">Inactive</Badge>
-                        )}
-                      </TableCell>
-                      {canManage && (
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="plain"
-                                size="icon"
-                                className="size-8"
-                                aria-label={`Actions for ${field.name}`}
-                              >
-                                <MoreHorizontal className="size-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <FieldDefinitionDialog
-                                slug={slug}
-                                entityType={tab.value}
-                                field={field}
-                                allFieldsForType={fieldsByType[tab.value]}
-                              >
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                  Edit
-                                </DropdownMenuItem>
-                              </FieldDefinitionDialog>
-                              <DeleteFieldDialog
-                                slug={slug}
-                                fieldId={field.id}
-                                fieldName={field.name}
-                              >
-                                <DropdownMenuItem
-                                  onSelect={(e) => e.preventDefault()}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  Delete
-                                </DropdownMenuItem>
-                              </DeleteFieldDialog>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
-
-          {/* Field Groups Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                Field Groups
-              </h2>
-              {canManage && (
+          <SettingsSection
+            title="Field Groups"
+            actions={
+              canManage && (
                 <FieldGroupDialog
                   slug={slug}
                   entityType={tab.value}
@@ -281,37 +338,34 @@ export function CustomFieldsContent({
                     Add Group
                   </Button>
                 </FieldGroupDialog>
-              )}
-            </div>
-
+              )
+            }
+          >
             {groupsByType[tab.value].length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                No field groups for {tab.label.toLowerCase()} yet.
-              </p>
+              <EmptyState
+                variant="inline"
+                icon={Layers}
+                title={`No field groups for ${tab.label.toLowerCase()} yet.`}
+                description={null}
+              />
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {groupsByType[tab.value].map((group) => (
                   <div
                     key={group.id}
-                    className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
+                    className="border-border bg-card rounded-lg border p-4"
                     data-testid={`field-group-${group.slug}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex min-w-0 items-start gap-3">
-                        <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
-                          <Layers className="size-4 text-slate-600 dark:text-slate-400" />
+                        <div className="bg-muted mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md">
+                          <Layers className="text-muted-foreground size-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-slate-950 dark:text-slate-50">
-                            {group.name}
-                          </p>
-                          {group.description && (
-                            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                              {group.description}
-                            </p>
-                          )}
-                          <GroupMemberList groupName={group.name} members={groupMembers(group)} />
-                          <div className="mt-2 flex flex-wrap gap-1.5">
+                          {/* K-107b: the Pack / status badges sit with the group name, not under
+                              the member chips, so "Pack" no longer reads as a member field. */}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p className="text-foreground font-medium">{group.name}</p>
                             {group.packId && <Badge variant="neutral">Pack</Badge>}
                             {group.active ? (
                               <Badge variant="success">Active</Badge>
@@ -319,6 +373,12 @@ export function CustomFieldsContent({
                               <Badge variant="neutral">Inactive</Badge>
                             )}
                           </div>
+                          {group.description && (
+                            <p className="text-muted-foreground mt-0.5 text-sm">
+                              {group.description}
+                            </p>
+                          )}
+                          <GroupMemberList groupName={group.name} members={groupMembers(group)} />
                         </div>
                       </div>
                       {canManage && (
@@ -353,8 +413,8 @@ export function CustomFieldsContent({
                               groupName={group.name}
                             >
                               <DropdownMenuItem
+                                variant="destructive"
                                 onSelect={(e) => e.preventDefault()}
-                                className="text-destructive focus:text-destructive"
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -367,7 +427,7 @@ export function CustomFieldsContent({
                 ))}
               </div>
             )}
-          </div>
+          </SettingsSection>
         </TabsContent>
       ))}
     </Tabs>

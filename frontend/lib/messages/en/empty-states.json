@@ -122,7 +122,8 @@
     "list": {
       "heading": "No tags yet",
       "description": "Tags are colour-coded labels for organising matters, tasks, and clients. Create a tagging system that fits your workflow.",
-      "cta": "Create tag"
+      "descriptionMember": "Tags are colour-coded labels for organising matters, tasks, and clients.",
+      "cta": "Add tag"
     }
   }
 }

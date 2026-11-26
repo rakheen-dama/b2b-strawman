@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
@@ -16,11 +17,15 @@ export async function renderCustomFieldsTab({ slug }: SettingsTabProps) {
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Custom Fields
-          <HelpTip code="fields.types" />
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader
+          title={
+            <span className="inline-flex items-center gap-2">
+              Custom Fields
+              <HelpTip code="fields.types" />
+            </span>
+          }
+        />
+        <p className="text-muted-foreground">
           You do not have permission to manage custom fields. Only admins and owners can access this
           page.
         </p>
@@ -74,15 +79,15 @@ export async function renderCustomFieldsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Custom Fields
-          <HelpTip code="fields.types" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Define custom fields and groups for matters, tasks, clients, and fee notes.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Custom Fields
+            <HelpTip code="fields.types" />
+          </span>
+        }
+        description="Define custom fields and groups for matters, tasks, clients, and fee notes."
+      />
 
       <CustomFieldsContent
         slug={slug}

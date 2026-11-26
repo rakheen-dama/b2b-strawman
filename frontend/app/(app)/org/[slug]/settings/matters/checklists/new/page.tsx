@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { ChevronLeft } from "lucide-react";
 import { CreateChecklistTemplateForm } from "@/components/compliance/CreateChecklistTemplateForm";
 import { settingsHref } from "@/lib/settings-nav";
@@ -14,22 +16,20 @@ export default async function NewChecklistTemplatePage({
     <div className="space-y-8">
       <Link
         href={settingsHref(slug, "matters", "checklists")}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
         Checklists
       </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          New Checklist Template
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create a checklist template for client onboarding.
-        </p>
-      </div>
+      <PageHeader
+        title="New Checklist Template"
+        description="Create a checklist template for client onboarding."
+      />
 
-      <CreateChecklistTemplateForm slug={slug} />
+      <SettingsSection>
+        <CreateChecklistTemplateForm slug={slug} />
+      </SettingsSection>
     </div>
   );
 }

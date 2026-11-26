@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateRequestReminderSettings } from "@/app/(app)/org/[slug]/settings/matters/_tabs/request-settings-actions";
 
 interface RequestReminderSettingsFormProps {
@@ -38,17 +39,26 @@ export function RequestReminderSettingsForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Request Reminders</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Configure default reminder settings for information requests.
-      </p>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="Request Reminders"
+      description="Configure default reminder settings for information requests."
+      status={
+        message && (
+          <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+        )
+      }
+      footer={
+        <Button size="sm" disabled={saving} onClick={handleSave}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+          Save Settings
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label
             htmlFor="reminder-interval-days"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Default Reminder Interval (days)
           </label>
@@ -64,27 +74,11 @@ export function RequestReminderSettingsForm({
             }
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Automated reminders will be sent to clients every N days while items are outstanding.
           </p>
         </div>
       </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="sm" disabled={saving} onClick={handleSave}>
-          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-          Save Settings
-        </Button>
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
-    </div>
+    </SettingsSection>
   );
 }

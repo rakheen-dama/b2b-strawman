@@ -11,6 +11,11 @@ const mockCreateFieldGroup = vi.fn();
 const mockUpdateFieldGroup = vi.fn();
 const mockDeleteFieldGroup = vi.fn();
 
+// DataTable (Phase 91 665C) calls useRouter for row links.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
+
 vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
   updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
@@ -143,12 +148,15 @@ describe("CustomFieldsContent", () => {
     render(<CustomFieldsContent {...makeProps()} />);
 
     expect(screen.getByText("Budget Code")).toBeInTheDocument();
-    expect(screen.getByText("TEXT")).toBeInTheDocument();
+    // K-107a: the Type column shows the Add Field dialog's labels, not the raw enums
+    expect(screen.getByText("Text")).toBeInTheDocument();
+    expect(screen.queryByText("TEXT")).toBeNull();
     // "Required" appears as both column header and badge
     const requiredElements = screen.getAllByText("Required");
     expect(requiredElements.length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("Priority Level")).toBeInTheDocument();
-    expect(screen.getByText("DROPDOWN")).toBeInTheDocument();
+    expect(screen.getByText("Dropdown")).toBeInTheDocument();
+    expect(screen.queryByText("DROPDOWN")).toBeNull();
   });
 
   it("displays field groups as cards", () => {
@@ -241,5 +249,54 @@ describe("CustomFieldsContent", () => {
     // Priority Level has a packId
     const packBadges = screen.getAllByText("Pack");
     expect(packBadges.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("CustomFieldsContent frame (Phase 91 665C)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("Field Definitions and Field Groups are section h2s; rows keep field-row", () => {
+    render(<CustomFieldsContent {...makeProps(true)} />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Field Definitions" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Field Groups" })).toBeVisible();
+    expect(screen.getAllByTestId("field-row").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("cell", { name: /^Budget Code/ })).toBeInTheDocument();
+  });
+
+  it("K-25: both Delete menu items use the destructive item variant", async () => {
+    const user = userEvent.setup();
+    render(<CustomFieldsContent {...makeProps(true)} />);
+
+    await user.click(screen.getByRole("button", { name: "Actions for Priority Level" }));
+    const fieldDelete = await screen.findByRole("menuitem", { name: "Delete" });
+    expect(fieldDelete).toHaveAttribute("data-variant", "destructive");
+    await user.keyboard("{Escape}");
+
+    await user.click(screen.getByRole("button", { name: "Actions for Financial Info" }));
+    const groupDelete = await screen.findByRole("menuitem", { name: "Delete" });
+    expect(groupDelete).toHaveAttribute("data-variant", "destructive");
+  });
+
+  it("K-107b: the group's Pack / status badges sit beside its name, outside the member list", () => {
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-1"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    const name = within(card).getByText("Financial Info");
+    const members = within(card).getByRole("list", { name: "Fields in Financial Info" });
+    const status = within(card).getByText("Active");
+    expect(status.parentElement).toBe(name.parentElement);
+    expect(members.contains(status)).toBe(false);
+  });
+
+  it("empty entity tab: compact definitions empty state, inline groups line", async () => {
+    const user = userEvent.setup();
+    render(<CustomFieldsContent {...makeProps()} />);
+    await user.click(screen.getByRole("tab", { name: "Tasks" }));
+
+    const empties = document.querySelectorAll('[data-slot="empty-state"]');
+    expect([...empties].map((e) => e.getAttribute("data-variant"))).toEqual(["compact", "inline"]);
   });
 });

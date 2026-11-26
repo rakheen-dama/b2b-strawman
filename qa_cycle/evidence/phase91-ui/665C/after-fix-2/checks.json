@@ -1,0 +1,1236 @@
+{
+ "at": "2026-11-26T19:47:45.891Z",
+ "checklist": {
+  "pack|1024-light": {
+   "h1": [
+    "Generic Client Onboarding"
+   ],
+   "scroller": {
+    "clientWidth": 446,
+    "scrollWidth": 446,
+    "left": 521,
+    "right": 967,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 471,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 521,
+     "right": 546,
+     "lines": 1,
+     "textTop": 483,
+     "textBottom": 498,
+     "textRight": 537,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 114,
+     "h": 40,
+     "left": 546,
+     "right": 660,
+     "lines": 1,
+     "textTop": 483,
+     "textBottom": 498,
+     "textRight": 591,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 123,
+     "h": 40,
+     "left": 660,
+     "right": 783,
+     "lines": 1,
+     "textTop": 483,
+     "textBottom": 498,
+     "textRight": 756,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 90,
+     "h": 40,
+     "left": 783,
+     "right": 872,
+     "lines": 1,
+     "textTop": 483,
+     "textBottom": 498,
+     "textRight": 857,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 95,
+     "h": 40,
+     "left": 872,
+     "right": 967,
+     "lines": 2,
+     "textTop": 475,
+     "textBottom": 506,
+     "textRight": 956,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Confirm client engagement",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Verify contact details",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Confirm billing arrangements",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Upload signed engagement letter",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 4,
+    "requiredBadges": 4,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "custom|1024-light": {
+   "h1": [
+    "OBS 665C Checklist"
+   ],
+   "scroller": {
+    "clientWidth": 446,
+    "scrollWidth": 446,
+    "left": 521,
+    "right": 967,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 379,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 521,
+     "right": 546,
+     "lines": 1,
+     "textTop": 391,
+     "textBottom": 406,
+     "textRight": 537,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 103,
+     "h": 40,
+     "left": 546,
+     "right": 648,
+     "lines": 1,
+     "textTop": 391,
+     "textBottom": 406,
+     "textRight": 591,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 104,
+     "h": 40,
+     "left": 648,
+     "right": 752,
+     "lines": 1,
+     "textTop": 391,
+     "textBottom": 406,
+     "textRight": 744,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 82,
+     "h": 40,
+     "left": 752,
+     "right": 834,
+     "lines": 1,
+     "textTop": 391,
+     "textBottom": 406,
+     "textRight": 826,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 133,
+     "h": 40,
+     "left": 834,
+     "right": 967,
+     "lines": 2,
+     "textTop": 383,
+     "textBottom": 414,
+     "textRight": 917,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Proof of address",
+     "required": {
+      "text": "Optional",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 1,
+    "requiredBadges": 0,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "pack|1024-dark": {
+   "h1": [
+    "Generic Client Onboarding"
+   ],
+   "scroller": {
+    "clientWidth": 454,
+    "scrollWidth": 454,
+    "left": 521,
+    "right": 975,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 463,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 521,
+     "right": 546,
+     "lines": 1,
+     "textTop": 475,
+     "textBottom": 490,
+     "textRight": 537,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 116,
+     "h": 40,
+     "left": 546,
+     "right": 662,
+     "lines": 1,
+     "textTop": 475,
+     "textBottom": 490,
+     "textRight": 591,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 128,
+     "h": 40,
+     "left": 662,
+     "right": 790,
+     "lines": 1,
+     "textTop": 475,
+     "textBottom": 490,
+     "textRight": 758,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 90,
+     "h": 40,
+     "left": 790,
+     "right": 880,
+     "lines": 1,
+     "textTop": 475,
+     "textBottom": 490,
+     "textRight": 864,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 95,
+     "h": 40,
+     "left": 880,
+     "right": 975,
+     "lines": 2,
+     "textTop": 467,
+     "textBottom": 498,
+     "textRight": 963,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Confirm client engagement",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Verify contact details",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Confirm billing arrangements",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Upload signed engagement letter",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 4,
+    "requiredBadges": 4,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "custom|1024-dark": {
+   "h1": [
+    "OBS 665C Checklist"
+   ],
+   "scroller": {
+    "clientWidth": 454,
+    "scrollWidth": 454,
+    "left": 521,
+    "right": 975,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 351,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 521,
+     "right": 546,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 537,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 106,
+     "h": 40,
+     "left": 546,
+     "right": 652,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 591,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 104,
+     "h": 40,
+     "left": 652,
+     "right": 756,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 748,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 82,
+     "h": 40,
+     "left": 756,
+     "right": 838,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 830,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 137,
+     "h": 40,
+     "left": 838,
+     "right": 975,
+     "lines": 2,
+     "textTop": 355,
+     "textBottom": 386,
+     "textRight": 921,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Proof of address",
+     "required": {
+      "text": "Optional",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 1,
+    "requiredBadges": 0,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "pack|1440-light": {
+   "h1": [
+    "Generic Client Onboarding"
+   ],
+   "scroller": {
+    "clientWidth": 814,
+    "scrollWidth": 814,
+    "left": 569,
+    "right": 1383,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 431,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 569,
+     "right": 594,
+     "lines": 1,
+     "textTop": 443,
+     "textBottom": 458,
+     "textRight": 585,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 194,
+     "h": 40,
+     "left": 594,
+     "right": 788,
+     "lines": 1,
+     "textTop": 443,
+     "textBottom": 458,
+     "textRight": 639,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 368,
+     "h": 40,
+     "left": 788,
+     "right": 1155,
+     "lines": 1,
+     "textTop": 443,
+     "textBottom": 458,
+     "textRight": 884,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 90,
+     "h": 40,
+     "left": 1155,
+     "right": 1245,
+     "lines": 1,
+     "textTop": 443,
+     "textBottom": 458,
+     "textRight": 1229,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 138,
+     "h": 40,
+     "left": 1245,
+     "right": 1383,
+     "lines": 2,
+     "textTop": 435,
+     "textBottom": 466,
+     "textRight": 1328,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Confirm client engagement",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Verify contact details",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Confirm billing arrangements",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Upload signed engagement letter",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 4,
+    "requiredBadges": 4,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "custom|1440-light": {
+   "h1": [
+    "OBS 665C Checklist"
+   ],
+   "scroller": {
+    "clientWidth": 814,
+    "scrollWidth": 814,
+    "left": 569,
+    "right": 1383,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 359,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 40,
+     "h": 40,
+     "left": 569,
+     "right": 609,
+     "lines": 1,
+     "textTop": 371,
+     "textBottom": 386,
+     "textRight": 585,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 206,
+     "h": 40,
+     "left": 609,
+     "right": 815,
+     "lines": 1,
+     "textTop": 371,
+     "textBottom": 386,
+     "textRight": 655,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 170,
+     "h": 40,
+     "left": 815,
+     "right": 985,
+     "lines": 1,
+     "textTop": 371,
+     "textBottom": 386,
+     "textRight": 911,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 134,
+     "h": 40,
+     "left": 985,
+     "right": 1119,
+     "lines": 1,
+     "textTop": 371,
+     "textBottom": 386,
+     "textRight": 1059,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 264,
+     "h": 40,
+     "left": 1119,
+     "right": 1383,
+     "lines": 1,
+     "textTop": 371,
+     "textBottom": 386,
+     "textRight": 1272,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Proof of address",
+     "required": {
+      "text": "Optional",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 1,
+    "requiredBadges": 0,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "pack|1440-dark": {
+   "h1": [
+    "Generic Client Onboarding"
+   ],
+   "scroller": {
+    "clientWidth": 822,
+    "scrollWidth": 822,
+    "left": 569,
+    "right": 1391,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 423,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 25,
+     "h": 40,
+     "left": 569,
+     "right": 594,
+     "lines": 1,
+     "textTop": 435,
+     "textBottom": 450,
+     "textRight": 585,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 196,
+     "h": 40,
+     "left": 594,
+     "right": 789,
+     "lines": 1,
+     "textTop": 435,
+     "textBottom": 450,
+     "textRight": 639,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 373,
+     "h": 40,
+     "left": 789,
+     "right": 1163,
+     "lines": 1,
+     "textTop": 435,
+     "textBottom": 450,
+     "textRight": 885,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 90,
+     "h": 40,
+     "left": 1163,
+     "right": 1252,
+     "lines": 1,
+     "textTop": 435,
+     "textBottom": 450,
+     "textRight": 1236,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 139,
+     "h": 40,
+     "left": 1252,
+     "right": 1391,
+     "lines": 2,
+     "textTop": 427,
+     "textBottom": 458,
+     "textRight": 1335,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Confirm client engagement",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Verify contact details",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Confirm billing arrangements",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    },
+    {
+     "name": "Upload signed engagement letter",
+     "required": {
+      "text": "Required",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 4,
+    "requiredBadges": 4,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  },
+  "custom|1440-dark": {
+   "h1": [
+    "OBS 665C Checklist"
+   ],
+   "scroller": {
+    "clientWidth": 822,
+    "scrollWidth": 822,
+    "left": 569,
+    "right": 1391,
+    "fits": true
+   },
+   "theadRow": {
+    "top": 351,
+    "height": 40
+   },
+   "headers": [
+    {
+     "text": "#",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 41,
+     "h": 40,
+     "left": 569,
+     "right": 610,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 585,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "NAME",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 208,
+     "h": 40,
+     "left": 610,
+     "right": 817,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 655,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DESCRIPTION",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 172,
+     "h": 40,
+     "left": 817,
+     "right": 989,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 913,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+     "ws": "nowrap",
+     "va": "middle",
+     "w": 135,
+     "h": 40,
+     "left": 989,
+     "right": 1125,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 1063,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    },
+    {
+     "text": "DOCUMENT REQUIRED",
+     "cls": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] whitespace-normal",
+     "ws": "normal",
+     "va": "middle",
+     "w": 266,
+     "h": 40,
+     "left": 1125,
+     "right": 1391,
+     "lines": 1,
+     "textTop": 363,
+     "textBottom": 378,
+     "textRight": 1278,
+     "textInTh": true,
+     "textInBox": true,
+     "thInBox": true,
+     "noOverflow": true
+    }
+   ],
+   "rows": [
+    {
+     "name": "Proof of address",
+     "required": {
+      "text": "Optional",
+      "inBox": true,
+      "untruncated": true
+     },
+     "docRequired": {
+      "text": "No",
+      "inBox": true,
+      "untruncated": true
+     }
+    }
+   ],
+   "summary": {
+    "rows": 1,
+    "requiredBadges": 0,
+    "requiredAllVisible": true,
+    "docRequiredAllVisible": true,
+    "headersAllVisible": true,
+    "drHeaderHasClass": true
+   },
+   "hOverflow": 0
+  }
+ },
+ "checklistIds": {
+  "pack": {
+   "id": "ef084b7a-f1d5-46be-8657-2ed12d7474b0",
+   "name": "Generic Client Onboarding",
+   "source": "PLATFORM"
+  },
+  "custom": {
+   "id": "561c8fea-38c1-48f9-b1ac-23c6d2dc29ef",
+   "name": "OBS 665C Checklist",
+   "source": "ORG_CUSTOM"
+  }
+ },
+ "console": {
+  "n": 0,
+  "errors": 0,
+  "warnings": 0,
+  "hydration": 0,
+  "messages": []
+ }
+}

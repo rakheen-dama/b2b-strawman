@@ -90,4 +90,4 @@
   - ACTION was partly visible ("FLAG" select clipped at the edge). ACTIVE and ACTIONS were already hidden.
   - So the hidden row actions are **pre-existing**. 665A's section padding takes about 50 px more and also hides ACTION.
 - **Not fixed here:** a layout decision for the orchestrator. Options are a priority/hide column order, stacking at < xl, or accepting the scroll. Overlay scrollbars give no affordance that the strip scrolls.
-- **Route:** orchestrator ruling (665A fix round vs backlog).
+- **Route:** accepted in 665A by orchestrator ruling D-44 (`tasks/phase91-decisions.md`) → 669A light pass / 670A follow-up list (kit-level layout decision binding 665B–665F).

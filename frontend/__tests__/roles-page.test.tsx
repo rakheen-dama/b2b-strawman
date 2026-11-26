@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
@@ -159,5 +159,77 @@ describe("Firm › Roles tab loader", () => {
     // Edit and Delete buttons exist on the custom role card
     expect(screen.getByLabelText("Edit Bookkeeper")).toBeInTheDocument();
     expect(screen.getByLabelText("Delete Bookkeeper")).toBeInTheDocument();
+  });
+
+  it("665A: one h1 'Roles & Permissions' via PageHeader; System Roles and Custom Roles are h2 sections", async () => {
+    await renderPage();
+
+    const h1s = screen.getAllByRole("heading", { level: 1 });
+    expect(h1s).toHaveLength(1);
+    expect(h1s[0]).toHaveTextContent("Roles & Permissions");
+    expect(h1s[0].closest('[data-slot="page-header"]')).not.toBeNull();
+
+    const system = screen
+      .getByRole("heading", { level: 2, name: "System Roles" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(system).not.toBeNull();
+    expect(
+      within(system).getByText("Built-in roles that cannot be modified or deleted.")
+    ).toBeVisible();
+    for (const name of ["Owner", "Admin", "Member"]) {
+      expect(within(system).getByRole("heading", { level: 3, name })).toBeVisible();
+    }
+    // Only one heading carries "System Roles" (e2e matches it as a substring).
+    expect(screen.getAllByRole("heading", { name: /System Roles/ })).toHaveLength(1);
+
+    const custom = screen
+      .getByRole("heading", { level: 2, name: "Custom Roles" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(custom).not.toBeNull();
+    const newRole = within(custom).getByRole("button", { name: "New Role" });
+    expect(newRole.closest('[data-slot="card-action"]')).not.toBeNull();
+    expect(within(custom).getByRole("heading", { level: 3, name: "Bookkeeper" })).toBeVisible();
+
+    // The capability reference sits in an untitled section; its trigger is unchanged.
+    const reference = screen.getByRole("button", { name: "Capability Reference" });
+    expect(reference.closest('[data-slot="settings-section"]')).not.toBeNull();
+  });
+
+  it("665A K-104: labels the three display-only capabilities and titles every badge with its full label", async () => {
+    await renderPage([
+      makeSystemRole("Owner", 1),
+      makeSystemRole("Admin", 1),
+      makeSystemRole("Member", 5, [
+        "GENERATE_STATEMENT_OF_ACCOUNT",
+        "VIEW_LEGAL",
+        "MANAGE_DISBURSEMENTS",
+      ]),
+    ]);
+
+    const memberCard = screen
+      .getByRole("heading", { level: 3, name: "Member" })
+      .closest('[data-slot="role-card"]') as HTMLElement;
+    expect(memberCard).not.toBeNull();
+    for (const label of [
+      "Generate statement of account",
+      "View legal registers",
+      "Manage disbursements",
+    ]) {
+      const text = within(memberCard).getByText(label);
+      const badge = text.closest('[data-slot="badge"]') as HTMLElement;
+      expect(badge).toHaveAttribute("title", label);
+    }
+    expect(within(memberCard).queryByText("GENERATE STATEMENT OF ACCOUNT")).not.toBeInTheDocument();
+    expect(within(memberCard).queryByText("VIEW LEGAL")).not.toBeInTheDocument();
+  });
+
+  it("665A K-104: custom role badges carry their label as the title too", async () => {
+    await renderPage();
+
+    const custom = screen
+      .getByRole("heading", { level: 2, name: "Custom Roles" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    const badge = within(custom).getByText("Financial Visibility").closest('[data-slot="badge"]');
+    expect(badge).toHaveAttribute("title", "Financial Visibility");
   });
 });

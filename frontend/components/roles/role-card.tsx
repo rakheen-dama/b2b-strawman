@@ -12,19 +12,28 @@ interface RoleCardProps {
   onDelete?: (role: OrgRole) => void;
 }
 
-/** Capability pill showing the capability's label ("INVOICING" → "Billing"). */
+/**
+ * Capability pill showing the capability's label ("INVOICING" → "Billing"). K-104: it never runs
+ * out of its card — `max-w-full` on the pill, ellipsis on the inner span (text-overflow does not
+ * apply to the flex pill's own text) and the full label as its `title`.
+ */
 export function CapabilityBadge({ cap }: { cap: string }) {
-  return <Badge variant="secondary">{capabilityLabel(cap)}</Badge>;
+  const label = capabilityLabel(cap);
+  return (
+    <Badge variant="secondary" className="max-w-full" title={label}>
+      <span className="truncate">{label}</span>
+    </Badge>
+  );
 }
 
 export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+    <div data-slot="role-card" className="min-w-0 rounded-lg border p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-slate-950 dark:text-slate-50">{role.name}</h3>
+          <h3 className="text-foreground font-semibold">{role.name}</h3>
           {role.description && (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{role.description}</p>
+            <p className="text-muted-foreground mt-1 text-sm">{role.description}</p>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -40,7 +49,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => onDelete?.(role)}
             aria-label={`Delete ${role.name}`}
           >
@@ -51,14 +60,14 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
       </div>
 
       {role.capabilities.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex min-w-0 flex-wrap gap-1.5">
           {role.capabilities.map((cap) => (
             <CapabilityBadge key={cap} cap={cap} />
           ))}
         </div>
       )}
 
-      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+      <p className="text-muted-foreground mt-3 text-xs">
         {role.memberCount} {role.memberCount === 1 ? "member" : "members"}
       </p>
     </div>

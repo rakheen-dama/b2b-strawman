@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import type { Document } from "@/lib/types";
 
 // Mock next/navigation
@@ -129,6 +129,71 @@ describe("OrgDocumentsSection", () => {
     render(<OrgDocumentsSection slug="test-org" documents={[]} isAdmin={false} />);
 
     expect(screen.getByTestId("org-documents-section")).toBeInTheDocument();
+  });
+
+  describe("665A: SettingsSection + DataTable", () => {
+    it("is a settings section titled Org Documents (h2) carrying the existing testid", () => {
+      render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={true} />);
+
+      const section = screen.getByTestId("org-documents-section");
+      expect(section).toHaveAttribute("data-slot", "settings-section");
+      expect(
+        within(section).getByRole("heading", { level: 2, name: "Org Documents" })
+      ).toBeInTheDocument();
+      expect(
+        within(section).getByText("Organization-level documents shared across all matters.")
+      ).toBeInTheDocument();
+      // Upload and the count sit in the section header's actions, not in the heading.
+      const actions = screen.getByTestId("org-upload-btn").closest('[data-slot="card-action"]');
+      expect(actions).not.toBeNull();
+      expect(within(actions as HTMLElement).getByText("2")).toBeInTheDocument();
+    });
+
+    it("renders the documents through DataTable with the five columns in order", () => {
+      render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={true} />);
+
+      const table = screen.getByRole("table");
+      expect(table.closest('[data-slot="data-table"]')).not.toBeNull();
+      expect(
+        within(table)
+          .getAllByRole("columnheader")
+          .map((h) => h.textContent)
+      ).toEqual(["File", "Size", "Scope", "Status", "Uploaded"]);
+      const [, first, second] = within(table).getAllByRole("row");
+      expect(
+        within(first)
+          .getAllByRole("cell")
+          .map((c) => c.textContent)
+      ).toEqual(["contract.pdf", "1000.0 KB", "Org", "Uploaded", "1 Mar 2026"]);
+      // A document without an upload date shows the shared "—" placeholder.
+      expect(
+        within(second)
+          .getAllByRole("cell")
+          .map((c) => c.textContent)
+      ).toEqual(["logo.png", "500.0 KB", "Org", "Pending", "—"]);
+    });
+
+    it("renders the empty state as the shared compact EmptyState (h2 title), with no table", () => {
+      render(<OrgDocumentsSection slug="test-org" documents={[]} isAdmin={true} />);
+
+      const title = screen.getByRole("heading", { name: "No organization documents yet" });
+      expect(title.tagName).toBe("H2");
+      const empty = title.closest('[data-slot="empty-state"]');
+      expect(empty).toHaveAttribute("data-variant", "compact");
+      expect(
+        within(empty as HTMLElement).getByText(
+          "Upload your first organization-level document to get started."
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    });
+
+    it("keeps the non-admin view read-only", () => {
+      render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={false} />);
+
+      expect(screen.getByRole("table")).toBeInTheDocument();
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
   });
 });
 

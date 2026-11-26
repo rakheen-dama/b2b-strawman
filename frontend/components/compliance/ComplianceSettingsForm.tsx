@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateComplianceSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 
 interface ComplianceSettingsFormProps {
@@ -99,18 +100,24 @@ export function ComplianceSettingsForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">General Settings</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Configure dormancy detection and data request processing deadlines.
-      </p>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="General Settings"
+      description="Configure dormancy detection and data request processing deadlines."
+      status={
+        message && (
+          <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+        )
+      }
+      footer={
+        <Button size="sm" disabled={saving} onClick={handleSave}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+          Save Settings
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label
-            htmlFor="dormancy-threshold"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
+          <label htmlFor="dormancy-threshold" className="text-foreground block text-sm font-medium">
             Dormancy Threshold (days)
           </label>
           <Input
@@ -121,14 +128,14 @@ export function ComplianceSettingsForm({
             onChange={(e) => setDormancy(Math.max(1, parseInt(e.target.value) || 1))}
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Clients inactive for this many days will be flagged as dormant.
           </p>
         </div>
         <div>
           <label
             htmlFor="data-request-deadline"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Data Request Deadline (days)
           </label>
@@ -140,12 +147,13 @@ export function ComplianceSettingsForm({
             onChange={(e) => setDeadline(Math.max(1, parseInt(e.target.value) || 1))}
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Number of days allowed to complete a data request before it is overdue.
           </p>
         </div>
       </div>
 
+      {/* Phase 93 FICA review intervals — framed only (665A P-1): saved by the footer's Save Settings. */}
       <fieldset className="mt-6" data-testid="fica-review-intervals">
         <legend className="text-sm font-semibold text-slate-950 dark:text-slate-50">
           FICA review intervals
@@ -196,22 +204,6 @@ export function ComplianceSettingsForm({
           ))}
         </div>
       </fieldset>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="sm" disabled={saving} onClick={handleSave}>
-          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-          Save Settings
-        </Button>
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
-    </div>
+    </SettingsSection>
   );
 }

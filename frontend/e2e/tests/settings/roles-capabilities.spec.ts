@@ -51,10 +51,6 @@ test.describe("ROLE-01: Roles & Capabilities", () => {
   });
 
   test("Create, edit and delete a custom role", async ({ page }) => {
-    test.fixme(
-      true,
-      "628F-BLOCKER: Create Role dialog is 839px tall on a 1280x720 viewport with no scroll — title and 'Create' button unreachable — components/roles/role-dialog.tsx:105 (DialogContent without max-h / overflow-y-auto)"
-    );
     const roleName = `E2E Role ${RUN_ID}`;
     await openRoles(page);
 

@@ -1,5 +1,6 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getModuleSettings } from "@/lib/actions/module-settings";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { FeaturesSettingsForm } from "@/components/settings/features-settings-form";
 
 /**
@@ -13,14 +14,13 @@ export async function renderFeaturesTab() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Features</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Enable additional features for your organization. These can be turned on or off at any
-          time.
-        </p>
+      <div className="space-y-2">
+        <PageHeader
+          title="Features"
+          description="Enable additional features for your organization. These can be turned on or off at any time."
+        />
         {!canManage && (
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground text-sm">
             Only admins and owners can change these settings.
           </p>
         )}

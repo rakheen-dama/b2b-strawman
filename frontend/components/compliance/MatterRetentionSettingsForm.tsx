@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateMatterRetentionYears } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 import { matterRetentionYearsSchema, MATTER_RETENTION_OWNER_ONLY_MESSAGE } from "@/lib/schemas";
 
@@ -66,17 +67,31 @@ export function MatterRetentionSettingsForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Matter retention</h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        How long closed matters are kept before they are permanently deleted.
-      </p>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="Matter retention"
+      description="How long closed matters are kept before they are permanently deleted."
+      status={
+        !canEdit || message ? (
+          <>
+            {!canEdit && <p>{MATTER_RETENTION_OWNER_ONLY_MESSAGE}</p>}
+            {message && (
+              <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+            )}
+          </>
+        ) : undefined
+      }
+      footer={
+        <Button size="sm" disabled={!canEdit || saving} onClick={handleSave}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+          Save retention period
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label
             htmlFor="matter-retention-years"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Matter retention period (years)
           </label>
@@ -102,39 +117,18 @@ export function MatterRetentionSettingsForm({
             <p
               id="matter-retention-years-error"
               role="alert"
-              className="mt-1 text-sm text-red-600 dark:text-red-400"
+              className="text-destructive mt-1 text-sm"
             >
               {yearsError}
             </p>
           )}
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Closed matters are permanently deleted this many years after the close date. Default 5
             years. A change applies to matters closed from now on — matters already closed keep
             their scheduled deletion date.
           </p>
         </div>
       </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="sm" disabled={!canEdit || saving} onClick={handleSave}>
-          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-          Save retention period
-        </Button>
-        {!canEdit && (
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {MATTER_RETENTION_OWNER_ONLY_MESSAGE}
-          </p>
-        )}
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
-    </div>
+    </SettingsSection>
   );
 }

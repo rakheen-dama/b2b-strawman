@@ -10,7 +10,9 @@ import {
   useCapabilities,
   RequiresCapability,
   CAPABILITIES,
+  CAPABILITY_META,
   OWNER_ONLY_CAPABILITIES,
+  capabilityLabel,
 } from "@/lib/capabilities";
 
 afterEach(() => {
@@ -260,5 +262,27 @@ describe("useCapabilities outside provider", () => {
       "useCapabilities must be used within a CapabilityProvider"
     );
     spy.mockRestore();
+  });
+});
+
+describe("capabilityLabel (K-104, 665A)", () => {
+  it.each([
+    ["GENERATE_STATEMENT_OF_ACCOUNT", "Generate statement of account"],
+    ["VIEW_LEGAL", "View legal registers"],
+    ["MANAGE_DISBURSEMENTS", "Manage disbursements"],
+  ])("labels the display-only capability %s", (cap, label) => {
+    expect(capabilityLabel(cap)).toBe(label);
+  });
+
+  it("does not make the display-only capabilities grantable (CAPABILITY_META unchanged)", () => {
+    const values = CAPABILITY_META.map((c) => c.value as string);
+    for (const cap of ["GENERATE_STATEMENT_OF_ACCOUNT", "VIEW_LEGAL", "MANAGE_DISBURSEMENTS"]) {
+      expect(values).not.toContain(cap);
+    }
+  });
+
+  it("keeps CAPABILITY_META labels and the spaced fallback for unknown values", () => {
+    expect(capabilityLabel("FINANCIAL_VISIBILITY")).toBe("Financial Visibility");
+    expect(capabilityLabel("SOME_NEW_CAP")).toBe("SOME NEW CAP");
   });
 });

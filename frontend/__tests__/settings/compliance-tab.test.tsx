@@ -135,14 +135,22 @@ describe("renderComplianceTab — matter retention period (Phase 88 U17)", () =>
     expect(alerts[0]).toHaveTextContent(
       "Couldn't load the current matter retention period. Reload the page to change it."
     );
-    expect(screen.getByRole("heading", { name: "Matter retention" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Matter retention" })).toBeInTheDocument();
     expect(screen.queryByTestId("matter-retention-form-mount")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save retention period" })).not.toBeInTheDocument();
     expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
     // 655B: General Settings (dormancy, deadline, FICA review intervals) saves every field, so it
     // is not offered on fallback values either.
     expect(screen.queryByTestId("compliance-settings-form-mount")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "General Settings" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "General Settings" })).toBeInTheDocument();
+    // 665A: both load-error blocks are settings sections with no footer (nothing to save).
+    for (const name of ["Matter retention", "General Settings"]) {
+      const section = screen
+        .getByRole("heading", { level: 2, name })
+        .closest('[data-slot="settings-section"]') as HTMLElement;
+      expect(section).not.toBeNull();
+      expect(section.querySelector('[data-slot="card-footer"]')).toBeNull();
+    }
     expect(alerts[1]).toHaveTextContent(
       "Couldn't load the current compliance settings. Reload the page to change them."
     );
@@ -157,5 +165,36 @@ describe("renderComplianceTab — matter retention period (Phase 88 U17)", () =>
 
     expect(screen.getByTestId("compliance-settings-form-mount")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("665A: one h1 'Compliance' via PageHeader and a Compliance Packs section (h2)", async () => {
+    mockCaps.mockResolvedValue(OWNER);
+
+    render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
+
+    const h1s = screen.getAllByRole("heading", { level: 1 });
+    expect(h1s).toHaveLength(1);
+    expect(h1s[0]).toHaveTextContent("Compliance");
+    expect(h1s[0].closest('[data-slot="page-header"]')).not.toBeNull();
+    const packs = screen
+      .getByRole("heading", { level: 2, name: "Compliance Packs" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(packs).not.toBeNull();
+    expect(packs).toContainElement(screen.getByTestId("compliance-pack-list-mount"));
+    expect(
+      screen.getByText(
+        "Applied compliance packs and their versions. Click a pack to view its full contents."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("665A: member branch keeps exactly one h1 'Compliance'", async () => {
+    mockCaps.mockResolvedValue(MEMBER);
+
+    render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
+
+    const h1s = screen.getAllByRole("heading", { level: 1 });
+    expect(h1s).toHaveLength(1);
+    expect(h1s[0]).toHaveTextContent("Compliance");
   });
 });

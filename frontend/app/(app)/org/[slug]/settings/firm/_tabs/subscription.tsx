@@ -1,8 +1,10 @@
 import { Info, Lock } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { HelpTip } from "@/components/help-tip";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { MethodBadge } from "@/components/billing/method-badge";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { getSubscription } from "@/lib/actions/subscription";
 
 type BadgeVariant = "neutral" | "success" | "warning" | "destructive";
@@ -29,7 +31,7 @@ function statusBadgeVariant(status: string): BadgeVariant {
 function statusLabel(status: string): string {
   switch (status) {
     case "TRIALING":
-      return "Trial";
+      return "Trial period";
     case "ACTIVE":
       return "Active";
     case "PENDING_CANCELLATION":
@@ -59,31 +61,39 @@ export async function renderSubscriptionTab() {
 
   return (
     <div className="space-y-8">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Billing
-          <HelpTip code="billing.overview" />
-        </h1>
+      {/* K-106 (founder-approved copy): the h1 matches the tab label "Subscription". */}
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Subscription
+            <HelpTip code="billing.overview" />
+          </span>
+        }
+      >
         <Badge variant={statusBadgeVariant(billing.status)}>{statusLabel(billing.status)}</Badge>
-        <MethodBadge method={billing.billingMethod} />
-      </div>
+        {/* K-106: "Invoiced manually" on this tab only — MethodBadge is shared with platform admin. */}
+        {billing.billingMethod === "MANUAL" ? (
+          <Badge variant="neutral">Invoiced manually</Badge>
+        ) : (
+          <MethodBadge method={billing.billingMethod} />
+        )}
+      </PageHeader>
 
-      {/* Managed account info card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      {/* Managed account info (read-only) */}
+      <SettingsSection
+        title={
+          <span className="inline-flex items-center gap-2">
             <Info className="size-5 text-teal-600" />
             Managed Account
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Your account is managed by your administrator.
-            {billing.status === "GRACE_PERIOD" && " Contact your administrator to restore access."}
-          </p>
-        </CardContent>
-      </Card>
+          </span>
+        }
+      >
+        <p className="text-muted-foreground text-sm">
+          Your Kazi subscription is managed by b2mash. Contact support to change your plan or
+          billing details.
+          {billing.status === "GRACE_PERIOD" && " Contact your administrator to restore access."}
+        </p>
+      </SettingsSection>
 
       {/* LOCKED override */}
       {billing.status === "LOCKED" && (
@@ -91,12 +101,12 @@ export async function renderSubscriptionTab() {
           <Card className="max-w-md text-center">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-2">
-                <Lock className="size-5 text-red-500" />
+                <Lock className="text-destructive size-5" />
                 Account Locked
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-muted-foreground text-sm">
                 Contact your administrator to restore access.
               </p>
             </CardContent>

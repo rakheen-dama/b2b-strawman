@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { renderSubscriptionTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/subscription";
@@ -7,34 +6,7 @@ vi.mock("@/lib/actions/subscription", () => ({
   getSubscription: vi.fn(),
 }));
 
-vi.mock("@b2mash/ui/badge", () => ({
-  Badge: ({ children, variant }: { children: React.ReactNode; variant: string }) => (
-    <span data-testid="badge" data-variant={variant}>
-      {children}
-    </span>
-  ),
-}));
-
-vi.mock("@b2mash/ui/card", () => ({
-  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div data-testid="card" className={className}>
-      {children}
-    </div>
-  ),
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-header">{children}</div>
-  ),
-  CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <h2 data-testid="card-title" className={className}>
-      {children}
-    </h2>
-  ),
-  CardContent: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div data-testid="card-content" className={className}>
-      {children}
-    </div>
-  ),
-}));
+// Real Badge / Card / SettingsSection (server-safe): the assertions read roles and text.
 
 afterEach(() => cleanup());
 
@@ -72,10 +44,47 @@ describe("Firm › Subscription tab loader (manual firm-level billing)", () => {
 
     await renderPage();
 
-    expect(screen.getByText("Trial")).toBeInTheDocument();
-    expect(screen.getByText("Manual")).toBeInTheDocument();
-    expect(screen.getByText("Managed Account")).toBeInTheDocument();
-    expect(screen.getByText(/managed by your administrator/)).toBeInTheDocument();
+    // K-106 (founder-approved copy): h1 matches the tab label; chips read as words.
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole("heading", { level: 1, name: /^Subscription/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Billing/ })).not.toBeInTheDocument();
+    expect(screen.getByText("Trial period")).toBeInTheDocument();
+    expect(screen.getByText("Invoiced manually")).toBeInTheDocument();
+    expect(screen.queryByText("Manual")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Managed Account" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Your Kazi subscription is managed by b2mash. Contact support to change your plan or billing details."
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/managed by your administrator/)).not.toBeInTheDocument();
+  });
+
+  it("puts the status and method chips in the page header toolbar, not inside the h1", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling({ status: "ACTIVE" }));
+
+    await renderPage();
+
+    const h1 = screen.getByRole("heading", { level: 1 });
+    const chip = screen.getByText("Invoiced manually");
+    expect(h1.contains(chip)).toBe(false);
+    expect(chip.closest('[data-slot="page-header-toolbar"]')).not.toBeNull();
+    expect(screen.getByText("Active").closest('[data-slot="page-header-toolbar"]')).not.toBeNull();
+    // Read-only: the Managed Account section has no footer.
+    const section = screen
+      .getByRole("heading", { name: "Managed Account" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(section).not.toBeNull();
+    expect(section.querySelector('[data-slot="card-footer"]')).toBeNull();
+  });
+
+  it("keeps non-manual billing methods on the shared MethodBadge", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling({ billingMethod: "COMPLIMENTARY" }));
+
+    await renderPage();
+
+    expect(screen.getByText("Complimentary")).toBeInTheDocument();
+    expect(screen.queryByText("Invoiced manually")).not.toBeInTheDocument();
   });
 
   it("shows the restore-access hint for GRACE_PERIOD", async () => {
@@ -99,6 +108,9 @@ describe("Firm › Subscription tab loader (manual firm-level billing)", () => {
 
     expect(screen.getByText("Locked")).toBeInTheDocument();
     expect(screen.getByText("Account Locked")).toBeInTheDocument();
+    // "Account Locked" is a CardTitle div, not a heading: the page keeps exactly one h1.
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.queryByRole("heading", { name: "Account Locked" })).not.toBeInTheDocument();
   });
 
   it("renders no self-serve subscription UI", async () => {

@@ -162,4 +162,25 @@ describe("ComplianceSettingsForm", () => {
       ficaReviewMonthsHigh: 12,
     });
   });
+
+  it("665A: one General Settings section — fields and FICA fieldset in the body, Save Settings in its footer", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const section = screen
+      .getByRole("heading", { level: 2, name: "General Settings" })
+      .closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(section).not.toBeNull();
+    expect(section).toContainElement(screen.getByLabelText("Dormancy Threshold (days)"));
+    expect(section).toContainElement(screen.getByTestId("fica-review-intervals"));
+    const save = screen.getByRole("button", { name: "Save Settings" });
+    const footer = save.closest('[data-slot="card-footer"]');
+    expect(footer).not.toBeNull();
+    expect(section).toContainElement(footer as HTMLElement);
+    expect(footer).not.toContainElement(screen.getByTestId("fica-review-intervals"));
+
+    // The save message renders in the same footer (status slot).
+    await user.click(save);
+    const message = await screen.findByText("Compliance settings updated.");
+    expect(footer).toContainElement(message);
+  });
 });

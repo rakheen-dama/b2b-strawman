@@ -4,6 +4,8 @@ import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTab
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
 import { MatterRetentionSettingsForm } from "@/components/compliance/MatterRetentionSettingsForm";
 import { CompliancePackList } from "@/components/compliance/CompliancePackList";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { DEFAULT_MATTER_RETENTION_YEARS } from "@/lib/schemas";
 import type { OrgSettings, RetentionPolicy } from "@/lib/types";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -15,8 +17,8 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Compliance" />
+        <p className="text-muted-foreground">
           You do not have permission to manage compliance settings. Only admins and owners can
           access this page.
         </p>
@@ -41,13 +43,10 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage the matter retention period, retention policies, dormancy thresholds, and data
-          request deadlines.
-        </p>
-      </div>
+      <PageHeader
+        title="Compliance"
+        description="Manage the matter retention period, retention policies, dormancy thresholds, and data request deadlines."
+      />
 
       {/* Section 1: Matter retention period — owner-only on the backend, read-only for admins.
           Without the stored value there is nothing safe to show or save: a fallback number would
@@ -61,14 +60,11 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
           canEdit={caps.isOwner}
         />
       ) : (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Matter retention
-          </h2>
-          <p role="alert" className="mt-1 text-sm text-red-600 dark:text-red-400">
+        <SettingsSection title="Matter retention">
+          <p role="alert" className="text-destructive text-sm">
             {"Couldn't load the current matter retention period. Reload the page to change it."}
           </p>
-        </div>
+        </SettingsSection>
       )}
 
       {/* Section 2: General Settings — saves every field at once, so (like the retention period)
@@ -84,29 +80,23 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
           ficaReviewMonthsHigh={settings.ficaReviewMonthsHigh ?? 12}
         />
       ) : (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            General Settings
-          </h2>
-          <p role="alert" className="mt-1 text-sm text-red-600 dark:text-red-400">
+        <SettingsSection title="General Settings">
+          <p role="alert" className="text-destructive text-sm">
             {"Couldn't load the current compliance settings. Reload the page to change them."}
           </p>
-        </div>
+        </SettingsSection>
       )}
 
       {/* Section 3: Retention Policies */}
       <RetentionPolicyTable key={JSON.stringify(policies)} policies={policies} slug={slug} />
 
       {/* Section 4: Compliance Packs */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Compliance Packs
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Applied compliance packs and their versions. Click a pack to view its full contents.
-        </p>
+      <SettingsSection
+        title="Compliance Packs"
+        description="Applied compliance packs and their versions. Click a pack to view its full contents."
+      >
         <CompliancePackList packs={settings.compliancePackStatus ?? []} />
-      </div>
+      </SettingsSection>
     </div>
   );
 }

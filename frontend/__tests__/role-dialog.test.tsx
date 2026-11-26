@@ -129,6 +129,53 @@ describe("RoleDialog", () => {
   });
 });
 
+describe("RoleDialog — K-102: bounded to the viewport", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  // `ui/dialog.tsx` puts DialogContent's className on the card, the first child of the Radix
+  // content (the motion.div carries data-slot="dialog-content").
+  const card = () =>
+    document.querySelector<HTMLElement>('[data-slot="dialog-content"] > div') as HTMLElement;
+  const body = () => card().querySelector<HTMLElement>("form > .overflow-y-auto") as HTMLElement;
+
+  it.each([
+    ["create", undefined, "Create Role", "Create"],
+    ["edit", makeRole(), "Edit Role", "Save"],
+  ])(
+    "%s: caps the height and scrolls only the body; title and footer stay outside it",
+    (_, role, title, submit) => {
+      render(<RoleDialog slug="acme" role={role} open={true} onOpenChange={vi.fn()} />);
+
+      expect(card()).toHaveClass("flex", "max-h-[90vh]", "flex-col");
+      expect(card()).not.toHaveClass("grid");
+      const form = card().querySelector("form") as HTMLFormElement;
+      expect(form).toHaveClass("flex", "min-h-0", "flex-1", "flex-col");
+      expect(body()).not.toBeNull();
+      expect(body()).toHaveClass("min-h-0", "flex-1", "overflow-y-auto");
+
+      // The fields and the capability checkboxes live in the scrolling body…
+      expect(body().contains(screen.getByLabelText("Name"))).toBe(true);
+      expect(body().contains(screen.getByText("Capabilities"))).toBe(true);
+      expect(body().contains(screen.getByTestId("role-capability-FINANCIAL_VISIBILITY"))).toBe(
+        true
+      );
+      // …the title, Cancel, the submit and Close do not.
+      expect(body().contains(screen.getByText(title))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Cancel" }))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: submit }))).toBe(false);
+      expect(body().contains(screen.getByRole("button", { name: "Close" }))).toBe(false);
+      // The submit stays a real submit inside the form (happy-dom wraps <form> in a proxy, so
+      // compare by attribute rather than identity).
+      const submitButton = screen.getByRole("button", { name: submit });
+      expect(submitButton).toHaveAttribute("type", "submit");
+      expect(submitButton.closest("form")).not.toBeNull();
+    }
+  );
+});
+
 describe("DeleteRoleDialog", () => {
   afterEach(() => {
     cleanup();

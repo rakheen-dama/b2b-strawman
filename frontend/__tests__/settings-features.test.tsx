@@ -27,6 +27,10 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/settings/features",
 }));
 
+vi.mock("server-only", () => ({}));
+const { mockCaps } = vi.hoisted(() => ({ mockCaps: vi.fn() }));
+vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: () => mockCaps() }));
+
 vi.mock("@/lib/actions/module-settings", () => ({
   getModuleSettings: vi.fn(),
   updateModuleSettings: vi.fn(),
@@ -35,7 +39,12 @@ vi.mock("@/lib/actions/module-settings", () => ({
 // --- Imports after mocks ---
 
 import { FeaturesSettingsForm } from "@/components/settings/features-settings-form";
-import { updateModuleSettings, type ModuleStatus } from "@/lib/actions/module-settings";
+import { renderFeaturesTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/features";
+import {
+  getModuleSettings,
+  updateModuleSettings,
+  type ModuleStatus,
+} from "@/lib/actions/module-settings";
 
 afterEach(() => cleanup());
 beforeEach(() => {
@@ -147,5 +156,60 @@ describe("FeaturesSettingsForm", () => {
       ).toBeInTheDocument();
     });
     expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it("665A: each module is an untitled settings section with no footer (instant save)", () => {
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
+
+    for (const mod of mockModules) {
+      const card = screen.getByTestId(`feature-card-${mod.id}`);
+      expect(card).toHaveAttribute("data-slot", "settings-section");
+      expect(card.querySelector('[data-slot="card-footer"]')).toBeNull();
+      expect(card.querySelector('[data-slot="card-header"]')).toBeNull();
+      expect(card).toContainElement(screen.getByRole("switch", { name: `Toggle ${mod.name}` }));
+    }
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+});
+
+describe("renderFeaturesTab (665A PageHeader)", () => {
+  beforeEach(() => {
+    vi.mocked(getModuleSettings).mockResolvedValue({ modules: mockModules } as Awaited<
+      ReturnType<typeof getModuleSettings>
+    >);
+  });
+
+  it("admin: one h1 'Features' with its description, no read-only note", async () => {
+    mockCaps.mockResolvedValue({ capabilities: [], role: "admin", isAdmin: true, isOwner: false });
+
+    render(await renderFeaturesTab());
+
+    const h1s = screen.getAllByRole("heading", { level: 1 });
+    expect(h1s).toHaveLength(1);
+    expect(h1s[0]).toHaveTextContent("Features");
+    expect(h1s[0].closest('[data-slot="page-header"]')).not.toBeNull();
+    expect(
+      screen.getByText(
+        "Enable additional features for your organization. These can be turned on or off at any time."
+      )
+    ).toHaveAttribute("data-slot", "page-header-description");
+    expect(
+      screen.queryByText("Only admins and owners can change these settings.")
+    ).not.toBeInTheDocument();
+  });
+
+  it("member: keeps the read-only note under the header", async () => {
+    mockCaps.mockResolvedValue({
+      capabilities: [],
+      role: "member",
+      isAdmin: false,
+      isOwner: false,
+    });
+
+    render(await renderFeaturesTab());
+
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByText("Only admins and owners can change these settings.")).toBeVisible();
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 });

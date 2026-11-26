@@ -147,6 +147,32 @@ describe("MatterRetentionSettingsForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("665A: Save retention period, the owner-only note and the save message sit in the section footer", async () => {
+    renderForm({ canEdit: false });
+    let footer = screen
+      .getByRole("button", { name: "Save retention period" })
+      .closest('[data-slot="card-footer"]') as HTMLElement;
+    expect(footer).not.toBeNull();
+    expect(footer).toContainElement(
+      screen.getByText("Only the firm owner can change the matter retention period.")
+    );
+    expect(footer.closest('[data-slot="settings-section"]')?.querySelector("h2")).toHaveTextContent(
+      "Matter retention"
+    );
+    cleanup();
+
+    mockUpdateMatterRetentionYears.mockResolvedValue({ success: true });
+    renderForm();
+    save("7");
+    const message = await screen.findByText("Matter retention period updated.");
+    footer = screen
+      .getByRole("button", { name: "Save retention period" })
+      .closest('[data-slot="card-footer"]') as HTMLElement;
+    expect(footer).toContainElement(message);
+    // The field stays in the section body, outside the footer.
+    expect(footer).not.toContainElement(screen.getByLabelText(LABEL));
+  });
+
   it("owner: no owner-only note", () => {
     renderForm();
     expect(

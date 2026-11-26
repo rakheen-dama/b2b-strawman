@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { LetterheadSettingsForm } from "@/components/settings/letterhead-settings-form";
 import { HelpTip } from "@/components/help-tip";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
 import type { Document, OrgSettings } from "@/lib/types";
@@ -23,10 +24,14 @@ export async function renderGeneralTab({ slug }: SettingsTabProps) {
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          General
-          <HelpTip code="org.general" />
-        </h1>
+        <PageHeader
+          title={
+            <span className="inline-flex items-center gap-2">
+              General
+              <HelpTip code="org.general" />
+            </span>
+          }
+        />
 
         <OrgDocumentsSection slug={slug} documents={documents} isAdmin={false} />
       </div>
@@ -37,15 +42,15 @@ export async function renderGeneralTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          General
-          <HelpTip code="org.general" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage your firm&apos;s currency, tax configuration, branding and letterhead.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            General
+            <HelpTip code="org.general" />
+          </span>
+        }
+        description="Manage your firm's currency, tax configuration, branding and letterhead."
+      />
 
       <GeneralSettingsForm
         slug={slug}

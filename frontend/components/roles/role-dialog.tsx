@@ -110,8 +110,9 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <form onSubmit={handleSubmit}>
+      {/* K-102: bounded to the viewport; only the body scrolls, title and footer stay pinned. */}
+      <DialogContent className="flex max-h-[90vh] flex-col">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit Role" : "Create Role"}</DialogTitle>
             <DialogDescription>
@@ -121,7 +122,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4 space-y-4">
+          <div className="-mx-1 mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
             <div className="space-y-2">
               <Label htmlFor="role-name">Name</Label>
               <Input

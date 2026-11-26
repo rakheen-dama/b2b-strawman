@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Save, Trash2, Loader2, Play } from "lucide-react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Archive, Plus, Save, Trash2, Loader2, Play } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { RetentionCheckResults } from "@/components/compliance/RetentionCheckResults";
 import {
   createRetentionPolicy,
@@ -42,6 +38,8 @@ function formatEnumLabel(value: string): string {
 }
 
 interface EditableRow {
+  /** Stable client row id for DataTable's `getRowId` (665A DA-19); never sent to the server. */
+  key: string;
   id: string | null; // null = new row
   recordType: string;
   triggerEvent: string;
@@ -54,6 +52,7 @@ interface EditableRow {
 
 function toEditableRow(policy: RetentionPolicy): EditableRow {
   return {
+    key: policy.id,
     id: policy.id,
     recordType: policy.recordType,
     triggerEvent: policy.triggerEvent,
@@ -65,8 +64,13 @@ function toEditableRow(policy: RetentionPolicy): EditableRow {
   };
 }
 
+/** Client-only ids for unsaved rows (a module counter: `crypto.randomUUID` needs a secure context). */
+let newRowSeq = 0;
+
 function newEmptyRow(): EditableRow {
+  newRowSeq += 1;
   return {
+    key: `new-${newRowSeq}`,
     id: null,
     recordType: "CUSTOMER",
     triggerEvent: "CUSTOMER_OFFBOARDED",
@@ -76,6 +80,17 @@ function newEmptyRow(): EditableRow {
     saving: false,
     error: null,
   };
+}
+
+const getRowKey = (row: EditableRow) => row.key;
+
+const selectClasses =
+  "border-input text-foreground dark:bg-input/30 rounded-md border bg-transparent px-2 py-1.5 text-sm transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
+
+interface RowActions {
+  updateRow: (index: number, updates: Partial<EditableRow>) => void;
+  saveRow: (index: number) => void;
+  removeRow: (index: number) => void;
 }
 
 interface RetentionPolicyTableProps {
@@ -162,157 +177,186 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
     }
   }
 
-  const selectClasses =
-    "rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 dark:border-slate-700 dark:bg-input/30 dark:text-slate-100";
+  // TanStack renders each column's `cell` as a component, so the column array must keep its
+  // identity across edits (a new `cell` function would remount the row's inputs on every
+  // keystroke). Cells reach today's index-based handlers through a ref refreshed after each render.
+  const actions = useRef<RowActions>({ updateRow, saveRow, removeRow });
+  useLayoutEffect(() => {
+    actions.current = { updateRow, saveRow, removeRow };
+  });
+
+  const columns = useMemo(
+    () =>
+      defineColumns<EditableRow>([
+        {
+          id: "recordType",
+          meta: { label: "Record Type" },
+          cell: ({ row }) => (
+            <select
+              value={row.original.recordType}
+              onChange={(e) => actions.current.updateRow(row.index, { recordType: e.target.value })}
+              disabled={!!row.original.id}
+              className={selectClasses}
+            >
+              {RECORD_TYPES.map((rt) => (
+                <option key={rt} value={rt}>
+                  {formatEnumLabel(rt)}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          id: "triggerEvent",
+          meta: { label: "Trigger Event" },
+          cell: ({ row }) => (
+            <select
+              value={row.original.triggerEvent}
+              onChange={(e) =>
+                actions.current.updateRow(row.index, { triggerEvent: e.target.value })
+              }
+              disabled={!!row.original.id}
+              className={selectClasses}
+            >
+              {TRIGGER_EVENTS.map((te) => (
+                <option key={te} value={te}>
+                  {formatEnumLabel(te)}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          id: "retentionDays",
+          meta: { label: "Retention Days" },
+          cell: ({ row }) => (
+            <Input
+              type="number"
+              min={1}
+              value={row.original.retentionDays}
+              onChange={(e) =>
+                actions.current.updateRow(row.index, {
+                  retentionDays: Math.max(1, parseInt(e.target.value) || 1),
+                })
+              }
+              className="w-24"
+            />
+          ),
+        },
+        {
+          id: "action",
+          meta: { label: "Action" },
+          cell: ({ row }) => (
+            <select
+              value={row.original.action}
+              onChange={(e) => actions.current.updateRow(row.index, { action: e.target.value })}
+              className={selectClasses}
+            >
+              {ACTIONS.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        {
+          id: "active",
+          meta: { label: "Active" },
+          cell: ({ row }) => (
+            <Switch
+              checked={row.original.active}
+              onCheckedChange={(checked) =>
+                actions.current.updateRow(row.index, { active: checked })
+              }
+              aria-label="Toggle active"
+            />
+          ),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) => (
+            <>
+              <div className="flex items-center justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={row.original.saving}
+                  onClick={() => actions.current.saveRow(row.index)}
+                >
+                  {row.original.saving ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Save className="size-4" />
+                  )}
+                  <span className="sr-only">Save</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={row.original.saving}
+                  onClick={() => actions.current.removeRow(row.index)}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                  <span className="sr-only">Delete</span>
+                </Button>
+              </div>
+              {row.original.error && (
+                <p className="text-destructive mt-1 text-xs">{row.original.error}</p>
+              )}
+            </>
+          ),
+        },
+      ]),
+    []
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Retention Policies
-        </h2>
+    <SettingsSection
+      title="Retention Policies"
+      actions={
         <Button size="sm" onClick={addRow}>
           <Plus className="mr-1.5 size-4" />
           Add Row
         </Button>
-      </div>
+      }
+    >
+      <div className="space-y-4">
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={getRowKey}
+          columnVisibility={false}
+          pageSize={null}
+          stickyHeader={false}
+          frame={false}
+          empty={
+            <EmptyState
+              variant="inline"
+              icon={Archive}
+              title="No retention policies configured."
+              description="Click “Add Row” to create one."
+            />
+          }
+        />
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Record Type</TableHead>
-              <TableHead>Trigger Event</TableHead>
-              <TableHead>Retention Days</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-slate-500 dark:text-slate-400"
-                >
-                  No retention policies configured. Click &ldquo;Add Row&rdquo; to create one.
-                </TableCell>
-              </TableRow>
+        <div className="flex items-center gap-3">
+          <Button variant="soft" size="sm" disabled={isChecking} onClick={handleRunCheck}>
+            {isChecking ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
             ) : (
-              rows.map((row, index) => (
-                <TableRow key={row.id ?? `new-${index}`}>
-                  <TableCell>
-                    <select
-                      value={row.recordType}
-                      onChange={(e) => updateRow(index, { recordType: e.target.value })}
-                      disabled={!!row.id}
-                      className={selectClasses}
-                    >
-                      {RECORD_TYPES.map((rt) => (
-                        <option key={rt} value={rt}>
-                          {formatEnumLabel(rt)}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
-                  <TableCell>
-                    <select
-                      value={row.triggerEvent}
-                      onChange={(e) => updateRow(index, { triggerEvent: e.target.value })}
-                      disabled={!!row.id}
-                      className={selectClasses}
-                    >
-                      {TRIGGER_EVENTS.map((te) => (
-                        <option key={te} value={te}>
-                          {formatEnumLabel(te)}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={row.retentionDays}
-                      onChange={(e) =>
-                        updateRow(index, {
-                          retentionDays: Math.max(1, parseInt(e.target.value) || 1),
-                        })
-                      }
-                      className="w-24"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <select
-                      value={row.action}
-                      onChange={(e) => updateRow(index, { action: e.target.value })}
-                      className={selectClasses}
-                    >
-                      {ACTIONS.map((a) => (
-                        <option key={a} value={a}>
-                          {a}
-                        </option>
-                      ))}
-                    </select>
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={row.active}
-                      onCheckedChange={(checked) => updateRow(index, { active: checked })}
-                      aria-label="Toggle active"
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={row.saving}
-                        onClick={() => saveRow(index)}
-                      >
-                        {row.saving ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Save className="size-4" />
-                        )}
-                        <span className="sr-only">Save</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={row.saving}
-                        onClick={() => removeRow(index)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                      >
-                        <Trash2 className="size-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                    {row.error && (
-                      <p className="mt-1 text-xs text-red-600 dark:text-red-400">{row.error}</p>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+              <Play className="mr-1.5 size-4" />
             )}
-          </TableBody>
-        </Table>
-      </div>
+            Run Retention Check
+          </Button>
+          {checkError && <p className="text-destructive text-sm">{checkError}</p>}
+        </div>
 
-      <div className="flex items-center gap-3">
-        <Button variant="soft" size="sm" disabled={isChecking} onClick={handleRunCheck}>
-          {isChecking ? (
-            <Loader2 className="mr-1.5 size-4 animate-spin" />
-          ) : (
-            <Play className="mr-1.5 size-4" />
-          )}
-          Run Retention Check
-        </Button>
-        {checkError && <p className="text-sm text-red-600 dark:text-red-400">{checkError}</p>}
+        {checkResult && <RetentionCheckResults result={checkResult} onPurge={handlePurge} />}
       </div>
-
-      {checkResult && <RetentionCheckResults result={checkResult} onPurge={handlePurge} />}
-    </div>
+    </SettingsSection>
   );
 }

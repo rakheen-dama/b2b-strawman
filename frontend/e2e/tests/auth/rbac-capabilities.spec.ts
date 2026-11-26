@@ -34,11 +34,15 @@ test.describe("AUTH-01: RBAC Capabilities", () => {
     await expect(page.locator("body")).toContainText(/don.t have access|permission/i);
   });
 
-  test("Member sees permission denied on customers", async ({ page }) => {
+  test("Member can open the client list (K-62, FD-3)", async ({ page }) => {
     await loginAs(page, "carol");
-    // Phase 87 S4 (ADR-344): route rename
+    // Phase 87 S4 (ADR-344): route rename. K-62 (founder 2026-11-26): every member may read every
+    // client, so the /clients screen denial is gone (the FICA review queue stays gated, D-152).
     await page.goto(`${base}/clients`);
-    await expect(page.locator("body")).toContainText(/don.t have access|permission/i);
+    await expect(
+      page.locator("#main-content").getByRole("heading", { level: 1, name: "Clients", exact: true })
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 
   test("Member sees permission denied on roles settings", async ({ page }) => {

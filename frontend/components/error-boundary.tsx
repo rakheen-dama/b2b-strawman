@@ -59,9 +59,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Let Next.js handle its own internal errors (notFound, redirect)
+    // Let Next.js handle its own control-flow errors: notFound() / forbidden() / unauthorized()
+    // (Next 16 digest "NEXT_HTTP_ERROR_FALLBACK;<status>"; "NEXT_NOT_FOUND" before Next 15) and
+    // redirect() ("NEXT_REDIRECT;…"). Catching them showed members the crash panel (K-63).
     const digest = (error as { digest?: string }).digest;
-    if (digest === "NEXT_NOT_FOUND" || digest?.startsWith("NEXT_REDIRECT")) {
+    if (
+      digest === "NEXT_NOT_FOUND" ||
+      digest?.startsWith("NEXT_HTTP_ERROR_FALLBACK;") ||
+      digest?.startsWith("NEXT_REDIRECT")
+    ) {
       throw error;
     }
     return { hasError: true, error };

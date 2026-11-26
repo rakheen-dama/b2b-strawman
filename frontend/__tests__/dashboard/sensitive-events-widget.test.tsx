@@ -154,6 +154,18 @@ describe("SensitiveEventsWidget", () => {
     expect(screen.getByText("No sensitive events in the last 7 days.")).toBeInTheDocument();
   });
 
+  it("recent === null (read failed): the error line, not the empty state; pills stay (K-08, FD-4)", () => {
+    render(withCaps(<SensitiveEventsWidget orgSlug="acme" facets={SAMPLE_FACETS} recent={null} />));
+
+    expect(
+      screen.getByText("Sensitive events could not be loaded. Refresh to try again.")
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("sensitive-events-empty")).toBeNull();
+    expect(screen.queryByText("No sensitive events in the last 7 days.")).toBeNull();
+    expect(screen.getByTestId("sensitive-count-WARNING")).toHaveTextContent("2");
+    expect(document.querySelector('[data-testid^="sensitive-row-"]')).toBeNull();
+  });
+
   it("navigates to the per-event deep link on row click (±1m window)", () => {
     render(
       withCaps(

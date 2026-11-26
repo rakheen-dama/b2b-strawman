@@ -195,9 +195,19 @@ beforeEach(() => {
 });
 
 describe("ClientsPage — permission gate", () => {
-  it("shows permission denied for a member without CUSTOMER_MANAGEMENT", async () => {
+  it("K-62: a member without CUSTOMER_MANAGEMENT gets the list (FD-3)", async () => {
     asRole("member");
     await renderPage();
+    expect(screen.getByRole("heading", { level: 1, name: "Clients" })).toBeInTheDocument();
+    expect(screen.getByTestId("clients-table")).toBeInTheDocument();
+    expect(mockApiGet).toHaveBeenCalled();
+    expect(screen.queryByText("You don't have access to Clients")).toBeNull();
+  });
+
+  it("K-62: a member's saved view carrying ficaStatus=REVIEW is still denied, no list read (D-152)", async () => {
+    asRole("member");
+    mockGetViews.mockResolvedValue([savedView({ filters: { ficaStatus: "REVIEW" } })]);
+    await renderPage({ view: SAVED_ID });
     expect(screen.getByText("You don't have access to Clients")).toBeInTheDocument();
     expect(mockApiGet).not.toHaveBeenCalled();
   });

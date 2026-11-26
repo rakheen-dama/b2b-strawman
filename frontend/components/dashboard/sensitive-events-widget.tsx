@@ -14,6 +14,7 @@ import {
   type StatusTone,
   WIDGET_ROW_CLASS,
   WidgetCard,
+  WidgetErrorLine,
 } from "@/components/dashboard/widget-parts";
 import { CAPABILITIES, RequiresCapability } from "@/lib/capabilities";
 import type { AuditEventResponse, AuditSeverity, EventTypeFacet } from "@/lib/api/audit-events";
@@ -57,7 +58,7 @@ export interface SensitiveEventsWidgetProps {
   orgSlug: string;
   /** Facets over the last 7 days (one row per event type). */
   facets: EventTypeFacet[];
-  /** Top-5 most recent CRITICAL/WARNING events in the last 7 days. */
+  /** Top-5 most recent CRITICAL/WARNING events in the last 7 days; `null` = the read failed. */
   recent: AuditEventResponse[] | null;
   /**
    * ISO timestamp for the View-all link's `from` query param. Computed once in
@@ -121,7 +122,6 @@ function SensitiveEventsWidgetInner({
 }: SensitiveEventsWidgetProps) {
   const router = useRouter();
   const counts = aggregateBySeverity(facets);
-  const events = recent ?? [];
   const viewAllHref = buildViewAllHref(orgSlug, viewAllFromIso);
 
   return (
@@ -158,7 +158,10 @@ function SensitiveEventsWidgetInner({
         ))}
       </div>
 
-      {events.length === 0 ? (
+      {/* K-08 (FD-4): a failed read is an error line, never the "No sensitive events" all-clear. */}
+      {recent === null ? (
+        <WidgetErrorLine subject="Sensitive events" />
+      ) : recent.length === 0 ? (
         <div data-testid="sensitive-events-empty">
           <EmptyState
             variant="compact"
@@ -169,7 +172,7 @@ function SensitiveEventsWidgetInner({
         </div>
       ) : (
         <ul className="space-y-0">
-          {events.map((event, idx) => {
+          {recent.map((event, idx) => {
             const href = buildRowHref(orgSlug, event);
             return (
               <li key={event.id}>

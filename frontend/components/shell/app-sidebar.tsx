@@ -29,6 +29,7 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
 import { isNavEntryVisible } from "@/lib/nav-filter";
+import { cn } from "@/lib/utils";
 import { NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/nav-items";
 
 /**
@@ -92,12 +93,12 @@ function AppSidebarZone({ zone, slug, separated, onNavigate }: AppSidebarZonePro
 
   return (
     <>
-      {separated && <SidebarSeparator className="my-1" />}
+      {separated && <SidebarSeparator className="my-0.5" />}
       <Collapsible open={expanded || iconRail} onOpenChange={setExpanded} className="group/zone">
-        <SidebarGroup className="py-1">
+        <SidebarGroup className="py-0.5">
           <SidebarGroupLabel
             asChild
-            className="text-sidebar-label-foreground hover:text-sidebar-foreground w-full justify-between text-[11px] tracking-widest uppercase group-data-[collapsible=icon]:hidden"
+            className="text-sidebar-label-foreground hover:text-sidebar-foreground h-7 w-full justify-between text-[11px] tracking-widest uppercase group-data-[collapsible=icon]:hidden"
           >
             <CollapsibleTrigger>
               {zone.label}
@@ -109,7 +110,7 @@ function AppSidebarZone({ zone, slug, separated, onNavigate }: AppSidebarZonePro
           </SidebarGroupLabel>
           <CollapsibleContent>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {visibleItems.map((item) => {
                   const href = item.href(slug);
                   const isActive = href === activeHref;
@@ -119,7 +120,7 @@ function AppSidebarZone({ zone, slug, separated, onNavigate }: AppSidebarZonePro
                         asChild
                         isActive={isActive}
                         tooltip={item.label}
-                        className={SIDEBAR_ACTIVE_BAR}
+                        className={cn(SIDEBAR_ACTIVE_BAR, "h-7")}
                       >
                         <Link
                           href={href}

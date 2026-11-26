@@ -146,14 +146,22 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
 
   return (
     // min-w-0: the nav sits in the fixed-height (`--app-header-height`) header beside the bell and avatar, so a long
-    // published entity name must not wrap the header or push them — the nav shrinks and the last
-    // crumb truncates, with the full name in its title. Below `sm` only the last crumb shows: on a
-    // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
+    // published entity name must not wrap the header or push them — the nav shrinks. K-26 shrink order, by flex-shrink
+    // weight (weight × width decides each crumb's share, and a crumb stops at its floor):
+    //   1. the org crumb (shrink-100000000) gives up its width first, down to a 24px floor (min-w-6);
+    //   2. then the middle crumbs (shrink-10000, min-w-0), each label capped at 160px (max-w-40);
+    //   3. the last crumb (the current page; default weight 1) shrinks last, down to a 48px floor including its
+    //      chevron (min-w-12), so a short label such as "Edit" stays whole.
+    // Each weight is 10,000× the next: at 1,000× (org/middle) or 100× (middle/last) the lower-priority crumb still
+    // lost a sub-pixel and Chromium drew an ellipsis on it ("Matters", "Checklist template"). Every crumb truncates
+    // with an ellipsis and keeps its full label in title. Below `sm` only the last crumb shows: on a phone the org
+    // root and middle crumbs would draw under the org switcher.
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
-      {/* Org name as root link (falls back to slug) */}
+      {/* Org name as root link (falls back to slug); shrinks first (see the shrink order above). */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="text-muted-foreground hover:text-foreground hidden transition-colors sm:inline"
+        title={orgName ?? slug}
+        className="text-muted-foreground hover:text-foreground hidden max-w-40 min-w-6 shrink-100000000 truncate transition-colors sm:inline"
       >
         {orgName ?? slug}
       </Link>
@@ -180,7 +188,9 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
           <span
             key={href}
             className={
-              isLast ? "flex min-w-0 items-center gap-1" : "hidden items-center gap-1 sm:flex"
+              isLast
+                ? "flex min-w-12 items-center gap-1"
+                : "hidden min-w-0 shrink-10000 items-center gap-1 whitespace-nowrap sm:flex"
             }
           >
             <ChevronRight
@@ -194,11 +204,14 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
                 {label}
               </span>
             ) : !isLinkableBreadcrumbPrefix(prefixSegments) ? (
-              <span className="text-muted-foreground">{label}</span>
+              <span title={label} className="text-muted-foreground max-w-40 truncate">
+                {label}
+              </span>
             ) : (
               <Link
                 href={href}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                title={label}
+                className="text-muted-foreground hover:text-foreground max-w-40 truncate transition-colors"
               >
                 {label}
               </Link>

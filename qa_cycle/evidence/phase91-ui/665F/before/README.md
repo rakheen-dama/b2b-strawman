@@ -152,7 +152,7 @@ Tablist `aria-label="Connections settings"`; order Integrations | MCP | AI | Not
 
 ## Console (`console.json`)
 
-204 page loads in `01` (4 personas × 51) plus the roles, interactions and crops runs: **0 errors, 0 warnings, 0 page errors, 0 hydration messages.**
+204 page loads in `01` (4 personas × 51) plus the roles and interactions runs: **0 errors, 0 warnings, 0 page errors, 0 hydration messages.** The crops run (`08-defect-crops.cjs`) does not record console events and is not covered by this total.
 
 ## Defects seen (pre-existing, not fixed)
 

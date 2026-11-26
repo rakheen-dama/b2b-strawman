@@ -8,6 +8,7 @@ import { Button } from "@b2mash/ui/button";
 import { Separator } from "@b2mash/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { IntegrationSectionTitle } from "@/components/integrations/integration-section-title";
 import {
   Dialog,
   DialogContent,
@@ -118,17 +119,7 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
   return (
     <>
       <SettingsSection
-        title={
-          <span className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg"
-            >
-              <Bot className="text-muted-foreground size-5" />
-            </span>
-            Claude / MCP Connector
-          </span>
-        }
+        title={<IntegrationSectionTitle icon={Bot}>Claude / MCP Connector</IntegrationSectionTitle>}
         description={
           <>
             Let your firm&apos;s own Claude (Desktop or Code) securely read your Kazi matters,

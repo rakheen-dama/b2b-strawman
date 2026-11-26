@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { renderXeroTab } from "@/app/(app)/org/[slug]/settings/connections/_tabs/xero";
 
 // Phase 87 S9 (616D, ADR-341 §12.7.1): the Connections › Xero tab merges the former integrations
@@ -96,9 +96,10 @@ describe("Connections › Xero tab (renderXeroTab)", () => {
     cleanup();
   });
 
-  it("renders page heading", async () => {
+  it("renders page heading with its HelpTip inside the h1", async () => {
     await renderTab();
-    expect(screen.getByRole("heading", { level: 1, name: /Integrations/ })).toBeInTheDocument();
+    const h1 = screen.getByRole("heading", { level: 1, name: /Integrations/ });
+    expect(within(h1).getByRole("button", { name: /^Help:/ })).toBeInTheDocument();
   });
 
   it("renders 5 domain cards", async () => {

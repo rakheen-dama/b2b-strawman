@@ -61,7 +61,8 @@ export function RuleList({ slug, rules, canManage }: RuleListProps) {
   }
 
   // TanStack renders each `cell` as a component: the column array keeps its identity so a toggle
-  // does not remount the Switch (focus stays on it). Cells reach the handler through a ref
+  // does not remount the Switch. (Focus is still lost while the toggle is pending, because the
+  // switch is disabled then — pre-existing, F-665F-A1.) Cells reach the handler through a ref
   // refreshed after each render (F-665A-4); checked/disabled travel in the rows (DA-21).
   const actions = useRef({ toggle: handleToggle });
   useLayoutEffect(() => {

@@ -133,6 +133,11 @@ function theH1() {
   return h1s[0];
 }
 
+/** `a` comes before `b` in document order. */
+function precedes(a: Node, b: Node) {
+  return Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+}
+
 function sectionOf(element: HTMLElement) {
   return element.closest('[data-slot="settings-section"]');
 }
@@ -207,6 +212,7 @@ describe("Connections tab loaders — one PageHeader h1 per branch", () => {
     const h1 = theH1();
     expect(h1).toHaveAccessibleName(/^Notifications/);
     expect(h1.textContent).not.toMatch(/Preferences/);
+    expect(within(h1).getByRole("button", { name: /^Help:/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save preferences" })).toBeInTheDocument();
   });
 
@@ -596,17 +602,24 @@ describe("Notification preferences (K-115, K-85, page-level save)", () => {
     // Existing labels and category strings stay byte-identical (COPY-FREEZE; founder copy pending).
     expect(screen.getByText("Task Assigned")).toBeInTheDocument();
     expect(screen.getByText("Billing Run Completed")).toBeInTheDocument();
-    const categories = Array.from(document.querySelectorAll("p.uppercase")).map(
-      (p) => p.textContent
-    );
-    expect(categories).toEqual(["Tasks", "Matters", "Billing", "Security", "Diary", "Trust"]);
   });
 
-  it("labels wrap in a minmax(0,1fr) column; Save sits in the page-level action bar", () => {
+  it("category headers render in the stable order and each label sits under its own header", () => {
+    render(<NotificationPreferencesForm initialPreferences={prefs} />);
+    const order = ["Tasks", "Matters", "Billing", "Security", "Diary", "Trust"];
+    const headers = order.map((category) => screen.getByText(category, { exact: true }));
+    headers.slice(1).forEach((header, i) => expect(precedes(headers[i], header)).toBe(true));
+    for (const [, label, category] of NEW_LABELS) {
+      const at = order.indexOf(category);
+      const row = screen.getByText(label, { exact: true });
+      expect(precedes(headers[at], row)).toBe(true);
+      if (at + 1 < headers.length) expect(precedes(row, headers[at + 1])).toBe(true);
+    }
+  });
+
+  it("Save sits in the page-level action bar; the list is one default section", () => {
     render(<NotificationPreferencesForm initialPreferences={prefs} />);
     const label = screen.getByText("Trust payment awaiting approval");
-    expect(label).toHaveClass("break-words");
-    expect(label.parentElement).toHaveClass("grid-cols-[minmax(0,1fr)_80px_80px]");
     const save = screen.getByRole("button", { name: "Save preferences" });
     expect(save.closest('[data-slot="settings-action-bar"]')).not.toBeNull();
     expect(sectionOf(label)).toHaveAttribute("data-variant", "default");

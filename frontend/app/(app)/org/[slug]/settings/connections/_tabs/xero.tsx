@@ -191,7 +191,8 @@ export async function renderXeroTab({ slug }: SettingsTabProps) {
 
       <section id="xero" aria-labelledby="xero-heading" className="scroll-mt-6 space-y-6">
         <div>
-          <h2 id="xero-heading" className="font-display text-foreground text-2xl">
+          {/* The SettingsSection h2 style (one step below the PageHeader h1). */}
+          <h2 id="xero-heading" className="text-foreground text-lg leading-none font-semibold">
             Xero Integration
           </h2>
           {canManageIntegrations ? (

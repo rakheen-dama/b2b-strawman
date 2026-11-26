@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { BatchBillingSettings } from "@/components/settings/batch-billing-settings";
@@ -11,8 +12,8 @@ export async function renderFeeRunsTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Batch Billing</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Fee runs" />
+        <p className="text-muted-foreground">
           You do not have permission to manage batch billing settings. Only admins and owners can
           access this page.
         </p>
@@ -24,13 +25,10 @@ export async function renderFeeRunsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Batch Billing</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set the default payment terms for fee notes, and configure async thresholds, email rate
-          limits, and default billing currency for batch billing runs.
-        </p>
-      </div>
+      <PageHeader
+        title="Fee runs"
+        description="Set the default payment terms for fee notes, and configure async thresholds, email rate limits, and default billing currency for batch billing runs."
+      />
 
       <BatchBillingSettings
         slug={slug}

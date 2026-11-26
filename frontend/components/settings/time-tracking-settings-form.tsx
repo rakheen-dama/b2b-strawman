@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
+import { SettingsSection, SettingsActionBar } from "@/components/settings/settings-section";
 import { updateTimeTrackingSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/time-recording-actions";
 
 const DAYS_OF_WEEK = [
@@ -124,14 +125,11 @@ export function TimeTrackingSettingsForm({
 
   return (
     <div className="space-y-6">
-      {/* Time Reminders Section */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Time Reminders</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure automatic reminders for team members to log their time.
-        </p>
-
-        <div className="mt-4 space-y-4">
+      <SettingsSection
+        title="Time Reminders"
+        description="Configure automatic reminders for team members to log their time."
+      >
+        <div className="space-y-4">
           {/* Enable toggle */}
           <div className="flex items-center gap-3">
             <Switch
@@ -139,19 +137,14 @@ export function TimeTrackingSettingsForm({
               checked={enabled}
               onCheckedChange={(checked: boolean) => setEnabled(checked)}
             />
-            <Label
-              htmlFor="time-reminder-toggle"
-              className="text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <Label htmlFor="time-reminder-toggle" className="text-foreground text-sm font-medium">
               Enable time reminders
             </Label>
           </div>
 
           {/* Working days */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Working Days
-            </label>
+            <label className="text-foreground block text-sm font-medium">Working Days</label>
             <div className="mt-2 flex flex-wrap gap-4">
               {DAYS_OF_WEEK.map((day) => (
                 <div key={day.key} className="flex items-center gap-2">
@@ -160,10 +153,7 @@ export function TimeTrackingSettingsForm({
                     checked={selectedDays.has(day.key)}
                     onCheckedChange={() => toggleDay(day.key)}
                   />
-                  <Label
-                    htmlFor={`day-${day.key}`}
-                    className="text-sm text-slate-700 dark:text-slate-300"
-                  >
+                  <Label htmlFor={`day-${day.key}`} className="text-foreground text-sm">
                     {day.label}
                   </Label>
                 </div>
@@ -173,10 +163,7 @@ export function TimeTrackingSettingsForm({
 
           {/* Reminder time */}
           <div>
-            <label
-              htmlFor="reminder-time"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <label htmlFor="reminder-time" className="text-foreground block text-sm font-medium">
               Reminder Time (SAST)
             </label>
             <Input
@@ -186,17 +173,12 @@ export function TimeTrackingSettingsForm({
               onChange={(e) => setReminderTime(e.target.value)}
               className="mt-1 w-40"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              South African time (SAST, UTC+2).
-            </p>
+            <p className="text-muted-foreground mt-1 text-xs">South African time (SAST, UTC+2).</p>
           </div>
 
           {/* Minimum hours */}
           <div>
-            <label
-              htmlFor="min-hours"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <label htmlFor="min-hours" className="text-foreground block text-sm font-medium">
               Minimum Hours
             </label>
             <Input
@@ -211,28 +193,19 @@ export function TimeTrackingSettingsForm({
               }
               className="mt-1 w-40"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground mt-1 text-xs">
               Members who log fewer than this many hours on a working day will receive a reminder.
             </p>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Default Disbursement Markup Section */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Default Disbursement Markup
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set a default markup percentage applied to all disbursements unless overridden
-          per-disbursement.
-        </p>
-
-        <div className="mt-4">
-          <label
-            htmlFor="expense-markup"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
+      <SettingsSection
+        title="Default Disbursement Markup"
+        description="Set a default markup percentage applied to all disbursements unless overridden per-disbursement."
+      >
+        <div>
+          <label htmlFor="expense-markup" className="text-foreground block text-sm font-medium">
             Default Disbursement Markup (%)
           </label>
           <Input
@@ -246,29 +219,26 @@ export function TimeTrackingSettingsForm({
             placeholder="No markup"
             className="mt-1 w-40"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Applied to all disbursements unless overridden per-disbursement. Leave blank for no
             markup.
           </p>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Save button */}
-      <div className="flex items-center gap-3">
+      {/* Page-level save: one "Save Settings" for both sections, as before. */}
+      <SettingsActionBar
+        status={
+          message && (
+            <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+          )
+        }
+      >
         <Button size="sm" disabled={saving} onClick={handleSave}>
           {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           Save Settings
         </Button>
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
+      </SettingsActionBar>
     </div>
   );
 }

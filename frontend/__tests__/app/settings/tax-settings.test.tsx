@@ -47,6 +47,11 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+// DataTable calls useRouter (Phase 91 665D: the tax-rate list moved onto DataTable).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
+}));
+
 vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions", () => ({
   updateTaxSettings: vi.fn().mockResolvedValue({ success: true }),
 }));
@@ -62,7 +67,7 @@ describe("Fees & Trust › Tax tab loader", () => {
   it("renders page heading", async () => {
     const page = await renderTaxTab({ slug: "acme", searchParams: {} });
     render(page);
-    expect(screen.getByText("Tax Settings")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Tax" })).toBeInTheDocument();
   });
 
   it("renders tax configuration form fields", async () => {

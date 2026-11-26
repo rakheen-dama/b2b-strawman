@@ -3,17 +3,12 @@
 import { useMemo, useState } from "react";
 import { DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { CurrencySelector } from "@/components/rates/currency-selector";
 import { AddRateDialog } from "@/components/rates/add-rate-dialog";
 import { EditRateDialog } from "@/components/rates/edit-rate-dialog";
@@ -33,6 +28,159 @@ function getActiveRate<T extends { effectiveFrom: string; effectiveTo: string | 
     if (r.effectiveTo && r.effectiveTo < today) return false;
     return true;
   });
+}
+
+type RateKind = "billing" | "cost";
+
+/**
+ * One table row: a member, that member's active rate of this kind, and the currency "Add Rate"
+ * pre-selects (the selector's current value, carried in the row so the memoised columns read it).
+ */
+type MemberRateRow = { member: OrgMember; currency: string } & (
+  | { kind: "billing"; activeRate: BillingRate | undefined }
+  | { kind: "cost"; activeRate: CostRate | undefined }
+);
+
+const getMemberRowId = (row: MemberRateRow) => row.member.id;
+
+/** `${kind}-rate-${role}` — the row testid e2e keys on (`billing-rate-owner`, `cost-rate-admin`). */
+const getMemberRowTestId = (row: MemberRateRow) =>
+  `${row.kind}-rate-${row.member.orgRole?.toLowerCase() ?? row.member.id}`;
+
+function rateAmount(row: MemberRateRow): number | undefined {
+  if (row.kind === "billing") return row.activeRate?.hourlyRate;
+  return row.activeRate?.hourlyCost;
+}
+
+/** The Edit trigger for the row's active rate (EditRateDialog's props are a union per rate type). */
+function EditRateTrigger({ slug, row }: { slug: string; row: MemberRateRow }) {
+  const button = (
+    <Button variant="plain" size="sm" aria-label={`Edit ${row.kind} rate for ${row.member.name}`}>
+      <Pencil className="size-4" />
+    </Button>
+  );
+  if (row.kind === "billing") {
+    return row.activeRate ? (
+      <EditRateDialog slug={slug} rate={row.activeRate} rateType="billing">
+        {button}
+      </EditRateDialog>
+    ) : null;
+  }
+  return row.activeRate ? (
+    <EditRateDialog slug={slug} rate={row.activeRate} rateType="cost">
+      {button}
+    </EditRateDialog>
+  ) : null;
+}
+
+/** The Billing / Cost tables share their columns; `kind` sets the amount header and the dialogs. */
+function rateColumns(slug: string, kind: RateKind) {
+  return defineColumns<MemberRateRow>([
+    {
+      id: "member",
+      enableHiding: false,
+      meta: { label: "Member" },
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <AvatarCircle name={row.original.member.name} size={32} />
+          <div className="min-w-0">
+            <p className="text-foreground truncate font-medium">{row.original.member.name}</p>
+            <p className="text-muted-foreground truncate text-xs">{row.original.member.email}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "amount",
+      meta: { label: kind === "billing" ? "Hourly Rate" : "Hourly Cost" },
+      cell: ({ row }) => {
+        const rate = row.original.activeRate;
+        const amount = rateAmount(row.original);
+        return rate && amount !== undefined ? (
+          <span className="font-medium">{formatCurrency(amount, rate.currency)}</span>
+        ) : (
+          <span className="text-muted-foreground">Not set</span>
+        );
+      },
+    },
+    {
+      id: "currency",
+      meta: { label: "Currency" },
+      cell: ({ row }) => {
+        const rate = row.original.activeRate;
+        return rate ? rate.currency : <span className="text-muted-foreground">—</span>;
+      },
+    },
+    {
+      id: "effectiveFrom",
+      meta: { label: "Effective From" },
+      cell: ({ row }) => {
+        const rate = row.original.activeRate;
+        return rate ? (
+          formatDate(rate.effectiveFrom)
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      id: "effectiveTo",
+      meta: { label: "Effective To" },
+      cell: ({ row }) => {
+        const rate = row.original.activeRate;
+        return rate?.effectiveTo ? (
+          formatDate(rate.effectiveTo)
+        ) : rate ? (
+          <span className="text-muted-foreground">Ongoing</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      meta: { label: "Actions", align: "end" },
+      cell: ({ row }) => {
+        const { member, activeRate, currency } = row.original;
+        return (
+          <div className="flex items-center justify-end gap-1">
+            {activeRate ? (
+              <>
+                <EditRateTrigger slug={slug} row={row.original} />
+                <DeleteRateDialog
+                  slug={slug}
+                  rateId={activeRate.id}
+                  rateType={kind}
+                  memberName={member.name}
+                >
+                  <Button
+                    variant="plain"
+                    size="sm"
+                    aria-label={`Delete ${kind} rate for ${member.name}`}
+                  >
+                    <Trash2 className="text-destructive size-4" />
+                  </Button>
+                </DeleteRateDialog>
+              </>
+            ) : (
+              <AddRateDialog
+                slug={slug}
+                member={member}
+                defaultCurrency={currency}
+                defaultRateType={kind}
+              >
+                <Button variant="plain" size="sm" aria-label={`Add rate for ${member.name}`}>
+                  <Plus className="size-4" />
+                  <span className="ml-1">Add Rate</span>
+                </Button>
+              </AddRateDialog>
+            )}
+          </div>
+        );
+      },
+    },
+  ]);
 }
 
 interface MemberRatesTableProps {
@@ -95,11 +243,37 @@ export function MemberRatesTable({
     }
   }
 
+  // Stable columns: the rate dialogs own their open state, and a rebuilt `cell` would remount them.
+  // The per-row values (active rate, the currency "Add Rate" pre-selects) travel in the rows.
+  const billingColumns = useMemo(() => rateColumns(slug, "billing"), [slug]);
+  const costColumns = useMemo(() => rateColumns(slug, "cost"), [slug]);
+  const billingRows = useMemo<MemberRateRow[]>(
+    () =>
+      (members ?? []).map((member) => ({
+        kind: "billing",
+        member,
+        activeRate: getActiveRate(billingRatesByMember.get(member.id) ?? []),
+        currency,
+      })),
+    [members, billingRatesByMember, currency]
+  );
+  const costRows = useMemo<MemberRateRow[]>(
+    () =>
+      (members ?? []).map((member) => ({
+        kind: "cost",
+        member,
+        activeRate: getActiveRate(costRatesByMember.get(member.id) ?? []),
+        currency,
+      })),
+    [members, costRatesByMember, currency]
+  );
+
   const { t } = createMessages("empty-states");
 
   if (!members || members.length === 0) {
     return (
       <EmptyState
+        variant="default"
         icon={DollarSign}
         title={t("rates.settings.heading")}
         description={t("rates.settings.description")}
@@ -109,41 +283,36 @@ export function MemberRatesTable({
 
   return (
     <div className="space-y-8">
-      {/* Currency selector */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
-              Default Currency
-              <HelpTip code="rates.currency" />
-            </h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This currency will be pre-selected when creating new rates.
-            </p>
-          </div>
-          <CurrencySelector
-            value={currency}
-            onChange={handleCurrencyChange}
-            disabled={isSavingCurrency}
-          />
-        </div>
+      <SettingsSection
+        title={
+          <span className="inline-flex items-center gap-2">
+            Default Currency
+            <HelpTip code="rates.currency" />
+          </span>
+        }
+        description="This currency will be pre-selected when creating new rates."
+      >
+        {/* Instant save: the selector saves on change, so the section has no footer. */}
+        <CurrencySelector
+          value={currency}
+          onChange={handleCurrencyChange}
+          disabled={isSavingCurrency}
+        />
         {currencyMessage && (
           <p
             className={`mt-2 text-sm ${
-              currencyMessage.includes("updated")
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
+              currencyMessage.includes("updated") ? "text-success-foreground" : "text-destructive"
             }`}
           >
             {currencyMessage}
           </p>
         )}
-      </div>
+      </SettingsSection>
 
       {/* Rate snapshots info */}
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="border-border bg-muted flex items-start gap-2 rounded-lg border p-4">
         <HelpTip code="rates.snapshots" />
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-muted-foreground text-sm">
           Rate changes only affect new time entries. Existing entries and fee notes retain their
           original snapshotted rate.
         </p>
@@ -157,253 +326,43 @@ export function MemberRatesTable({
         </TabsList>
 
         <TabsContent value="billing" className="mt-4">
-          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Hourly Rate</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead>Effective From</TableHead>
-                  <TableHead>Effective To</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => {
-                  const memberRates = billingRatesByMember.get(member.id) ?? [];
-                  const activeRate = getActiveRate(memberRates);
-
-                  return (
-                    <TableRow
-                      key={member.id}
-                      data-testid={`billing-rate-${member.orgRole?.toLowerCase() ?? member.id}`}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <AvatarCircle name={member.name} size={32} />
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-slate-900 dark:text-slate-100">
-                              {member.name}
-                            </p>
-                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                              {member.email}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          <span className="font-medium">
-                            {formatCurrency(activeRate.hourlyRate, activeRate.currency)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">Not set</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          activeRate.currency
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          formatDate(activeRate.effectiveFrom)
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate?.effectiveTo ? (
-                          formatDate(activeRate.effectiveTo)
-                        ) : activeRate ? (
-                          <span className="text-muted-foreground">Ongoing</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {activeRate ? (
-                            <>
-                              <EditRateDialog slug={slug} rate={activeRate} rateType="billing">
-                                <Button
-                                  variant="plain"
-                                  size="sm"
-                                  aria-label={`Edit billing rate for ${member.name}`}
-                                >
-                                  <Pencil className="size-4" />
-                                </Button>
-                              </EditRateDialog>
-                              <DeleteRateDialog
-                                slug={slug}
-                                rateId={activeRate.id}
-                                rateType="billing"
-                                memberName={member.name}
-                              >
-                                <Button
-                                  variant="plain"
-                                  size="sm"
-                                  aria-label={`Delete billing rate for ${member.name}`}
-                                >
-                                  <Trash2 className="size-4 text-red-500" />
-                                </Button>
-                              </DeleteRateDialog>
-                            </>
-                          ) : (
-                            <AddRateDialog
-                              slug={slug}
-                              member={member}
-                              defaultCurrency={currency}
-                              defaultRateType="billing"
-                            >
-                              <Button
-                                variant="plain"
-                                size="sm"
-                                aria-label={`Add rate for ${member.name}`}
-                              >
-                                <Plus className="size-4" />
-                                <span className="ml-1">Add Rate</span>
-                              </Button>
-                            </AddRateDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <SettingsSection>
+            <DataTable
+              columns={billingColumns}
+              data={billingRows}
+              getRowId={getMemberRowId}
+              rowTestId={getMemberRowTestId}
+              columnVisibility={false}
+              pageSize={null}
+              stickyHeader={false}
+              frame={false}
+              empty={null}
+            />
+          </SettingsSection>
         </TabsContent>
 
         <TabsContent value="cost" className="mt-4">
-          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Cost Rates
-            <HelpTip code="rates.costVsBilling" />
-          </h3>
-          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Hourly Cost</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead>Effective From</TableHead>
-                  <TableHead>Effective To</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => {
-                  const memberRates = costRatesByMember.get(member.id) ?? [];
-                  const activeRate = getActiveRate(memberRates);
-
-                  return (
-                    <TableRow
-                      key={member.id}
-                      data-testid={`cost-rate-${member.orgRole?.toLowerCase() ?? member.id}`}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <AvatarCircle name={member.name} size={32} />
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-slate-900 dark:text-slate-100">
-                              {member.name}
-                            </p>
-                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                              {member.email}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          <span className="font-medium">
-                            {formatCurrency(activeRate.hourlyCost, activeRate.currency)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">Not set</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          activeRate.currency
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate ? (
-                          formatDate(activeRate.effectiveFrom)
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activeRate?.effectiveTo ? (
-                          formatDate(activeRate.effectiveTo)
-                        ) : activeRate ? (
-                          <span className="text-muted-foreground">Ongoing</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {activeRate ? (
-                            <>
-                              <EditRateDialog slug={slug} rate={activeRate} rateType="cost">
-                                <Button
-                                  variant="plain"
-                                  size="sm"
-                                  aria-label={`Edit cost rate for ${member.name}`}
-                                >
-                                  <Pencil className="size-4" />
-                                </Button>
-                              </EditRateDialog>
-                              <DeleteRateDialog
-                                slug={slug}
-                                rateId={activeRate.id}
-                                rateType="cost"
-                                memberName={member.name}
-                              >
-                                <Button
-                                  variant="plain"
-                                  size="sm"
-                                  aria-label={`Delete cost rate for ${member.name}`}
-                                >
-                                  <Trash2 className="size-4 text-red-500" />
-                                </Button>
-                              </DeleteRateDialog>
-                            </>
-                          ) : (
-                            <AddRateDialog
-                              slug={slug}
-                              member={member}
-                              defaultCurrency={currency}
-                              defaultRateType="cost"
-                            >
-                              <Button
-                                variant="plain"
-                                size="sm"
-                                aria-label={`Add rate for ${member.name}`}
-                              >
-                                <Plus className="size-4" />
-                                <span className="ml-1">Add Rate</span>
-                              </Button>
-                            </AddRateDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <SettingsSection
+            as="h3"
+            title={
+              <span className="inline-flex items-center gap-2">
+                Cost Rates
+                <HelpTip code="rates.costVsBilling" />
+              </span>
+            }
+          >
+            <DataTable
+              columns={costColumns}
+              data={costRows}
+              getRowId={getMemberRowId}
+              rowTestId={getMemberRowTestId}
+              columnVisibility={false}
+              pageSize={null}
+              stickyHeader={false}
+              frame={false}
+              empty={null}
+            />
+          </SettingsSection>
         </TabsContent>
       </Tabs>
     </div>

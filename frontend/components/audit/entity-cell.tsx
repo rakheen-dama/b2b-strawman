@@ -77,7 +77,7 @@ export function EntityCell({ entityType, entityId, slug, details }: EntityCellPr
       href={href}
       data-testid="entity-cell-link"
       data-entity-type={entityType}
-      className="text-xs whitespace-nowrap text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400"
+      className="text-xs whitespace-nowrap text-(--button-accent) hover:text-teal-700 hover:underline dark:text-teal-400"
     >
       {label} {idText}
     </Link>

@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 
 const JURISDICTIONS = [
@@ -89,14 +90,11 @@ export function JurisdictionSelectorSection({
 
   return (
     <>
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Jurisdiction</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Select the data protection jurisdiction that applies to your organisation. This determines
-          default retention policies and processing register entries.
-        </p>
-
-        <div className="mt-4 flex items-center gap-3">
+      <SettingsSection
+        title="Jurisdiction"
+        description="Select the data protection jurisdiction that applies to your organisation. This determines default retention policies and processing register entries."
+      >
+        <div className="flex items-center gap-3">
           <Select
             value={pendingJurisdiction ?? ""}
             onValueChange={handleValueChange}
@@ -119,7 +117,7 @@ export function JurisdictionSelectorSection({
         </div>
 
         {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
-      </div>
+      </SettingsSection>
 
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>

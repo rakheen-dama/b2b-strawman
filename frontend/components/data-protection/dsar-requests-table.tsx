@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
@@ -13,7 +13,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Inbox, Loader2 } from "lucide-react";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { DateCell, StatusBadgeCell } from "@/components/data-table/cells";
+import { EmptyState } from "@/components/empty-state";
 import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { updateDsarStatus } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions";
 import type { DsarRequest } from "@/lib/types/data-protection";
@@ -60,14 +64,14 @@ function DeadlineCell({
   const isTerminal = status === "COMPLETED" || status === "REJECTED";
 
   if (isTerminal) {
-    return <span className="text-sm text-slate-500 dark:text-slate-400">{deadline}</span>;
+    return <span className="text-muted-foreground text-sm">{deadline}</span>;
   }
 
   // Days left from the South African "today" (G88-F48), not the browser's or the UTC date.
   const diffDays = daysBetween(todayInSA(), deadline);
 
   if (deadlineStatus === "OVERDUE") {
-    return <span className="text-sm font-medium text-red-600 dark:text-red-400">Overdue</span>;
+    return <span className="text-destructive text-sm font-medium">Overdue</span>;
   }
 
   if (deadlineStatus === "DUE_SOON") {
@@ -250,7 +254,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
         </>
       )}
       {actionError && (
-        <span className="text-xs text-red-600 dark:text-red-400" role="alert">
+        <span className="text-destructive text-xs" role="alert">
           {actionError}
         </span>
       )}
@@ -275,121 +279,117 @@ interface DsarRequestsTableProps {
   slug: string;
 }
 
+const getRequestId = (request: DsarRequest) => request.id;
+
+function deadlineBadgeVariant(
+  deadlineStatus: DeadlineStatus
+): "destructive" | "warning" | "neutral" {
+  return deadlineStatus === "OVERDUE"
+    ? "destructive"
+    : deadlineStatus === "DUE_SOON"
+      ? "warning"
+      : "neutral";
+}
+
 export function DsarRequestsTable({ requests, slug }: DsarRequestsTableProps) {
   const router = useRouter();
 
-  function onActionComplete() {
-    router.refresh();
-  }
-
-  if (requests.length === 0) {
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          No DSAR requests found. Use the &quot;Log new request&quot; button to record one.
-        </p>
-      </div>
-    );
-  }
+  // Stable columns: `RowActions` owns its transition and resolution dialog, so a column rebuild
+  // would remount it and close an open dialog. `useRouter()` is stable.
+  const columns = useMemo(() => {
+    const onActionComplete = () => router.refresh();
+    return defineColumns<DsarRequest>([
+      {
+        id: "subject",
+        meta: { label: "Subject / Client", cellClassName: "whitespace-normal" },
+        cell: ({ row }) => {
+          const req = row.original;
+          return (
+            <div>
+              <span className="text-foreground font-medium">
+                {req.subjectName ?? req.clientName ?? "\u2014"}
+              </span>
+              {req.clientName && req.subjectName && req.clientName !== req.subjectName && (
+                <p className="text-muted-foreground text-xs">{req.clientName}</p>
+              )}
+              {req.subjectEmail && (
+                <p className="text-muted-foreground text-xs">{req.subjectEmail}</p>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        id: "type",
+        meta: { label: "Type" },
+        cell: ({ row }) => (
+          <Badge variant="neutral">{REQUEST_TYPE_LABEL[row.original.requestType]}</Badge>
+        ),
+      },
+      {
+        id: "status",
+        meta: { label: "Status" },
+        cell: ({ row }) => {
+          const statusBadge = STATUS_BADGE[row.original.status];
+          return <StatusBadgeCell label={statusBadge.label} variant={statusBadge.variant} />;
+        },
+      },
+      {
+        id: "received",
+        meta: { label: "Received", cellClassName: "text-slate-700 dark:text-slate-300" },
+        cell: ({ row }) => <DateCell value={row.original.requestedAt} />,
+      },
+      {
+        id: "deadline",
+        meta: { label: "Deadline" },
+        cell: ({ row }) => {
+          const req = row.original;
+          return (
+            <div className="flex flex-col gap-1">
+              <DeadlineCell
+                deadline={req.deadline}
+                deadlineStatus={req.deadlineStatus}
+                status={req.status}
+              />
+              {req.deadlineStatus !== "ON_TRACK" &&
+                req.status !== "COMPLETED" &&
+                req.status !== "REJECTED" && (
+                  <Badge variant={deadlineBadgeVariant(req.deadlineStatus)} className="w-fit">
+                    {req.deadlineStatus === "OVERDUE" ? "Overdue" : "Due Soon"}
+                  </Badge>
+                )}
+            </div>
+          );
+        },
+      },
+      {
+        id: "actions",
+        enableHiding: false,
+        meta: { label: "Actions" },
+        cell: ({ row }) => (
+          <RowActions request={row.original} slug={slug} onActionComplete={onActionComplete} />
+        ),
+      },
+    ]);
+  }, [slug, router]);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Subject / Client
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Type
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Received
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Deadline
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((req) => {
-              const statusBadge = STATUS_BADGE[req.status];
-              const deadlineVariant: "success" | "destructive" | "warning" | "neutral" =
-                req.deadlineStatus === "OVERDUE"
-                  ? "destructive"
-                  : req.deadlineStatus === "DUE_SOON"
-                    ? "warning"
-                    : "neutral";
-
-              return (
-                <tr
-                  key={req.id}
-                  className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                >
-                  <td className="px-4 py-3">
-                    <div>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">
-                        {req.subjectName ?? req.clientName ?? "\u2014"}
-                      </span>
-                      {req.clientName && req.subjectName && req.clientName !== req.subjectName && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {req.clientName}
-                        </p>
-                      )}
-                      {req.subjectEmail && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {req.subjectEmail}
-                        </p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant="neutral">{REQUEST_TYPE_LABEL[req.requestType]}</Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                  </td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                    {req.requestedAt
-                      ? new Date(req.requestedAt).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "\u2014"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <DeadlineCell
-                        deadline={req.deadline}
-                        deadlineStatus={req.deadlineStatus}
-                        status={req.status}
-                      />
-                      {req.deadlineStatus !== "ON_TRACK" &&
-                        req.status !== "COMPLETED" &&
-                        req.status !== "REJECTED" && (
-                          <Badge variant={deadlineVariant} className="w-fit">
-                            {req.deadlineStatus === "OVERDUE" ? "Overdue" : "Due Soon"}
-                          </Badge>
-                        )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <RowActions request={req} slug={slug} onActionComplete={onActionComplete} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <DataTable
+      columns={columns}
+      data={requests}
+      getRowId={getRequestId}
+      columnVisibility={false}
+      pageSize={null}
+      stickyHeader={false}
+      frame={false}
+      empty={
+        <EmptyState
+          variant="compact"
+          icon={Inbox}
+          title="No DSAR requests found."
+          description={'Use the "Log new request" button to record one.'}
+        />
+      }
+    />
   );
 }

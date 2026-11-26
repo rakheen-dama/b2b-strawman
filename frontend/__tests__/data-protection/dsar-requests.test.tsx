@@ -77,16 +77,38 @@ describe("DsarRequestsTable", () => {
       deadlineStatus: "OVERDUE",
     };
     render(<DsarRequestsTable requests={[overdueRequest]} slug="acme" />);
-    // "Overdue" appears in both the DeadlineCell span (text-red-600) and the Badge
-    // Find the DeadlineCell span by its class
+    // "Overdue" appears twice: the DeadlineCell text and the destructive deadline badge.
     const overdueElements = screen.getAllByText("Overdue");
-    const overdueSpan = overdueElements.find((el) => el.classList.contains("text-red-600"));
-    expect(overdueSpan).toBeDefined();
-    // Also verify the destructive badge exists
-    const overdueBadge = overdueElements.find(
-      (el) => el.getAttribute("data-variant") === "destructive"
+    expect(overdueElements).toHaveLength(2);
+    const overdueBadge = overdueElements.find((el) => el.getAttribute("data-slot") === "badge");
+    expect(overdueBadge).toHaveAttribute("data-variant", "destructive");
+    const overdueText = overdueElements.find((el) => el.getAttribute("data-slot") !== "badge");
+    expect(overdueText).toBeDefined();
+    expect(overdueText!.tagName).toBe("SPAN");
+  });
+
+  it("renders the compact empty state (no table) when there are no requests", () => {
+    render(<DsarRequestsTable requests={[]} slug="acme" />);
+    expect(
+      screen.getByRole("heading", { level: 2, name: "No DSAR requests found." })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Use the "Log new request" button to record one.')).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("renders one table row per request and the Received date on the SA calendar", () => {
+    render(
+      <DsarRequestsTable
+        requests={[baseRequest, { ...baseRequest, id: "req-2", subjectName: "John Roe" }]}
+        slug="acme"
+      />
     );
-    expect(overdueBadge).toBeDefined();
+    // Header row + one row per request.
+    expect(screen.getAllByRole("row")).toHaveLength(3);
+    expect(
+      screen.getAllByRole("row").filter((r) => r.textContent?.includes("Jane Doe"))
+    ).toHaveLength(1);
+    expect(screen.getAllByText("1 Mar 2026")).toHaveLength(2);
   });
 
   it("shows warning badge for DUE_SOON requests", () => {

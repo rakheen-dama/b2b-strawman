@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Button } from "@b2mash/ui/button";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import { informationOfficerSchema } from "@/lib/schemas/data-protection";
 
@@ -68,16 +69,26 @@ export function InformationOfficerSection({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Information Officer
-      </h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        The designated information officer responsible for data protection compliance. Required for
-        DSAR handling.
-      </p>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="Information Officer"
+      description="The designated information officer responsible for data protection compliance. Required for DSAR handling."
+      status={
+        (saved || error) && (
+          <>
+            {saved && (
+              <span className="text-sm text-teal-600 dark:text-teal-400">Saved successfully.</span>
+            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
+          </>
+        )
+      }
+      footer={
+        <Button onClick={handleSave} disabled={!hasChanges || isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save"}
+        </Button>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="officer-name">Name</Label>
           <Input
@@ -124,17 +135,6 @@ export function InformationOfficerSection({
           )}
         </div>
       </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button onClick={handleSave} disabled={!hasChanges || isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save"}
-        </Button>
-        {saved && (
-          <span className="text-sm text-teal-600 dark:text-teal-400">Saved successfully.</span>
-        )}
-      </div>
-
-      {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
-    </div>
+    </SettingsSection>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation
@@ -25,6 +25,7 @@ vi.mock("motion/react", () => ({
 }));
 
 import { JurisdictionSelectorSection } from "@/components/settings/jurisdiction-selector";
+import { InformationOfficerSection } from "@/components/settings/information-officer-section";
 
 afterEach(() => {
   cleanup();
@@ -36,6 +37,19 @@ describe("JurisdictionSelectorSection", () => {
     render(<JurisdictionSelectorSection slug="acme" currentJurisdiction={null} />);
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(screen.getByText("Jurisdiction")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Jurisdiction" })).toBeInTheDocument();
+  });
+
+  it("an existing jurisdiction saves instantly on change, without the dialog", async () => {
+    const user = userEvent.setup();
+    mockUpdateDataProtection.mockResolvedValue({ success: true });
+    render(<JurisdictionSelectorSection slug="acme" currentJurisdiction="EU" />);
+    await user.click(screen.getByRole("combobox"));
+    await user.click(screen.getByText("South Africa (POPIA)"));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(mockUpdateDataProtection).toHaveBeenCalledWith("acme", {
+      dataProtectionJurisdiction: "ZA",
+    });
   });
 
   it("shows confirmation dialog when selecting jurisdiction with none set", async () => {
@@ -70,5 +84,46 @@ describe("JurisdictionSelectorSection", () => {
     await user.click(screen.getByText("South Africa (POPIA)"));
     await user.click(screen.getByRole("button", { name: /Cancel/i }));
     expect(mockUpdateDataProtection).not.toHaveBeenCalled();
+  });
+});
+
+describe("InformationOfficerSection", () => {
+  it("renders an h2 section with a footer Save, disabled until a field changes", async () => {
+    const user = userEvent.setup();
+    render(<InformationOfficerSection slug="acme" initialName="Jane" initialEmail={null} />);
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Information Officer" })
+    ).toBeInTheDocument();
+    const save = screen.getByRole("button", { name: "Save" });
+    expect(save).toBeDisabled();
+    await user.type(screen.getByLabelText("Email"), "privacy@acme.co.za");
+    expect(save).toBeEnabled();
+  });
+
+  it("Save calls updateDataProtectionSettings with the officer fields and shows the saved line", async () => {
+    const user = userEvent.setup();
+    mockUpdateDataProtection.mockResolvedValue({ success: true });
+    render(<InformationOfficerSection slug="acme" initialName={null} initialEmail={null} />);
+    await user.type(screen.getByLabelText("Name"), "Jane Smith");
+    await user.type(screen.getByLabelText("Email"), "privacy@acme.co.za");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(mockUpdateDataProtection).toHaveBeenCalledWith("acme", {
+      informationOfficerName: "Jane Smith",
+      informationOfficerEmail: "privacy@acme.co.za",
+    });
+    await waitFor(() => expect(screen.getByText("Saved successfully.")).toBeInTheDocument());
+    expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it("a failed save shows the error line and no saved line", async () => {
+    const user = userEvent.setup();
+    mockUpdateDataProtection.mockResolvedValue({ success: false, error: "Nope." });
+    render(<InformationOfficerSection slug="acme" initialName={null} initialEmail={null} />);
+    await user.type(screen.getByLabelText("Name"), "Jane Smith");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(screen.getByText("Nope.")).toBeInTheDocument());
+    expect(screen.queryByText("Saved successfully.")).toBeNull();
   });
 });

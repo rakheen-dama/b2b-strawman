@@ -116,6 +116,13 @@ export interface DataTableBaseProps<T, K extends string = string> {
    */
   renderExpandedRow?: (row: T) => ReactNode;
   /**
+   * Collapses every expanded detail row whenever this value changes after mount (compared with
+   * `Object.is`), e.g. the server page index: a new page starts collapsed while the table — and so
+   * a focused pager button — stays mounted (unlike a React `key`). Unset (the default), the expanded
+   * state is never reset and survives a new `data` array, as described on `getRowCanExpand`.
+   */
+  expandedResetKey?: unknown;
+  /**
    * Draws the table frame: card background, border and rounded corners (default on). Pass `false`
    * when the table already sits inside a bordered surface (e.g. `<Card><CardContent>`) to avoid a
    * double border; the `@container` that column `priority` measures is kept either way.
@@ -129,6 +136,7 @@ export interface DataTableLocalPagingProps {
   pagination?: never;
   paginationLabel?: never;
   paginationShowSingle?: never;
+  paginationEmptyLabel?: never;
   /**
    * `null` (default) renders every row; a positive integer paginates locally with a page-size
    * select. Any other value (0, negative, `NaN`, fractional) is treated as `null`.
@@ -155,6 +163,11 @@ export interface DataTableServerPagingProps {
   paginationLabel?: string;
   /** Show the pager at one page (or none) too (default: nothing when `pageCount <= 1`). */
   paginationShowSingle?: boolean;
+  /**
+   * Replaces "Page {n} of {m}" when `pageCount` is 0; only where a zero-page label exists today
+   * (the audit log's "No events", F-664B-2). Absent → "Page 1 of 0" as before.
+   */
+  paginationEmptyLabel?: ReactNode;
   pageSize?: never;
   selectable?: never;
   exportCsv?: never;
@@ -267,6 +280,7 @@ export function DataTable<T, K extends string = string>({
   pagination: serverPagination,
   paginationLabel,
   paginationShowSingle = false,
+  paginationEmptyLabel,
   pageSize: pageSizeProp = null,
   selectable = false,
   exportCsv,
@@ -279,6 +293,7 @@ export function DataTable<T, K extends string = string>({
   frame = true,
   getRowCanExpand,
   renderExpandedRow,
+  expandedResetKey,
 }: DataTableProps<T, K>) {
   const router = useRouter();
   const pageSize = normalisePageSize(pageSizeProp);
@@ -340,6 +355,14 @@ export function DataTable<T, K extends string = string>({
     // from `K`.
     meta: { dataTableSort: sort as DataTableSort | undefined },
   });
+
+  // `expandedResetKey` changed: collapse the open detail rows in this same render (the pattern
+  // above), so the new key never paints with the old expansion. Never fires while it stays unset.
+  const [seenExpandedResetKey, setSeenExpandedResetKey] = useState(expandedResetKey);
+  if (!Object.is(seenExpandedResetKey, expandedResetKey)) {
+    setSeenExpandedResetKey(expandedResetKey);
+    table.resetExpanded(true);
+  }
 
   const isEmpty = !loading && data.length === 0;
   const showRows = !isEmpty && !loading;
@@ -497,7 +520,11 @@ export function DataTable<T, K extends string = string>({
         </div>
       )}
       {showServerPager && (
-        <DataTablePageLinks pagination={serverPagination} label={paginationLabel} />
+        <DataTablePageLinks
+          pagination={serverPagination}
+          label={paginationLabel}
+          emptyLabel={paginationEmptyLabel}
+        />
       )}
       {showRows && paginated && <DataTablePagination table={table} />}
       {showRows && footer}

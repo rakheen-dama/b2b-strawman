@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { JurisdictionSelectorSection } from "@/components/settings/jurisdiction-selector";
@@ -6,6 +7,7 @@ import { InformationOfficerSection } from "@/components/settings/information-off
 import { RetentionPoliciesTable } from "@/components/data-protection/retention-policies-table";
 import { ProcessingRegisterTable } from "@/components/data-protection/processing-register-table";
 import { PaiaManualSection } from "@/components/data-protection/paia-manual-section";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { fetchRetentionPolicies, fetchProcessingActivities } from "./data-protection-actions";
 import { settingsHref } from "@/lib/settings-nav";
 import type { OrgSettings } from "@/lib/types";
@@ -22,8 +24,8 @@ export async function renderDataProtectionTab({ slug }: SettingsTabProps) {
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Data Protection" />
+        <p className="text-muted-foreground">
           You do not have permission to manage data protection settings. Only admins and owners can
           access this page.
         </p>
@@ -53,13 +55,10 @@ export async function renderDataProtectionTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure data protection jurisdiction, information officer details, and manage compliance
-          settings.
-        </p>
-      </div>
+      <PageHeader
+        title="Data Protection"
+        description="Configure data protection jurisdiction, information officer details, and manage compliance settings."
+      />
 
       {/* Section 1: Jurisdiction Selector */}
       <JurisdictionSelectorSection
@@ -75,23 +74,17 @@ export async function renderDataProtectionTab({ slug }: SettingsTabProps) {
       />
 
       {/* Section 3: DSAR Requests */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Data Subject Access Requests
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Track and manage data subject access requests (DSARs) including access, deletion,
-          correction, and portability requests.
-        </p>
-        <div className="mt-4">
-          <Link
-            href={settingsHref(slug, "firm", "data-requests")}
-            className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-          >
-            View DSAR Requests →
-          </Link>
-        </div>
-      </div>
+      <SettingsSection
+        title="Data Subject Access Requests"
+        description="Track and manage data subject access requests (DSARs) including access, deletion, correction, and portability requests."
+      >
+        <Link
+          href={settingsHref(slug, "firm", "data-requests")}
+          className="text-sm font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+        >
+          View DSAR Requests →
+        </Link>
+      </SettingsSection>
 
       {/* Section 4: Retention Policies */}
       <RetentionPoliciesTable

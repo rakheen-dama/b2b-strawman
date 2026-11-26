@@ -87,6 +87,7 @@ const baseActivity: ProcessingActivity = {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 // --- Retention Policies Table ---
@@ -164,6 +165,39 @@ describe("RetentionPoliciesTable", () => {
     });
     expect(mockUpdateRetentionPolicy).not.toHaveBeenCalled();
   });
+
+  it("is an h2 section; Last Evaluated reads the SA-pinned date and time, or Never", () => {
+    render(<RetentionPoliciesTable policies={[basePolicy, financialPolicy]} slug="acme" />);
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Retention Policies" })
+    ).toBeInTheDocument();
+    // 08:00 UTC is 10:00 in Johannesburg, whatever the runtime zone.
+    const clientRow = screen.getByText("Client").closest("tr")!;
+    expect(clientRow).toHaveTextContent(/10\s?Mar\s?2026.*10:00/);
+    expect(screen.getByText("Document").closest("tr")!).toHaveTextContent("Never");
+  });
+
+  it("renders the inline empty line (no table) when there are no policies", () => {
+    render(<RetentionPoliciesTable policies={[]} slug="acme" />);
+
+    expect(screen.getByText("No retention policies configured.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+    // Inline: the title is not a heading (only the section title is).
+    expect(screen.getAllByRole("heading")).toHaveLength(1);
+  });
+
+  it("keeps an input mounted (focused) while typing in a row", async () => {
+    const user = userEvent.setup();
+    render(<RetentionPoliciesTable policies={[basePolicy]} slug="acme" />);
+
+    const input = screen.getByLabelText("Retention days for Client");
+    // Two keystrokes into 365: a remount per keystroke would drop focus after the first.
+    await user.type(input, "00");
+    expect(screen.getByLabelText("Retention days for Client")).toBe(input);
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue(36500);
+  });
 });
 
 // --- Processing Register Table ---
@@ -185,6 +219,61 @@ describe("ProcessingRegisterTable", () => {
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.getByText("5 years after contract end")).toBeInTheDocument();
   });
+
+  it("is an h2 section with Export Register and Add Activity in its header", () => {
+    render(<ProcessingRegisterTable activities={[baseActivity]} slug="acme" />);
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Processing Register" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export Register" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add Activity" })).toBeInTheDocument();
+  });
+
+  it("renders the inline empty line (no table) when there are no activities", () => {
+    render(<ProcessingRegisterTable activities={[]} slug="acme" />);
+
+    expect(screen.getByText("No processing activities recorded.")).toBeInTheDocument();
+    expect(screen.getByText("Click “Add Activity” to create one.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("Delete asks window.confirm, then calls deleteProcessingActivity and refreshes", async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.fn(() => true);
+    vi.stubGlobal("confirm", confirmSpy);
+    mockDeleteProcessingActivity.mockResolvedValue({ success: true });
+    render(<ProcessingRegisterTable activities={[baseActivity]} slug="acme" />);
+
+    await user.click(screen.getByRole("button", { name: "Delete Client Management" }));
+
+    expect(confirmSpy).toHaveBeenCalledWith("Delete this processing activity?");
+    await waitFor(() => expect(mockDeleteProcessingActivity).toHaveBeenCalledWith("acme", "act-1"));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
+  });
+
+  it("Delete does nothing when window.confirm is declined", async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirmSpy);
+    render(<ProcessingRegisterTable activities={[baseActivity]} slug="acme" />);
+
+    await user.click(screen.getByRole("button", { name: "Delete Client Management" }));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(mockDeleteProcessingActivity).not.toHaveBeenCalled();
+  });
+
+  it("Edit opens the Edit Processing Activity dialog", async () => {
+    const user = userEvent.setup();
+    render(<ProcessingRegisterTable activities={[baseActivity]} slug="acme" />);
+
+    await user.click(screen.getByRole("button", { name: "Edit Client Management" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "Edit Processing Activity" })
+    ).toBeInTheDocument();
+  });
 });
 
 // --- PAIA Manual Section ---
@@ -203,5 +292,11 @@ describe("PaiaManualSection", () => {
 
     expect(screen.getByRole("button", { name: /generate paia manual/i })).toBeEnabled();
     expect(screen.queryByText(/jurisdiction required/i)).not.toBeInTheDocument();
+  });
+
+  it("is an h2 section", () => {
+    render(<PaiaManualSection slug="acme" jurisdiction="ZA" />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "PAIA Manual" })).toBeInTheDocument();
   });
 });

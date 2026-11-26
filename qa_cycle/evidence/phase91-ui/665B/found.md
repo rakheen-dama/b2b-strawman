@@ -60,6 +60,7 @@ Everything here is pre-existing on `main` @ `60f67bfe3`. 665B restyles these tab
 - **Why now:** before 665B the same markup was a `CardTitle` div (no heading). 665B promoted it to an h2, so it now shows up in the screen-reader heading list with this name. Visually it is fine (`crop-audit-pending.png`).
 - **Suggested fix:** a `{" "}` (or an sr-only separator) before each span, or move the total and "Loading…" out of the heading into `description` / `actions`. SEL-COMPAT: no spec reads this heading.
 - **Suggested owner:** 665B fix round, if in scope; otherwise backlog. LOW.
+- **Resolved** in the 665B review-fix commit (`fix(epic-665B): keep pager focus on audit paging …`): a `{" "}` before the total span and before the "Loading…" span, so the h2 text reads "Events 289 total" / "Events 285 total Loading…"; vitest `audit-trail.test.tsx` pins `textContent` "Events 150 total". No e2e or qa locator reads this heading.
 
 ## F-665B-7 (found in OBS-after, residual K-109, LOW): at 390 the Processing Register description is squeezed to 93 px (8 lines) beside the action column
 

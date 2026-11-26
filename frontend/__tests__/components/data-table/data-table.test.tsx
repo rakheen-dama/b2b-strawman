@@ -524,6 +524,49 @@ describe("DataTable — expandable rows", () => {
     expect(rows.indexOf(detail[0] as HTMLElement)).toBe(rows.indexOf(own) + 1);
   });
 
+  describe("expandedResetKey", () => {
+    it("unset: expanded rows survive a rerender with new data", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<DataTable {...expandProps()} />);
+      await user.click(screen.getByRole("button", { name: "Expand a" }));
+
+      rerender(<DataTable {...expandProps({ data: [...ROWS] })} />);
+      rerender(<DataTable {...expandProps({ data: [...ROWS].reverse() })} />);
+      expect(screen.getByRole("button", { name: "Collapse a" })).toBeInTheDocument();
+      expect(expandedRows()).toHaveLength(1);
+    });
+
+    it("set: changing the key collapses every expanded row, and later toggles still work", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<DataTable {...expandProps({ expandedResetKey: 0 })} />);
+      await user.click(screen.getByRole("button", { name: "Expand a" }));
+      await user.click(screen.getByRole("button", { name: "Expand c" }));
+      expect(expandedRows()).toHaveLength(2);
+
+      rerender(<DataTable {...expandProps({ expandedResetKey: 1, data: [...ROWS] })} />);
+      expect(expandedRows()).toHaveLength(0);
+      expect(screen.getByRole("button", { name: "Expand a" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Expand c" })).toBeInTheDocument();
+
+      // Back to the first key: the earlier expansion is gone for good, not restored.
+      rerender(<DataTable {...expandProps({ expandedResetKey: 0, data: [...ROWS] })} />);
+      expect(expandedRows()).toHaveLength(0);
+      await user.click(screen.getByRole("button", { name: "Expand c" }));
+      expect(expandedRows()).toHaveLength(1);
+    });
+
+    it("set: the same key with new data keeps expanded rows open", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<DataTable {...expandProps({ expandedResetKey: 3 })} />);
+      await user.click(screen.getByRole("button", { name: "Expand a" }));
+
+      rerender(<DataTable {...expandProps({ expandedResetKey: 3, data: [...ROWS].reverse() })} />);
+      expect(screen.getByRole("button", { name: "Collapse a" })).toBeInTheDocument();
+      expect(expandedRows()).toHaveLength(1);
+      expect(expandedRows()[0]).toHaveTextContent("Detail for Estate late Dlamini");
+    });
+  });
+
   it("the detail row never opens rowHref", async () => {
     const user = userEvent.setup();
     render(<DataTable {...expandProps({ rowHref: (row) => `/org/acme/matters/${row.id}` })} />);

@@ -116,6 +116,13 @@ export interface DataTableBaseProps<T, K extends string = string> {
    */
   renderExpandedRow?: (row: T) => ReactNode;
   /**
+   * Collapses every expanded detail row whenever this value changes after mount (compared with
+   * `Object.is`), e.g. the server page index: a new page starts collapsed while the table — and so
+   * a focused pager button — stays mounted (unlike a React `key`). Unset (the default), the expanded
+   * state is never reset and survives a new `data` array, as described on `getRowCanExpand`.
+   */
+  expandedResetKey?: unknown;
+  /**
    * Draws the table frame: card background, border and rounded corners (default on). Pass `false`
    * when the table already sits inside a bordered surface (e.g. `<Card><CardContent>`) to avoid a
    * double border; the `@container` that column `priority` measures is kept either way.
@@ -286,6 +293,7 @@ export function DataTable<T, K extends string = string>({
   frame = true,
   getRowCanExpand,
   renderExpandedRow,
+  expandedResetKey,
 }: DataTableProps<T, K>) {
   const router = useRouter();
   const pageSize = normalisePageSize(pageSizeProp);
@@ -347,6 +355,14 @@ export function DataTable<T, K extends string = string>({
     // from `K`.
     meta: { dataTableSort: sort as DataTableSort | undefined },
   });
+
+  // `expandedResetKey` changed: collapse the open detail rows in this same render (the pattern
+  // above), so the new key never paints with the old expansion. Never fires while it stays unset.
+  const [seenExpandedResetKey, setSeenExpandedResetKey] = useState(expandedResetKey);
+  if (!Object.is(seenExpandedResetKey, expandedResetKey)) {
+    setSeenExpandedResetKey(expandedResetKey);
+    table.resetExpanded(true);
+  }
 
   const isEmpty = !loading && data.length === 0;
   const showRows = !isEmpty && !loading;

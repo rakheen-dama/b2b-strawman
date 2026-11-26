@@ -939,19 +939,27 @@ export function AuditLogClient({
       <SettingsSection
         title={
           <>
-            Events
+            {/* `{" "}`: word breaks in the h2's accessible name ("Events 289 total Loading…"). */}
+            Events{" "}
             <span className="ml-2 font-mono text-xs font-normal text-slate-500">
               {page.totalElements.toLocaleString("en-ZA")} total
             </span>
-            {isPending && <span className="ml-2 text-xs text-slate-400">Loading…</span>}
+            {isPending && (
+              <>
+                {" "}
+                <span className="ml-2 text-xs text-slate-400">Loading…</span>
+              </>
+            )}
           </>
         }
       >
-        {/* `key`: a new page collapses every open detail row, as before (the kit keeps expanded
-            rows across a new `data` array). The kit's `@container` frame keeps the wide table
-            scrolling inside the section instead of widening the page (625D overflow baseline). */}
+        {/* `expandedResetKey`: a new page collapses every open detail row, as before (the kit
+            keeps expanded rows across a new `data` array, so a filter change on the same page
+            keeps them), while the pager stays mounted and keeps its focus. The kit's `@container`
+            frame keeps the wide table scrolling inside the section instead of widening the page
+            (625D overflow baseline). */}
         <DataTable
-          key={currentPage}
+          expandedResetKey={currentPage}
           columns={columns}
           data={content}
           getRowId={getEventId}

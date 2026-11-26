@@ -21,7 +21,7 @@ const RUN_ID = Date.now().toString(36).slice(-4);
 async function openTaxSettings(page: Page) {
   // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
   await page.goto(`${base}/settings/fees?tab=tax`);
-  await expect(page.getByRole("heading", { level: 1, name: "Tax Settings" })).toBeVisible({
+  await expect(page.getByRole("heading", { level: 1, name: "Tax" })).toBeVisible({
     timeout: 10_000,
   });
 }

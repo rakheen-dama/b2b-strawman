@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemberRatesTable } from "@/components/rates/member-rates-table";
 import type { OrgMember, BillingRate, CostRate } from "@/lib/types";
@@ -11,6 +11,11 @@ const mockUpdateBillingRate = vi.fn();
 const mockUpdateCostRate = vi.fn();
 const mockDeleteBillingRate = vi.fn();
 const mockDeleteCostRate = vi.fn();
+
+// DataTable calls useRouter (Phase 91 665D: both rate tables moved onto DataTable).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/tariffs-actions", () => ({
   updateDefaultCurrency: (...args: unknown[]) => mockUpdateDefaultCurrency(...args),
@@ -229,5 +234,82 @@ describe("RatesSettings", () => {
     await waitFor(() => {
       expect(mockDeleteBillingRate).toHaveBeenCalledWith("acme", "br1");
     });
+  });
+
+  // Phase 91 665D: the currency card is an instant-save section, the rate tables are DataTables
+  // whose rows keep the `${kind}-rate-${role}` testids, and the inner Billing / Cost tabs stay.
+  it("Default Currency is an h2 section with no footer (instant save)", () => {
+    render(
+      <MemberRatesTable
+        slug="acme"
+        members={makeMembers()}
+        billingRates={makeBillingRates()}
+        costRates={makeCostRates()}
+        defaultCurrency="USD"
+      />
+    );
+
+    const heading = screen.getByRole("heading", { level: 2, name: /^Default Currency/ });
+    const section = heading.closest('[data-slot="settings-section"]') as HTMLElement;
+    expect(section).not.toBeNull();
+    expect(within(section).getByRole("combobox")).toHaveTextContent("USD");
+    expect(section.querySelector('[data-slot="card-footer"]')).toBeNull();
+  });
+
+  it("keeps the per-row testids and the inner Billing / Cost tabs", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemberRatesTable
+        slug="acme"
+        members={makeMembers()}
+        billingRates={makeBillingRates()}
+        costRates={makeCostRates()}
+        defaultCurrency="USD"
+      />
+    );
+
+    expect(screen.getByRole("tab", { name: "Billing Rates" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    const adminRow = screen.getByTestId("billing-rate-org:admin");
+    expect(within(adminRow).getByText("US$150,00")).toBeInTheDocument();
+    expect(
+      within(adminRow).getByRole("button", { name: "Edit billing rate for Alice Johnson" })
+    ).toBeInTheDocument();
+    const memberRow = screen.getByTestId("billing-rate-org:member");
+    expect(within(memberRow).getByText("Not set")).toBeInTheDocument();
+    expect(
+      within(memberRow).getByRole("button", { name: "Add rate for Bob Smith" })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "Cost Rates" }));
+
+    expect(screen.getByRole("tab", { name: "Cost Rates" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("heading", { level: 3, name: /^Cost Rates/ })).toBeInTheDocument();
+    const costRow = screen.getByTestId("cost-rate-org:admin");
+    expect(within(costRow).getByText("US$80,00")).toBeInTheDocument();
+    expect(
+      within(costRow).getByRole("button", { name: "Delete cost rate for Alice Johnson" })
+    ).toBeInTheDocument();
+  });
+
+  it("no members: the page-level EmptyState and no table", () => {
+    render(
+      <MemberRatesTable
+        slug="acme"
+        members={[]}
+        billingRates={[]}
+        costRates={[]}
+        defaultCurrency="USD"
+      />
+    );
+
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.queryByRole("tab")).toBeNull();
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
   });
 });

@@ -30,9 +30,11 @@ describe("BatchBillingSettings", () => {
   it("renders 4 settings fields (payment terms, async threshold, email rate limit, default currency)", () => {
     renderForm();
     expect(screen.getByLabelText("Default payment terms (days)")).toBeInTheDocument();
-    expect(screen.getByLabelText("Async Threshold")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email Rate Limit")).toBeInTheDocument();
-    expect(screen.getByLabelText("Default Billing Run Currency")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Process in the background above (fee notes)")
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Emails per second")).toBeInTheDocument();
+    expect(screen.getByLabelText("Default fee-run currency")).toBeInTheDocument();
   });
 
   it("displays current values passed as props", () => {
@@ -43,16 +45,16 @@ describe("BatchBillingSettings", () => {
       defaultPaymentTermsDays: 14,
     });
     expect(screen.getByLabelText("Default payment terms (days)")).toHaveValue(14);
-    expect(screen.getByLabelText("Async Threshold")).toHaveValue(100);
-    expect(screen.getByLabelText("Email Rate Limit")).toHaveValue(10);
-    expect(screen.getByLabelText("Default Billing Run Currency")).toHaveValue("ZAR");
+    expect(screen.getByLabelText("Process in the background above (fee notes)")).toHaveValue(100);
+    expect(screen.getByLabelText("Emails per second")).toHaveValue(10);
+    expect(screen.getByLabelText("Default fee-run currency")).toHaveValue("ZAR");
   });
 
   it("validates numeric inputs on save", async () => {
     renderForm({ billingBatchAsyncThreshold: 1, billingEmailRateLimit: 1 });
 
     // Change async threshold to invalid value via direct state (component clamps, so test the currency field)
-    const currencyInput = screen.getByLabelText("Default Billing Run Currency");
+    const currencyInput = screen.getByLabelText("Default fee-run currency");
     fireEvent.change(currencyInput, { target: { value: "AB" } });
 
     fireEvent.click(screen.getByRole("button", { name: /Save Settings/i }));
@@ -64,6 +66,17 @@ describe("BatchBillingSettings", () => {
     });
 
     expect(mockUpdateBatchBillingSettings).not.toHaveBeenCalled();
+  });
+
+  // Phase 91 665D (K-124, founder-approved copy): the section title and the currency placeholder.
+  it("titles the processing section 'Fee run processing' and suggests ZAR", () => {
+    renderForm();
+    expect(screen.getByRole("heading", { level: 2, name: "Fee run processing" })).toBeVisible();
+    expect(screen.queryByText("Batch Billing Configuration")).toBeNull();
+    expect(screen.getByLabelText("Default fee-run currency")).toHaveAttribute(
+      "placeholder",
+      "e.g. ZAR"
+    );
   });
 
   it("save button calls update action with correct payload", async () => {

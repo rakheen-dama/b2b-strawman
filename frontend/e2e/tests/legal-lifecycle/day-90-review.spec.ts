@@ -389,7 +389,7 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
     await loginAs(page, "carol");
     // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
     await page.goto(`${BASE}/settings/fees?tab=tariffs`);
-    await expect(page.getByRole("heading", { level: 1, name: /Rates & Currency/ })).toBeVisible({
+    await expect(page.getByRole("heading", { level: 1, name: /Rates/ })).toBeVisible({
       timeout: 15_000,
     });
     await expect(
@@ -445,7 +445,7 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
     await loginAs(page, "bob");
     // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
     await page.goto(`${BASE}/settings/fees?tab=tariffs`);
-    await expect(page.getByRole("heading", { level: 1, name: /Rates & Currency/ })).toBeVisible({
+    await expect(page.getByRole("heading", { level: 1, name: /Rates/ })).toBeVisible({
       timeout: 15_000,
     });
     await expect(page.getByTestId("billing-rate-owner")).toBeVisible();

@@ -11,7 +11,7 @@ test.describe("SET-02: Rate Cards", () => {
     // This was BUG-REG-001: TypeError on null name.length in AvatarCircle — the page renders its
     // content (heading + the member rates) instead of the error boundary
     const main = page.locator("#main-content");
-    await expect(main.getByRole("heading", { level: 1, name: /^Rates & Currency/ })).toBeVisible({
+    await expect(main.getByRole("heading", { level: 1, name: /^Rates/ })).toBeVisible({
       timeout: 10_000,
     });
     await expect(main).not.toContainText("Something went wrong");
@@ -23,7 +23,7 @@ test.describe("SET-02: Rate Cards", () => {
     // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
     await page.goto(`/org/${ORG}/settings/fees?tab=tariffs`);
     const main = page.locator("#main-content");
-    await expect(main.getByRole("heading", { level: 1, name: /^Rates & Currency/ })).toBeVisible({
+    await expect(main.getByRole("heading", { level: 1, name: /^Rates/ })).toBeVisible({
       timeout: 10_000,
     });
     await expect(main).not.toContainText("You do not have permission");

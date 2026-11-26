@@ -46,6 +46,7 @@ const DocumentEditor = dynamic(
   { loading: () => <Skeleton className="h-64 w-full" />, ssr: false }
 );
 import { ClauseEditorSheet } from "@/components/clauses/clause-editor-sheet";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { cloneClause, deactivateClause } from "@/lib/actions/clause-actions";
 import type { Clause, ClauseSource } from "@/lib/actions/clause-actions";
 
@@ -151,7 +152,7 @@ export function ClausesContent({ slug, clauses, categories, canManage }: Clauses
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
           <div className="relative max-w-xs flex-1">
-            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               placeholder="Search clauses..."
               value={search}
@@ -188,61 +189,61 @@ export function ClausesContent({ slug, clauses, categories, canManage }: Clauses
       </div>
 
       {/* Clause List */}
-      {filteredClauses.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          No clauses found.
-        </p>
-      ) : (
-        sortedCategories.map((category) => {
-          const isExpanded = expandedCategories.has(category);
-          return (
-            <div key={category} className="space-y-2">
-              <button
-                type="button"
-                onClick={() => toggleCategory(category)}
-                className="flex w-full items-center gap-2 text-left"
-                data-testid="clause-category"
-              >
-                {isExpanded ? (
-                  <ChevronDown className="size-4 text-slate-500" />
-                ) : (
-                  <ChevronRight className="size-4 text-slate-500" />
-                )}
-                <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                  {category}
-                </h2>
-                <Badge variant="neutral">{grouped[category].length}</Badge>
-              </button>
-              {isExpanded && (
-                <div className="ml-6 space-y-2">
-                  {grouped[category].map((clause) => (
-                    <ClauseCard
-                      key={clause.id}
-                      clause={clause}
-                      slug={slug}
-                      canManage={canManage}
-                      isExpanded={expandedClauses.has(clause.id)}
-                      onToggle={() => toggleClause(clause.id)}
-                      onEdit={(c) => {
-                        setEditingClause(c);
-                        setEditorSheetOpen(true);
-                      }}
-                      onError={(msg) => {
-                        clearMessages();
-                        setError(msg);
-                      }}
-                      onSuccess={(msg) => {
-                        clearMessages();
-                        setSuccess(msg);
-                      }}
-                    />
-                  ))}
+      <SettingsSection>
+        {filteredClauses.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center text-sm">No clauses found.</p>
+        ) : (
+          <div className="space-y-6">
+            {sortedCategories.map((category) => {
+              const isExpanded = expandedCategories.has(category);
+              return (
+                <div key={category} className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(category)}
+                    className="flex w-full items-center gap-2 text-left"
+                    data-testid="clause-category"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="text-muted-foreground size-4" />
+                    ) : (
+                      <ChevronRight className="text-muted-foreground size-4" />
+                    )}
+                    <h2 className="text-foreground text-lg font-semibold">{category}</h2>
+                    <Badge variant="neutral">{grouped[category].length}</Badge>
+                  </button>
+                  {isExpanded && (
+                    <div className="ml-6 space-y-2">
+                      {grouped[category].map((clause) => (
+                        <ClauseCard
+                          key={clause.id}
+                          clause={clause}
+                          slug={slug}
+                          canManage={canManage}
+                          isExpanded={expandedClauses.has(clause.id)}
+                          onToggle={() => toggleClause(clause.id)}
+                          onEdit={(c) => {
+                            setEditingClause(c);
+                            setEditorSheetOpen(true);
+                          }}
+                          onError={(msg) => {
+                            clearMessages();
+                            setError(msg);
+                          }}
+                          onSuccess={(msg) => {
+                            clearMessages();
+                            setSuccess(msg);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })
-      )}
+              );
+            })}
+          </div>
+        )}
+      </SettingsSection>
 
       {/* Clause Editor Sheet */}
       {canManage && (
@@ -330,17 +331,14 @@ function ClauseCard({
 
   return (
     <>
-      <div
-        className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
-        data-testid="clause-row"
-      >
+      <div className="bg-card rounded-lg border" data-testid="clause-row">
         {/* Card header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex min-w-0 flex-1 items-start gap-3">
             <button
               type="button"
               onClick={onToggle}
-              className="mt-0.5 shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0"
               aria-label={isExpanded ? "Collapse clause" : "Expand clause"}
             >
               {isExpanded ? (
@@ -351,7 +349,7 @@ function ClauseCard({
             </button>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium text-slate-950 dark:text-slate-50">{clause.title}</p>
+                <p className="text-foreground font-medium">{clause.title}</p>
                 <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
                 {clause.active ? (
                   <Badge variant="success">Active</Badge>
@@ -366,7 +364,7 @@ function ClauseCard({
                 )}
                 {clause.templateUsageCount != null && (
                   <span
-                    className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400"
+                    className="text-muted-foreground inline-flex items-center gap-1 text-xs"
                     data-testid="template-clause-association"
                   >
                     <FileText className="size-3" />
@@ -376,9 +374,7 @@ function ClauseCard({
                 )}
               </div>
               {clause.description && (
-                <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-                  {clause.description}
-                </p>
+                <p className="text-muted-foreground mt-1 truncate text-sm">{clause.description}</p>
               )}
             </div>
           </div>
@@ -396,7 +392,7 @@ function ClauseCard({
 
         {/* Expanded body content */}
         {isExpanded && (
-          <div className="border-t border-slate-200 px-4 pt-3 pb-4 dark:border-slate-800">
+          <div className="border-t px-4 pt-3 pb-4">
             {isLegacy && (
               <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
                 <div className="flex items-start gap-2">

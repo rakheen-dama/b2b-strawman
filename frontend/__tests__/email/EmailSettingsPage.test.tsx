@@ -1,11 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeliveryLogTable } from "@/components/email/DeliveryLogTable";
 import { EmailSettingsContent } from "@/components/email/EmailSettingsContent";
 
 const mockGetEmailStats = vi.fn();
 const mockGetDeliveryLog = vi.fn();
+
+// DeliveryLogTable renders the DataTable kit (Phase 91 665E), which calls useRouter().
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
+}));
 
 vi.mock("@/lib/actions/email", () => ({
   getEmailStats: (...args: unknown[]) => mockGetEmailStats(...args),
@@ -62,6 +67,48 @@ describe("DeliveryLogTable", () => {
     expect(screen.getByText("welcome")).toBeInTheDocument();
     expect(screen.getByText("DELIVERED")).toBeInTheDocument();
     expect(screen.getByText("msg-abc123")).toBeInTheDocument();
+  });
+
+  it("renders the log as one table in an untitled section, one row per entry", async () => {
+    mockGetDeliveryLog.mockResolvedValue({
+      success: true,
+      data: {
+        content: [sampleLogEntry, { ...sampleLogEntry, id: "log-2", status: "FAILED" as const }],
+        page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
+      },
+    });
+
+    render(<DeliveryLogTable />);
+
+    const table = await screen.findByRole("table");
+    const section = table.closest<HTMLElement>('[data-slot="settings-section"]');
+    expect(section).not.toBeNull();
+    expect(within(section!).queryByRole("heading")).toBeNull();
+    expect(within(section!).getByRole("combobox")).toBeInTheDocument();
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent)
+    ).toEqual(["Date", "Recipient", "Template", "Status", "Provider Message ID", "Error"]);
+    // header row + two entries
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    expect(within(table).getByText("FAILED")).toBeInTheDocument();
+  });
+
+  it("keeps the hand-rolled pager with its total when there is more than one page", async () => {
+    mockGetDeliveryLog.mockResolvedValue({
+      success: true,
+      data: {
+        content: [sampleLogEntry],
+        page: { totalElements: 45, totalPages: 3, size: 20, number: 0 },
+      },
+    });
+
+    render(<DeliveryLogTable />);
+
+    expect(await screen.findByText("Page 1 of 3 (45 total)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
   });
 
   it("shows empty state when no entries", async () => {
@@ -153,6 +200,24 @@ describe("EmailSettingsContent", () => {
     expect(screen.getByText("Current Hour Usage")).toBeInTheDocument();
     expect(screen.getByText("platform")).toBeInTheDocument();
     expect(screen.getByText("Provider")).toBeInTheDocument();
+  });
+
+  it("keeps the inner Overview / Delivery Log tabs; the statistics are an h3 section", async () => {
+    mockGetEmailStats.mockResolvedValue({ success: true, data: sampleStats });
+    mockGetDeliveryLog.mockResolvedValue({
+      success: true,
+      data: {
+        content: [],
+        page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
+      },
+    });
+
+    render(<EmailSettingsContent />);
+
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Delivery Log" })).toBeInTheDocument();
+    const heading = await screen.findByRole("heading", { level: 3, name: "Delivery Statistics" });
+    expect(heading.closest('[data-slot="settings-section"]')).not.toBeNull();
   });
 
   it("shows rate limit as usage/limit format", async () => {

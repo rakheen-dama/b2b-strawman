@@ -192,17 +192,19 @@ export function TemplateEditorClient({ slug, template, readOnly }: TemplateEdito
   return (
     <div className="flex h-full flex-col">
       {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
-        <div className="flex items-center gap-4">
+      {/* K-118: the bar and both groups wrap, so a long name or the Save button never pushes the
+          page sideways at 1024 / 390. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-4">
           <Link
             href={settingsHref(slug, "documents", "templates")}
-            className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
           >
             <ChevronLeft className="size-4" />
             Templates
           </Link>
           {readOnly ? (
-            <h1 className="font-display flex items-center gap-2 text-lg text-slate-950 dark:text-slate-50">
+            <h1 className="font-display text-foreground flex min-w-0 items-center gap-2 text-lg">
               {name}
               <HelpTip code="templates.variables" />
             </h1>
@@ -224,7 +226,7 @@ export function TemplateEditorClient({ slug, template, readOnly }: TemplateEdito
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {!isDocx && (
             <>
               <TemplatePreviewDialog

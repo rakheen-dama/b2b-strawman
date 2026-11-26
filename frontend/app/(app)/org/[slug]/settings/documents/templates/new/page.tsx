@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { CreateTemplateForm } from "@/components/templates/CreateTemplateForm";
 import { settingsHref } from "@/lib/settings-nav";
 
@@ -10,20 +12,17 @@ export default async function NewTemplatePage({ params }: { params: Promise<{ sl
     <div className="space-y-8">
       <Link
         href={settingsHref(slug, "documents", "templates")}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
         Templates
       </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New Template</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create a custom document template.
-        </p>
-      </div>
+      <PageHeader title="New Template" description="Create a custom document template." />
 
-      <CreateTemplateForm slug={slug} />
+      <SettingsSection>
+        <CreateTemplateForm slug={slug} />
+      </SettingsSection>
     </div>
   );
 }

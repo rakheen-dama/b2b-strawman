@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { updateAcceptanceSettings } from "@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions";
 
 interface AcceptanceSettingsFormProps {
@@ -38,19 +39,26 @@ export function AcceptanceSettingsForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Document Acceptance
-      </h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Configure default settings for document acceptance requests.
-      </p>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SettingsSection
+      title="Document Acceptance"
+      description="Configure default settings for document acceptance requests."
+      status={
+        message && (
+          <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+        )
+      }
+      footer={
+        <Button size="sm" disabled={saving} onClick={handleSave}>
+          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+          Save Settings
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label
             htmlFor="acceptance-expiry-days"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            className="text-foreground block text-sm font-medium"
           >
             Default Expiry Period (days)
           </label>
@@ -66,27 +74,11 @@ export function AcceptanceSettingsForm({
             }
             className="mt-1 w-full"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground mt-1 text-xs">
             Number of days before an acceptance request expires. Applies to all new requests.
           </p>
         </div>
       </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button size="sm" disabled={saving} onClick={handleSave}>
-          {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-          Save Settings
-        </Button>
-        {message && (
-          <p
-            className={`text-sm ${
-              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-      </div>
-    </div>
+    </SettingsSection>
   );
 }

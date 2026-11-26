@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AcceptanceSettingsForm } from "@/components/acceptance/AcceptanceSettingsForm";
 
@@ -7,6 +7,12 @@ import { AcceptanceSettingsForm } from "@/components/acceptance/AcceptanceSettin
 vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions", () => ({
   updateAcceptanceSettings: vi.fn().mockResolvedValue({ success: true }),
 }));
+
+function footer() {
+  const footers = document.querySelectorAll<HTMLElement>('[data-slot="card-footer"]');
+  expect(footers).toHaveLength(1);
+  return footers[0];
+}
 
 describe("AcceptanceSettingsForm", () => {
   afterEach(() => {
@@ -29,6 +35,38 @@ describe("AcceptanceSettingsForm", () => {
     render(<AcceptanceSettingsForm slug="acme" acceptanceExpiryDays={30} />);
     await user.click(screen.getByRole("button", { name: /Save Settings/i }));
     expect(updateAcceptanceSettings).toHaveBeenCalledWith("acme", 30);
+  });
+
+  it("is one 'Document Acceptance' section with the per-card Save in its footer (665E)", () => {
+    render(<AcceptanceSettingsForm slug="acme" acceptanceExpiryDays={30} />);
+    const heading = screen.getByRole("heading", { level: 2, name: "Document Acceptance" });
+    const section = heading.closest('[data-slot="settings-section"]');
+    expect(section).not.toBeNull();
+    expect(document.querySelectorAll('[data-slot="settings-section"]')).toHaveLength(1);
+    expect(
+      screen.getByText("Configure default settings for document acceptance requests.")
+    ).toBeInTheDocument();
+    expect(within(footer()).getByRole("button", { name: "Save Settings" })).toBeEnabled();
+  });
+
+  it("shows the save result in the footer status, success and error", async () => {
+    const { updateAcceptanceSettings } =
+      await import("@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions");
+    const user = userEvent.setup();
+    render(<AcceptanceSettingsForm slug="acme" acceptanceExpiryDays={30} />);
+
+    await user.click(within(footer()).getByRole("button", { name: "Save Settings" }));
+    expect(await within(footer()).findByText("Acceptance settings updated.")).toBeInTheDocument();
+
+    vi.mocked(updateAcceptanceSettings).mockResolvedValueOnce({
+      success: false,
+      error: "Expiry must be between 1 and 365 days.",
+    });
+    await user.click(within(footer()).getByRole("button", { name: "Save Settings" }));
+    expect(
+      await within(footer()).findByText("Expiry must be between 1 and 365 days.")
+    ).toBeInTheDocument();
+    expect(within(footer()).queryByText("Acceptance settings updated.")).toBeNull();
   });
 
   it("validates min/max range via HTML attributes", () => {

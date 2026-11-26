@@ -152,7 +152,7 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
           Preview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Template Preview</DialogTitle>
         </DialogHeader>

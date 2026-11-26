@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getClauses, getClauseCategories } from "@/lib/actions/clause-actions";
 import { ClausesContent } from "@/components/clauses/clauses-content";
@@ -21,13 +22,10 @@ export async function renderClausesTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Clause Library</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage reusable clauses for document generation. System clauses can be cloned and
-          customized.
-        </p>
-      </div>
+      <PageHeader
+        title="Clause Library"
+        description="Manage reusable clauses for document generation. System clauses can be cloned and customized."
+      />
 
       <ClausesContent slug={slug} clauses={clauses} categories={categories} canManage={canManage} />
     </div>

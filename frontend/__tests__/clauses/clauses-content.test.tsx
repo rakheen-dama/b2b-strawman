@@ -290,11 +290,7 @@ describe("ClausesContent", () => {
     );
 
     // Open the dropdown menu
-    const menuButtons = screen.getAllByRole("button");
-    const moreButton = menuButtons.find(
-      (btn) => btn.querySelector("svg") && btn.className.includes("size-8")
-    );
-    if (moreButton) await user.click(moreButton);
+    await user.click(screen.getByRole("button", { name: "Clause actions" }));
 
     // Click "Clone & Customize"
     await waitFor(() => {

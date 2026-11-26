@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getTemplates, getOrgSettings } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
@@ -22,15 +23,15 @@ export async function renderTemplatesTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Templates
-          <HelpTip code="templates.tiptapVsWord" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage document templates for engagement letters, statements of work, and more.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Templates
+            <HelpTip code="templates.tiptapVsWord" />
+          </span>
+        }
+        description="Manage document templates for engagement letters, statements of work, and more."
+      />
 
       <TemplatesContent slug={slug} templates={templates} settings={settings} canManage={isAdmin} />
     </div>

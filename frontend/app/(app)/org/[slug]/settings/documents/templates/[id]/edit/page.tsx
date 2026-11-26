@@ -23,7 +23,7 @@ export default async function TemplateEditorPage({
       <div className="space-y-8">
         <Link
           href={settingsHref(slug, "documents", "templates")}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
           <ChevronLeft className="size-4" />
           Templates
@@ -37,5 +37,7 @@ export default async function TemplateEditorPage({
 
   const readOnly = !isAdmin || template.source === "PLATFORM";
 
+  // Phase 91 665E: the editor owns this page's h1 (TemplateEditorClient) — documented PageHeader
+  // exception (§18.3.5 sub-page table), carried to 670A.
   return <TemplateEditorClient slug={slug} template={template} readOnly={readOnly} />;
 }

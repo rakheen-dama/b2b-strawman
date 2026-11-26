@@ -6,6 +6,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SettingsSection } from "@/components/settings/settings-section";
 import type { OrgSettings } from "@/lib/types";
 
 interface BrandingSectionProps {
@@ -112,109 +113,114 @@ export function BrandingSection({
   }
 
   return (
-    <div className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <div className="flex items-center gap-2">
-        <Palette className="size-5 text-slate-600 dark:text-slate-400" />
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Branding</h2>
-      </div>
-
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        Customize your organization&apos;s branding for generated documents.
-      </p>
-
-      {/* Logo */}
-      <div className="space-y-3">
-        <Label>Logo</Label>
-        <div className="flex items-center gap-4">
-          {logoUrl ? (
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoUrl}
-                alt="Organization logo"
-                className="size-16 rounded-lg border border-slate-200 object-contain dark:border-slate-800"
-              />
-              <button
-                type="button"
-                onClick={handleDeleteLogo}
-                disabled={isUploading}
-                className="absolute -top-2 -right-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex size-16 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
-              <Upload className="size-6 text-slate-400" />
-            </div>
-          )}
-          <div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/png,image/jpeg,image/svg+xml"
-              onChange={handleFileChange}
-              className="hidden"
-              id="logo-upload"
-            />
-            <Button
-              variant="soft"
-              size="sm"
-              onClick={() => fileRef.current?.click()}
-              disabled={isUploading}
-            >
-              {isUploading ? "Uploading..." : "Upload Logo"}
-            </Button>
-            <p className="mt-1 text-xs text-slate-400">PNG, JPG, or SVG. Max 2 MB.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Brand Color */}
-      <div className="space-y-2">
-        <Label htmlFor="brand-color">Brand Color</Label>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={brandColor}
-            onChange={(e) => setBrandColor(e.target.value)}
-            className="size-9 cursor-pointer rounded border border-slate-200 dark:border-slate-800"
-          />
-          <Input
-            id="brand-color"
-            value={brandColor}
-            onChange={(e) => setBrandColor(e.target.value)}
-            placeholder="#000000"
-            className="max-w-32 font-mono"
-          />
-          {!colorValid && brandColor && (
-            <span className="text-destructive text-xs">Must be a valid hex color</span>
-          )}
-        </div>
-      </div>
-
-      {/* Footer Text */}
-      <div className="space-y-2">
-        <Label htmlFor="footer-text">Document Footer Text</Label>
-        <Textarea
-          id="footer-text"
-          value={footerText}
-          onChange={(e) => setFooterText(e.target.value)}
-          placeholder="Text that appears at the bottom of generated documents..."
-          rows={3}
-          maxLength={500}
-        />
-        <p className="text-xs text-slate-400">{footerText.length}/500 characters</p>
-      </div>
-
-      {error && <p className="text-destructive text-sm">{error}</p>}
-      {success && <p className="text-sm text-teal-600">{success}</p>}
-
-      <div className="flex justify-end">
+    <SettingsSection
+      title={
+        <span className="inline-flex items-center gap-2">
+          <Palette className="text-muted-foreground size-5" />
+          Branding
+        </span>
+      }
+      description="Customize your organization's branding for generated documents."
+      status={
+        (error || success) && (
+          <>
+            {error && <p className="text-destructive">{error}</p>}
+            {success && <p className="text-teal-600">{success}</p>}
+          </>
+        )
+      }
+      footer={
         <Button onClick={handleSave} disabled={isSaving || !colorValid}>
           {isSaving ? "Saving..." : "Save Branding"}
         </Button>
+      }
+    >
+      <div className="space-y-6">
+        {/* Logo */}
+        <div className="space-y-3">
+          <Label>Logo</Label>
+          <div className="flex items-center gap-4">
+            {logoUrl ? (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={logoUrl}
+                  alt="Organization logo"
+                  className="size-16 rounded-lg border object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleDeleteLogo}
+                  disabled={isUploading}
+                  className="absolute -top-2 -right-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex size-16 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                <Upload className="text-muted-foreground size-6" />
+              </div>
+            )}
+            <div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                onChange={handleFileChange}
+                className="hidden"
+                id="logo-upload"
+              />
+              <Button
+                variant="soft"
+                size="sm"
+                onClick={() => fileRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? "Uploading..." : "Upload Logo"}
+              </Button>
+              <p className="text-muted-foreground mt-1 text-xs">PNG, JPG, or SVG. Max 2 MB.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Brand Color */}
+        <div className="space-y-2">
+          <Label htmlFor="brand-color">Brand Color</Label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={brandColor}
+              onChange={(e) => setBrandColor(e.target.value)}
+              className="size-9 cursor-pointer rounded border"
+            />
+            <Input
+              id="brand-color"
+              value={brandColor}
+              onChange={(e) => setBrandColor(e.target.value)}
+              placeholder="#000000"
+              className="max-w-32 font-mono"
+            />
+            {!colorValid && brandColor && (
+              <span className="text-destructive text-xs">Must be a valid hex color</span>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Text */}
+        <div className="space-y-2">
+          <Label htmlFor="footer-text">Document Footer Text</Label>
+          <Textarea
+            id="footer-text"
+            value={footerText}
+            onChange={(e) => setFooterText(e.target.value)}
+            placeholder="Text that appears at the bottom of generated documents..."
+            rows={3}
+            maxLength={500}
+          />
+          <p className="text-muted-foreground text-xs">{footerText.length}/500 characters</p>
+        </div>
       </div>
-    </div>
+    </SettingsSection>
   );
 }

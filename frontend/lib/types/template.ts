@@ -5,7 +5,11 @@ export type TemplateCategory =
   | "STATEMENT_OF_WORK"
   | "COVER_LETTER"
   | "PROJECT_SUMMARY"
-  | "NDA";
+  | "NDA"
+  | "REPORT"
+  | "COMPLIANCE"
+  | "CLOSURE"
+  | "OTHER";
 
 export type TemplateEntityType = "PROJECT" | "CUSTOMER" | "INVOICE";
 

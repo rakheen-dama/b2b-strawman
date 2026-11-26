@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmailStats } from "@/lib/actions/email";
 import type { EmailDeliveryStats } from "@/lib/api/email";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { DeliveryLogTable } from "./DeliveryLogTable";
 
 function StatCard({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="rounded-md border border-slate-200 px-3 py-2 dark:border-slate-800">
-      <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</p>
-      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+    <div className="rounded-md border px-3 py-2">
+      <p className="text-foreground font-mono text-lg font-semibold">{value}</p>
+      <p className="text-muted-foreground text-xs">{label}</p>
     </div>
   );
 }
@@ -39,7 +40,7 @@ function OverviewTab() {
   }, []);
 
   if (isLoading) {
-    return <p className="text-sm text-slate-500">Loading stats...</p>;
+    return <p className="text-muted-foreground text-sm">Loading stats...</p>;
   }
 
   if (error) {
@@ -51,24 +52,19 @@ function OverviewTab() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
-          Delivery Statistics
-        </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <StatCard value={stats.sent24h} label="Sent (24h)" />
-          <StatCard value={stats.bounced7d} label="Bounced (7d)" />
-          <StatCard value={stats.failed7d} label="Failed (7d)" />
-          <StatCard value={stats.rateLimited7d} label="Rate Limited (7d)" />
-          <StatCard
-            value={`${stats.currentHourUsage}/${stats.hourlyLimit}`}
-            label="Current Hour Usage"
-          />
-          <StatCard value={stats.providerSlug ?? "Platform"} label="Provider" />
-        </div>
+    <SettingsSection title="Delivery Statistics" as="h3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <StatCard value={stats.sent24h} label="Sent (24h)" />
+        <StatCard value={stats.bounced7d} label="Bounced (7d)" />
+        <StatCard value={stats.failed7d} label="Failed (7d)" />
+        <StatCard value={stats.rateLimited7d} label="Rate Limited (7d)" />
+        <StatCard
+          value={`${stats.currentHourUsage}/${stats.hourlyLimit}`}
+          label="Current Hour Usage"
+        />
+        <StatCard value={stats.providerSlug ?? "Platform"} label="Provider" />
       </div>
-    </div>
+    </SettingsSection>
   );
 }
 

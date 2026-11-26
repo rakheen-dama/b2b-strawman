@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText, FileUp, LayoutTemplate, Plus } from "lucide-react";
-import { Badge } from "@b2mash/ui/badge";
+import { FileUp, LayoutTemplate, Plus } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import {
   Select,
@@ -12,23 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { TemplateActionsMenu } from "@/components/templates/TemplateActionsMenu";
 import { EmptyState } from "@/components/empty-state";
 import { HelpTip } from "@/components/help-tip";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { createMessages } from "@/lib/messages";
 import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
+import { TemplatesTable } from "./templates-table";
 import { uploadLogoAction, deleteLogoAction, saveBrandingAction } from "./template-support-actions";
-import { formatFileSize } from "@/lib/format";
-import { entityNounLabel } from "@/components/audit/entity-type-labels";
 import type {
   TemplateListResponse,
   TemplateCategory,
@@ -42,7 +32,15 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   COVER_LETTER: "Cover Letter",
   PROJECT_SUMMARY: "Matter Summary",
   NDA: "NDA",
+  REPORT: "Report",
+  COMPLIANCE: "Compliance",
+  CLOSURE: "Closure",
+  OTHER: "Other",
 };
+
+function categoryLabel(category: string) {
+  return CATEGORY_LABELS[category as TemplateCategory] ?? category;
+}
 
 interface TemplatesContentProps {
   slug: string;
@@ -55,19 +53,23 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
   const [formatFilter, setFormatFilter] = useState<TemplateFormat | "ALL">("ALL");
   const { t } = createMessages("empty-states");
 
-  // Filter templates by format
-  const filteredTemplates =
-    formatFilter === "ALL" ? templates : templates.filter((t) => t.format === formatFilter);
-
-  // Group templates by category
-  const grouped = filteredTemplates.reduce<Record<string, TemplateListResponse[]>>((acc, t) => {
-    const key = t.category;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(t);
-    return acc;
-  }, {});
-
-  const categories = Object.keys(grouped).sort();
+  // Filter by format, then group by category. Memoised: each group is a DataTable's `data`, and a
+  // new array identity on every render would reset the table (define-columns.tsx).
+  const { filteredCount, grouped, categories } = useMemo(() => {
+    const filtered =
+      formatFilter === "ALL" ? templates : templates.filter((t) => t.format === formatFilter);
+    const groups = filtered.reduce<Record<string, TemplateListResponse[]>>((acc, t) => {
+      const key = t.category;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(t);
+      return acc;
+    }, {});
+    // K-117: sections in display-label order, not key order.
+    const keys = Object.keys(groups).sort((a, b) =>
+      categoryLabel(a).localeCompare(categoryLabel(b))
+    );
+    return { filteredCount: filtered.length, grouped: groups, categories: keys };
+  }, [templates, formatFilter]);
 
   return (
     <div className="space-y-8">
@@ -108,13 +110,14 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
         )}
       </div>
 
-      {filteredTemplates.length === 0 ? (
+      {filteredCount === 0 ? (
         formatFilter !== "ALL" ? (
-          <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             No templates match the selected format.
           </p>
         ) : (
           <EmptyState
+            variant="default"
             icon={LayoutTemplate}
             title={t("templates.list.heading")}
             description={t("templates.list.description")}
@@ -124,107 +127,9 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
         )
       ) : (
         categories.map((cat) => (
-          <div key={cat} className="space-y-3">
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-              {CATEGORY_LABELS[cat as TemplateCategory] ?? cat}
-            </h2>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Format</TableHead>
-                    <TableHead className="hidden md:table-cell">Entity Type</TableHead>
-                    <TableHead className="hidden lg:table-cell">Source</TableHead>
-                    <TableHead>Status</TableHead>
-                    {canManage && <TableHead className="w-12">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {grouped[cat].map((template) => (
-                    <TableRow key={template.id} data-testid="template-list-item">
-                      {/* G89-F8: the description and .docx file name wrap inside the card
-                          instead of inheriting the cell's nowrap (a 1621 px table). wrap-anywhere,
-                          not break-words: only overflow-wrap:anywhere lowers the cell's
-                          min-content width, so an unbroken file name cannot widen the table */}
-                      <TableCell className="max-w-[32rem] min-w-[16rem] wrap-anywhere whitespace-normal">
-                        <Link
-                          href={`/org/${slug}/settings/documents/templates/${template.id}/edit`}
-                          className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"
-                        >
-                          {template.name}
-                        </Link>
-                        {template.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {template.description}
-                          </p>
-                        )}
-                        {template.dedicatedFlow ? (
-                          <p
-                            className="text-xs text-slate-500 italic dark:text-slate-400"
-                            data-testid="template-dedicated-flow-hint"
-                          >
-                            Generated from its own flow
-                          </p>
-                        ) : (
-                          template.hiddenFromGenericMenus && (
-                            <p
-                              className="text-xs text-slate-500 italic dark:text-slate-400"
-                              data-testid="template-hidden-from-menus-hint"
-                            >
-                              Not offered in Generate menus
-                            </p>
-                          )
-                        )}
-                        {template.format === "DOCX" && template.docxFileName && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {template.docxFileName}
-                            {template.docxFileSize != null &&
-                              ` (${formatFileSize(template.docxFileSize)})`}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {template.format === "DOCX" ? (
-                          <Badge variant="success">
-                            <FileText className="size-3" />
-                            Word
-                          </Badge>
-                        ) : (
-                          <Badge variant="neutral">Tiptap</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge variant="neutral">
-                          {entityNounLabel(template.primaryEntityType) ??
-                            template.primaryEntityType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {template.source === "PLATFORM" ? (
-                          <Badge variant="neutral">Platform</Badge>
-                        ) : (
-                          <Badge variant="lead">Custom</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {template.active ? (
-                          <Badge variant="success">Active</Badge>
-                        ) : (
-                          <Badge variant="neutral">Inactive</Badge>
-                        )}
-                      </TableCell>
-                      {canManage && (
-                        <TableCell>
-                          <TemplateActionsMenu slug={slug} template={template} />
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <SettingsSection key={cat} title={categoryLabel(cat)}>
+            <TemplatesTable slug={slug} templates={grouped[cat]} canManage={canManage} />
+          </SettingsSection>
         ))
       )}
 

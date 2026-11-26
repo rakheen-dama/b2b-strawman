@@ -49,3 +49,9 @@ All seen on the e2e mock-auth stack on 2026-11-26, between 20:09Z and 20:17Z. Th
 - **F-665D-10:** the account badge now reads "Active". No `CLOSED` account exists to observe.
 - **K-13 (already registered):** the kit `Badge variant="success"` measures 4.496:1 in light on Tax "Default" and on Trust "Primary" / "Active". `packages/` is unchanged by 665D.
 - **Observation (not a 665D defect):** the backend rejects a tax-rate name that an *inactive* rate already uses ("A tax rate with this name already exists."). The UI can only deactivate rates, so a deactivated name can never be used again. Because of this, OBS-after created "OBS 665D Rate after" and "OBS 665D Rate after-2" instead of a second "OBS 665D Rate". Whether this is intended was not investigated.
+
+## Review routing (orchestrator, bookkeeping after merge of PR #1873)
+
+- **F-665D-12 (routing, from architecture review Medium 1).** `$S/fees/_tabs/tax-rate-table.tsx:31-32,169` (`DESTRUCTIVE_GHOST`) is the third copy of the dark ghost-destructive workaround (D-55). The other two are 665C's inline strings at `TemplateList.tsx:177` and `tags-content.tsx:144`. Add it to the **F-665C-14** site list (kit ghost-destructive variant → 669A / 670A), so the kit fix removes every copy.
+- **Architecture review Medium 2 (not applied, optional tidy-up).** `components/rates/member-rates-table.tsx:77,154` takes the rate kind from two sources: the `rateColumns(slug, kind)` closure and `row.kind`. The call sites pair them by hand, so they agree today. Reading `row.original.kind` in the Delete/Add cells would leave one source → 669A light pass, if touched.
+- **CodeRabbit round 1** (9 inline): 2 adjacent `asChild` sites, pre-existing and unchanged against `1a867a784` → F-665D-9. 1 label/hint unit mismatch → F-665D-8 (the backend never reads `billingBatchAsyncThreshold`, so no code unit exists). 6 on frozen `before/scripts/*.cjs`, not applied (D-22). The dispositions were posted in the PR thread.

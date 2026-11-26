@@ -3,6 +3,7 @@ import { ArrowLeft, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "@b2mash/ui/page-header";
 import { api, ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { BatchHistoryTable } from "@/components/take-on/batch-history-table";
 import { DatasetPicker } from "@/components/take-on/dataset-picker";
 import { GoLiveChecklistCard } from "@/components/take-on/go-live-checklist-card";
@@ -26,7 +27,7 @@ function Notice({ children, testId }: { children: React.ReactNode; testId: strin
     <p
       role="status"
       data-testid={testId}
-      className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+      className="border-border bg-muted text-muted-foreground rounded-lg border px-4 py-3 text-sm"
     >
       {children}
     </p>
@@ -84,7 +85,7 @@ export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) 
         <div className="space-y-6">
           <Link
             href={settingsHref(slug, "matters", "take-on")}
-            className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-slate-100"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
             data-testid="take-on-back"
           >
             <ArrowLeft className="size-4" />
@@ -108,10 +109,7 @@ export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) 
             <DatasetPicker slug={slug} datasets={datasets} />
             <GoLiveChecklistCard items={goLive} />
           </div>
-          <section className="space-y-3">
-            <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
-              Take-on history
-            </h2>
+          <SettingsSection title="Take-on history">
             <BatchHistoryTable
               slug={slug}
               batches={history}
@@ -124,7 +122,7 @@ export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) 
                 />
               }
             />
-          </section>
+          </SettingsSection>
         </>
       )}
     </div>

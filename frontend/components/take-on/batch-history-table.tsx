@@ -99,6 +99,7 @@ export function BatchHistoryTable({ slug, batches, empty }: BatchHistoryTablePro
       columnVisibility={false}
       pageSize={null}
       stickyHeader={false}
+      frame={false}
       empty={empty}
       caption="Take-on batches"
       tableTestId="take-on-history"

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Label } from "@b2mash/ui/label";
 import { isoDateInSA } from "@b2mash/shared/date";
 import { Textarea } from "@/components/ui/textarea";
+import { SettingsSection } from "@/components/settings/settings-section";
 import {
   acknowledgeGoLiveItem,
   withdrawGoLiveItem,
@@ -65,42 +65,42 @@ export function GoLiveChecklistCard({ items: initialItems }: GoLiveChecklistCard
   }
 
   return (
-    <Card data-testid="take-on-go-live-card">
-      <CardHeader>
-        <CardTitle>Go-live checklist</CardTitle>
-        <CardDescription>
+    <SettingsSection
+      title="Go-live checklist"
+      description={
+        <>
           Confirm each point for your firm. These are your firm&apos;s records; they do not stop a
           take-on.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ul className="divide-y divide-slate-200 dark:divide-slate-800">
-          {items.map((item) => (
-            <GoLiveItemRow
-              key={item.itemKey}
-              item={item}
-              busy={busyKey === item.itemKey}
-              disabled={busyKey !== null}
-              error={error?.key === item.itemKey ? error.message : null}
-              onAcknowledge={(note) =>
-                change(
-                  item.itemKey,
-                  () => acknowledgeGoLiveItem(item.itemKey, note),
-                  "The item could not be acknowledged. Try again."
-                )
-              }
-              onWithdraw={() =>
-                change(
-                  item.itemKey,
-                  () => withdrawGoLiveItem(item.itemKey),
-                  "The acknowledgement could not be withdrawn. Try again."
-                )
-              }
-            />
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+        </>
+      }
+      data-testid="take-on-go-live-card"
+    >
+      <ul className="divide-border divide-y">
+        {items.map((item) => (
+          <GoLiveItemRow
+            key={item.itemKey}
+            item={item}
+            busy={busyKey === item.itemKey}
+            disabled={busyKey !== null}
+            error={error?.key === item.itemKey ? error.message : null}
+            onAcknowledge={(note) =>
+              change(
+                item.itemKey,
+                () => acknowledgeGoLiveItem(item.itemKey, note),
+                "The item could not be acknowledged. Try again."
+              )
+            }
+            onWithdraw={() =>
+              change(
+                item.itemKey,
+                () => withdrawGoLiveItem(item.itemKey),
+                "The acknowledgement could not be withdrawn. Try again."
+              )
+            }
+          />
+        ))}
+      </ul>
+    </SettingsSection>
   );
 }
 

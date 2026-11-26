@@ -3,9 +3,11 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
 import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@b2mash/ui/badge";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { CAPABILITIES } from "@/lib/capabilities";
 import { CustomRolesSection } from "@/components/roles/custom-roles-section";
 import { CapabilityBadge } from "@/components/roles/role-card";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { CapabilityReference } from "./capability-reference";
 import type { OrgRole } from "@/lib/api/org-roles";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -49,50 +51,38 @@ export async function renderRolesTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Roles & Permissions
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage system roles and create custom roles with granular permissions.
-        </p>
-      </div>
+      <PageHeader
+        title="Roles & Permissions"
+        description="Manage system roles and create custom roles with granular permissions."
+      />
 
-      {/* System Roles Section */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">System Roles</h2>
-          <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-            Built-in roles that cannot be modified or deleted.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <SettingsSection
+        title="System Roles"
+        description="Built-in roles that cannot be modified or deleted."
+      >
+        {/* K-104: three columns only from xl — at 1024 the section is too narrow for the
+            Member card's badges; min-w-0 lets each card (and its badges) shrink to the column. */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           {systemRoles.map((role) => {
             const displayCaps = getDisplayCapabilities(role);
             return (
-              <div
-                key={role.id}
-                className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
-              >
+              <div key={role.id} className="min-w-0 rounded-lg border p-6">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-950 dark:text-slate-50">{role.name}</h3>
+                  <h3 className="text-foreground font-semibold">{role.name}</h3>
                   <Badge variant="neutral">System</Badge>
                 </div>
 
                 {displayCaps.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                  <div className="mt-3 flex min-w-0 flex-wrap gap-1.5">
                     {displayCaps.map((cap) => (
                       <CapabilityBadge key={cap} cap={cap} />
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                    No default capabilities
-                  </p>
+                  <p className="text-muted-foreground mt-3 text-sm">No default capabilities</p>
                 )}
 
-                <div className="mt-3 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-muted-foreground mt-3 flex items-center gap-1 text-xs">
                   <Users className="size-3.5" />
                   <span>
                     {role.memberCount} {role.memberCount === 1 ? "member" : "members"}
@@ -102,13 +92,15 @@ export async function renderRolesTab({ slug }: SettingsTabProps) {
             );
           })}
         </div>
-      </div>
+      </SettingsSection>
 
       {/* Custom Roles Section */}
       <CustomRolesSection slug={slug} customRoles={customRoles} />
 
-      {/* Capability Reference */}
-      <CapabilityReference />
+      {/* Capability Reference — untitled section: the trigger is its label (665A DA-17) */}
+      <SettingsSection>
+        <CapabilityReference />
+      </SettingsSection>
     </div>
   );
 }

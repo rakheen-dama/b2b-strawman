@@ -86,9 +86,21 @@ export const CAPABILITY_META = [
   },
 ] as const;
 
-const CAPABILITY_LABELS: ReadonlyMap<string, string> = new Map(
-  CAPABILITY_META.map((cap) => [cap.value, cap.label])
-);
+/**
+ * Labels for capabilities a role may hold that are not offered as grantable rows in CAPABILITY_META
+ * (role dialog checkboxes, capability reference, team screens) — display only (K-104, Phase 91
+ * 665A). Adding them to CAPABILITY_META would make them grantable in the UI, a behaviour change.
+ */
+const DISPLAY_ONLY_CAPABILITY_LABELS: ReadonlyArray<readonly [string, string]> = [
+  ["GENERATE_STATEMENT_OF_ACCOUNT", "Generate statement of account"],
+  ["VIEW_LEGAL", "View legal registers"],
+  ["MANAGE_DISBURSEMENTS", "Manage disbursements"],
+];
+
+const CAPABILITY_LABELS: ReadonlyMap<string, string> = new Map<string, string>([
+  ...DISPLAY_ONLY_CAPABILITY_LABELS,
+  ...CAPABILITY_META.map((cap) => [cap.value, cap.label] as const),
+]);
 
 /** Display label for a capability enum value ("INVOICING" → "Billing"); unknown values are spaced. */
 export function capabilityLabel(cap: string): string {

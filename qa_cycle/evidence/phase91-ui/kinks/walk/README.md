@@ -26,7 +26,7 @@ Capture only. The register (`../../kinks-register.md`), triage and the PR come l
 | S7 dialogs | open-only (`aria-haspopup="dialog"` harvest on every S1/S4 shot + a named-opener pass, 02c) | ≈ 240 | **288** (73 distinct dialogs) | never clicked inside; Escape-closed; 64 JSON-only records = named clicks that navigated / opened inline UI / timed out |
 | S8 checks | K-11, K-07, K-05/I-02/I-05, I-06, K-06, K-09, K-10, K-12, X5, K-04/K-21/I-03/I-04, K-20 | 11 checks | **11** (32 PNG) | `.tmp/662A-walk-raw/checks.json`, copied into `walk-index.json` → `checks` |
 
-**Route files: 58 / 58 accounted for.** 52 loaded directly (incl. the two top-up detail pages), 5 family hosts via their 32 tabs, `/settings` redirect; **1 skipped**: `/trust-accounting/reconciliation/lists/[listId]` — no completed reconciliation on a lifecycle stack (D-14: may be skipped). Tabs **32 / 32**, sub-pages **11 / 11** (`/settings/matters/checklists/[id]/edit`: all 5 checklists are PLATFORM, so it redirects to the read-only detail, as 661B W-9). `walk-index.json` → `skipped` also lists `compliance/requests/[id]` and `billing-runs/[id]` from the read-only pass; both were then captured after the top-ups (`captures[].topup = true`).
+**Route files: 58 / 58 accounted for.** 52 loaded directly (40 outside settings incl. the two top-up detail pages, the `/settings` redirect and the 11 settings sub-pages), 5 family hosts via their 32 tabs; **1 skipped**: `/trust-accounting/reconciliation/lists/[listId]` — no completed reconciliation on a lifecycle stack (D-14: may be skipped). Tabs **32 / 32**, sub-pages **11 / 11** (`/settings/matters/checklists/[id]/edit`: all 5 checklists are PLATFORM, so it redirects to the read-only detail, as 661B W-9 — the edit form itself is unobserved; the S1/S6 captures labelled `checklists/[id]/edit` show the detail page). `walk-index.json` → `skipped` also lists `compliance/requests/[id]` and `billing-runs/[id]` from the read-only pass; both were then captured after the top-ups (`captures[].topup = true`).
 
 ## End-of-walk UI top-ups (D-14; through the UI, never SQL; after S1–S8)
 
@@ -60,7 +60,7 @@ The only other write in the walk is K-11's saved view (`662A K-11 view`, created
 - 20 × "Failed to load resource: 404" — member on the gated `/invoices`, `/invoices/[id]`, `/invoices/collections`, `/invoices/unbilled`, `/compliance` (the page's own 404 response; these pages render **"Something went wrong"** error UI with no h1 for the member, not a not-found page) + 3 × member on `$PA/*` (expected 404).
 - **4 × "Minified React error #441"** — member on `/reports/timesheet` (`/reports/[reportSlug]`), all 4 combos.
 - 2 × 404 resource on `/settings/firm?tab=audit-trail` (owner 1440; 661B W-10 re-observed).
-- 36 × tiptap "Duplicate extension names found: ['link', 'underline']" (template editor, new template, New Clause / New Template; K-17).
+- 30 × tiptap "Duplicate extension names found: ['link', 'underline']" (template editor, new template, New Clause / New Template; K-17).
 - 11 × Radix "Missing `Description` or `aria-describedby`" (template Preview dialog, fee-note "Add Tariff Items" dialog).
 
 ## Probe notes for triage (read before trusting a flag)
@@ -81,3 +81,5 @@ Not opened because the trigger is a link, a menu or an excluded verb (open-only 
 3. Sheets: 17 of 111 exceed the 700 KB target (max 1.25 MB: 390 settings and dialog sheets); `contact/` totals 45 MB.
 4. K-10 top-up not done (not covered by D-14); reconciliation monthly list skipped (D-14).
 5. Carol has no client or matter-template id of her own on this stack: her `/clients/[id]` and `/settings/matters/templates/[id]` captures use Alice's ids (she sees the gated branch, e.g. "You don't have access to Clients").
+   - **Correction (register K-62):** on `/clients/[id]` Carol does **not** see a gated branch — all 4 member captures are HTTP 200 with h1 "Acme Corp" and the full client page (the list `/clients` is the page that denies her).
+6. **Re-run harvest on member skip tabs (found in CodeRabbit round 1).** On a resumed run, `02-walk-routes.cjs` reloaded and harvested the 14 member tab URLs that had been recorded as skips (fallback panel) and wrote their `S7/.done-*--{audit,financials,rates,invoices}__carol-*` markers. Every one of those harvests recorded **0** new dialogs and no S7 record names a skipped tab, so no dialog is attributed to a tab the member does not have. The other walk-script failure modes CodeRabbit raised did not occur in this run (checked on the raw set and the stack; see the PR comment).

@@ -1,7 +1,7 @@
 {
-  "commit": "d62c5dc19",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20, clean worktree wt-661b-gate, PR #1863)",
+  "commit": "8da7beaf9",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, worktree-epic-663A, PR #1865)",
   "exit": 0,
-  "ts": "2026-11-25T21:12:55Z",
-  "summary": "PR #1863 @d62c5dc19 (head 8e3fcc1f4 is evidence-only on top) — lint 0 errors, typecheck 0, format clean, build 0, vitest 509 files / 5047 passed / 2 skipped"
+  "ts": "2026-11-26T08:19:43Z",
+  "summary": "PR #1865 @8da7beaf9 (head 857ca9f26 adds evidence/docs only; frontend diff empty) — lint 0, typecheck 0, format clean, build 0, vitest 512 files / 5057 passed / 2 skipped"
 }

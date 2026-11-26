@@ -141,6 +141,19 @@ describe("SettingsSidebar — the five families from SETTINGS_FAMILIES (616E)", 
     expect(screen.getByRole("link", { name: "General" })).toHaveAttribute("aria-current", "true");
   });
 
+  // 664A (K-03): the active bar follows the current tab's state, not a hard-coded class pair.
+  it("marks only the current tab data-active, alongside aria-current", () => {
+    renderRail("/org/acme/settings/firm", OWNER, "roles");
+    const active = within(rail())
+      .getAllByRole("link")
+      .filter((a) => a.hasAttribute("data-active"));
+    expect(active).toEqual([screen.getByRole("link", { name: "Roles" })]);
+    expect(active[0]).toHaveAttribute("data-active", "true");
+    expect(active[0]).toHaveAttribute("aria-current", "true");
+    // Family links never carry the bar.
+    expect(screen.getByRole("link", { name: "Firm" })).not.toHaveAttribute("data-active");
+  });
+
   it("leaves admin-only tabs absent (not disabled) for a member", () => {
     renderRail("/org/acme/settings/firm", MEMBER);
     expect(tabLinks().map((a) => a.textContent)).toEqual(["General", "Subscription"]);

@@ -1,0 +1,45 @@
+662A kinks walk — stack, data and every script invocation (appended as executed)
+Worktree: /Users/rakheendama/Projects/2026/worktree-epic-662A  branch phase91/62A-kinks-register  HEAD 16423ca4bc7ae4fa78a1d5cb294a19144e090a69 (= main, 661B merged as 023ddb315)
+Node v20.11.1 (nvm), pnpm 10.26.1 (/opt/homebrew/bin/pnpm, SHELL=/bin/bash NODE_OPTIONS=""), @playwright/test 1.59.1 (library only)
+
+## 1. Pre-flight (2026-11-25 ≈21:30 UTC)
+$ ps aux | grep -E "[m]vnw|[s]urefire|[p]laywright test"      -> (nothing)
+$ SHELL=/bin/bash NODE_OPTIONS="" /opt/homebrew/bin/pnpm install --frozen-lockfile   -> Done in 7.1s
+
+## 2. Fresh stack (from this worktree)
+$ nohup bash -c 'export SHELL=/bin/bash; bash compose/scripts/e2e-down.sh && docker builder prune -f && bash compose/scripts/e2e-up.sh; echo "rc=$?" > /tmp/662A-e2e-up.done' > /tmp/662A-e2e-up.log 2>&1 &
+  e2e-down: "Stack stopped. All containers and volumes removed." (docteams-e2e_e2e_postgres_data + localstack_data removed)
+  docker builder prune -f: build cache reclaimed
+  e2e-up: rc=0; "Seed completed (container exited)"; e2e-seed Exited (0); containers created 2026-11-25 23:36:23 SAST
+  grep "WARNING|TIMEOUT|ERROR" /tmp/662A-e2e-up.log -> (none)
+$ curl -sf http://localhost:8081/actuator/health      -> {"groups":["liveness","readiness"],"status":"UP"}
+$ curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/mock-login   -> 200
+$ curl -sf -X POST http://localhost:8090/token ... user_e2e_carol           -> access_token returned
+
+## 3. Data suites (D-13: lifecycle first, then depth-ii)
+$ cd frontend && E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 SHELL=/bin/bash NODE_OPTIONS="" /opt/homebrew/bin/pnpm test:e2e:legal-lifecycle
+  rc=0 — "105 passed (3.0m)"   (0 failed, 0 flaky, 0 skipped)
+$ cd frontend && E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 SHELL=/bin/bash NODE_OPTIONS="" /opt/homebrew/bin/pnpm test:e2e:legal-depth-ii
+  rc=0 — "4 skipped / 40 passed (1.9m)"   (0 failed; the 4 skipped are the opt-in null-prefetch probes)
+
+## 4. Tree restore after the suites
+$ git checkout -- frontend/test-results documentation/screenshots; git clean -fd -- frontend/test-results frontend/e2e/screenshots documentation/screenshots
+  25 untracked documentation/screenshots/legal-vertical/*.png removed; git status --short -> empty
+
+## 5. Walk script invocations (worktree root; each ≤ 600 s foreground; last line of each run recorded)
+$ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/01-ids.cjs        -> "ALL DONE ids" (alice: 10 matters, carol: 2 matters; billingRun/dsr/reconList = null; checklists all PLATFORM; max trust reference length 23)
+$ BUDGET_S=60 CONC=4 node .../02-walk-routes.cjs   (smoke run with the first lib.cjs revision) -> "REMAINING 774"
+  Output DISCARDED (raw scratch deleted): the overflow probe listed 1×1 sr-only spans as "clipped", crowding the top-10 lists.
+  lib.cjs edited once before the real walk (skip elements ≤ 2 px in the overflow loop); every run below uses the committed lib.cjs.
+$ BUDGET_S=480 CONC=4 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/02-walk-routes.cjs   run 1 -> "REMAINING 347" (alice combos 0 left)
+  run 2 -> "REMAINING 14"
+  run 3 -> "ALL DONE 02-walk-routes"
+$ BUDGET_S=480 CONC=5 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/02b-dialogs-named.cjs   run 1 -> "ALL DONE 02b-dialogs-named" (only 9 named dialogs: bug — b.type is "submit" for any <button> without a type attribute, so openers were filtered out; kept as executed)
+$ BUDGET_S=480 CONC=5 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/02c-dialogs-named.cjs   run 1 -> "ALL DONE 02c-dialogs-named" (+47 named dialog shots over 5 combos)
+$ BUDGET_S=480 CONC=4 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/03-walk-390.cjs   run 1 -> "ALL DONE 03-walk-390" (4 × 53 shots)
+$ BUDGET_S=540 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/04-checks.cjs   run 1 -> "ALL DONE 04-checks" (10 checks in 80 s)
+$ BUDGET_S=480 CONC=4 NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/05-topups.cjs   run 1 -> "ALL DONE 05-topups" (DSR 92f1d962… Access Request for Acme Corp; fee run 3247ec6c… PREVIEW, configure step only; both detail pages captured × 8 combos)
+$ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/06-sheets.cjs '--only=^(t1-matters-id|t1-matters-id-tabs-1|t4-dialogs-1|t1-shell-390)\.png$'   (trial render of 4 sheets) -> "ONLY run — index not rewritten"
+$ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/06-sheets.cjs   -> "ALL DONE 06-sheets 111 sheets" (walk-index.json 1020 KB, 1433 captures; console.json 70 entries)
+$ NODE_OPTIONS="" node qa_cycle/evidence/phase91-ui/kinks/scripts/07-register-crops.cjs   (register agent, 2026-11-26) -> "ALL DONE 07-register-crops 20 crops"
+$ node qa_cycle/evidence/phase91-ui/kinks/scripts/08-register-counts.cjs   (register agent, re-run after every register edit) -> "wrote counts into qa_cycle/evidence/phase91-ui/kinks-register.md (125 rows validated)"

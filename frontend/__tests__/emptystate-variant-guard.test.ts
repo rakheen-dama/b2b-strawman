@@ -15,27 +15,6 @@ const SHARED_MODULE = "components/empty-state";
 
 /** File (relative to `frontend/`) → the Phase 91 slice that sets its variants and deletes the line. */
 const ALLOWLIST: Record<string, string> = {
-  // 663B — Phase 90 pages and detail-tab panels (explicit "default", no visual change)
-  "app/(app)/org/[slug]/clients/page.tsx": "663B",
-  "app/(app)/org/[slug]/matters/page.tsx": "663B",
-  "app/(app)/org/[slug]/reports/page.tsx": "663B",
-  "app/(app)/org/[slug]/reports/profitability/page.tsx": "663B",
-  "components/activity/activity-feed.tsx": "663B",
-  "components/audit/audit-timeline.tsx": "663B",
-  "components/budget/budget-panel.tsx": "663B",
-  "components/correspondence/correspondence-list.tsx": "663B",
-  "components/customers/customer-invoices-tab.tsx": "663B",
-  "components/customers/customer-projects-panel.tsx": "663B",
-  "components/documents/customer-documents-panel.tsx": "663B",
-  "components/documents/documents-panel.tsx": "663B",
-  "components/profitability/customer-financials-tab.tsx": "663B",
-  "components/profitability/project-financials-tab.tsx": "663B",
-  "components/projects/project-customers-panel.tsx": "663B",
-  "components/projects/project-members-panel.tsx": "663B",
-  "components/projects/time-summary-panel.tsx": "663B",
-  "components/rates/customer-rates-tab.tsx": "663B",
-  "components/rates/project-rates-tab.tsx": "663B",
-  "components/tasks/task-list-panel.tsx": "663B",
   // 665C — Settings › Matters
   "app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content.tsx": "665C",
   "app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx": "665C",

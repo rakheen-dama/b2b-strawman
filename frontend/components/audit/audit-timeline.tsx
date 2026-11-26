@@ -172,6 +172,7 @@ export function AuditTimeline({
   if (events.length === 0) {
     return (
       <EmptyState
+        variant="default"
         icon={History}
         title="No audit events"
         description={`No audit events for this ${entityTypeLabel(entityType).toLowerCase()}`}

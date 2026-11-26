@@ -82,6 +82,7 @@ export function CustomerDocumentsPanel({
 
       {documents.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={FileText}
           title="No client documents yet"
           description={

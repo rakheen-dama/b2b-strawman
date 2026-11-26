@@ -86,6 +86,7 @@ export function CustomerProjectsPanel({
       <div className="space-y-4">
         {header}
         <EmptyState
+          variant="default"
           icon={FolderKanban}
           title="No linked matters"
           description="Link matters to this client to track their work"

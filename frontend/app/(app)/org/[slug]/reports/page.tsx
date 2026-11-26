@@ -76,6 +76,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
       {/* Category Sections */}
       {data.categories.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={BarChart3}
           title={fetchError ? "Unable to load reports" : "No reports available"}
           description={

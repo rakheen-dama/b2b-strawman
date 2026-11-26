@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Settings, Clock } from "lucide-react";
 import {
@@ -35,6 +36,11 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
   const access: NavFilterAccess = { hasCapability, isAdmin, isOwner, isModuleEnabled };
+  // K-07 (X5): the palette is opened programmatically (header button, sidebar pill, ⌘K), so Radix has
+  // no DialogTrigger to return focus to and leaves it on <body>. Remember the element focused when the
+  // palette opens; on close return to it only while it is still in the document — a trigger unmounted
+  // by navigation (e.g. the pill inside a closed mobile Sheet) leaves focus to the new page.
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   // Same gates as the sidebar zones (lib/nav-filter.ts, shared with components/shell/app-sidebar.tsx — 612B.1, 616E).
   const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter((item) =>
@@ -67,6 +73,17 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
       // Lands on DialogContent's inner div (already rounded-xl); `shadow-(--…)` form so twMerge
       // replaces shadow-lg (the `shadow-[var(--…)]` form does not merge). Popover = one step above cards in dark.
       className="bg-popover shadow-(--shadow-overlay)"
+      onOpenAutoFocus={() => {
+        const active = document.activeElement;
+        returnFocusRef.current =
+          active instanceof HTMLElement && active !== document.body ? active : null;
+      }}
+      onCloseAutoFocus={(event) => {
+        event.preventDefault();
+        const target = returnFocusRef.current;
+        returnFocusRef.current = null;
+        if (target?.isConnected) target.focus();
+      }}
     >
       <CommandInput placeholder="Search pages, settings..." />
       <CommandList>

@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation
@@ -277,5 +278,58 @@ describe("CommandPaletteDialog", () => {
       renderDialog({ enabledModules: ["bulk_billing", "trust_accounting"] });
       expect(settingsEntries().some((t) => /security|coming soon/i.test(t))).toBe(false);
     });
+  });
+});
+
+describe("K-07 focus return (X5)", () => {
+  function FocusHarness({ showTrigger = true }: { showTrigger?: boolean }) {
+    const [open, setOpen] = useState(false);
+    return (
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+        <CapabilityProvider capabilities={ALL_CAPABILITIES} role="Owner" isAdmin={false} isOwner>
+          {showTrigger && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Open palette (K-07 harness)
+            </button>
+          )}
+          <CommandPaletteDialog slug="test-org" open={open} onOpenChange={setOpen} />
+        </CapabilityProvider>
+      </OrgProfileProvider>
+    );
+  }
+
+  it("returns focus to the element that opened the palette when it closes", async () => {
+    const user = userEvent.setup();
+    render(<FocusHarness />);
+    const trigger = screen.getByRole("button", { name: "Open palette (K-07 harness)" });
+
+    await user.click(trigger);
+    await screen.findByRole("dialog", { name: "Command Palette" });
+    await user.keyboard("{Escape}");
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Command Palette" })).not.toBeInTheDocument()
+    );
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("does not force focus when the opener is no longer connected", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<FocusHarness />);
+    const removedTrigger = screen.getByRole("button", { name: "Open palette (K-07 harness)" });
+
+    await user.click(removedTrigger);
+    await screen.findByRole("dialog", { name: "Command Palette" });
+    rerender(<FocusHarness showTrigger={false} />);
+    expect(removedTrigger.isConnected).toBe(false);
+
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Command Palette" })).not.toBeInTheDocument()
+    );
+    // Let FocusScope's setTimeout(0) unmount focus run before asserting.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.activeElement).not.toBe(removedTrigger);
+    expect(document.activeElement).toBe(document.body);
   });
 });

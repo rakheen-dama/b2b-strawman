@@ -56,7 +56,9 @@ export function ChecklistItemsTable({ items }: ChecklistItemsTableProps) {
         },
         {
           id: "requiresDocument",
-          meta: { label: "Document Required" },
+          // The two-word header may wrap: `TableHead` is `whitespace-nowrap` by default and this
+          // header alone otherwise sets the table's min width past a 1024 viewport (F-665C-15).
+          meta: { label: "Document Required", headerClassName: "whitespace-normal" },
           cell: ({ row }) =>
             row.original.requiresDocument ? (
               <Badge variant="neutral">{row.original.requiredDocumentLabel || "Yes"}</Badge>

@@ -216,8 +216,28 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Totals the draft after a change that cannot take a tax rate off a line (lines added, details
+   * saved). See {@link #recalculateTotals(BigDecimal, boolean, boolean, BigDecimal, boolean)}.
+   */
   public void recalculateTotals(
       BigDecimal computedSubtotal,
+      boolean hasPerLineTax,
+      BigDecimal perLineTaxSum,
+      boolean taxInclusive) {
+    recalculateTotals(computedSubtotal, false, hasPerLineTax, perLineTaxSum, taxInclusive);
+  }
+
+  /**
+   * Totals the draft from its lines. While a line carries a tax rate the tax is the lines' sum;
+   * otherwise it is the header (manual) tax set by {@link #updateDraft}. {@code hadPerLineTax} says
+   * whether a line carried a rate before the change being totalled: when one did and none does now
+   * (the last taxed line was deleted or its rate cleared), the tax held is the lines' old VAT, not
+   * a header tax anyone typed — it drops to zero instead of surviving as phantom header tax.
+   */
+  public void recalculateTotals(
+      BigDecimal computedSubtotal,
+      boolean hadPerLineTax,
       boolean hasPerLineTax,
       BigDecimal perLineTaxSum,
       boolean taxInclusive) {
@@ -225,8 +245,10 @@ public class Invoice {
 
     if (hasPerLineTax) {
       this.taxAmount = perLineTaxSum;
+    } else if (hadPerLineTax) {
+      this.taxAmount = BigDecimal.ZERO;
     }
-    // else: taxAmount stays as manually set value (backward compatibility)
+    // else: taxAmount stays as the manually set header tax
 
     if (taxInclusive && hasPerLineTax) {
       this.total = this.subtotal;

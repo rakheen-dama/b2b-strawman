@@ -582,6 +582,8 @@ public class InvoiceCreationService {
       throw new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId);
     }
 
+    // Read before the edit: clearing the last line's rate must zero the VAT, not keep it.
+    boolean hadPerLineTax = lineRepository.existsByInvoiceIdAndTaxRateIdIsNotNull(invoiceId);
     int sortOrder = request.sortOrder() != null ? request.sortOrder() : line.getSortOrder();
     line.update(request.description(), request.quantity(), request.unitPrice(), sortOrder);
 
@@ -594,7 +596,7 @@ public class InvoiceCreationService {
     }
     lineRepository.save(line);
 
-    invoiceTaxService.recalculateInvoiceTotals(invoice);
+    invoiceTaxService.recalculateInvoiceTotals(invoice, hadPerLineTax);
     invoice = invoiceRepository.save(invoice);
 
     log.info("Updated line item {} on invoice {}", lineId, invoiceId);
@@ -679,9 +681,11 @@ public class InvoiceCreationService {
       }
     }
 
+    // Read before the delete: removing the last taxed line must zero the VAT, not keep it.
+    boolean hadPerLineTax = lineRepository.existsByInvoiceIdAndTaxRateIdIsNotNull(invoiceId);
     lineRepository.delete(line);
 
-    invoiceTaxService.recalculateInvoiceTotals(invoice);
+    invoiceTaxService.recalculateInvoiceTotals(invoice, hadPerLineTax);
     invoiceRepository.save(invoice);
 
     log.info("Deleted line item {} from invoice {}", lineId, invoiceId);

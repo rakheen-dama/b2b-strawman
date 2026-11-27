@@ -1,0 +1,236 @@
+{
+ "alice/tx-await": {
+  "P0": {
+   "scroller": "662/948",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 263
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "0/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P1": {
+   "scroller": "662/948",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 263
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "0/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P2": {
+   "scroller": "662/852",
+   "widths": {
+    "Date": 101,
+    "Reference": 96,
+    "Type": 112,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 263
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "2/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P3": {
+   "scroller": "662/789",
+   "widths": {
+    "Date": 101,
+    "Reference": 96,
+    "Type": 112,
+    "Amount": 116,
+    "Status": 102,
+    "Actions": 263
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "2/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  }
+ },
+ "alice/tx-p2": {
+  "P0": {
+   "scroller": "662/746",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 124,
+    "Status": 104,
+    "Actions": 113
+   },
+   "shown": {
+    "Date": "4/4",
+    "Reference": "4/4",
+    "Type": "4/4",
+    "Amount": "4/4",
+    "Status": "0/4",
+    "Actions": "4/4"
+   }
+  },
+  "P1": {
+   "scroller": "662/746",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 124,
+    "Status": 104,
+    "Actions": 113
+   },
+   "shown": {
+    "Date": "4/4",
+    "Reference": "4/4",
+    "Type": "4/4",
+    "Amount": "4/4",
+    "Status": "0/4",
+    "Actions": "4/4"
+   }
+  },
+  "P2": {
+   "scroller": "662/662",
+   "widths": {
+    "Date": 101,
+    "Reference": 97,
+    "Type": 122,
+    "Amount": 124,
+    "Status": 104,
+    "Actions": 113
+   },
+   "shown": {
+    "Date": "4/4",
+    "Reference": "4/4",
+    "Type": "4/4",
+    "Amount": "4/4",
+    "Status": "4/4",
+    "Actions": "4/4"
+   }
+  },
+  "P3": {
+   "scroller": "662/662",
+   "widths": {
+    "Date": 101,
+    "Reference": 97,
+    "Type": 122,
+    "Amount": 124,
+    "Status": 104,
+    "Actions": 113
+   },
+   "shown": {
+    "Date": "4/4",
+    "Reference": "4/4",
+    "Type": "4/4",
+    "Amount": "4/4",
+    "Status": "4/4",
+    "Actions": "4/4"
+   }
+  }
+ },
+ "bob/tx-await": {
+  "P0": {
+   "scroller": "662/892",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 207
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "0/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P1": {
+   "scroller": "662/892",
+   "widths": {
+    "Date": 101,
+    "Reference": 144,
+    "Type": 160,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 207
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "0/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P2": {
+   "scroller": "662/796",
+   "widths": {
+    "Date": 101,
+    "Reference": 96,
+    "Type": 112,
+    "Amount": 116,
+    "Status": 165,
+    "Actions": 207
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "2/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  },
+  "P3": {
+   "scroller": "662/734",
+   "widths": {
+    "Date": 101,
+    "Reference": 96,
+    "Type": 112,
+    "Amount": 116,
+    "Status": 102,
+    "Actions": 207
+   },
+   "shown": {
+    "Date": "2/2",
+    "Reference": "2/2",
+    "Type": "2/2",
+    "Amount": "2/2",
+    "Status": "0/2",
+    "Actions": "2/2"
+   }
+  }
+ }
+}

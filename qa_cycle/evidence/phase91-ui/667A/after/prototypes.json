@@ -1,0 +1,227 @@
+{
+ "1024": {
+  "tilesAxeBefore": [
+   "definition-list:1",
+   "dlitem:9"
+  ],
+  "tilesProto": {
+   "heightsBefore": [
+    76,
+    76,
+    76,
+    76,
+    96,
+    96,
+    96,
+    96,
+    76
+   ],
+   "heightsAfter": [
+    76,
+    76,
+    76,
+    76,
+    96,
+    96,
+    96,
+    96,
+    76
+   ],
+   "dd": [
+    "ledger-total-deposits=R 50 463,00",
+    "ledger-total-transfers-in=R 10 000,00",
+    "ledger-total-payments=R 1 500,00",
+    "ledger-total-fee-transfers=R 0,00",
+    "ledger-total-refunds=R 5 000,00",
+    "ledger-total-investment-placements=R 20 000,00",
+    "ledger-total-balance=R 33 963,00",
+    "ledger-total-invested=R 20 095,00",
+    "ledger-total-held=R 54 058,00"
+   ]
+  },
+  "tilesAxeAfterProto": [],
+  "outOfRange": {
+   "pager": "Page 10 of 3",
+   "prev": "/org/e2e-test-org/trust-accounting/transactions?page=8",
+   "emptyText": [
+    "No transactions match the current filters"
+   ],
+   "found": [
+    "54 transactions found"
+   ]
+  },
+  "noMatch": {
+   "emptyText": [
+    "No transactions match the current filters"
+   ],
+   "tables": 0
+  },
+  "k89Proto": {
+   "before": {
+    "table": 1041,
+    "scroller": 662
+   },
+   "after": {
+    "table": 1244,
+    "scroller": 662,
+    "scrollWidth": 1244
+   },
+   "sums": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSumWithProto": 69380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSumWithProto": 33963
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSumWithProto": 0
+    }
+   ]
+  },
+  "clStickyProto": {
+   "scroller": "662/1041",
+   "nameVisibleAtMaxBefore": [
+    false,
+    false,
+    false
+   ],
+   "nameVisibleAtMaxProto": [
+    true,
+    true,
+    true
+   ]
+  },
+  "txStickyCover": {
+   "scroller": "662/948",
+   "at0": [
+    {
+     "Date": "shown",
+     "Reference": "shown",
+     "Type": "shown",
+     "Amount": "covered",
+     "Status": "covered",
+     "Actions": "shown"
+    },
+    {
+     "Date": "shown",
+     "Reference": "shown",
+     "Type": "shown",
+     "Amount": "covered",
+     "Status": "covered",
+     "Actions": "shown"
+    }
+   ],
+   "atMax": [
+    {
+     "Date": "covered",
+     "Reference": "covered",
+     "Type": "shown",
+     "Amount": "shown",
+     "Status": "shown",
+     "Actions": "shown"
+    },
+    {
+     "Date": "covered",
+     "Reference": "covered",
+     "Type": "shown",
+     "Amount": "shown",
+     "Status": "shown",
+     "Actions": "shown"
+    }
+   ]
+  }
+ },
+ "1440": {
+  "tilesAxeBefore": [
+   "definition-list:1",
+   "dlitem:9"
+  ],
+  "tilesProto": {
+   "heightsBefore": [
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96
+   ],
+   "heightsAfter": [
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96
+   ],
+   "dd": [
+    "ledger-total-deposits=R 50 463,00",
+    "ledger-total-transfers-in=R 10 000,00",
+    "ledger-total-payments=R 1 500,00",
+    "ledger-total-fee-transfers=R 0,00",
+    "ledger-total-refunds=R 5 000,00",
+    "ledger-total-investment-placements=R 20 000,00",
+    "ledger-total-balance=R 33 963,00",
+    "ledger-total-invested=R 20 095,00",
+    "ledger-total-held=R 54 058,00"
+   ]
+  },
+  "tilesAxeAfterProto": [],
+  "outOfRange": {
+   "pager": "Page 10 of 3",
+   "prev": "/org/e2e-test-org/trust-accounting/transactions?page=8",
+   "emptyText": [
+    "No transactions match the current filters"
+   ],
+   "found": [
+    "54 transactions found"
+   ]
+  },
+  "noMatch": {
+   "emptyText": [
+    "No transactions match the current filters"
+   ],
+   "tables": 0
+  },
+  "k89Proto": {
+   "before": {
+    "table": 1078,
+    "scroller": 1078
+   },
+   "after": {
+    "table": 1244,
+    "scroller": 1078,
+    "scrollWidth": 1244
+   },
+   "sums": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSumWithProto": 69380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSumWithProto": 33963
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSumWithProto": 0
+    }
+   ]
+  }
+ },
+ "console": []
+}

@@ -67,7 +67,9 @@ export function TransactionsDataTable({
       // Wraps (and caps) so the approver error line stays inside the sticky column.
       <div className="flex max-w-xs flex-wrap items-center gap-2">
         {tx.status === "AWAITING_APPROVAL" && canApproveTrust && (
-          <span data-testid={`approval-actions-${tx.id}`}>
+          // F-667A-A4: ApprovalBadge's own button row (a non-wrapping flex div) may wrap, so the
+          // sticky column narrows to its widest button and Amount stays in view at 1024.
+          <span data-testid={`approval-actions-${tx.id}`} className="[&>div]:flex-wrap">
             <ApprovalBadge
               transactionId={tx.id}
               status={tx.status}

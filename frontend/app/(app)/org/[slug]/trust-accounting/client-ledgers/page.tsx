@@ -15,6 +15,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { ClientLedgersDataTable } from "@/components/trust/client-ledgers-data-table";
 import { cn } from "@/lib/utils";
+import { searchParamsToQuery } from "@/lib/search-params-query";
 
 const PILL_CLASS = "rounded-full px-3 py-1 text-sm transition-colors";
 const PILL_ACTIVE = "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900";
@@ -91,11 +92,7 @@ export default async function ClientLedgersPage({
   const currency = settings.defaultCurrency ?? "ZAR";
   const basePath = `/org/${slug}/trust-accounting/client-ledgers`;
   // Every string param, in the URL's order: the pager keeps them all and sets `page` (DA-8).
-  const query = Object.fromEntries(
-    Object.entries(search).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""
-    )
-  );
+  const query = searchParamsToQuery(search);
 
   // Build filter URL helper (filter links drop `page`)
   function filterUrl(overrides: Record<string, string | undefined>): string {
@@ -188,7 +185,6 @@ export default async function ClientLedgersPage({
           </CardHeader>
           <CardContent>
             <ClientLedgersDataTable
-              slug={slug}
               rows={ledgerPage.content}
               currency={currency}
               pageIndex={ledgerPage.pageNumber}

@@ -503,7 +503,6 @@ describe("Client Ledgers — PageHeader + server-paged DataTable (667A)", () => 
     expect(wrapperProps.ledgers).toHaveLength(1);
     expect(wrapperProps.ledgers[0]).toEqual(
       expect.objectContaining({
-        slug: "acme",
         rows: expect.any(Array),
         basePath: LIST,
         query: { search: "acme" },
@@ -512,6 +511,8 @@ describe("Client Ledgers — PageHeader + server-paged DataTable (667A)", () => 
       })
     );
     expect(unserializableProps(wrapperProps.ledgers[0], new Set(["toolbar", "empty"]))).toEqual([]);
+    // The row link is built from basePath (no slug prop)
+    expect(wrapperProps.ledgers[0]).not.toHaveProperty("slug");
   });
 
   it("list: page 2 deep link keeps every param in the pager", async () => {

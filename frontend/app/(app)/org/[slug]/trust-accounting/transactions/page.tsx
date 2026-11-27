@@ -21,6 +21,7 @@ import { TransactionActions } from "@/components/trust/transaction-actions";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { TransactionsDataTable } from "@/components/trust/transactions-data-table";
 import { cn } from "@/lib/utils";
+import { searchParamsToQuery } from "@/lib/search-params-query";
 import {
   offeredTransactionTypes,
   type OrgMember,
@@ -183,11 +184,7 @@ export default async function TransactionsPage({
   const currency = settings.defaultCurrency ?? "ZAR";
   const basePath = `/org/${slug}/trust-accounting/transactions`;
   // Every string param, in the URL's order: the pager keeps them all and sets `page` (DA-8).
-  const query = Object.fromEntries(
-    Object.entries(search).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""
-    )
-  );
+  const query = searchParamsToQuery(search);
 
   // Build filter URL helper (filter links drop `page`)
   function filterUrl(overrides: Record<string, string | undefined>): string {

@@ -22,6 +22,7 @@ import { ClientHistoryFilters } from "@/components/trust/client-history-filters"
 import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { searchParamsToQuery } from "@/lib/search-params-query";
 import {
   offeredTransactionTypes,
   type TrustTransactionStatus,
@@ -154,11 +155,7 @@ export default async function ClientDetailPage({
   const invested = ledgerCard.investedBalance;
   const basePath = `/org/${slug}/trust-accounting/client-ledgers/${clientId}`;
   // Every string param, in the URL's order: the pager keeps them all and sets `page` (DA-8).
-  const query = Object.fromEntries(
-    Object.entries(search).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== ""
-    )
-  );
+  const query = searchParamsToQuery(search);
 
   // Build filter URL helper (filter links drop `page`)
   function filterUrl(overrides: Record<string, string | undefined>): string {

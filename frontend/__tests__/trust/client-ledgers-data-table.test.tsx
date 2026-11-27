@@ -66,7 +66,6 @@ function renderTable(
 ) {
   return render(
     <ClientLedgersDataTable
-      slug="acme"
       rows={rows}
       currency="ZAR"
       pageIndex={pageIndex}
@@ -123,7 +122,8 @@ describe("ClientLedgersDataTable (667A)", () => {
     const link = within(screen.getByTestId("ledger-row-cust-1")).getByRole("link", {
       name: "Acme Corp",
     });
-    expect(link).toHaveAttribute("href", `${BASE}/cust-1`);
+    // Built from basePath (no slug prop): the same href as before
+    expect(link).toHaveAttribute("href", "/org/acme/trust-accounting/client-ledgers/cust-1");
     expect(link).toHaveClass("text-(--button-accent)");
     expect(link).not.toHaveClass("text-teal-600");
   });

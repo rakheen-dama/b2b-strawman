@@ -139,7 +139,7 @@ describe("ClientHistoryDataTable (667A)", () => {
     const cells = within(screen.getByTestId("history-row-tx-long")).getAllByRole("cell");
     expect(cells[1].textContent).toBe(reference);
     expect(cells[1]).toHaveClass("whitespace-normal", "[overflow-wrap:anywhere]");
-    expect(cells[1].style.minWidth).toBe("9rem");
+    expect(cells[1].style.minWidth).toBe("6rem");
     expect(cells[2]).toHaveClass("whitespace-normal");
     expect(cells[2].querySelector("[data-slot='badge']")).toHaveClass("rounded-md");
   });

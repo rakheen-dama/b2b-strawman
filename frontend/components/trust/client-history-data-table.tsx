@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { Badge } from "@b2mash/ui/badge";
 import { DataTable, type DataTableToolbarSlots } from "@/components/data-table/data-table";
 import { DateCell, MoneyCell } from "@/components/data-table/cells";
 import { defineColumns } from "@/components/data-table/define-columns";
-import { statusBadgeVariant } from "@/components/trust/trust-transactions-table";
+import {
+  REGISTER_TYPE_META,
+  RegisterTypeBadge,
+  TrustAmount,
+  TrustReference,
+  TrustStatusBadge,
+  referenceMeta,
+} from "@/components/trust/trust-cells";
 import { buildPageHref } from "@/lib/page-href";
-import { formatCurrency } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import type { TrustTransaction } from "@/lib/types";
 
 interface ClientHistoryDataTableProps {
@@ -62,58 +65,30 @@ export function ClientHistoryDataTable({
         },
         {
           id: "reference",
-          // K-10: a long reference wraps over a floor instead of widening the table past the card;
-          // only tokens wider than the column break.
-          meta: {
-            label: "Reference",
-            cellClassName: "whitespace-normal [overflow-wrap:anywhere]",
-            minWidth: "9rem",
-          },
-          cell: ({ row }) => (
-            <span className="text-foreground block max-w-md font-medium">
-              {row.original.reference}
-            </span>
-          ),
+          // K-10: a long reference wraps over the register's floor
+          meta: referenceMeta(true),
+          cell: ({ row }) => <TrustReference reference={row.original.reference} />,
         },
         {
           id: "type",
-          // K-90: long registry labels wrap inside the badge.
-          meta: { label: "Type", cellClassName: "whitespace-normal", minWidth: "10rem" },
-          cell: ({ row }) => (
-            <Badge variant="neutral" className="shrink rounded-md whitespace-normal">
-              {row.original.typeLabel}
-            </Badge>
-          ),
+          meta: REGISTER_TYPE_META,
+          cell: ({ row }) => <RegisterTypeBadge label={row.original.typeLabel} />,
         },
         {
           id: "amount",
           meta: { label: "Amount", align: "end" },
-          cell: ({ row }) => {
-            // 646E F8: styling from the row's direction; NEUTRAL draws no arrow
-            const direction = row.original.direction;
-            return (
-              <span
-                data-direction={direction.toLowerCase()}
-                className={cn(
-                  "inline-flex items-center gap-1 font-mono tabular-nums",
-                  direction === "IN" ? "text-success-foreground" : "text-foreground"
-                )}
-              >
-                {direction === "IN" && <ArrowDownLeft aria-hidden="true" className="size-3" />}
-                {direction === "OUT" && <ArrowUpRight aria-hidden="true" className="size-3" />}
-                {formatCurrency(row.original.amount, currency)}
-              </span>
-            );
-          },
+          cell: ({ row }) => (
+            <TrustAmount
+              amount={row.original.amount}
+              direction={row.original.direction}
+              currency={currency}
+            />
+          ),
         },
         {
           id: "status",
           meta: { label: "Status" },
-          cell: ({ row }) => (
-            <Badge variant={statusBadgeVariant(row.original.status)}>
-              {row.original.status.replace(/_/g, " ")}
-            </Badge>
-          ),
+          cell: ({ row }) => <TrustStatusBadge status={row.original.status} />,
         },
         {
           id: "runningBalance",

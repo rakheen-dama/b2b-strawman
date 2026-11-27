@@ -435,6 +435,17 @@ describe("Client ledger card — totals reconcile to the balance (G89-F13)", () 
     expect(total("fee-transfers")).toBe(formatCurrency(1150, "ZAR"));
     expect(total("refunds")).toBe(formatCurrency(1000, "ZAR"));
     expect(total("balance")).toBe(formatCurrency(7850, "ZAR"));
+    // F-667A-A1: each tile is a valid dl group — one dt (label) and one dd (amount)
+    for (const group of Array.from(
+      within(summary).getByTestId("ledger-totals-breakdown").children
+    )) {
+      expect(group.tagName).toBe("DIV");
+      expect(group.getAttribute("data-testid")).toMatch(/^ledger-total-/);
+      expect(Array.from(group.children).map((c) => c.tagName)).toEqual(["DT", "DD"]);
+    }
+    expect(screen.getByTestId("ledger-total-balance").querySelector("dt")!.textContent).toBe(
+      "Balance"
+    );
     // Transfer rows are hidden while zero
     expect(screen.queryByTestId("ledger-total-transfers-in")).toBeNull();
     expect(screen.queryByTestId("ledger-total-transfers-out")).toBeNull();

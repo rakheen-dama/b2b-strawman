@@ -153,28 +153,42 @@ describe("LedgerTotalsBreakdown — brought forward at take-on (657A)", () => {
   });
 });
 
-// Phase 91 667A: the client ledger page shows the same figures as a compact kit StatCard row. Each
-// tile keeps its testid and holds only its amount in a `dd` (e2e reads `ledger-total-*` → `dd`).
+// Phase 91 667A: the client ledger page shows the same figures as a row of compact tiles in the
+// kit StatCard look. Each tile keeps its testid and is a valid `dl` group — a `div` of exactly one
+// `dt` (label) and one `dd` (amount) (F-667A-A1; e2e reads `ledger-total-*` → `dd`).
 describe("LedgerTotalsBreakdown — tiles layout (667A)", () => {
   const tile = (key: string) => screen.getByTestId(`ledger-total-${key}`);
   const amount = (key: string) => tile(key).querySelector("dd")!.textContent;
-  const label = (key: string) =>
-    tile(key).querySelector("[data-slot='stat-card-label']")!.textContent;
+  const label = (key: string) => tile(key).querySelector("dt")!.textContent;
+
+  /** Every child of the `dl` is a `div` holding exactly `dt` + `dd`, in that order. */
+  function expectValidGroups(root: HTMLElement) {
+    for (const group of Array.from(root.children)) {
+      expect(group.tagName).toBe("DIV");
+      expect(Array.from(group.children).map((c) => c.tagName)).toEqual(["DT", "DD"]);
+    }
+  }
 
   it("renders every visible figure as a compact tile with the list's labels and a dd", () => {
     render(<LedgerTotalsBreakdown ledger={LEDGER} layout="tiles" />);
 
     const root = screen.getByTestId("ledger-totals-breakdown");
     expect(root.tagName).toBe("DL");
-    const tiles = root.querySelectorAll("[data-slot='stat-card']");
-    expect(Array.from(tiles).map((t) => t.getAttribute("data-testid"))).toEqual([
+    expectValidGroups(root);
+    const tiles = Array.from(root.children);
+    expect(tiles.map((t) => t.getAttribute("data-testid"))).toEqual([
       "ledger-total-deposits",
       "ledger-total-payments",
       "ledger-total-fee-transfers",
       "ledger-total-refunds",
       "ledger-total-balance",
     ]);
-    for (const t of Array.from(tiles)) expect(t).toHaveAttribute("data-variant", "compact");
+    for (const t of tiles) {
+      expect(t.querySelectorAll("dt")).toHaveLength(1);
+      expect(t.querySelectorAll("dd")).toHaveLength(1);
+      // The kit's compact StatCard look (stat-card.tsx compact on Card)
+      expect(t).toHaveClass("bg-card", "rounded-lg", "border", "p-3", "shadow-sm");
+    }
     expect(label("deposits")).toBe("Deposits");
     expect(label("payments")).toBe("Payments");
     expect(label("fee-transfers")).toBe("Fee transfers");
@@ -182,8 +196,8 @@ describe("LedgerTotalsBreakdown — tiles layout (667A)", () => {
     expect(amount("deposits")).toBe(formatCurrency(5000, "ZAR"));
     expect(amount("payments")).toBe(formatCurrency(1250, "ZAR"));
     expect(amount("balance")).toBe(formatCurrency(3750, "ZAR"));
-    // No list markup in the tiles layout
-    expect(root.querySelector("dt")).toBeNull();
+    // The tiles drop the list's +/−/= signs: a dt holds only its label
+    expect(tile("payments").querySelector("dt")!.children).toHaveLength(0);
     expect(screen.queryByTestId("ledger-total-invested")).toBeNull();
     expect(screen.queryByTestId("ledger-total-held")).toBeNull();
   });
@@ -211,6 +225,7 @@ describe("LedgerTotalsBreakdown — tiles layout (667A)", () => {
     expect(amount("invested")).toBe(formatCurrency(30000, "ZAR"));
     expect(label("held")).toBe("Total held in trust");
     expect(amount("held")).toBe(formatCurrency(50000, "ZAR"));
+    expectValidGroups(screen.getByTestId("ledger-totals-breakdown"));
     // Each testid exactly once (Playwright strict mode)
     for (const key of ["balance", "invested", "held"]) {
       expect(screen.getAllByTestId(`ledger-total-${key}`)).toHaveLength(1);
@@ -221,6 +236,6 @@ describe("LedgerTotalsBreakdown — tiles layout (667A)", () => {
     render(<LedgerTotalsBreakdown ledger={LEDGER} />);
 
     expect(term("balance")).not.toBeNull();
-    expect(screen.queryByTestId("ledger-total-balance")!.getAttribute("data-slot")).toBeNull();
+    expect(screen.getByTestId("ledger-total-balance")).not.toHaveClass("bg-card");
   });
 });

@@ -172,7 +172,9 @@ describe("TransactionsDataTable (667A)", () => {
     expect(cells[3].textContent).toBe(formatCurrency(3500, "ZAR"));
     // K-10: the reference wraps over a floor instead of widening the table
     expect(cells[1]).toHaveClass("whitespace-normal", "[overflow-wrap:anywhere]");
-    expect(cells[1].style.minWidth).toBe("9rem");
+    // F-667A-A4: 6rem (not 9rem) so the sticky Actions column leaves Amount in view at 1024;
+    // the Type floor stays 10rem (K-90)
+    expect(cells[1].style.minWidth).toBe("6rem");
     expect(cells[2].style.minWidth).toBe("10rem");
   });
 
@@ -215,6 +217,8 @@ describe("TransactionsDataTable (667A)", () => {
 
     const awaiting = within(screen.getByTestId("transaction-row-tx-await"));
     expect(awaiting.getByTestId("approval-actions-tx-await")).toBeInTheDocument();
+    // F-667A-A4: ApprovalBadge's button row may wrap, so the sticky column narrows
+    expect(awaiting.getByTestId("approval-actions-tx-await")).toHaveClass("[&>div]:flex-wrap");
     expect(awaiting.getByRole("button", { name: "Approve" })).toBeEnabled();
     expect(awaiting.getByRole("button", { name: "Reject" })).toBeInTheDocument();
     expect(screen.queryByTestId("approval-actions-tx-done")).not.toBeInTheDocument();

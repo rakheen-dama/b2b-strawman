@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { DataTable, type DataTableToolbarSlots } from "@/components/data-table/data-table";
 import { DateCell } from "@/components/data-table/cells";
@@ -10,9 +9,16 @@ import {
   type DataTableColumn,
   type DataTableLinkPagination,
 } from "@/components/data-table/define-columns";
-import { formatCurrency } from "@/lib/format";
+import {
+  REGISTER_TYPE_META,
+  RegisterTypeBadge,
+  TrustAmount,
+  TrustReference,
+  TrustStatusBadge,
+  referenceMeta,
+} from "@/components/trust/trust-cells";
 import { cn } from "@/lib/utils";
-import { type TrustTransaction, type TrustTransactionStatus } from "@/lib/types";
+import type { TrustTransaction } from "@/lib/types";
 
 interface TrustTransactionsTableProps {
   /** The rows the server page sent, passed through untouched (data identity = navigation). */
@@ -35,27 +41,11 @@ interface TrustTransactionsTableProps {
   /**
    * `"register"` = the Trust › Transactions layout: the Type badge wraps (`rounded-md`,
    * `transaction-type-<id>`) over a 10rem column floor with the "where the money goes" line for
-   * `DESCRIBED_TYPES`; Status adds "1 of 2 approvals"; Reference gets a 9rem floor (K-10, K-90).
+   * `DESCRIBED_TYPES`; Status adds "1 of 2 approvals"; Reference gets a 6rem floor (K-10, K-90,
+   * F-667A-A4).
    * Default `"recent"` = the dashboard, unchanged.
    */
   variant?: "recent" | "register";
-}
-
-export function statusBadgeVariant(
-  status: TrustTransactionStatus
-): "success" | "warning" | "destructive" | "neutral" {
-  switch (status) {
-    case "APPROVED":
-      return "success";
-    case "AWAITING_APPROVAL":
-      return "warning";
-    case "REJECTED":
-      return "destructive";
-    case "RECORDED":
-    case "REVERSED":
-    default:
-      return "neutral";
-  }
 }
 
 /**
@@ -111,38 +101,19 @@ export function TrustTransactionsTable({
       },
       {
         id: "reference",
-        // Long system references (INT-CREDIT-<uuid>-<uuid>) wrap at any character instead of
-        // widening the table past the card (the kit cell is nowrap); capped so a short-column
-        // layout keeps room for Type, Amount and Status. The register's floor (K-10) keeps the
-        // column readable when the frame is over-full, so only tokens wider than it break.
-        meta: {
-          label: "Reference",
-          cellClassName: "whitespace-normal [overflow-wrap:anywhere]",
-          ...(register ? { minWidth: "9rem" } : {}),
-        },
-        cell: ({ row }) => (
-          <span className="text-foreground block max-w-md font-medium">
-            {row.original.reference}
-          </span>
-        ),
+        meta: referenceMeta(register),
+        cell: ({ row }) => <TrustReference reference={row.original.reference} />,
       },
       {
         id: "type",
-        meta: register
-          ? { label: "Type", cellClassName: "whitespace-normal", minWidth: "10rem" }
-          : { label: "Type" },
+        meta: register ? REGISTER_TYPE_META : { label: "Type" },
         cell: ({ row }) =>
           register ? (
             <>
-              {/* 647D OBS h / K-90: long registry labels ("Unidentified deposit paid to the
-                  Fund") wrap inside the badge instead of clipping or widening the table */}
-              <Badge
-                variant="neutral"
-                className="shrink rounded-md whitespace-normal"
-                data-testid={`transaction-type-${row.original.id}`}
-              >
-                {row.original.typeLabel}
-              </Badge>
+              <RegisterTypeBadge
+                label={row.original.typeLabel}
+                testId={`transaction-type-${row.original.id}`}
+              />
               {/* 647D / 648A: an unidentified deposit's allocation or payment to the Fund, and an
                   investment placement, say where the money goes so the approver can judge it (no
                   other row's description is shown here) */}
@@ -162,32 +133,19 @@ export function TrustTransactionsTable({
       {
         id: "amount",
         meta: { label: "Amount", align: "end" },
-        cell: ({ row }) => {
-          const direction = row.original.direction;
-          return (
-            <span
-              data-direction={direction.toLowerCase()}
-              className={cn(
-                "inline-flex items-center gap-1 font-mono tabular-nums",
-                direction === "IN" ? "text-success-foreground" : "text-foreground"
-              )}
-            >
-              {direction === "IN" && <ArrowDownLeft aria-hidden="true" className="size-3" />}
-              {direction === "OUT" && <ArrowUpRight aria-hidden="true" className="size-3" />}
-              {formatCurrency(row.original.amount, currency)}
-            </span>
-          );
-        },
+        cell: ({ row }) => (
+          <TrustAmount
+            amount={row.original.amount}
+            direction={row.original.direction}
+            currency={currency}
+          />
+        ),
       },
       {
         id: "status",
         meta: { label: "Status" },
         cell: ({ row }) => {
-          const badge = (
-            <Badge variant={statusBadgeVariant(row.original.status)}>
-              {row.original.status.replace(/_/g, " ")}
-            </Badge>
-          );
+          const badge = <TrustStatusBadge status={row.original.status} />;
           if (!register) return badge;
           return (
             <>

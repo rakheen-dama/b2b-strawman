@@ -10,7 +10,6 @@ import { formatLocalDate } from "@/lib/format";
 import type { ClientLedgerCard } from "@/lib/types";
 
 interface ClientLedgersDataTableProps {
-  slug: string;
   /** The page the server sent (`ledgerPage.content`), passed through untouched. */
   rows: ClientLedgerCard[];
   currency: string;
@@ -18,7 +17,7 @@ interface ClientLedgersDataTableProps {
   pageIndex: number;
   /** `ledgerPage.totalPages`; the pager shows from 2 pages. */
   pageCount: number;
-  /** `/org/<slug>/trust-accounting/client-ledgers`. */
+  /** `/org/<slug>/trust-accounting/client-ledgers`; each client links to `<basePath>/<clientId>`. */
   basePath: string;
   /** Every string search param of the page; the pager keeps them all and sets `page`. */
   query: Record<string, string>;
@@ -51,13 +50,15 @@ function moneyColumn(
  * serializable props and builds the columns, pager hrefs (`buildPageHref`, every param kept) and the
  * row testid itself.
  *
- * K-89 (founder-approved copy): while any listed client has money placed in or held in section
- * 86(4) investments, "Placed in s86(4)" and "Invested (s86(4))" columns appear after "Total
- * Refunds", and "Trust Balance" reads "General balance" — the wording of `LedgerTotalsBreakdown` —
- * so each row's columns add up to its balance.
+ * K-89 (founder-approved register row): while any listed client has money placed in section 86(4)
+ * investments, a "Placed in s86(4)" column (the total ever placed) appears after "Total Refunds";
+ * while any has money still invested, an "Invested (s86(4))" column (the balance invested now)
+ * follows it, and "Trust Balance" reads "General balance" — the wording of `LedgerTotalsBreakdown`.
+ * The columns show those totals; they are not a full reconciliation of the row (returns from
+ * investments and transfers in/out have no column here — `LedgerTotalsBreakdown` on the client
+ * ledger page has the sum).
  */
 export function ClientLedgersDataTable({
-  slug,
   rows,
   currency,
   pageIndex,
@@ -81,7 +82,7 @@ export function ClientLedgersDataTable({
           meta: { label: "Client Name", cellClassName: "whitespace-normal", minWidth: "9rem" },
           cell: ({ row }) => (
             <Link
-              href={`/org/${slug}/trust-accounting/client-ledgers/${row.original.clientId}`}
+              href={`${basePath}/${row.original.clientId}`}
               className="font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
             >
               {row.original.clientName}
@@ -141,7 +142,7 @@ export function ClientLedgersDataTable({
               : "No transactions",
         },
       ]),
-    [slug, currency, showPlaced, showInvested]
+    [basePath, currency, showPlaced, showInvested]
   );
 
   return (

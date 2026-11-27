@@ -1,4 +1,3 @@
-import { StatCard } from "@b2mash/ui/stat-card";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ClientLedgerCard } from "@/lib/types";
@@ -24,10 +23,28 @@ interface LedgerTotalsBreakdownProps {
   className?: string;
   /**
    * `"list"` (default; `TrustBalanceCard`): the signed sum, one `dt`/`dd` row per figure.
-   * `"tiles"` (the client ledger page, Phase 91 667A): the same figures and labels as a compact kit
-   * `StatCard` row; each tile keeps its `ledger-total-<key>` testid and holds its amount in a `dd`.
+   * `"tiles"` (the client ledger page, Phase 91 667A): the same figures and labels as a row of
+   * compact tiles styled as the kit `StatCard`; each tile is a `div` of one `dt` (label) and one
+   * `dd` (amount) and keeps its `ledger-total-<key>` testid.
    */
   layout?: "list" | "tiles";
+}
+
+/**
+ * One tile in the look of the kit's compact `StatCard` (packages/ui/src/stat-card.tsx on Card,
+ * card.tsx — classes copied, keep in step). Not the kit component itself: it renders div/span
+ * markup, and a `<dl>` may only hold `dt`/`dd` groups (F-667A-A1, axe list/listitem).
+ */
+function TotalTile({ testId, label, amount }: { testId: string; label: string; amount: string }) {
+  return (
+    <div
+      className="bg-card text-card-foreground flex flex-col gap-0.5 rounded-lg border border-slate-200/80 p-3 shadow-sm dark:border-slate-800/80"
+      data-testid={testId}
+    >
+      <dt className="text-muted-foreground text-sm">{label}</dt>
+      <dd className="text-foreground font-mono text-lg font-semibold tabular-nums">{amount}</dd>
+    </div>
+  );
 }
 
 interface Row {
@@ -121,33 +138,29 @@ export function LedgerTotalsBreakdown({
           data-testid="ledger-totals-breakdown"
         >
           {visibleRows.map((row) => (
-            <StatCard
+            <TotalTile
               key={row.key}
-              variant="compact"
+              testId={`ledger-total-${row.key}`}
               label={row.label}
-              value={<dd>{formatCurrency(row.amount, currency)}</dd>}
-              data-testid={`ledger-total-${row.key}`}
+              amount={formatCurrency(row.amount, currency)}
             />
           ))}
-          <StatCard
-            variant="compact"
+          <TotalTile
+            testId="ledger-total-balance"
             label={invested !== 0 ? "General balance" : "Balance"}
-            value={<dd>{formatCurrency(ledger.balance, currency)}</dd>}
-            data-testid="ledger-total-balance"
+            amount={formatCurrency(ledger.balance, currency)}
           />
           {invested !== 0 && (
             <>
-              <StatCard
-                variant="compact"
+              <TotalTile
+                testId="ledger-total-invested"
                 label="Invested (section 86(4))"
-                value={<dd>{formatCurrency(invested, currency)}</dd>}
-                data-testid="ledger-total-invested"
+                amount={formatCurrency(invested, currency)}
               />
-              <StatCard
-                variant="compact"
+              <TotalTile
+                testId="ledger-total-held"
                 label="Total held in trust"
-                value={<dd>{formatCurrency(ledger.balance + invested, currency)}</dd>}
-                data-testid="ledger-total-held"
+                amount={formatCurrency(ledger.balance + invested, currency)}
               />
             </>
           )}

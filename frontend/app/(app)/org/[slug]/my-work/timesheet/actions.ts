@@ -49,15 +49,20 @@ export async function saveWeeklyEntries(
   }
 }
 
+/**
+ * The week's entries for the current member. Returns `null` (not `[]`) on failure: the timesheet
+ * grid diffs its cells against these entries on Save (F-668A-R1), so an empty list it cannot trust
+ * must not pass for "no time logged".
+ */
 export async function fetchWeekEntries(
   from: string,
   to: string
-): Promise<import("@/lib/types").MyWorkTimeEntryItem[]> {
+): Promise<import("@/lib/types").MyWorkTimeEntryItem[] | null> {
   try {
     return await api.get(`/api/my-work/time-entries?from=${from}&to=${to}`);
   } catch (error) {
     console.error("Failed to fetch week entries:", error);
-    return [];
+    return null;
   }
 }
 

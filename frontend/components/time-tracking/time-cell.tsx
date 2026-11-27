@@ -9,10 +9,11 @@ interface TimeCellProps {
   dayIndex: number; // 0=Mon, 1=Tue ... 6=Sun
   value: number; // decimal hours, 0 = empty
   error?: string;
+  disabled?: boolean;
   onChange: (taskId: string, dayIndex: number, hours: number) => void;
 }
 
-export function TimeCell({ taskId, dayIndex, value, error, onChange }: TimeCellProps) {
+export function TimeCell({ taskId, dayIndex, value, error, disabled, onChange }: TimeCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleBlur = useCallback(
@@ -40,6 +41,7 @@ export function TimeCell({ taskId, dayIndex, value, error, onChange }: TimeCellP
       max="24"
       step="0.25"
       defaultValue={displayValue}
+      disabled={disabled}
       onBlur={handleBlur}
       aria-label={`Hours for day ${dayIndex + 1}`}
       className={cn(

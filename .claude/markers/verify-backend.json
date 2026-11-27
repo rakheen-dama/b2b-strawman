@@ -1,7 +1,7 @@
 {
-  "commit": "3266a852f",
-  "command": "cd backend && bash scripts/verify.sh -q (wt-takeon-batch, PR #1861)",
+  "commit": "e6ac1daae",
+  "command": "bash backend/scripts/verify.sh (wt-fix-feenote-vat, fix/fee-note-draft-save-vat)",
   "exit": 0,
-  "ts": "2026-11-25T16:30:00Z",
-  "summary": "PR #1861 @3266a852f \u2014 8214 <testcase> / 0 failures / 0 errors / 55 skipped; later commits frontend/docs only"
+  "ts": "2026-11-27T18:46:32Z",
+  "summary": "F-666B-B1 @e6ac1daae — 8217 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 29:06)"
 }

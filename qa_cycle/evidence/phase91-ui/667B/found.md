@@ -90,3 +90,20 @@ Evidence is in `after-fix/`; `README.md` has the before → after → after-fix 
 - **F-667B-A2:** reduced to the accepted D-81-class residual. Status is still partly under the sticky column at 1024 at scroll 0; the numbers are in the row above.
 - **F-667B-A4:** unchanged ("Page 10 of 2", Previous `?page=8`); goes to 669A/670A.
 - **Pre-existing findings unchanged:** F-667B-6 (+14 px), F-667B-10 (777 / 662), F-667B-7, F-667B-8, F-667B-9 and F-667B-11.
+
+## Found in review, CodeRabbit, and routing at merge (PR #1879, merged as `8e6af4c6b`)
+
+| Id | Sev | Source | Finding | Disposition |
+|---|---|---|---|---|
+| F-667B-R1 | MEDIUM (follow-up) | Review B, delta | Completed (`hidden @min-[56rem]:table-cell`) and the investments `@max-[56rem]:[&_button]` wrap are consumer container-query classes outside the kit's `priority` vocabulary, which has only low = 67rem and lowest = 7xl. A later `sort` or `loading` on the reconciliation history would bypass the kit's sorted-column guard, and skeleton cells receive only `priorityClass`. Any button later added to `InvestmentPageClient` would inherit the wrap. | → 669A/670A: add a kit 56rem priority tier, or a `wrapLabels` prop on `InvestmentPageClient` |
+| F-667B-R2 | LOW (follow-up) | DA-4 side effect | The three reconciliation load-error lines lost their red text: they are now shared EmptyState, which has no tone. Only the `AlertCircle` icon still signals an error. This matches the 667A precedent. | → 669A/670A (an EmptyState error tone, or keep errors out of EmptyState) |
+| F-667B-R3 | LOW (follow-up) | DA-8 / Review B | `STICKY_ACTIONS_CLASS` and `moneyColumn` are now copied twice in `$FC/trust/` (the 667A originals are frozen). | → 669A/670A dedupe, together with F-667A-11 |
+| CR-1, CR-2 | Minor | CodeRabbit | Two seed-script robustness findings in `before/scripts/00-seed.cjs:65,100`. | Declined. Executed evidence scripts are never edited (EVIDENCE-BUDGET), and neither failure mode happened in the recorded run. PR comment 7211476828. |
+| CR-note | — | CodeRabbit review body | There is no s86(3) fixture for the K-91 note. | Covered by vitest: no `font-mono` ancestor, text unchanged. Tightened in `6489f9778`. |
+
+Routing of the remaining pre-existing rows:
+- F-667B-6 (the wizard step row is +14 px at 1024), F-667B-7 (out-of-range copy) and F-667B-A4 (kit pager "Page 10 of 2") → 669A/670A, with F-667A-A2.
+- F-667B-8 (a draft reconciliation looks unbalanced; product decision) and F-667B-9 (empty-filter copy) → founder copy/behaviour list.
+- F-667B-10 (the other-creditors fund ledger is 777 / 662 at 1024) → 669A/670A, K-100 class.
+- F-667B-11 (page title) → backlog, the F-667A-8 class.
+- F-667B-5 / K-95 stays backlog per FD-3.

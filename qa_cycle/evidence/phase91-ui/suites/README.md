@@ -52,7 +52,7 @@ The orchestrator set the order: **stack B (exit-month) first, stack A (legal + d
 - **Build SHA:** `c4595f924` for both stacks, built from this worktree. The `com.docker.compose.project.working_dir` label on `e2e-frontend` and `e2e-backend` is `/Users/rakheendama/Projects/2026/worktree-epic-670A/compose`.
 - **Frontend image:** `sha256:df65a3425a53…`, built 2026-11-27 11:58:05Z by stack B. Stack A reused it from the layer cache; `docker builder prune -f` only removes dangling cache.
 - **Backend image:** `sha256:e7fd89e47741…`. This is the same image id the stale 669B-built stack ran. The backend build was a full layer-cache hit, because the backend inputs are byte-identical. Phase 91 changed no backend code: `git diff --name-only 551778100..c4595f924 -- backend gateway` is empty.
-- **Portal for exit-month:** started by the runner with `cd portal && NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081 nohup pnpm dev` (:3002, the only CORS-allowed portal origin on the e2e backend). It answered after 10 s. The runner stopped it after the suite: rc 143 is the expected SIGTERM, and :3002 had 0 listeners at 12:00:02Z.
+- **Portal for exit-month:** started by the runner with `cd portal && NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081 nohup pnpm dev` (:3002, the only CORS-allowed portal origin on the e2e backend). It answered after ≈ 6 s, on the second poll (`summary.txt`: e2e-up done 11:58:39Z, portal ready 11:58:45Z, "after 2x5s" = the loop counter). The runner stopped it after the suite: rc 143 is the expected SIGTERM, and :3002 had 0 listeners at 12:00:02Z.
 - **Tree restore:**
   - After stack B, `git clean -n` listed 0 paths.
   - After stack A, the legal configs had written **25 untracked curated PNGs** under `documentation/screenshots/legal-vertical/`. They were archived to `/tmp/670A/run1/artefacts-A/`, then removed with `git clean -fdq -- frontend/test-results frontend/e2e/screenshots documentation/screenshots portal/test-results`. The tracked `.gitkeep` and `README.md` were untouched.
@@ -116,11 +116,20 @@ The portal "Login Failed" observation (F-670A-1 above) is outside the gate count
 
 ## Runner limitations
 
-- The seed is gated on `docker inspect e2e-seed` ExitCode = 0, because `e2e-up.sh` prints "Seed completed (container exited)" from a branch that does not check the exit code. Both stacks reported ExitCode 0. The fallback (seed log "Boot-Seed Complete") was not needed.
+- The seed is gated on `docker inspect e2e-seed` ExitCode = 0, because `e2e-up.sh` prints "Seed completed (container exited)" from a branch that does not check the exit code. Both stacks reported ExitCode 0. The fallback (seed log "Boot-Seed Complete") was not needed. ExitCode alone does not prove the seed finished (a running container also reports 0); the proof is below (CodeRabbit #1883).
 - The FE-GATE `build` step runs after `test`, in the same order as 661B. Each step's rc is logged on its own line, and `DONE` is written only when every rc is 0.
 - Portal readiness is gated on `curl -sf http://localhost:3002/` within 300 s. If the portal had not come up, exit-month would not have run and the run would have ended `FAILED`.
 - `docker builder prune -f` removes only dangling build cache, so stack A reused stack B's frontend image (same SHA, same worktree). That counts as a fresh stack in the 670.1 sense: new containers, new volumes and a fresh seed. It is not a cold image build. The same was true at 661B.
 - The runner does not observe the portal; that was a manual step (above).
+
+### Runner limitations (CodeRabbit #1883)
+
+CodeRabbit flagged two defects in `run-exit.sh`. The runner stays as executed (D-109). The recorded run was checked for each defect; hardening for later runs → closure FU-39.
+
+| Line | Defect | Audit of this run (`/tmp/670A/run1/`) | Effect | Hardening (FU-39) |
+|---|---|---|---|---|
+| `run-exit.sh:27-30` | The seed check reads only `State.ExitCode`. A **running** container also reports 0, and `e2e-up.sh`'s seed wait falls through with a warning after 120 s, so a suite could start on a partly seeded stack | The seed had **exited** before each stack's suites, on both stacks. (1) `B-up.log:490-491` and `A-up.log:342-343`: "Waiting for seed to complete... Seed completed (container exited)"; that is the wait loop's exit, not its 120 s timeout warning. (2) `B-containers.txt` / `A-containers.txt`, written by `fresh()` after the seed check and health, before any suite: `e2e-seed … Exited (0) 2 seconds ago` on both stacks. Suites started at 11:58:45Z (B) and 12:00:44Z (A), after those snapshots | None: both stacks were fully seeded | Require `State.Status == exited` and ExitCode 0 (or "Boot-Seed Complete"); fail setup if the seed is still running |
+| `run-exit.sh:81` | `DONE` / `FAILED` from an earlier run in the same directory are not removed, so both markers could co-exist | `/tmp/670A/run1/` has **`DONE` only** (written 12:09:46Z, the run's end; summary ends `end BAD=0`). There is no `FAILED` file, and `run1` was this runner's only run directory | None | `rm -f DONE FAILED` before the first gate |
 
 ## Optional extras not run
 

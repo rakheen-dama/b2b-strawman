@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AlertCircle, FileText, Lock } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
 import { hasCapability } from "@/lib/dashboard-home";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { listTakeOnReports } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import { EmptyState } from "@/components/empty-state";
 import { ReportDownloads } from "@/components/take-on/report-downloads";
 import { formatDateTime } from "@/lib/format";
 import { takeOnLongDate, type TakeOnReportSummary } from "@/lib/types";
@@ -71,25 +74,22 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
 
   return (
     <div className="space-y-8" data-testid="trust-reports-page">
-      {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Trust Reports</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Generate and download trust accounting reports
-        </p>
-      </div>
+      <PageHeader
+        title="Trust Reports"
+        description="Generate and download trust accounting reports"
+      />
 
       {/* Take-on reports (657D) */}
       {takeOnReports.length > 0 && (
         <Card data-testid="trust-take-on-reports">
           <CardHeader>
-            <CardTitle className="text-slate-950 dark:text-slate-50">Take-on reports</CardTitle>
+            <CardTitle>Take-on reports</CardTitle>
             <CardDescription>
               The trust account&apos;s position at its cutover date, as signed off and taken on.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-slate-200 dark:divide-slate-800">
+            <ul className="divide-border divide-y">
               {takeOnReports.map((report) => (
                 <li
                   key={report.id}
@@ -97,11 +97,11 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
                   data-testid={`trust-take-on-report-${report.id}`}
                 >
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-slate-100">
+                    <p className="text-foreground font-medium">
                       {accountNames.get(report.trustAccountId) ?? "Trust account"} — taken on at{" "}
                       {takeOnLongDate(report.cutoverDate)}
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <p className="text-muted-foreground text-sm">
                       Generated {formatDateTime(report.generatedAt)}
                       {report.generatedByName ? ` by ${report.generatedByName}` : ""}
                     </p>
@@ -117,10 +117,13 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
       {/* Financial visibility required */}
       {!canReadReports && (
         <Card data-testid="trust-reports-financial-visibility-required">
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Trust reports need financial visibility. Ask an owner or admin to grant it.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={Lock}
+              title="Trust reports need financial visibility. Ask an owner or admin to grant it."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -128,10 +131,13 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
       {/* Error State */}
       {fetchError && (
         <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Unable to load report definitions. Please try again later.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={AlertCircle}
+              title="Unable to load report definitions. Please try again later."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -139,10 +145,13 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
       {/* Empty State */}
       {canReadReports && !fetchError && trustReports.length === 0 && (
         <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No trust reports available. Report definitions will appear here once configured.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={FileText}
+              title="No trust reports available. Report definitions will appear here once configured."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -157,11 +166,11 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
                 data-testid={`report-card-${report.slug}`}
               >
                 <CardHeader>
-                  <CardTitle className="text-slate-950 dark:text-slate-50">{report.name}</CardTitle>
+                  <CardTitle>{report.name}</CardTitle>
                   <CardDescription>{report.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
+                  <span className="text-sm font-medium text-(--button-accent) dark:text-teal-400">
                     Run Report &rarr;
                   </span>
                 </CardContent>

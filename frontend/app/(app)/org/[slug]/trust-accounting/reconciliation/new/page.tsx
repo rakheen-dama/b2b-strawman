@@ -7,6 +7,7 @@ import { ArrowLeft, Lock } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Input } from "@b2mash/ui/input";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import {
@@ -666,20 +667,16 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       <button
         type="button"
         onClick={() => router.push(`/org/${slug}/trust-accounting/reconciliation`)}
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ArrowLeft className="size-4" />
         Back to Reconciliation
       </button>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          New Reconciliation
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Reconcile your trust account with a bank statement
-        </p>
-      </div>
+      <PageHeader
+        title="New Reconciliation"
+        description="Reconcile your trust account with a bank statement"
+      />
 
       {/* Step Indicator */}
       <nav aria-label="Wizard steps">
@@ -694,10 +691,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                 <div
                   className={`flex size-8 items-center justify-center rounded-full text-sm font-medium ${
                     isActive
-                      ? "bg-teal-600 text-white"
+                      ? "bg-(--button-accent) text-(--button-accent-foreground)"
                       : isCompleted
                         ? "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                   }`}
                 >
                   {stepNum}

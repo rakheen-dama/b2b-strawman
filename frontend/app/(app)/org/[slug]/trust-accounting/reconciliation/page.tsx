@@ -1,19 +1,22 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, CheckCircle2, AlertCircle, Lock } from "lucide-react";
+import { AlertCircle, History, Landmark, Plus } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
-import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
   fetchBankStatements,
   fetchReconciliations,
   type ReconciliationPage,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
-import { DiscardStatementDialog } from "@/components/trust/DiscardStatementDialog";
-import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { EmptyState } from "@/components/empty-state";
+import {
+  OpenStatementsDataTable,
+  ReconciliationsDataTable,
+} from "@/components/trust/reconciliations-data-table";
 import type { BankStatementResponse, TrustAccount } from "@/lib/types";
 
 // ── Page ────────────────────────────��─────────────────────────────
@@ -105,69 +108,62 @@ export default async function ReconciliationListPage({
     }
   }
 
-  const currentPage = reconciliationPage?.pageNumber ?? 0;
-  const totalPages = reconciliationPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
-
-  function pageUrl(page: number): string {
-    const newParams = new URLSearchParams();
-    newParams.set("page", String(page));
-    const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/reconciliation?${qs}`;
-  }
+  const basePath = `/org/${slug}/trust-accounting/reconciliation`;
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Reconciliation
-          </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Trust account bank reconciliation history
-          </p>
-        </div>
-        {canManageTrust && accountId && (
-          <Button asChild>
-            <Link
-              href={`/org/${slug}/trust-accounting/reconciliation/new`}
-              data-testid="new-reconciliation-btn"
-            >
-              <Plus className="mr-2 size-4" />
-              New Reconciliation
-            </Link>
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Reconciliation"
+        description="Trust account bank reconciliation history"
+        actions={
+          canManageTrust && accountId ? (
+            <Button asChild>
+              <Link href={`${basePath}/new`} data-testid="new-reconciliation-btn">
+                <Plus className="mr-2 size-4" />
+                New Reconciliation
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Error states */}
       {accountFetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load trust accounts. Please try again.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={AlertCircle}
+              title="Failed to load trust accounts. Please try again."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
 
       {!accountId && !accountFetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No trust account found. Create a trust account first.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={Landmark}
+              title="No trust account found. Create a trust account first."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
 
       {fetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load reconciliations. Please try again.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={AlertCircle}
+              title="Failed to load reconciliations. Please try again."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -183,137 +179,21 @@ export default async function ReconciliationListPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {reconciliationPage.content.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  No reconciliations yet. Start a new reconciliation to begin.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm" data-testid="reconciliations-table">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Period
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Bank Balance
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Cashbook Balance
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Client Ledger Total
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Status
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Completed
-                        </th>
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Monthly list
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reconciliationPage.content.map((recon) => (
-                        <tr
-                          key={recon.id}
-                          className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                          data-testid={`reconciliation-row-${recon.id}`}
-                        >
-                          <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                            {formatLocalDate(recon.periodEnd)}
-                          </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                            {formatCurrency(recon.bankBalance, currency)}
-                          </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                            {formatCurrency(recon.cashbookBalance, currency)}
-                          </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                            {formatCurrency(recon.clientLedgerTotal, currency)}
-                          </td>
-                          <td className="py-3 pr-4">
-                            {recon.isBalanced ? (
-                              <Badge variant="success">
-                                <CheckCircle2 className="mr-1 size-3" />
-                                Balanced
-                              </Badge>
-                            ) : (
-                              <Badge variant="warning">
-                                <AlertCircle className="mr-1 size-3" />
-                                Unbalanced
-                              </Badge>
-                            )}
-                          </td>
-                          <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                            {recon.completedAt
-                              ? formatLocalDate(recon.completedAt.split("T")[0])
-                              : "---"}
-                          </td>
-                          <td className="py-3 text-slate-700 dark:text-slate-300">
-                            {recon.monthlyListId ? (
-                              <Link
-                                href={`/org/${slug}/trust-accounting/reconciliation/lists/${recon.monthlyListId}`}
-                                data-testid={`list-locked-${recon.id}`}
-                              >
-                                <Badge variant="neutral">
-                                  <Lock className="mr-1 size-3" />
-                                  List locked
-                                </Badge>
-                              </Link>
-                            ) : (
-                              "---"
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Page {currentPage + 1} of {totalPages}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {currentPage > 0 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage - 1)}>
-                            <ChevronLeft className="mr-1 size-4" />
-                            Previous
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          <ChevronLeft className="mr-1 size-4" />
-                          Previous
-                        </Button>
-                      )}
-                      {currentPage < totalPages - 1 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage + 1)}>
-                            Next
-                            <ChevronRight className="ml-1 size-4" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          Next
-                          <ChevronRight className="ml-1 size-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <ReconciliationsDataTable
+              rows={reconciliationPage.content}
+              currency={currency}
+              pageIndex={reconciliationPage.pageNumber}
+              pageCount={reconciliationPage.totalPages}
+              basePath={basePath}
+              empty={
+                <EmptyState
+                  variant="inline"
+                  icon={History}
+                  title="No reconciliations yet. Start a new reconciliation to begin."
+                  description={null}
+                />
+              }
+            />
           </CardContent>
         </Card>
       )}
@@ -321,10 +201,13 @@ export default async function ReconciliationListPage({
       {/* FU-6b: imported statements not yet reconciled, with Discard */}
       {statementsFetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load bank statements. Please try again.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={AlertCircle}
+              title="Failed to load bank statements. Please try again."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -339,62 +222,7 @@ export default async function ReconciliationListPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm" data-testid="open-statements-table">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                      Trust Account
-                    </th>
-                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                      File
-                    </th>
-                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                      Period
-                    </th>
-                    <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                      Lines
-                    </th>
-                    <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                      Matched
-                    </th>
-                    <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {openStatements.map(({ statement: stmt, accountName }) => (
-                    <tr
-                      key={stmt.id}
-                      className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                      data-testid={`open-statement-row-${stmt.id}`}
-                    >
-                      <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                        {accountName}
-                      </td>
-                      <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                        {stmt.fileName}
-                      </td>
-                      <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                        {formatLocalDate(stmt.periodStart)} – {formatLocalDate(stmt.periodEnd)}
-                      </td>
-                      <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                        {stmt.lineCount}
-                      </td>
-                      <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                        {stmt.matchedCount}
-                      </td>
-                      <td className="py-3 text-right">
-                        {canManageTrust && (
-                          <DiscardStatementDialog statementId={stmt.id} fileName={stmt.fileName} />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <OpenStatementsDataTable rows={openStatements} canManageTrust={canManageTrust} />
           </CardContent>
         </Card>
       )}

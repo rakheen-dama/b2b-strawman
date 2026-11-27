@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Inbox, Lock } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
@@ -9,9 +9,14 @@ import { StatCard } from "@b2mash/ui/stat-card";
 import { ApiError } from "@/lib/api";
 import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { fetchMonthlyList } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
+import { EmptyState } from "@/components/empty-state";
+import {
+  MonthlyListAfterLockTable,
+  MonthlyListCreditorsTable,
+} from "@/components/trust/monthly-list-tables";
 import { formatCurrency, formatDateTime, formatLocalDate } from "@/lib/format";
 import { integrityFlagLabel, integritySeverityLabel } from "@/lib/trust-integrity";
-import { CREDITOR_LINE_KIND_LABELS, type CreditorLine, type MonthlyList } from "@/lib/types";
+import type { MonthlyList } from "@/lib/types";
 
 /** Currency of the trust books (the reconciliation pages use ZAR throughout). */
 const CURRENCY = "ZAR";
@@ -100,41 +105,12 @@ export default async function MonthlyListPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm" data-testid="monthly-list-creditors">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                    Trust creditor
-                  </th>
-                  <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                    Kind
-                  </th>
-                  <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Balance
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.lines.map((line, index) => (
-                  <CreditorRows key={`${line.kind}-${index}`} line={line} />
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-slate-200 dark:border-slate-700">
-                  <td
-                    colSpan={2}
-                    className="pt-3 pr-4 font-medium text-slate-950 dark:text-slate-50"
-                  >
-                    Total trust creditors
-                  </td>
-                  <td className="pt-3 text-right font-mono font-medium text-slate-950 tabular-nums dark:text-slate-50">
-                    {formatCurrency(list.creditorTotal, CURRENCY)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+          <MonthlyListCreditorsTable
+            lines={list.lines}
+            creditorTotal={list.creditorTotal}
+            currency={CURRENCY}
+            caption={`Trust creditors as at ${formatLocalDate(list.periodEnd)}`}
+          />
         </CardContent>
       </Card>
 
@@ -151,14 +127,14 @@ export default async function MonthlyListPage({
               {list.integrityFlags.map((flag, index) => (
                 <li key={`${flag.code}-${index}`} className="text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-950 dark:text-slate-50">
+                    <span className="text-foreground font-medium">
                       {integrityFlagLabel(flag.code)}
                     </span>
                     <Badge variant={flag.severity === "BLOCKING" ? "destructive" : "warning"}>
                       {integritySeverityLabel(flag.severity)}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-slate-600 dark:text-slate-400">{flag.message}</p>
+                  <p className="text-muted-foreground mt-1">{flag.message}</p>
                 </li>
               ))}
             </ul>
@@ -175,67 +151,19 @@ export default async function MonthlyListPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {adjustments.entries.length === 0 ? (
-            <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
-              Nothing has been entered after this list was locked.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Date
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Entered
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Type
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Client
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Reference
-                      </th>
-                      <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Cashbook
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {adjustments.entries.map((entry) => (
-                      <tr
-                        key={entry.transactionId}
-                        className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                        data-testid={`after-lock-entry-${entry.transactionId}`}
-                      >
-                        <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                          {formatLocalDate(entry.transactionDate)}
-                        </td>
-                        <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                          {formatDateTime(entry.postedAt)}
-                        </td>
-                        <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                          {entry.typeLabel}
-                        </td>
-                        <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                          {entry.clientName ?? "—"}
-                        </td>
-                        <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                          {entry.reference ?? "—"}
-                        </td>
-                        <td className="py-3 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                          {formatCurrency(entry.cashbookEffect, CURRENCY)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
+          <MonthlyListAfterLockTable
+            entries={adjustments.entries}
+            currency={CURRENCY}
+            empty={
+              <EmptyState
+                variant="inline"
+                icon={Inbox}
+                title="Nothing has been entered after this list was locked."
+                description={null}
+              />
+            }
+            footer={
+              <p className="text-foreground text-sm">
                 Trust creditors as at {formatLocalDate(list.periodEnd)} are now{" "}
                 <span className="font-mono tabular-nums">
                   {formatCurrency(adjustments.liveCreditorTotal, CURRENCY)}
@@ -246,65 +174,10 @@ export default async function MonthlyListPage({
                 </span>{" "}
                 from the locked list.
               </p>
-            </div>
-          )}
+            }
+          />
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-/**
- * One creditor, its per-matter breakdown beneath; an unidentified deposit shows when received; a
- * client taken on shows its balance brought forward at take-on (657A).
- */
-function CreditorRows({ line }: { line: CreditorLine }) {
-  const name =
-    line.kind === "UNIDENTIFIED"
-      ? `${line.bankDescription ?? "Unidentified deposit"}${
-          line.receivedDate ? ` · received ${formatLocalDate(line.receivedDate)}` : ""
-        }`
-      : (line.name ?? CREDITOR_LINE_KIND_LABELS[line.kind]);
-  return (
-    <>
-      <tr className="border-b border-slate-100 dark:border-slate-800">
-        <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">{name}</td>
-        <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
-          {CREDITOR_LINE_KIND_LABELS[line.kind]}
-        </td>
-        <td className="py-3 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-          {formatCurrency(line.balance, CURRENCY)}
-        </td>
-      </tr>
-      {/* 657A: a client taken on from the previous system — its balance brought forward */}
-      {line.kind === "CLIENT" && line.broughtForward != null && line.broughtForward !== 0 && (
-        <tr
-          className="border-b border-slate-100 dark:border-slate-800"
-          data-testid="monthly-list-brought-forward"
-        >
-          <td className="py-2 pr-4 pl-6 text-slate-600 dark:text-slate-400">B/f at take-on</td>
-          <td className="py-2 pr-4 text-slate-500 dark:text-slate-400">Take-on</td>
-          <td className="py-2 text-right font-mono text-slate-600 tabular-nums dark:text-slate-400">
-            {formatCurrency(line.broughtForward, CURRENCY)}
-          </td>
-        </tr>
-      )}
-      {line.matters.length > 0 &&
-        line.matters.map((matter, index) => (
-          <tr
-            key={`${matter.matterId ?? "none"}-${index}`}
-            className="border-b border-slate-100 dark:border-slate-800"
-            data-testid="monthly-list-matter"
-          >
-            <td className="py-2 pr-4 pl-6 text-slate-600 dark:text-slate-400">
-              {matter.name ?? "Not linked to a matter"}
-            </td>
-            <td className="py-2 pr-4 text-slate-500 dark:text-slate-400">Matter</td>
-            <td className="py-2 text-right font-mono text-slate-600 tabular-nums dark:text-slate-400">
-              {formatCurrency(matter.balance, CURRENCY)}
-            </td>
-          </tr>
-        ))}
-    </>
   );
 }

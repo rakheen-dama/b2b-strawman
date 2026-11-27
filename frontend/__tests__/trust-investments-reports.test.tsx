@@ -518,6 +518,14 @@ describe("Trust Investments & Reports", () => {
     expect(within(s863).getByTestId("investment-interest-fund-note")).toHaveTextContent(
       "Interest is the Fund's — record it from the investment account's statement"
     );
+    // K-91: the fund note is a sans sub-line, out of the money column's mono
+    const note = within(s863).getByTestId("investment-interest-fund-note");
+    expect(note.className).toContain("font-sans");
+    expect(note.closest("td")?.className).not.toContain("font-mono");
+    // K-36: the statutory LPFF share reads in the accent token, not raw teal-600
+    const statutory = within(s864).getByText("5% (statutory)");
+    expect(statutory.className).toContain("text-(--button-accent)");
+    expect(statutory.className).not.toContain("text-teal-600");
     expect(within(s863).queryByText(/Gross interest/)).toBeNull();
   });
 
@@ -1019,9 +1027,14 @@ describe("Trust Investments & Reports", () => {
     const maturityAlerts = screen.getAllByTestId("maturity-alert");
     expect(maturityAlerts).toHaveLength(1);
 
-    // The maturing row should have amber highlight class
+    // Only the maturing row is flagged; the register wrapper tints that row amber (the kit has no
+    // row-class hook, 667B DA-6)
     const alertRow = maturityAlerts[0];
-    expect(alertRow.className).toContain("bg-amber-50");
+    expect(alertRow.tagName).toBe("TR");
+    expect(alertRow).toHaveTextContent("Maturing Client");
+    expect(screen.getByTestId("investment-row-inv-safe")).toHaveTextContent("Safe Client");
+    const register = alertRow.closest("[data-slot=investments-register]");
+    expect(register?.className).toContain("[&_tr[data-testid=maturity-alert]]:bg-amber-50");
   });
 
   it("reports page lists the nine trust report types (pack v4)", async () => {
@@ -1100,5 +1113,14 @@ describe("Trust Investments & Reports", () => {
       l.getAttribute("href")?.startsWith("/org/acme/reports/")
     );
     expect(reportLinks).toHaveLength(9);
+
+    // 667B: one h1 (PageHeader); K-36: "Run Report →" in the accent token, not raw teal-600
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    const runReport = screen.getAllByText("Run Report →");
+    expect(runReport).toHaveLength(9);
+    for (const label of runReport) {
+      expect(label.className).toContain("text-(--button-accent)");
+      expect(label.className).not.toContain("text-teal-600");
+    }
   });
 });

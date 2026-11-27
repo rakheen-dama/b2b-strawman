@@ -30,3 +30,14 @@ All findings below are **pre-existing**. They were observed in the OBS-before at
 - The reconciliation list is paged client-side from a plain array (`reconciliation/actions.ts:45-65`, G89-F17), ordered by period end descending, so the completed 31 Oct row is on page 2.
 - The Discard dialog is offered for a statement that 22 drafts use; the backend refuses that discard (FU-6b default; the vitest `stmt-draft` case shows the refusal in the dialog). It was opened and cancelled only.
 - The investments page has no pager (`size=100`).
+
+## Found during the build
+
+Recorded by the 667B builder; none of these is fixed in 667B (root `CLAUDE.md` §7).
+
+| Id | Sev | Surface | Finding | Disposition proposal |
+|---|---|---|---|---|
+| F-667B-B1 | LOW | `/trust-accounting/other-creditors` | §18.3.3 says E7B converts the trust hand-rolled empties and names `other-creditors` (`no-account-state` kept on a wrapper). 667B did not touch other-creditors (DA-12: "approved register items only", and there are none), so its hand-rolled empties are still raw. | 669A/670A (with F-667B-10) |
+| F-667B-B2 | LOW | `/trust-accounting/reconciliation/lists/[listId]` | The monthly list's load-error card (`monthly-list-error`, red text in a raw `CardContent`) is not on the shared `EmptyState`; it was outside the 667.6/667.7 empties list (DA-4 "not converted"). | 669A/670A |
+| F-667B-B3 | LOW (kit gap) | `$FC/data-table/data-table.tsx` | DataTable has no row-class hook, so a per-row tint (the investments `maturity-alert` row) is applied from the consumer through `[&_tr[data-testid=…]]` arbitrary variants keyed on the row testid (DA-6). A kit `rowClassName` prop would remove that coupling. | Kit follow-up (669A/670A), not a surface slice |
+| F-667B-B4 | LOW | `/trust-accounting/investments` at 1024 | With the kit's `p-2` cells the register's columns are all at min-content at 1024 (≈ 771 px in 662 for Alice, CSS-injection prototype on the before stack), so the sticky Actions column (K-91) sits exactly against Balance's amount (0 px gap) and covers Status at scroll 0 (the D-81 residual class). A longer amount (≥ R 1 000 000,00) would slide under the sticky column. The only remedy beyond K-91's is the row menu (IA, backlog). | OBS-after to measure; residual per D-81 |

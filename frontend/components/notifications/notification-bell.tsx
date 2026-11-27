@@ -66,7 +66,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
           <span
             aria-hidden="true"
             className={cn(
-              "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-teal-600 text-[10px] font-medium text-white",
+              "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-(--button-accent) text-[10px] font-medium text-(--button-accent-foreground)",
               unreadCount > 99 ? "h-4 min-w-5 px-1" : "size-4"
             )}
           >

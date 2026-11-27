@@ -9,6 +9,7 @@ import {
   type DiaryEventResponse,
   type DiaryKind,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { CourtDateStatusBadge } from "@/components/legal/court-date-status-badge";
 import { DiaryRowActions } from "./diary-row-actions";
 
 /**
@@ -56,6 +57,14 @@ export function kindRailClass(kind: DiaryKind): string {
       // "No rail" — a transparent rail keeps text aligned with the other kinds.
       return "border-l-[3px] border-l-transparent";
   }
+}
+
+/**
+ * A court date's status shows on a Diary row only when it is not SCHEDULED (Phase 91 E8A, §18.3.8,
+ * X3). The feed serves SCHEDULED and POSTPONED court dates only, so in practice this is "Postponed".
+ */
+export function showsCourtDateStatus(event: DiaryEventResponse): boolean {
+  return event.kind === "COURT_DATE" && event.status !== "SCHEDULED";
 }
 
 /** Kind icon (decorative — pair it with visible or visually hidden kind text). */
@@ -130,6 +139,7 @@ export function DiaryEventRow({
           <span className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {showDate && <span>{formatDiaryDay(event.date)}</span>}
             {subtype && <span>{subtype}</span>}
+            {showsCourtDateStatus(event) && <CourtDateStatusBadge status={event.status} />}
             <span className="truncate">{event.matterName}</span>
             {reference && <span>{reference}</span>}
             {feeEarner && <span>{feeEarner}</span>}

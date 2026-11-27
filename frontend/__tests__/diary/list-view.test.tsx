@@ -135,11 +135,39 @@ describe("DiaryListView", () => {
   });
 });
 
+describe("DiaryListView — kit styling and court-date status (Phase 91 668A)", () => {
+  it("sits in the DataTable kit frame", () => {
+    render(<DiaryListView events={inWindow} band={band} slug="acme" />);
+    expect(screen.getByTestId("diary-list").closest(".rounded-lg.border")).toHaveClass("bg-card");
+  });
+
+  it("shows 'Postponed' with an icon on a postponed court date and nothing on a scheduled one", () => {
+    const postponed = ev({
+      id: "cd-p",
+      kind: "COURT_DATE",
+      date: "2026-10-21",
+      title: "Johannesburg High Court — Trial",
+      subtype: "TRIAL",
+      status: "POSTPONED",
+      href: "/matters/m-1?tab=court-dates&courtDateId=cd-p",
+    });
+    render(<DiaryListView events={[...inWindow, postponed]} band={[]} slug="acme" />);
+
+    const row = screen.getByTestId("diary-list-row-cd-p");
+    const badge = within(row).getByText("Postponed");
+    expect(badge).toHaveAttribute("data-slot", "badge");
+    expect(badge.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    expect(within(screen.getByTestId("diary-list-row-cd-1")).queryByText("Scheduled")).toBeNull();
+    expect(screen.queryByText("Scheduled")).toBeNull();
+  });
+});
+
 describe("DiaryListSkeleton", () => {
   // 613C amendment (B-7): the skeleton carries the Actions column too.
   it("renders the five-column shape with six placeholder rows", () => {
     const { container } = render(<DiaryListSkeleton />);
     expect(container.querySelectorAll('th[scope="col"]')).toHaveLength(5);
     expect(container.querySelectorAll("tbody tr")).toHaveLength(6);
+    expect(screen.getByTestId("diary-list-skeleton").closest(".rounded-lg.border")).not.toBeNull();
   });
 });

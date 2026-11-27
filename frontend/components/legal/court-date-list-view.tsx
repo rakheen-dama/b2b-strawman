@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { CourtDateStatusBadge } from "@/components/legal/court-date-status-badge";
 import type { CourtDate, CourtDateStatus } from "@/lib/types";
 
 interface CourtDateListViewProps {
@@ -24,25 +25,6 @@ interface CourtDateListViewProps {
 
 type SortField = "scheduledDate" | "courtName" | "status";
 type SortDir = "asc" | "desc";
-
-function statusBadge(status: CourtDateStatus) {
-  switch (status) {
-    case "SCHEDULED":
-      return (
-        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-          Scheduled
-        </Badge>
-      );
-    case "POSTPONED":
-      return <Badge variant="warning">Postponed</Badge>;
-    case "HEARD":
-      return <Badge variant="success">Heard</Badge>;
-    case "CANCELLED":
-      return <Badge variant="neutral">Cancelled</Badge>;
-    default:
-      return <Badge variant="neutral">{status}</Badge>;
-  }
-}
 
 function dateTypeLabel(type: string): string {
   return type
@@ -146,7 +128,7 @@ export function CourtDateListView({
             <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Client
             </th>
-            <th className="px-4 py-3 text-left">
+            <th className="px-2 py-3 text-left">
               <Button
                 variant="ghost"
                 size="sm"
@@ -193,7 +175,9 @@ export function CourtDateListView({
                 <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                   {cd.clientName}
                 </td>
-                <td className="px-4 py-3">{statusBadge(cd.status)}</td>
+                <td className="px-2 py-3">
+                  <CourtDateStatusBadge status={cd.status} />
+                </td>
                 <td className="px-4 py-3 text-right">
                   {hasActions && (
                     <DropdownMenu>

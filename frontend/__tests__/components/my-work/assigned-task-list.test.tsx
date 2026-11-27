@@ -99,7 +99,50 @@ describe("AssignedTaskList", () => {
 
     const { container } = render(<AssignedTaskList tasks={tasks} slug="acme" />);
 
-    const dateSpan = container.querySelector("[class*='text-red']");
+    const dateSpan = container.querySelector(".text-destructive");
     expect(dateSpan).toBeInTheDocument();
+    expect(dateSpan).toHaveTextContent("1 Jan 2020");
+  });
+
+  it("truncates the matter badge and the title with their full text on hover (K-09)", () => {
+    const longMatter = "Khumalo — lease dispute over the commercial premises in Braamfontein";
+    const longTitle = "Prepare the heads of argument for the lease dispute hearing";
+    render(
+      <AssignedTaskList
+        tasks={[makeTask({ matterName: longMatter, title: longTitle })]}
+        slug="acme"
+      />
+    );
+
+    const badge = screen.getByText(longMatter);
+    expect(badge).toHaveClass("truncate", "max-w-28");
+    expect(badge).toHaveAttribute("title", longMatter);
+    const title = screen.getByText(longTitle);
+    expect(title).toHaveClass("truncate");
+    expect(title).toHaveAttribute("title", longTitle);
+  });
+
+  it("shows Priority, Status and Logged only from measured frame widths (K-09)", () => {
+    render(<AssignedTaskList tasks={[makeTask({ totalTimeMinutes: 90 })]} slug="acme" />);
+
+    expect(screen.getByRole("columnheader", { name: "Priority" })).toHaveClass(
+      "hidden",
+      "@min-[34rem]:table-cell"
+    );
+    expect(screen.getByRole("columnheader", { name: "Status" })).toHaveClass(
+      "hidden",
+      "@min-[34rem]:table-cell"
+    );
+    expect(screen.getByRole("columnheader", { name: "Logged" })).toHaveClass(
+      "hidden",
+      "@min-[38rem]:table-cell"
+    );
+    // Matter, Title and Due Date always show.
+    for (const name of ["Matter", "Title", "Due Date"]) {
+      expect(screen.getByRole("columnheader", { name })).not.toHaveClass("hidden");
+    }
+    // The kit frame is kept (DA-8): one bordered @container frame, no "Columns" menu.
+    expect(screen.getByRole("table").closest(".\\@container")).toHaveClass("rounded-lg", "border");
+    expect(screen.queryByRole("button", { name: /columns/i })).toBeNull();
   });
 });

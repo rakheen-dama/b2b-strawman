@@ -1,43 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Inbox, AlertTriangle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import type { MyWorkTaskItem, TaskPriority } from "@/lib/types";
-import { todayInSA } from "@b2mash/shared/date";
+import type { MyWorkTaskItem } from "@/lib/types";
+import { MyWorkTaskTable } from "./task-table";
 
-// --- Priority badge config ---
-
-const PRIORITY_BADGE: Record<
-  TaskPriority,
-  { label: string; variant: "destructive" | "warning" | "neutral" }
-> = {
-  HIGH: { label: "High", variant: "destructive" },
-  MEDIUM: { label: "Medium", variant: "warning" },
-  LOW: { label: "Low", variant: "neutral" },
-};
-
-// --- Overdue helper ---
-
-/** Due before South African today — identical on the SSR server (UTC) and in the browser. */
-function isOverdue(dueDate: string | null, status: string): boolean {
-  if (!dueDate || status === "DONE" || status === "CANCELLED") return false;
-  return dueDate.slice(0, 10) < todayInSA();
-}
-
-// --- Component ---
+/** K-97: Available Tasks rendered every row unpaged (82 for an owner); ten per page. */
+export const AVAILABLE_TASKS_PAGE_SIZE = 10;
 
 interface AvailableTaskListProps {
   tasks: MyWorkTaskItem[];
@@ -46,8 +17,23 @@ interface AvailableTaskListProps {
 }
 
 export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskListProps) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(tasks.length > 0);
+  // The page lives here, so collapsing and expanding the section keeps it.
+  const [pageIndex, setPageIndex] = useState(0);
+  const pageCount = Math.ceil(tasks.length / AVAILABLE_TASKS_PAGE_SIZE);
+  // A refresh can shrink the list (a task gets assigned): never point past the last page. The
+  // stored page is clamped too (adjusting state while rendering, as the kit does), so a later
+  // refresh that grows the list again does not jump back to the old page.
+  const safeIndex = Math.min(pageIndex, Math.max(pageCount - 1, 0));
+  if (pageIndex > safeIndex) setPageIndex(safeIndex);
+  const pageRows = useMemo(
+    () =>
+      tasks.slice(
+        safeIndex * AVAILABLE_TASKS_PAGE_SIZE,
+        (safeIndex + 1) * AVAILABLE_TASKS_PAGE_SIZE
+      ),
+    [tasks, safeIndex]
+  );
 
   return (
     <div className="space-y-4">
@@ -57,7 +43,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
         ) : (
           <ChevronRight className="size-4 text-slate-500" />
         )}
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Available Tasks</h2>
+        <h2 className="text-foreground font-semibold">Available Tasks</h2>
         <Badge variant="neutral">{tasks.length}</Badge>
       </button>
 
@@ -71,72 +57,14 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
               description="Unassigned tasks in your matters will appear here"
             />
           ) : (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                      Matter
-                    </TableHead>
-                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                      Title
-                    </TableHead>
-                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                      Priority
-                    </TableHead>
-                    <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                      Due Date
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tasks.map((task) => {
-                    const priorityBadge =
-                      PRIORITY_BADGE[task.priority as TaskPriority] ?? PRIORITY_BADGE.MEDIUM;
-                    const overdue = isOverdue(task.dueDate, task.status);
-
-                    return (
-                      <TableRow
-                        key={task.id}
-                        className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
-                        onClick={() => {
-                          if (onTaskClick) {
-                            onTaskClick(task.id);
-                          } else {
-                            router.push(`/org/${slug}/matters/${task.matterId}`);
-                          }
-                        }}
-                      >
-                        <TableCell>
-                          <Badge variant="member">{task.matterName}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
-                            {task.title}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1 text-sm",
-                              overdue
-                                ? "font-medium text-red-600 dark:text-red-400"
-                                : "text-slate-600 dark:text-slate-400"
-                            )}
-                          >
-                            {overdue && <AlertTriangle className="size-3.5 shrink-0" />}
-                            {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <MyWorkTaskTable
+              tasks={pageRows}
+              slug={slug}
+              columnSet="available"
+              overdueTone="per-task"
+              onTaskClick={onTaskClick}
+              pagination={{ pageIndex: safeIndex, pageCount, onPageChange: setPageIndex }}
+            />
           )}
         </>
       )}

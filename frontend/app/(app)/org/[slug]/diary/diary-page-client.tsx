@@ -254,6 +254,7 @@ export function DiaryPageClient({
     return (
       <EmptyState
         icon={CalendarX2}
+        variant="default"
         title="Unable to load the diary"
         description="The diary could not be loaded. Refresh the page to try again."
       />
@@ -280,6 +281,7 @@ export function DiaryPageClient({
     body = (
       <EmptyState
         icon={CalendarDays}
+        variant="default"
         title={`Nothing in the diary for this ${unit}.`}
         description={
           typesServed.includes("COURT_DATE")
@@ -302,6 +304,7 @@ export function DiaryPageClient({
     body = (
       <EmptyState
         icon={SearchX}
+        variant="default"
         title="No events match these filters."
         description={`Change the filters or clear them to see the whole ${unit}.`}
         actionLabel="Clear filters"
@@ -388,7 +391,7 @@ export function DiaryPageClient({
           />
         </div>
 
-        <p className="text-sm text-slate-600 dark:text-slate-400" data-testid="diary-range">
+        <p className="text-muted-foreground text-sm" data-testid="diary-range">
           {formatDiaryRangeLabel(view, current)}
         </p>
 

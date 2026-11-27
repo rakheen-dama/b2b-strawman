@@ -3,11 +3,17 @@
 import { useCallback, useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
+import { Card } from "@b2mash/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { NotificationItem } from "@/components/notifications/notification-item";
 import { fetchNotifications, markAllNotificationsRead } from "@/lib/actions/notifications";
 import type { Notification } from "@/lib/actions/notifications";
+import { cn } from "@/lib/utils";
+
+const FILTER_BUTTON = "rounded-md px-3 py-1 text-sm font-medium transition-colors";
+const FILTER_ACTIVE = "bg-muted text-foreground";
+const FILTER_INACTIVE = "text-muted-foreground hover:text-foreground";
 
 interface NotificationsPageClientProps {
   initialNotifications: Notification[];
@@ -85,26 +91,20 @@ export function NotificationsPageClient({
       {/* Controls */}
       <div className="flex items-center justify-between">
         {/* Filter toggle */}
-        <div className="flex gap-1 rounded-lg border border-slate-200 p-0.5 dark:border-slate-800">
+        <div className="flex gap-1 rounded-lg border p-0.5">
           <button
             type="button"
+            aria-pressed={filter === "all"}
             onClick={() => handleFilterChange("all")}
-            className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-              filter === "all"
-                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-            }`}
+            className={cn(FILTER_BUTTON, filter === "all" ? FILTER_ACTIVE : FILTER_INACTIVE)}
           >
             All
           </button>
           <button
             type="button"
+            aria-pressed={filter === "unread"}
             onClick={() => handleFilterChange("unread")}
-            className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-              filter === "unread"
-                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-            }`}
+            className={cn(FILTER_BUTTON, filter === "unread" ? FILTER_ACTIVE : FILTER_INACTIVE)}
           >
             Unread
           </button>
@@ -122,21 +122,24 @@ export function NotificationsPageClient({
       {/* Notification list */}
       {notifications.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={Bell}
           title={t("notifications.page.heading")}
           description={t("notifications.page.description")}
         />
       ) : (
-        <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
-          {notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              orgSlug={orgSlug}
-              onRead={handleItemRead}
-            />
-          ))}
-        </div>
+        <Card className="gap-0 py-0">
+          <div className="divide-border divide-y">
+            {notifications.map((notification) => (
+              <NotificationItem
+                key={notification.id}
+                notification={notification}
+                orgSlug={orgSlug}
+                onRead={handleItemRead}
+              />
+            ))}
+          </div>
+        </Card>
       )}
 
       {/* Load more */}

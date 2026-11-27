@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { DiaryDaySkeleton } from "@/components/diary/diary-day-view";
 import { DiaryListSkeleton } from "@/components/diary/diary-list-view";
 import { DiaryMonthSkeleton } from "@/components/diary/diary-month-view";
@@ -56,12 +57,10 @@ export default async function DiaryPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Diary</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Court dates, prescription dates, matter due dates and task due dates.
-        </p>
-      </div>
+      <PageHeader
+        title="Diary"
+        description="Court dates, prescription dates, matter due dates and task due dates."
+      />
       {/* Keyed on the whole window: Week → Day on a Monday keeps `from` but changes `to`. */}
       <Suspense key={`${from}_${to}`} fallback={<DiarySkeleton view={view} />}>
         <DiaryLoader

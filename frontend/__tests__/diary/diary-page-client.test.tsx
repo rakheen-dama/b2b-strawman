@@ -408,4 +408,22 @@ describe("DiaryPageClient", () => {
     expect(screen.getByText("Unable to load the diary")).toBeInTheDocument();
     expect(screen.queryByTestId("diary-filter-row")).toBeNull();
   });
+
+  // Phase 91 668A (ADR-393): each empty state is the whole diary body → explicit `default`; none
+  // of them adds a level-1 heading (the page's PageHeader owns the only h1).
+  it("renders the error, empty and no-match states as the default EmptyState variant", () => {
+    const cases: Array<[Partial<DiaryPageClientProps>, string]> = [
+      [{ events: [], loadError: true }, "Unable to load the diary"],
+      [{ events: [] }, "Nothing in the diary for this week."],
+      [{ initialKinds: [] }, "No events match these filters."],
+    ];
+    for (const [overrides, title] of cases) {
+      const { container } = render(<DiaryPageClient {...clientProps(overrides)} />);
+      expect(screen.getByText(title)).toBeInTheDocument();
+      const empty = container.querySelector('[data-slot="empty-state"]');
+      expect(empty).toHaveAttribute("data-variant", "default");
+      expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+      cleanup();
+    }
+  });
 });

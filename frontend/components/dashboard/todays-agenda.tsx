@@ -98,7 +98,7 @@ export function TodaysDiaryList({
   return (
     <>
       {diaryEvents === "unidentified" ? (
-        <p className="text-sm text-slate-400">
+        <p className="text-muted-foreground text-sm">
           Couldn&apos;t identify your member profile.{" "}
           <Link
             href={`/org/${slug}/diary`}
@@ -108,9 +108,9 @@ export function TodaysDiaryList({
           </Link>
         </p>
       ) : diaryEvents === null ? (
-        <p className="text-sm text-slate-400">Today&apos;s diary could not be loaded.</p>
+        <p className="text-muted-foreground text-sm">Today&apos;s diary could not be loaded.</p>
       ) : todaysEvents.length === 0 ? (
-        <p className="text-sm text-slate-400">Nothing in the diary today</p>
+        <p className="text-muted-foreground text-sm">Nothing in the diary today</p>
       ) : (
         <ul
           data-columns={twoColumnsWhenWide ? (twoColumns ? "2" : "1") : undefined}
@@ -187,7 +187,7 @@ export function TodaysAgenda({
               <span className="text-foreground font-mono font-medium tabular-nums">
                 {formatDuration(loggedMinutes)}
               </span>
-              <span className="font-mono text-xs text-slate-400 tabular-nums">
+              <span className="text-muted-foreground font-mono text-xs tabular-nums">
                 / {formatDuration(dailyTargetMinutes)}
               </span>
             </div>
@@ -207,11 +207,11 @@ export function TodaysAgenda({
           </p>
           {/* Same copy as the Upcoming list: both read the same result. */}
           {upcomingEvents === "unidentified" ? (
-            <p className="text-sm text-slate-400">{UPCOMING_UNIDENTIFIED_COPY}</p>
+            <p className="text-muted-foreground text-sm">{UPCOMING_UNIDENTIFIED_COPY}</p>
           ) : upcomingEvents === null ? (
-            <p className="text-sm text-slate-400">{UPCOMING_LOAD_FAILED_COPY}</p>
+            <p className="text-muted-foreground text-sm">{UPCOMING_LOAD_FAILED_COPY}</p>
           ) : !nextDeadline ? (
-            <p className="text-sm text-slate-400">No upcoming deadlines</p>
+            <p className="text-muted-foreground text-sm">No upcoming deadlines</p>
           ) : (
             <div>
               <p className="text-xs text-slate-500">

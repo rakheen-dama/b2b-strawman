@@ -15,6 +15,20 @@ vi.mock("motion/react", () => ({
   },
 }));
 
+// DataTable calls useRouter() unconditionally (Next 16 throws without the App Router context).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/org/acme/team",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // Mock auth/client
 vi.mock("@/lib/auth/client", () => ({
   useOrgMembers: vi.fn().mockReturnValue({ members: [], isLoaded: true }),
@@ -111,6 +125,12 @@ describe("MemberList", () => {
     await waitFor(() => {
       expect(screen.getByText("No members found")).toBeInTheDocument();
     });
+    // The page-level tab panel's empty state (669B): default variant, an h2 title, no table.
+    expect(
+      screen.getByText("No members found").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "default");
+    expect(screen.getByRole("heading", { level: 2, name: "No members found" })).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
   });
 
   it("renders neutral badge for custom role members via MemberDetailPanel", async () => {

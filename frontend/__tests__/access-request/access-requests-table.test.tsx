@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AccessRequestsTable } from "@/components/access-request/access-requests-table";
 import type { AccessRequest } from "@/app/(app)/platform-admin/access-requests/actions";
@@ -159,5 +159,77 @@ describe("AccessRequestsTable", () => {
 
     expect(screen.getByText("No access requests")).toBeInTheDocument();
     expect(screen.getByText(/No rejected access requests/)).toBeInTheDocument();
+    // A page-level tab panel's empty state (669B): default variant with an h2 title.
+    const rejectedPanel = screen.getByRole("tabpanel");
+    expect(
+      within(rejectedPanel).getByText("No access requests").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "default");
+    expect(
+      within(rejectedPanel).getByRole("heading", { level: 2, name: "No access requests" })
+    ).toBeInTheDocument();
+    expect(within(rejectedPanel).queryByRole("table")).toBeNull();
+  });
+
+  it("renders each tab as a DataTable with today's headers and row testids (669B)", () => {
+    render(<AccessRequestsTable requests={[pendingRequest, approvedRequest]} />);
+
+    const panel = screen.getByRole("tabpanel");
+    expect(
+      within(panel)
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent)
+    ).toEqual([
+      "Org Name",
+      "Email",
+      "Name",
+      "Country",
+      "Industry",
+      "Submitted",
+      "Status",
+      "Actions",
+    ]);
+    const row = screen.getByTestId("request-row-Acme Corp");
+    expect(row.tagName).toBe("TR");
+    expect(within(row).getByTestId("approve-btn")).toHaveTextContent("Approve");
+    expect(within(row).getByRole("button", { name: "Reject" })).toBeInTheDocument();
+    expect(within(row).getByText("PENDING")).toBeInTheDocument();
+    expect(screen.getByTestId("pending-tab")).toHaveAttribute("data-state", "active");
+    expect(screen.getByTestId("access-requests-page")).toBeInTheDocument();
+  });
+
+  it("lists the All tab oldest first, with actions only on pending rows", async () => {
+    const user = userEvent.setup();
+    render(<AccessRequestsTable requests={[pendingRequest, approvedRequest, rejectedRequest]} />);
+
+    await user.click(screen.getByText("All"));
+
+    const panel = screen.getByRole("tabpanel");
+    const bodyRows = within(panel).getAllByRole("row").slice(1);
+    expect(bodyRows.map((r) => r.getAttribute("data-testid"))).toEqual([
+      "request-row-Gamma LLC",
+      "request-row-Beta Inc",
+      "request-row-Acme Corp",
+    ]);
+    expect(within(panel).getAllByTestId("approve-btn")).toHaveLength(1);
+    expect(within(bodyRows[0]).queryByRole("button")).toBeNull();
+  });
+
+  it("lets the prose columns wrap so Actions stays in the frame at 1024 (F-669B-B-8)", () => {
+    render(<AccessRequestsTable requests={[pendingRequest]} />);
+
+    const cells = within(screen.getByTestId("request-row-Acme Corp")).getAllByRole("cell");
+    const [org, email, name, country, industry, submitted, status, actions] = cells;
+    for (const cell of [org, email, name, country, industry]) {
+      expect(cell).toHaveClass("whitespace-normal");
+    }
+    // The email breaks anywhere, above a floor; the org name keeps a floor too.
+    expect(email).toHaveClass("wrap-anywhere");
+    expect(email.style.minWidth).toBe("12rem");
+    expect(org.style.minWidth).toBe("8rem");
+    // Submitted, Status and Actions never wrap (kit default nowrap).
+    for (const cell of [submitted, status, actions]) {
+      expect(cell).toHaveClass("whitespace-nowrap");
+      expect(cell).not.toHaveClass("whitespace-normal");
+    }
   });
 });

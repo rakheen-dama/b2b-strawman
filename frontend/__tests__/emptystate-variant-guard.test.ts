@@ -6,22 +6,16 @@ import { readSourceTree } from "./helpers/source-scan";
 // Phase 91 E3A (ADR-393): every call of the shared EmptyState (`@/components/empty-state`) passes an
 // explicit `variant` — default = whole page or page-level tab panel; compact = section, card,
 // widget, chart card, dialog body or Sheet (≤ one-line description + one optional action, box
-// ≤ 212px); inline = table body or single-line slot. The prop stays optional (fallback "default")
-// while the sweep ratchets: the files below belong to later Phase 91 slices, each of which deletes
-// only its own lines; 669B deletes the last entry and makes `variant` required in the type.
+// ≤ 212px); inline = table body or single-line slot. Since 669B the prop is required in the type
+// (typecheck fails a call without it) and the allowlist is empty; the guard keeps running so a call
+// that hides `variant` in a spread still fails here. The allowlist stays as the mechanism for a
+// future, explicitly approved exception.
 
 const SCAN_ROOTS = ["app", "components"] as const;
 const SHARED_MODULE = "components/empty-state";
 
-/** File (relative to `frontend/`) → the Phase 91 slice that sets its variants and deletes the line. */
-const ALLOWLIST: Record<string, string> = {
-  // 669B — Light pass II (last entries; 669B also makes `variant` required)
-  "components/access-request/access-requests-table.tsx": "669B",
-  "components/billing/billing-tenants-table.tsx": "669B",
-  "components/billing/demo-tenants-table.tsx": "669B",
-  "components/team/member-list.tsx": "669B",
-  "components/team/pending-invitations.tsx": "669B",
-};
+/** File (relative to `frontend/`) → the slice that owns the exception. Empty since 669B. */
+const ALLOWLIST: Record<string, string> = {};
 
 /** True when an import specifier written in `rel` resolves to the shared EmptyState module. */
 function isSharedModule(rel: string, specifier: string): boolean {
@@ -210,6 +204,10 @@ describe("EmptyState variant guard (Phase 91 E3A, ADR-393)", () => {
 
   it("every shared EmptyState call passes an explicit variant (outside the allowlist)", () => {
     expect(unlisted(offendersByFile(), ALLOWLIST)).toEqual([]);
+  });
+
+  it("the allowlist is empty (669B)", () => {
+    expect(Object.keys(ALLOWLIST)).toEqual([]);
   });
 
   it("no allowlist entry is stale (each listed file still has a call without variant)", () => {

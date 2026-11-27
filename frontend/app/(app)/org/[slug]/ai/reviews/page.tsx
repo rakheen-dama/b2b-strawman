@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getAiGates, getAiGate } from "@/lib/api/ai";
 import type { AiGateListItem } from "@/lib/api/ai";
@@ -39,12 +40,10 @@ export default async function AiReviewsPage({ params }: { params: Promise<{ slug
   if (!caps.capabilities.includes("AI_REVIEW") && !caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">AI Reviews</h1>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-            You do not have permission to review AI actions. Contact your administrator.
-          </p>
-        </div>
+        <PageHeader title="AI Reviews" />
+        <p className="text-muted-foreground text-sm">
+          You do not have permission to review AI actions. Contact your administrator.
+        </p>
       </div>
     );
   }
@@ -71,12 +70,10 @@ export default async function AiReviewsPage({ params }: { params: Promise<{ slug
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">AI Reviews</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Review and approve AI-proposed actions before they are executed.
-        </p>
-      </div>
+      <PageHeader
+        title="AI Reviews"
+        description="Review and approve AI-proposed actions before they are executed."
+      />
 
       <AiReviewsClient
         slug={slug}

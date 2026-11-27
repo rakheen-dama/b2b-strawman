@@ -39,6 +39,7 @@ describe("EmptyState", () => {
 
     render(
       <EmptyState
+        variant="default"
         icon={FolderOpen}
         title="No projects yet"
         description="Create your first project to get started."
@@ -58,6 +59,7 @@ describe("EmptyState", () => {
   it("renders secondaryLink as an underlined link with the same href and name", () => {
     render(
       <EmptyState
+        variant="default"
         icon={Users}
         title="No customers yet"
         description="Add your first customer."
@@ -71,7 +73,9 @@ describe("EmptyState", () => {
   });
 
   it("applies max-w-md to description paragraph", () => {
-    render(<EmptyState icon={FolderOpen} title="Test" description="A description" />);
+    render(
+      <EmptyState variant="default" icon={FolderOpen} title="Test" description="A description" />
+    );
 
     const description = screen.getByText("A description");
     expect(description).toHaveClass("max-w-md");
@@ -80,6 +84,7 @@ describe("EmptyState", () => {
   it("renders with actionLabel + actionHref as a link (backwards compatible)", () => {
     render(
       <EmptyState
+        variant="default"
         icon={ClipboardList}
         title="No tasks"
         description="No tasks assigned."
@@ -95,6 +100,7 @@ describe("EmptyState", () => {
   it("renders project-like empty state with action node", () => {
     render(
       <EmptyState
+        variant="default"
         icon={FolderOpen}
         title="No projects yet"
         description="Projects organise your work, documents, and time tracking. Create your first project to get started."
@@ -114,6 +120,7 @@ describe("EmptyState", () => {
   it("renders customer-like empty state with catalog strings", () => {
     render(
       <EmptyState
+        variant="default"
         icon={Users}
         title="No customers yet"
         description="Customers represent the organisations you work with. Add your first customer to start managing relationships."
@@ -132,6 +139,7 @@ describe("EmptyState", () => {
     // Simulates admin role: uses the admin description from the catalog
     render(
       <EmptyState
+        variant="default"
         icon={FolderOpen}
         title="No projects yet"
         description="Projects organise your work, documents, and time tracking. Create your first project to get started."
@@ -151,6 +159,7 @@ describe("EmptyState", () => {
     // Simulates member role: uses the member-specific description from the catalog
     render(
       <EmptyState
+        variant="default"
         icon={FolderOpen}
         title="No projects yet"
         description={`You\u2019re not on any projects yet.`}
@@ -165,6 +174,7 @@ describe("EmptyState", () => {
     // Simulates member role: uses the member-specific description from the catalog
     render(
       <EmptyState
+        variant="default"
         icon={Users}
         title="No customers yet"
         description="No customers have been added yet."
@@ -180,6 +190,7 @@ describe("EmptyState", () => {
 
     render(
       <EmptyState
+        variant="default"
         icon={Receipt}
         title="Test"
         description="Test desc"
@@ -278,5 +289,11 @@ describe("EmptyState", () => {
     expect(help).toHaveAttribute("target", "_blank");
     expect(help).toHaveAttribute("rel", "noopener noreferrer");
     expect(help).toHaveClass("underline", "underline-offset-4");
+  });
+
+  it("requires `variant` at every call site (type test, ADR-393 / 669B)", () => {
+    // @ts-expect-error -- `variant` is required at every call site (ADR-393, 669B)
+    const el = <EmptyState icon={Users} title="t" description="d" />;
+    expect(el).toBeTruthy();
   });
 });

@@ -4,8 +4,11 @@ import { Users } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { useOrgMembers } from "@/lib/auth/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, type MouseEvent } from "react";
+import { cn } from "@/lib/utils";
 import { listMembers } from "@/app/(app)/org/[slug]/team/member-actions";
 import type { BffMember } from "@/app/(app)/org/[slug]/team/member-actions";
 import { MemberDetailPanel } from "@/components/team/member-detail-panel";
@@ -49,7 +52,20 @@ interface MemberRowData {
 }
 
 function MockMemberList({ isAdmin, onRowClick, roleNames }: InnerMemberListProps) {
-  const { members, isLoaded } = useOrgMembers();
+  const { members: orgMembers, isLoaded } = useOrgMembers();
+  // Derived once per load: a new `data` identity reads as navigation to the DataTable.
+  const members = useMemo(
+    () =>
+      orgMembers.map(
+        (member): MemberRowData => ({
+          id: member.id,
+          name: member.name ?? "Unknown",
+          email: member.email,
+          role: member.role,
+        })
+      ),
+    [orgMembers]
+  );
 
   if (!isLoaded) {
     return (
@@ -62,36 +78,13 @@ function MockMemberList({ isAdmin, onRowClick, roleNames }: InnerMemberListProps
     );
   }
 
-  if (!members.length) {
-    return (
-      <EmptyState
-        icon={Users}
-        title="No members found"
-        description="Organization members will appear here"
-      />
-    );
-  }
-
   return (
-    <MemberTable>
-      {members.map((member) => {
-        const row: MemberRowData = {
-          id: member.id,
-          name: member.name ?? "Unknown",
-          email: member.email,
-          role: member.role,
-        };
-        return (
-          <MemberRow
-            key={member.id}
-            member={row}
-            roleNames={roleNames}
-            isAdmin={isAdmin}
-            onRowClick={onRowClick}
-          />
-        );
-      })}
-    </MemberTable>
+    <MemberTable
+      members={members}
+      roleNames={roleNames}
+      isAdmin={isAdmin}
+      onRowClick={onRowClick}
+    />
   );
 }
 
@@ -127,6 +120,21 @@ function KeycloakBffMemberList({
     };
   }, [refreshKey]);
 
+  const rows = useMemo(
+    () =>
+      members.map(
+        (member): MemberRowData => ({
+          id: member.id,
+          name: member.name ?? "Unknown",
+          email: member.email,
+          role: member.role,
+          orgRoleName: member.orgRoleName,
+          capabilityOverridesCount: member.capabilityOverridesCount,
+        })
+      ),
+    [members]
+  );
+
   const loadError = loadFailed ? (
     <p className="pb-3 text-sm text-red-600 dark:text-red-400" role="alert">
       Could not refresh the member list.
@@ -144,70 +152,19 @@ function KeycloakBffMemberList({
     );
   }
 
-  if (!members.length) {
-    return (
-      loadError ?? (
-        <EmptyState
-          icon={Users}
-          title="No members found"
-          description="Organization members will appear here"
-        />
-      )
-    );
-  }
+  // A failed load with no rows shows only the alert, never the empty state: a failed request is
+  // not an empty org.
+  if (!rows.length && loadError) return loadError;
 
   return (
     <>
       {loadError}
-      <MemberTable>
-        {members.map((member) => {
-          const row: MemberRowData = {
-            id: member.id,
-            name: member.name ?? "Unknown",
-            email: member.email,
-            role: member.role,
-            orgRoleName: member.orgRoleName,
-            capabilityOverridesCount: member.capabilityOverridesCount,
-          };
-          return (
-            <MemberRow
-              key={member.id}
-              member={row}
-              roleNames={roleNames}
-              isAdmin={isAdmin}
-              onRowClick={onRowClick}
-            />
-          );
-        })}
-      </MemberTable>
+      <MemberTable members={rows} roleNames={roleNames} isAdmin={isAdmin} onRowClick={onRowClick} />
     </>
   );
 }
 
 // --- Shared UI components ---
-
-function MemberTable({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Member
-            </th>
-            <th className="w-[200px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Email
-            </th>
-            <th className="w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Role
-            </th>
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
-    </div>
-  );
-}
 
 /**
  * A custom role's display name: the gateway's orgRoleName, else the org role whose slug matches the
@@ -219,60 +176,126 @@ function customRoleLabel(member: MemberRowData, roleNames: RoleName[]): string {
   return roleNames.find((r) => r.slug === slug)?.name ?? slug;
 }
 
-function MemberRow({
-  member,
+/** The admin name button's data attribute: the one delegated click handler reads it. */
+const OPEN_ATTR = "data-member-open";
+
+/** Clicks on these (or inside them) keep their own behaviour (the kit's `INTERACTIVE_SELECTOR`). */
+const INTERACTIVE_SELECTOR =
+  'a, button, input, select, textarea, label, [role="menu"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [data-row-click="ignore"]';
+
+function buildColumns(isAdmin: boolean, roleNames: RoleName[]) {
+  return defineColumns<MemberRowData>([
+    {
+      id: "member",
+      enableHiding: false,
+      meta: { label: "Member" },
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <AvatarCircle name={member.name} size={32} />
+            {isAdmin ? (
+              // No onClick: the wrapper's delegated handler opens the panel (Enter/Space click
+              // bubbles), so the button is the row's keyboard path.
+              <button
+                type="button"
+                data-member-open={member.id}
+                className="text-foreground focus-visible:ring-ring rounded-sm text-left font-medium outline-none focus-visible:ring-2"
+              >
+                {member.name}
+              </button>
+            ) : (
+              <span className="text-foreground font-medium">{member.name}</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "email",
+      meta: {
+        label: "Email",
+        headerClassName: "w-[200px]",
+        cellClassName: "text-muted-foreground",
+      },
+      cell: ({ row }) => row.original.email,
+    },
+    {
+      id: "role",
+      meta: { label: "Role", headerClassName: "w-[100px]" },
+      cell: ({ row }) => {
+        const member = row.original;
+        const roleInfo = ROLE_BADGES[member.role];
+        return (
+          <div className="flex items-center gap-1.5">
+            {roleInfo ? (
+              <Badge variant={roleInfo.variant} data-testid="member-role-badge">
+                {roleInfo.label}
+              </Badge>
+            ) : (
+              <Badge variant="neutral" data-testid="member-role-badge">
+                {customRoleLabel(member, roleNames)}
+              </Badge>
+            )}
+            {(member.capabilityOverridesCount ?? 0) > 0 && (
+              <span className="text-xs font-medium text-teal-600" data-testid="override-count">
+                +{member.capabilityOverridesCount}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+  ]);
+}
+
+function MemberTable({
+  members,
   roleNames,
-  isAdmin,
+  isAdmin = false,
   onRowClick,
 }: {
-  member: MemberRowData;
+  members: MemberRowData[];
   roleNames: RoleName[];
   isAdmin?: boolean;
-  onRowClick?: (member: MemberRowData) => void;
+  onRowClick: (member: MemberRowData) => void;
 }) {
-  const roleInfo = ROLE_BADGES[member.role];
-  const isSystemRole = !!roleInfo;
+  const columns = useMemo(() => buildColumns(isAdmin, roleNames), [isAdmin, roleNames]);
+
+  // Admins open a member's panel from anywhere on the row (668A task-table precedent): the kit has
+  // no row-click callback, so one delegated handler reads the row's name button.
+  function handleClick(event: MouseEvent<HTMLDivElement>) {
+    if (!isAdmin || event.defaultPrevented || event.button !== 0) return;
+    const target = event.target;
+    if (!(target instanceof Element) || !event.currentTarget.contains(target)) return;
+    const nameButton = target.closest(`[${OPEN_ATTR}]`);
+    if (!nameButton && target.closest(INTERACTIVE_SELECTOR)) return;
+    if (!nameButton && window.getSelection()?.toString()) return;
+    const opener = nameButton ?? target.closest("tbody tr")?.querySelector(`[${OPEN_ATTR}]`);
+    const memberId = opener?.getAttribute(OPEN_ATTR);
+    const member = members.find((m) => m.id === memberId);
+    if (member) onRowClick(member);
+  }
 
   return (
-    <tr
-      data-testid={`member-row-${member.email}`}
-      className={`border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30${isAdmin ? "cursor-pointer" : ""}`}
-      onClick={() => isAdmin && onRowClick?.(member)}
-      role={isAdmin ? "button" : undefined}
-      tabIndex={isAdmin ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (isAdmin && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          onRowClick?.(member);
+    <div className={cn(isAdmin && "[&_tbody_tr]:cursor-pointer")} onClick={handleClick}>
+      <DataTable
+        columns={columns}
+        data={members}
+        getRowId={(member) => member.id}
+        rowTestId={(member) => `member-row-${member.email}`}
+        columnVisibility={false}
+        stickyHeader={false}
+        empty={
+          <EmptyState
+            variant="default"
+            icon={Users}
+            title="No members found"
+            description="Organization members will appear here"
+          />
         }
-      }}
-    >
-      <td className="py-3 pr-4">
-        <div className="flex items-center gap-3">
-          <AvatarCircle name={member.name} size={32} />
-          <span className="font-medium text-slate-900 dark:text-slate-100">{member.name}</span>
-        </div>
-      </td>
-      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{member.email}</td>
-      <td className="py-3 pr-4">
-        <div className="flex items-center gap-1.5">
-          {isSystemRole ? (
-            <Badge variant={roleInfo.variant} data-testid="member-role-badge">
-              {roleInfo.label}
-            </Badge>
-          ) : (
-            <Badge variant="neutral" data-testid="member-role-badge">
-              {customRoleLabel(member, roleNames)}
-            </Badge>
-          )}
-          {(member.capabilityOverridesCount ?? 0) > 0 && (
-            <span className="text-xs font-medium text-teal-600" data-testid="override-count">
-              +{member.capabilityOverridesCount}
-            </span>
-          )}
-        </div>
-      </td>
-    </tr>
+      />
+    </div>
   );
 }
 

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-dsar-countdown/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  22:21:34
+   Duration  916ms (transform 134ms, setup 58ms, import 335ms, tests 295ms, environment 135ms)
+

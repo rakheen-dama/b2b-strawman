@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import type { DataRequestResponse } from "@/lib/types";
 import {
   UrgentDataRequestsTable,
@@ -12,10 +13,12 @@ interface DataRequestsSectionProps {
   orgSlug: string;
 }
 
+/**
+ * Calendar days from today in South Africa to the yyyy-MM-dd deadline: 0 is due today, negative is
+ * overdue (F-669A-A-4: the same answer on the UTC SSR server and in any browser, at any hour).
+ */
 function getDaysUntilDeadline(deadline: string): number {
-  const [year, month, day] = deadline.split("-").map(Number);
-  const deadlineDate = new Date(year, month - 1, day);
-  return Math.floor((deadlineDate.getTime() - Date.now()) / 86400000);
+  return daysBetween(todayInSA(), deadline);
 }
 
 export function DataRequestsSection({

@@ -1,0 +1,66 @@
+{
+  "phase": "pre",
+  "startedAt": "2026-11-27T20:34:52.734Z",
+  "todaySA": "2026-11-27",
+  "steps": [
+    {
+      "step": "setting Data Request Deadline (days) 1 → 1",
+      "reloadedValue": "1"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "0-before-create: Subject: E2E DSAR vbdt\nReceived: 2026-11-27 (deadline 2026-12-27) shows \"30d remaining\"",
+      "ok": true,
+      "detail": {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    },
+    {
+      "name": "setting saved as 1",
+      "ok": true,
+      "detail": {
+        "before": "1",
+        "after": "1"
+      }
+    }
+  ],
+  "openRequestsAtStart": [
+    {
+      "id": "67520382-25aa-4eee-865b-87e1d428e18d",
+      "clientName": "DSAR Client vbdt",
+      "status": "RECEIVED",
+      "deadline": "2026-12-27",
+      "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27"
+    }
+  ],
+  "overview_0-before-create": {
+    "at": "2026-11-27T20:34:54.640Z",
+    "todaySA": "2026-11-27",
+    "openRequests": 1,
+    "rows": [
+      {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    ]
+  },
+  "originalDeadlineDays": "30",
+  "error": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('listbox').getByRole('option').first() to be visible\u001b[22m\n\n    at createRequest (/Users/rakheendama/Projects/2026/wt-fix-dsar-countdown/qa_cycle/evidence/dsar-countdown-fix/scripts/obs.cjs:99:17)\n    at async /Users/rakheendama/Projects/2026/wt-fix-dsar-countdown/qa_cycle/evidence/dsar-countdown-fix/scripts/obs.cjs:146:7",
+  "finishedAt": "2026-11-27T20:35:18.705Z",
+  "allChecksPass": false
+}

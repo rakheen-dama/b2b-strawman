@@ -1,7 +1,7 @@
 {
-  "commit": "9a71c251e",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, wt-k88-timesheet-rows, PR #1885 review round 1)",
+  "commit": "364ca9028",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-dsar-countdown, PR #1887)",
   "exit": 0,
-  "ts": "2026-11-27T19:12:56Z",
-  "summary": "PR #1885 @9a71c251e (final head; gate ran on product commit 31ee87cdf, head adds OBS-r1 evidence + raw e2e logs only) — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, vitest 553 files / 5653 passed / 2 skipped, build 0. E2E fresh stack per suite from the worktree @31ee87cdf: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (raw/ list output). OBS-r1 15/15 PASS."
+  "ts": "2026-11-27T20:25:36Z",
+  "summary": "PR #1887 @364ca9028 (final head; gate ran on product commit 36a41e64d, head adds evidence only) — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, vitest 553 files / 5665 passed / 2 skipped, build 0. E2E fresh stack from the worktree @36a41e64d: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, compliance + data-protection-settings 11/11 (raw/). OBS pre-midnight 6/6 PASS (today/past deadlines not producible via UI; covered by vitest)."
 }

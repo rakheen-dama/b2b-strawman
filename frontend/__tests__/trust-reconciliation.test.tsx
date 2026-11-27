@@ -572,6 +572,104 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByTestId("new-reconciliation-btn")).toBeInTheDocument();
   });
 
+  // 667B: PageHeader frame and the server pager (?page=N only, as the page's pageUrl wrote)
+  it("frames the list in one h1 and pages with ?page=N links (667B)", async () => {
+    mockFetchReconciliations.mockResolvedValue({
+      content: [makeRecon({ id: "recon-p2", periodEnd: "2026-02-28" })],
+      totalElements: 41,
+      totalPages: 3,
+      pageSize: 20,
+      pageNumber: 1,
+    });
+
+    render(
+      await ReconciliationListPage({
+        params: Promise.resolve({ slug: "acme" }),
+        searchParams: Promise.resolve({ page: "1" }),
+      })
+    );
+
+    expect(mockFetchReconciliations).toHaveBeenCalledWith("acc-1", { page: 1, size: 20 });
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Reconciliation");
+    expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+      "href",
+      "/org/acme/trust-accounting/reconciliation?page=0"
+    );
+    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+      "href",
+      "/org/acme/trust-accounting/reconciliation?page=2"
+    );
+    expect(screen.getByTestId("reconciliation-row-recon-p2")).toBeInTheDocument();
+    expect(screen.getByTestId("new-reconciliation-btn")).toHaveAttribute(
+      "href",
+      "/org/acme/trust-accounting/reconciliation/new"
+    );
+  });
+
+  it("hides New Reconciliation and Discard without MANAGE_TRUST (667B)", async () => {
+    const { fetchMyCapabilities } = await import("@/lib/api/capabilities");
+    vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
+      capabilities: ["VIEW_TRUST"],
+      role: "MEMBER",
+      isAdmin: false,
+      isOwner: false,
+    } as unknown as Awaited<ReturnType<typeof fetchMyCapabilities>>);
+    mockFetchReconciliations.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+    mockFetchBankStatements.mockResolvedValue([
+      {
+        id: "stmt-member",
+        fileName: "member.csv",
+        periodStart: "2026-11-01",
+        periodEnd: "2026-11-02",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+      },
+    ]);
+
+    await renderReconciliationList();
+
+    expect(screen.getByTestId("open-statement-row-stmt-member")).toHaveTextContent("member.csv");
+    expect(screen.queryByTestId("discard-statement-stmt-member")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("new-reconciliation-btn")).not.toBeInTheDocument();
+    // The empty history is the shared inline EmptyState, copy unchanged
+    expect(
+      screen.getByText("No reconciliations yet. Start a new reconciliation to begin.")
+    ).toBeInTheDocument();
+  });
+
+  it("frames the wizard in one h1; the active step badge uses the accent token (667B, K-76)", async () => {
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("New Reconciliation");
+    const badges = Array.from(
+      screen.getByTestId("step-indicator").querySelectorAll("li > div:first-child")
+    );
+    expect(badges[0]).toHaveTextContent("1");
+    expect(badges[0].className).toContain("bg-(--button-accent)");
+    expect(badges[0].className).toContain("text-(--button-accent-foreground)");
+    expect(badges[0].className).not.toContain("bg-teal-600");
+    expect(badges[1].className).toContain("text-slate-600");
+    expect(badges[1].className).not.toContain("text-slate-500");
+  });
+
   // Test 2: Upload triggers import
   it("shows upload result after successful import", async () => {
     const mockUpload = vi.fn().mockResolvedValue({
@@ -1958,7 +2056,13 @@ describe("Trust Reconciliation", () => {
       expect(creditors).toHaveTextContent(zar(145000));
 
       const afterLock = screen.getByTestId("monthly-list-after-lock");
-      expect(within(afterLock).getByText("Entered after this list was locked")).toBeInTheDocument();
+      // The card title, and the table's (sr-only) caption naming it (667B)
+      expect(afterLock.querySelector('[data-slot="card-title"]')?.textContent).toBe(
+        "Entered after this list was locked"
+      );
+      expect(
+        within(afterLock).getByRole("table", { name: "Entered after this list was locked" })
+      ).toBeInTheDocument();
       const entry = within(afterLock).getByTestId("after-lock-entry-tx-late");
       expect(entry).toHaveTextContent("Deposit");
       expect(entry).toHaveTextContent("DEP-LATE");

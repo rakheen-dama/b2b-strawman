@@ -1,0 +1,5514 @@
+{
+ "at": "2026-11-27T04:28:24.552Z",
+ "stack": "sha256:702f1dde0f12 @ c8cbb4d53",
+ "pages": {
+  "tx": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 809
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "491..662"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 147,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-147..-46"
+      },
+      "Reference": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-46..50"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "50..210"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "210..326"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "326..491"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "491..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "101..413"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "413..573"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "573..689"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "689..853"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "853..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "101..413"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "413..573"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "573..689"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "689..853"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "853..1078"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 809
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "499..670"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 139,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-139..-38"
+      },
+      "Reference": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-38..58"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "58..218"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "218..334"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "334..499"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "499..670"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "101..419"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "419..579"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "579..695"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "695..860"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "860..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "101..419"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "419..579"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "579..695"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "695..860"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 3,
+       "of": 20,
+       "x": "860..1086"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "carol/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 712
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "588..662"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 50,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-50..51"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "51..147"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "147..307"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "307..423"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "423..588"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "588..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   }
+  },
+  "tx-p2": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 698
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..482"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "482..586"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "549..662"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 36,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-36..65"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "65..161"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "161..321"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "321..446"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "446..550"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "549..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 4,
+    "typeMulti": [
+     "Bank charge refunded from the business a (3 lines, 144/160)",
+     "Interest paid to the Legal Practitioners (3 lines, 144/160)",
+     "Interest received for the Legal Practiti (4 lines, 144/160)",
+     "Investment returned to trust (2 lines, 144/160)"
+    ],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "0..113"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "113..286"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "286..698"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "698..836"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "836..952"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "952..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "0..113"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "113..286"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "286..698"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "698..836"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "836..952"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "952..1078"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 412,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 698
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..482"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "482..586"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "557..670"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 28,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-28..73"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "73..169"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "169..329"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "329..454"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "454..558"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "557..670"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 4,
+    "typeMulti": [
+     "Bank charge refunded from the business a (3 lines, 144/160)",
+     "Interest paid to the Legal Practitioners (3 lines, 144/160)",
+     "Interest received for the Legal Practiti (4 lines, 144/160)",
+     "Investment returned to trust (2 lines, 144/160)"
+    ],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "0..113"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "113..288"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "288..703"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "703..843"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "843..959"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "959..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "0..113"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "113..288"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "288..703"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "703..843"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "843..959"
+      },
+      "Actions": {
+       "inside": 20,
+       "uncovered": 5,
+       "of": 20,
+       "x": "959..1086"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 415,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   }
+  },
+  "tx-await": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 809
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 2,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "491..662"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 147,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 2,
+       "x": "-147..-46"
+      },
+      "Reference": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 2,
+       "x": "-46..50"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "50..210"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "210..326"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "326..491"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "491..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    },
+    "approveButtons": [
+     {
+      "id": "approve-button",
+      "text": "Approved by you",
+      "disabled": true,
+      "inside": true,
+      "uncovered": false,
+      "left": 499,
+      "right": 654,
+      "scW": 662
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 499,
+      "right": 582,
+      "scW": 662
+     },
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 499,
+      "right": 598,
+      "scW": 662
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 499,
+      "right": 582,
+      "scW": 662
+     }
+    ]
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 2,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "0..118"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "118..255"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "255..442"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "442..578"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "578..770"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "770..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "0..118"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "118..255"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "255..442"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "442..578"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "578..770"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "770..1078"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 187,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    },
+    "approveButtons": [
+     {
+      "id": "approve-button",
+      "text": "Approved by you",
+      "disabled": true,
+      "inside": true,
+      "uncovered": false,
+      "left": 778,
+      "right": 934,
+      "scW": 1078
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 942,
+      "right": 1025,
+      "scW": 1078
+     },
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 778,
+      "right": 878,
+      "scW": 1078
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 886,
+      "right": 969,
+      "scW": 1078
+     }
+    ]
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 809
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 2,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "499..670"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 139,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 2,
+       "x": "-139..-38"
+      },
+      "Reference": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 2,
+       "x": "-38..58"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "58..218"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "218..334"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "334..499"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "499..670"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    },
+    "approveButtons": [
+     {
+      "id": "approve-button",
+      "text": "Approved by you",
+      "disabled": true,
+      "inside": true,
+      "uncovered": false,
+      "left": 507,
+      "right": 662,
+      "scW": 670
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 507,
+      "right": 590,
+      "scW": 670
+     },
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 507,
+      "right": 606,
+      "scW": 670
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 507,
+      "right": 590,
+      "scW": 670
+     }
+    ]
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 2,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "0..119"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "119..257"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "257..445"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "445..582"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "582..776"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "776..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "0..119"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "119..257"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "257..445"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "445..582"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "582..776"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 2,
+       "of": 2,
+       "x": "776..1086"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 189,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(7.73948 -0.41344 -4.03315)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    },
+    "approveButtons": [
+     {
+      "id": "approve-button",
+      "text": "Approved by you",
+      "disabled": true,
+      "inside": true,
+      "uncovered": false,
+      "left": 784,
+      "right": 939,
+      "scW": 1086
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 947,
+      "right": 1031,
+      "scW": 1086
+     },
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 784,
+      "right": 883,
+      "scW": 1086
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": true,
+      "left": 891,
+      "right": 975,
+      "scW": 1086
+     }
+    ]
+   },
+   "bob/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 753
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Actions"
+    ],
+    "rowCount": 2,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "357..473"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "473..638"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "547..662"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 91,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 2,
+       "x": "-91..10"
+      },
+      "Reference": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "10..106"
+      },
+      "Type": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "106..266"
+      },
+      "Amount": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "266..382"
+      },
+      "Status": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "382..547"
+      },
+      "Actions": {
+       "inside": 2,
+       "uncovered": 0,
+       "of": 2,
+       "x": "547..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": {
+     "position": "sticky",
+     "right": "0px",
+     "bg": "lab(99.5299 -0.108749 -0.749981)"
+    },
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Transactions"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    },
+    "approveButtons": [
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 555,
+      "right": 654,
+      "scW": 662
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 555,
+      "right": 638,
+      "scW": 662
+     },
+     {
+      "id": "approve-button",
+      "text": "Approve",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 555,
+      "right": 654,
+      "scW": 662
+     },
+     {
+      "id": "reject-button",
+      "text": "Reject",
+      "disabled": false,
+      "inside": true,
+      "uncovered": false,
+      "left": 555,
+      "right": 638,
+      "scW": 662
+     }
+    ]
+   }
+  },
+  "hist": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 669
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..456"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "456..560"
+      },
+      "Running Balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "560..669"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 7,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-7..94"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "94..190"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "190..350"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "350..449"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "449..553"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "553..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..102"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "102..569"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "569..731"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "731..831"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "831..936"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "936..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..102"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "102..569"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "569..731"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "731..831"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "831..936"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "936..1078"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 161,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 670
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..198"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "198..358"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "358..457"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "457..561"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "561..670"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..198"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "198..358"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "358..457"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "457..561"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "561..670"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..103"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "103..574"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "574..736"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "736..837"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "837..943"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "943..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..103"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "103..574"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "574..736"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "736..837"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "837..943"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "943..1086"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 162,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "carol/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 669
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 20,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "357..456"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "456..560"
+      },
+      "Running Balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "560..669"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 7,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 20,
+       "x": "-7..94"
+      },
+      "Reference": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "94..190"
+      },
+      "Type": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "190..350"
+      },
+      "Amount": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "350..449"
+      },
+      "Status": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "449..553"
+      },
+      "Running Balance": {
+       "inside": 20,
+       "uncovered": 0,
+       "of": 20,
+       "x": "553..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   }
+  },
+  "hist-p2": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 694
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 14,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "357..482"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "482..586"
+      },
+      "Running Balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 14,
+       "x": "586..694"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 32,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 14,
+       "x": "-32..69"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "69..165"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "165..325"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "325..450"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "450..554"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "554..662"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 2,
+    "typeMulti": [
+     "Deposit identified and allocated (2 lines, 144/160)",
+     "Placed in section 86(4) investment (2 lines, 144/160)"
+    ],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 14,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..130"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "130..292"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "292..601"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "601..761"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "761..896"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "896..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..130"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "130..292"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "292..601"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "601..761"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "761..896"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "896..1078"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 309,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 694
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 14,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..101"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "101..197"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "197..357"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "357..482"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "482..586"
+      },
+      "Running Balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 14,
+       "x": "586..694"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 24,
+     "cols": {
+      "Date": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 14,
+       "x": "-24..77"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "77..173"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "173..333"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "333..458"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "458..562"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "562..670"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 160,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 2,
+    "typeMulti": [
+     "Deposit identified and allocated (2 lines, 144/160)",
+     "Placed in section 86(4) investment (2 lines, 144/160)"
+    ],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Date",
+     "Reference",
+     "Type",
+     "Amount",
+     "Status",
+     "Running Balance"
+    ],
+    "rowCount": 14,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..131"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "131..294"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "294..605"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "605..767"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "767..902"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "902..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Date": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "0..131"
+      },
+      "Reference": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "131..294"
+      },
+      "Type": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "294..605"
+      },
+      "Amount": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "605..767"
+      },
+      "Status": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "767..902"
+      },
+      "Running Balance": {
+       "inside": 14,
+       "uncovered": 0,
+       "of": 14,
+       "x": "902..1086"
+      }
+     }
+    },
+    "dateMaxLines": 1,
+    "dateWrapped": 0,
+    "typeMinW": 311,
+    "typeBadgeOutside": 0,
+    "typeMaxLines": 1,
+    "typeMulti": [],
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Khumalo Holdings"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   }
+  },
+  "cl": {
+   "alice/1024-light": {
+    "scroller": {
+     "clientWidth": 662,
+     "scrollWidth": 1041
+    },
+    "heads": [
+     "Client Name",
+     "General balance",
+     "Total Deposits",
+     "Total Payments",
+     "Total Fee Transfers",
+     "Total Refunds",
+     "Placed in s86(4)",
+     "Invested (s86(4))",
+     "Last Transaction"
+    ],
+    "rowCount": 3,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..252"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "252..369"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "369..478"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "478..578"
+      },
+      "Total Refunds": {
+       "inside": 0,
+       "uncovered": 3,
+       "of": 3,
+       "x": "578..678"
+      },
+      "Placed in s86(4)": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "678..786"
+      },
+      "Invested (s86(4))": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "786..894"
+      },
+      "Last Transaction": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "894..1041"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 379,
+     "cols": {
+      "Client Name": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-379..-235"
+      },
+      "General balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-235..-127"
+      },
+      "Total Deposits": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-127..-10"
+      },
+      "Total Payments": {
+       "inside": 0,
+       "uncovered": 3,
+       "of": 3,
+       "x": "-10..99"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "99..199"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "199..299"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "299..407"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "407..515"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "515..662"
+      }
+     }
+    },
+    "dateMaxLines": null,
+    "dateWrapped": null,
+    "typeMinW": null,
+    "typeBadgeOutside": null,
+    "typeMaxLines": null,
+    "typeMulti": null,
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Client Ledgers"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-light": {
+    "scroller": {
+     "clientWidth": 1078,
+     "scrollWidth": 1078
+    },
+    "heads": [
+     "Client Name",
+     "General balance",
+     "Total Deposits",
+     "Total Payments",
+     "Total Fee Transfers",
+     "Total Refunds",
+     "Placed in s86(4)",
+     "Invested (s86(4))",
+     "Last Transaction"
+    ],
+    "rowCount": 3,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..259"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "259..377"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "377..489"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "489..601"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "601..705"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "705..818"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "818..932"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "932..1078"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..259"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "259..377"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "377..489"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "489..601"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "601..705"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "705..818"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "818..932"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "932..1078"
+      }
+     }
+    },
+    "dateMaxLines": null,
+    "dateWrapped": null,
+    "typeMinW": null,
+    "typeBadgeOutside": null,
+    "typeMaxLines": null,
+    "typeMulti": null,
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Client Ledgers"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1024-dark": {
+    "scroller": {
+     "clientWidth": 670,
+     "scrollWidth": 1041
+    },
+    "heads": [
+     "Client Name",
+     "General balance",
+     "Total Deposits",
+     "Total Payments",
+     "Total Fee Transfers",
+     "Total Refunds",
+     "Placed in s86(4)",
+     "Invested (s86(4))",
+     "Last Transaction"
+    ],
+    "rowCount": 3,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..252"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "252..369"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "369..478"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "478..578"
+      },
+      "Total Refunds": {
+       "inside": 0,
+       "uncovered": 3,
+       "of": 3,
+       "x": "578..678"
+      },
+      "Placed in s86(4)": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "678..786"
+      },
+      "Invested (s86(4))": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "786..894"
+      },
+      "Last Transaction": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "894..1041"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 371,
+     "cols": {
+      "Client Name": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-371..-227"
+      },
+      "General balance": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-227..-119"
+      },
+      "Total Deposits": {
+       "inside": 0,
+       "uncovered": 0,
+       "of": 3,
+       "x": "-119..-2"
+      },
+      "Total Payments": {
+       "inside": 0,
+       "uncovered": 3,
+       "of": 3,
+       "x": "-2..107"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "107..207"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "207..307"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "307..415"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "415..523"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "523..670"
+      }
+     }
+    },
+    "dateMaxLines": null,
+    "dateWrapped": null,
+    "typeMinW": null,
+    "typeBadgeOutside": null,
+    "typeMaxLines": null,
+    "typeMulti": null,
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Client Ledgers"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   },
+   "alice/1440-dark": {
+    "scroller": {
+     "clientWidth": 1086,
+     "scrollWidth": 1086
+    },
+    "heads": [
+     "Client Name",
+     "General balance",
+     "Total Deposits",
+     "Total Payments",
+     "Total Fee Transfers",
+     "Total Refunds",
+     "Placed in s86(4)",
+     "Invested (s86(4))",
+     "Last Transaction"
+    ],
+    "rowCount": 3,
+    "s0": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..260"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "260..379"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "379..492"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "492..606"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "606..711"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "711..825"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "825..940"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "940..1086"
+      }
+     }
+    },
+    "sMax": {
+     "scrollLeft": 0,
+     "cols": {
+      "Client Name": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "0..144"
+      },
+      "General balance": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "144..260"
+      },
+      "Total Deposits": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "260..379"
+      },
+      "Total Payments": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "379..492"
+      },
+      "Total Fee Transfers": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "492..606"
+      },
+      "Total Refunds": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "606..711"
+      },
+      "Placed in s86(4)": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "711..825"
+      },
+      "Invested (s86(4))": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "825..940"
+      },
+      "Last Transaction": {
+       "inside": 3,
+       "uncovered": 3,
+       "of": 3,
+       "x": "940..1086"
+      }
+     }
+    },
+    "dateMaxLines": null,
+    "dateWrapped": null,
+    "typeMinW": null,
+    "typeBadgeOutside": null,
+    "typeMaxLines": null,
+    "typeMulti": null,
+    "actionsSticky": null,
+    "shell": {
+     "mainId": 1,
+     "main": 1,
+     "h1Main": [
+      "Client Ledgers"
+     ],
+     "h1Page": 1,
+     "docHOverflow": 0
+    }
+   }
+  }
+ },
+ "contrast": {
+  "tx-deposit-amount/alice/1024-light": [
+   {
+    "fg": "#02642b",
+    "bg": "#fdfeff",
+    "ratio": 7.27,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 16,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "tx-p2-deposit-amount/alice/1024-light": [
+   {
+    "fg": "#02642b",
+    "bg": "#fdfeff",
+    "ratio": 7.27,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 15,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "cl-client-link/alice/1024-light": [
+   {
+    "text": "Ndlovu Family Trust",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Khumalo Holdings",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Acme Corp",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   }
+  ],
+  "tx-deposit-amount/alice/1440-light": [
+   {
+    "fg": "#02642b",
+    "bg": "#fdfeff",
+    "ratio": 7.27,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 16,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "tx-p2-deposit-amount/alice/1440-light": [
+   {
+    "fg": "#02642b",
+    "bg": "#fdfeff",
+    "ratio": 7.27,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 15,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "cl-client-link/alice/1440-light": [
+   {
+    "text": "Ndlovu Family Trust",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Khumalo Holdings",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Acme Corp",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00776a",
+    "bg": "#fdfeff",
+    "ratio": 5.41,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   }
+  ],
+  "tx-deposit-amount/alice/1024-dark": [
+   {
+    "fg": "#92e4a4",
+    "bg": "#14171c",
+    "ratio": 11.85,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 16,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "tx-p2-deposit-amount/alice/1024-dark": [
+   {
+    "fg": "#92e4a4",
+    "bg": "#14171c",
+    "ratio": 11.85,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 15,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "cl-client-link/alice/1024-dark": [
+   {
+    "text": "Ndlovu Family Trust",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Khumalo Holdings",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Acme Corp",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   }
+  ],
+  "tx-deposit-amount/alice/1440-dark": [
+   {
+    "fg": "#92e4a4",
+    "bg": "#14171c",
+    "ratio": 11.85,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 16,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "tx-p2-deposit-amount/alice/1440-dark": [
+   {
+    "fg": "#92e4a4",
+    "bg": "#14171c",
+    "ratio": 11.85,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 15,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ],
+  "cl-client-link/alice/1440-dark": [
+   {
+    "text": "Ndlovu Family Trust",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Khumalo Holdings",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   },
+   {
+    "text": "Acme Corp",
+    "cls": "font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300",
+    "fg": "#00d5be",
+    "bg": "#14171c",
+    "ratio": 9.63,
+    "fontSize": "14px",
+    "fontWeight": "500"
+   }
+  ],
+  "tx-deposit-amount/carol/1024-light": [
+   {
+    "fg": "#02642b",
+    "bg": "#fdfeff",
+    "ratio": 7.27,
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "n": 16,
+    "cls": "inline-flex items-center gap-1 font-mono tabular-nums text-success-foreground"
+   }
+  ]
+ },
+ "tiles": {
+  "khumalo/alice/1024-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R 33 963,00 Invested (section 86(4)) R 20 095,00 Total held in trust R 54 058,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 463,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-in",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 1 500,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 5 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 33 963,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-invested",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 095,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-held",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 54 058,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "ndlovu/alice/1024-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 69 380,00 Ledger totals Deposits R 100 000,00 Returned from section 86(4) investments R 50 380,00 Payments R 12 500,00 Fee transfers R 8 500,00 Refunds R 0,00 Transfers out R 10 000,00 Placed in section 86(4) investments R 50 000,00 Balance R 69 380,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 100 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-returns",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 380,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 12 500,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 8 500,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-out",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 69 380,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "acme/alice/1024-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 0,00 Ledger totals Deposits R 2 000,00 Payments R 2 000,00 Fee transfers R 0,00 Refunds R 0,00 Balance R 0,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "khumalo/alice/1440-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R 33 963,00 Invested (section 86(4)) R 20 095,00 Total held in trust R 54 058,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 463,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-in",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 1 500,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 5 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 33 963,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-invested",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 095,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-held",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 54 058,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "ndlovu/alice/1440-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 69 380,00 Ledger totals Deposits R 100 000,00 Returned from section 86(4) investments R 50 380,00 Payments R 12 500,00 Fee transfers R 8 500,00 Refunds R 0,00 Transfers out R 10 000,00 Placed in section 86(4) investments R 50 000,00 Balance R 69 380,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 100 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-returns",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 380,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 12 500,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 8 500,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-out",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 69 380,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "acme/alice/1440-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 0,00 Ledger totals Deposits R 2 000,00 Payments R 2 000,00 Fee transfers R 0,00 Refunds R 0,00 Balance R 0,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 178,
+     "scrollW": 176,
+     "clientW": 176,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "khumalo/alice/1024-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R 33 963,00 Invested (section 86(4)) R 20 095,00 Total held in trust R 54 058,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 463,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-in",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 1 500,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 5 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 33 963,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-invested",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 095,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-held",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 54 058,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "ndlovu/alice/1024-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 69 380,00 Ledger totals Deposits R 100 000,00 Returned from section 86(4) investments R 50 380,00 Payments R 12 500,00 Fee transfers R 8 500,00 Refunds R 0,00 Transfers out R 10 000,00 Placed in section 86(4) investments R 50 000,00 Balance R 69 380,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 100 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-returns",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 380,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 12 500,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 8 500,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-out",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 69 380,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "acme/alice/1024-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 0,00 Ledger totals Deposits R 2 000,00 Payments R 2 000,00 Fee transfers R 0,00 Refunds R 0,00 Balance R 0,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 171,
+     "scrollW": 169,
+     "clientW": 169,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "khumalo/alice/1440-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R 33 963,00 Invested (section 86(4)) R 20 095,00 Total held in trust R 54 058,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 463,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-in",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 1 500,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 5 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 33 963,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-invested",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 095,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-held",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 54 058,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "ndlovu/alice/1440-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 69 380,00 Ledger totals Deposits R 100 000,00 Returned from section 86(4) investments R 50 380,00 Payments R 12 500,00 Fee transfers R 8 500,00 Refunds R 0,00 Transfers out R 10 000,00 Placed in section 86(4) investments R 50 000,00 Balance R 69 380,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 100 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-returns",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 380,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 12 500,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 8 500,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-out",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 69 380,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "acme/alice/1440-dark": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 0,00 Ledger totals Deposits R 2 000,00 Payments R 2 000,00 Fee transfers R 0,00 Refunds R 0,00 Balance R 0,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 2 000,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 179,
+     "scrollW": 177,
+     "clientW": 177,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  },
+  "khumalo/carol/1024-light": {
+   "breakdownCount": 1,
+   "inSummary": true,
+   "summaryText": "Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R 33 963,00 Invested (section 86(4)) R 20 095,00 Total held in trust R 54 058,00",
+   "tiles": [
+    {
+     "testid": "ledger-total-deposits",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 50 463,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-transfers-in",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 10 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-payments",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 1 500,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-fee-transfers",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 0,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-refunds",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 5 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-investment-placements",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 000,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-balance",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 33 963,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-invested",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 20 095,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    },
+    {
+     "testid": "ledger-total-held",
+     "count": 1,
+     "ddCount": 1,
+     "dd": "R 54 058,00",
+     "label": "",
+     "w": 169,
+     "scrollW": 167,
+     "clientW": 167,
+     "overflow": false,
+     "spill": 0,
+     "ddParent": "div",
+     "dtCount": 1
+    }
+   ]
+  }
+ },
+ "empty": {
+  "tx-out-of-range/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Transactions"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Transactions Trust account transaction history Record Transaction Transaction History 54 transactions found Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Interest received for the Legal Practitioners' Fidelity Fund Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Bank charge refun",
+   "pager": {
+    "text": "Page 10 of 3",
+    "links": [
+     "Previous → /org/e2e-test-org/trust-accounting/transactions?page=8",
+     "Next [disabled]"
+    ]
+   }
+  },
+  "tx-no-match/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Transactions"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Transactions Trust account transaction history Record Transaction Transaction History 0 transactions found Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Interest received for the Legal Practitioners' Fidelity Fund Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Bank charge refund",
+   "pager": null
+  },
+  "hist-out-of-range/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Khumalo Holdings"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Back to Client Ledgers Khumalo Holdings Client ledger detail and transaction history From To Print Statement Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R ",
+   "pager": {
+    "text": "Page 6 of 2",
+    "links": [
+     "Previous → /org/e2e-test-org/trust-accounting/client-ledgers/850dc8be-cac2-437f-807b-815b3cc5d95d?page=4",
+     "Next [disabled]"
+    ]
+   }
+  },
+  "hist-no-match/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Khumalo Holdings"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Back to Client Ledgers Khumalo Holdings Client ledger detail and transaction history From To Print Statement Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R ",
+   "pager": null
+  },
+  "cl-no-match/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Client Ledgers"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 1,
+   "text": "Client Ledgers Trust account balances by client Client Balances 0 clients found Non-zero balances only Search No client ledgers match the current filters",
+   "pager": null
+  },
+  "cl-out-of-range/1024-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Client Ledgers"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 1,
+   "text": "Client Ledgers Trust account balances by client Client Balances 0 clients found Non-zero balances only Search No client ledgers match the current filters",
+   "pager": null
+  },
+  "tx-out-of-range/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Transactions"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Transactions Trust account transaction history Record Transaction Transaction History 54 transactions found Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Interest received for the Legal Practitioners' Fidelity Fund Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Bank charge refun",
+   "pager": {
+    "text": "Page 10 of 3",
+    "links": [
+     "Previous → /org/e2e-test-org/trust-accounting/transactions?page=8",
+     "Next [disabled]"
+    ]
+   }
+  },
+  "tx-no-match/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Transactions"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Transactions Trust account transaction history Record Transaction Transaction History 0 transactions found Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Interest received for the Legal Practitioners' Fidelity Fund Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Bank charge refund",
+   "pager": null
+  },
+  "hist-out-of-range/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Khumalo Holdings"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Back to Client Ledgers Khumalo Holdings Client ledger detail and transaction history From To Print Statement Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R ",
+   "pager": {
+    "text": "Page 6 of 2",
+    "links": [
+     "Previous → /org/e2e-test-org/trust-accounting/client-ledgers/850dc8be-cac2-437f-807b-815b3cc5d95d?page=4",
+     "Next [disabled]"
+    ]
+   }
+  },
+  "hist-no-match/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Khumalo Holdings"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 0,
+   "text": "Back to Client Ledgers Khumalo Holdings Client ledger detail and transaction history From To Print Statement Trust Balance R 33 963,00 Plus R 20 095,00 invested (section 86(4)) — R 54 058,00 held in trust in total Ledger totals Deposits R 50 463,00 Transfers in R 10 000,00 Payments R 1 500,00 Fee transfers R 0,00 Refunds R 5 000,00 Placed in section 86(4) investments R 20 000,00 General balance R ",
+   "pager": null
+  },
+  "cl-no-match/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Client Ledgers"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 1,
+   "text": "Client Ledgers Trust account balances by client Client Balances 0 clients found Non-zero balances only Search No client ledgers match the current filters",
+   "pager": null
+  },
+  "cl-out-of-range/1440-light": {
+   "http": 200,
+   "mainId": 1,
+   "main": 1,
+   "h1Main": [
+    "Client Ledgers"
+   ],
+   "h1Page": 1,
+   "docHOverflow": 0,
+   "emptyState": 1,
+   "text": "Client Ledgers Trust account balances by client Client Balances 0 clients found Non-zero balances only Search No client ledgers match the current filters",
+   "pager": null
+  }
+ },
+ "axe": {
+  "tx/1024-light": [],
+  "cl/1024-light": [],
+  "hist/1024-light": [
+   {
+    "id": "scrollable-region-focusable",
+    "impact": "serious",
+    "nodes": 1,
+    "sample": [
+     ".overflow-x-auto :: Fix any of the following:   Element should have focusable content"
+    ]
+   }
+  ],
+  "tx/1440-light": [],
+  "cl/1440-light": [],
+  "hist/1440-light": []
+ },
+ "k89": {
+  "alice/1024-light": {
+   "heads": [
+    "Client Name",
+    "General balance",
+    "Total Deposits",
+    "Total Payments",
+    "Total Fee Transfers",
+    "Total Refunds",
+    "Placed in s86(4)",
+    "Invested (s86(4))",
+    "Last Transaction"
+   ],
+   "rows": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSum": 29000,
+     "gap": 40380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSum": 23963,
+     "gap": 10000
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSum": 0,
+     "gap": 0
+    }
+   ]
+  },
+  "alice/1440-light": {
+   "heads": [
+    "Client Name",
+    "General balance",
+    "Total Deposits",
+    "Total Payments",
+    "Total Fee Transfers",
+    "Total Refunds",
+    "Placed in s86(4)",
+    "Invested (s86(4))",
+    "Last Transaction"
+   ],
+   "rows": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSum": 29000,
+     "gap": 40380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSum": 23963,
+     "gap": 10000
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSum": 0,
+     "gap": 0
+    }
+   ]
+  },
+  "alice/1024-dark": {
+   "heads": [
+    "Client Name",
+    "General balance",
+    "Total Deposits",
+    "Total Payments",
+    "Total Fee Transfers",
+    "Total Refunds",
+    "Placed in s86(4)",
+    "Invested (s86(4))",
+    "Last Transaction"
+   ],
+   "rows": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSum": 29000,
+     "gap": 40380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSum": 23963,
+     "gap": 10000
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSum": 0,
+     "gap": 0
+    }
+   ]
+  },
+  "alice/1440-dark": {
+   "heads": [
+    "Client Name",
+    "General balance",
+    "Total Deposits",
+    "Total Payments",
+    "Total Fee Transfers",
+    "Total Refunds",
+    "Placed in s86(4)",
+    "Invested (s86(4))",
+    "Last Transaction"
+   ],
+   "rows": [
+    {
+     "client": "Ndlovu Family Trust",
+     "balance": 69380,
+     "visibleSum": 29000,
+     "gap": 40380
+    },
+    {
+     "client": "Khumalo Holdings",
+     "balance": 33963,
+     "visibleSum": 23963,
+     "gap": 10000
+    },
+    {
+     "client": "Acme Corp",
+     "balance": 0,
+     "visibleSum": 0,
+     "gap": 0
+    }
+   ]
+  }
+ },
+ "crops": [
+  "crop-k10-1024-light-scroll-start.png",
+  "crop-k10-1024-light-scroll-end.png",
+  "crop-F-667A-A2-out-of-range-pager.png"
+ ],
+ "console": []
+}

@@ -1,0 +1,362 @@
+{
+ "alice/await/1024-light": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 139,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 139,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 491,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 139,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 139,
+    "w": 149
+   }
+  }
+ },
+ "alice/p1/1024-light": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 20,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 139,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 139,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 491,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 78,
+    "w": 88
+   },
+   "progress": null
+  }
+ },
+ "alice/await/1024-dark": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 131,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 131,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 499,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 131,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 131,
+    "w": 149
+   }
+  }
+ },
+ "alice/p1/1024-dark": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 20,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 131,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 131,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 499,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 70,
+    "w": 88
+   },
+   "progress": null
+  }
+ },
+ "bob/await/1024-light": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 83,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 83,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 547,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 83,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 83,
+    "w": 149
+   }
+  }
+ },
+ "bob/p1/1024-light": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 20,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 83,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 83,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 547,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 22,
+    "w": 88
+   },
+   "progress": null
+  }
+ },
+ "bob/await/1024-dark": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 75,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 75,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 555,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 75,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 75,
+    "w": 149
+   }
+  }
+ },
+ "bob/p1/1024-dark": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 20,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 75,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 75,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 555,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 14,
+    "w": 88
+   },
+   "progress": null
+  }
+ },
+ "carol/await/1024-light": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 42,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 42,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 588,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 42,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 42,
+    "w": 149
+   }
+  }
+ },
+ "carol/p1/1024-light": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 18,
+  "maxBadgeCoveredPx": 42,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 42,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 588,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 0,
+    "w": 88
+   },
+   "progress": null
+  }
+ },
+ "carol/await/1024-dark": {
+  "rows": 2,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 0,
+  "maxBadgeCoveredPx": 34,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 34,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 596,
+   "badge": {
+    "text": "AWAITING APPROVAL",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 34,
+    "w": 149
+   },
+   "progress": {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 34,
+    "w": 149
+   }
+  }
+ },
+ "carol/p1/1024-dark": {
+  "rows": 20,
+  "badgesFullyCovered": 0,
+  "badgesPartlyCovered": 2,
+  "badgesClear": 18,
+  "maxBadgeCoveredPx": 34,
+  "progress": [
+   {
+    "text": "1 of 2 approvals",
+    "left": 481,
+    "right": 630,
+    "coveredPx": 34,
+    "w": 149
+   }
+  ],
+  "sample": {
+   "actionsLeft": 596,
+   "badge": {
+    "text": "RECORDED",
+    "left": 481,
+    "right": 569,
+    "coveredPx": 0,
+    "w": 88
+   },
+   "progress": null
+  }
+ }
+}

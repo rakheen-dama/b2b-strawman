@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@b2mash/ui/button";
 import { ConfigureStep } from "./configure-step";
 import { CustomerSelectionStep } from "./customer-selection-step";
 import { CherryPickStep } from "./cherry-pick-step";
@@ -66,10 +65,10 @@ export function BillingRunWizard({
                 <div
                   className={`flex size-8 items-center justify-center rounded-full text-sm font-medium ${
                     isActive
-                      ? "bg-teal-600 text-white"
+                      ? "bg-(--button-accent) text-(--button-accent-foreground)"
                       : isCompleted
                         ? "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                   }`}
                 >
                   {stepNum}

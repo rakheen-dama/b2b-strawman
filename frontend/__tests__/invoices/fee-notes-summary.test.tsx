@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // Phase 88 620C (U3, ADR-347): the Fee notes debtor-book tiles read
 // GET /api/invoices/outstanding-summary, never a client-side sum of the list. The summary needs
@@ -129,17 +129,29 @@ const TILE_IDS = [
   "fee-notes-approved-unsent",
 ] as const;
 
+// Phase 91 666A: the tiles are kit StatCards; each testid sits on the card root (a labelled group).
+function tileValue(id: string): HTMLElement {
+  const value = screen.getByTestId(id).querySelector<HTMLElement>('[data-slot="stat-card-value"]');
+  if (!value) throw new Error(`tile ${id} has no value`);
+  return value;
+}
+
 function expectSummaryTiles() {
-  expect(screen.getByText("Total outstanding")).toBeInTheDocument();
-  expect(screen.getByText("Overdue")).toBeInTheDocument();
-  expect(screen.getByText("Approved, not sent")).toBeInTheDocument();
-  expect(screen.getByTestId("fee-notes-total-outstanding").textContent).toBe(
-    formatCurrency(3450, "ZAR")
+  expect(screen.getByRole("group", { name: "Total outstanding" })).toHaveAttribute(
+    "data-testid",
+    "fee-notes-total-outstanding"
   );
-  expect(screen.getByTestId("fee-notes-overdue").textContent).toBe(formatCurrency(1200, "ZAR"));
-  expect(screen.getByTestId("fee-notes-approved-unsent").textContent).toBe(
-    formatCurrency(1725, "ZAR")
+  expect(screen.getByRole("group", { name: "Overdue" })).toHaveAttribute(
+    "data-testid",
+    "fee-notes-overdue"
   );
+  expect(screen.getByRole("group", { name: "Approved, not sent" })).toHaveAttribute(
+    "data-testid",
+    "fee-notes-approved-unsent"
+  );
+  expect(tileValue("fee-notes-total-outstanding").textContent).toBe(formatCurrency(3450, "ZAR"));
+  expect(tileValue("fee-notes-overdue").textContent).toBe(formatCurrency(1200, "ZAR"));
+  expect(tileValue("fee-notes-approved-unsent").textContent).toBe(formatCurrency(1725, "ZAR"));
 }
 
 function expectNoSummaryTiles() {
@@ -249,9 +261,41 @@ describe("Fee notes summary tiles (Phase 88 620C)", () => {
     mockFetchSummary.mockResolvedValue({ state: "error" });
     await renderPage();
 
-    for (const id of TILE_IDS) expect(screen.getByTestId(id).textContent).toBe("—");
+    for (const id of TILE_IDS) {
+      const tile = screen.getByTestId(id);
+      // The kit's error state: "—" (sr-only "Not available") and a "Couldn't load" status line.
+      expect(tile).toHaveAttribute("data-state", "error");
+      expect(within(tile).getByText("—")).toBeInTheDocument();
+      expect(within(tile).getByRole("status")).toHaveTextContent("Couldn't load");
+    }
     expect(screen.getByText("INV-0001")).toBeInTheDocument();
-    expect(screen.getByTestId("fee-notes-paid-this-month")).toBeInTheDocument();
+    expect(screen.getByTestId("fee-notes-paid-this-month")).toHaveAttribute("data-state", "ready");
+  });
+
+  it("summary absent → exactly one tile, Paid This Month, at a card's width", async () => {
+    mockCaps.mockResolvedValue(INVOICING_ONLY);
+    await renderPage();
+
+    const tiles = screen.getAllByRole("group");
+    expect(tiles).toHaveLength(1);
+    expect(tiles[0]).toHaveAttribute("data-testid", "fee-notes-paid-this-month");
+    expect(tiles[0]).toHaveAccessibleName("Paid This Month");
+    expect(tiles[0].parentElement).toHaveClass("max-w-xs");
+  });
+
+  // K-73: the Overdue value is red only when something is overdue.
+  it("paints Overdue in the danger colour only when the overdue total is above zero", async () => {
+    await renderPage();
+    const overdue = tileValue("fee-notes-overdue").firstElementChild;
+    expect(overdue?.textContent).toBe(formatCurrency(1200, "ZAR"));
+    expect(overdue).toHaveClass("text-danger-foreground");
+    cleanup();
+
+    mockFetchSummary.mockResolvedValue({ state: "ok", data: { ...SUMMARY, overdueTotal: 0 } });
+    await renderPage();
+    const zero = tileValue("fee-notes-overdue").firstElementChild;
+    expect(zero?.textContent).toBe(formatCurrency(0, "ZAR"));
+    expect(zero).not.toHaveClass("text-danger-foreground");
   });
 });
 

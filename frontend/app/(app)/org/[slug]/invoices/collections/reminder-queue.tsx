@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/empty-state";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
 import type { AiGateListItem } from "@/lib/api/ai";
 import { batchApproveGatesAction, rejectReminderGateAction } from "./actions";
@@ -125,15 +126,12 @@ export function ReminderQueue({ slug, gates, previews }: ReminderQueueProps) {
 
   if (gates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 px-6 py-12 text-center dark:border-slate-800">
-        <Inbox className="mb-3 size-10 text-slate-300 dark:text-slate-600" />
-        <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-          No reminders awaiting approval
-        </h3>
-        <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-          Drafted collection reminders will appear here for review before they are sent.
-        </p>
-      </div>
+      <EmptyState
+        variant="compact"
+        icon={Inbox}
+        title="No reminders awaiting approval"
+        description="Drafted collection reminders will appear here for review before they are sent."
+      />
     );
   }
 

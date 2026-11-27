@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { formatCurrency } from "@/lib/format";
 import { CollectionsClient } from "../collections-client";
 import type { DebtorResponse } from "@/lib/api/collections";
 
@@ -9,6 +10,13 @@ import type { DebtorResponse } from "@/lib/api/collections";
 vi.mock("@/app/(app)/org/[slug]/invoices/collections/actions", () => ({
   batchApproveGatesAction: vi.fn(),
   rejectReminderGateAction: vi.fn(),
+}));
+
+// Phase 91 666A: the Debtor book is a DataTable, which calls useRouter().
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => "/org/acme/invoices/collections",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 afterEach(() => {
@@ -104,5 +112,38 @@ describe("CollectionsClient — debtor book", () => {
   it("shows an empty debtor book when there are no debtors", () => {
     render(<CollectionsClient slug="acme" debtors={[]} gates={null} previews={{}} />);
     expect(screen.getByText(/No outstanding balances/)).toBeInTheDocument();
+    expect(screen.getByText("Everything is settled.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  // take-on.spec.ts reads debtor cells by index (1 = Outstanding, 3–6 = the buckets).
+  it("keeps the debtor book column order and the K-71 container-query buckets", () => {
+    render(<CollectionsClient slug="acme" debtors={[makeDebtor()]} gates={null} previews={{}} />);
+
+    const headers = screen.getAllByRole("columnheader").map((h) => h.textContent);
+    expect(headers).toEqual([
+      "Client",
+      "Outstanding",
+      "Oldest",
+      "Current",
+      "30d",
+      "60d",
+      "90d+",
+      "Signals",
+      "Last activity",
+    ]);
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    expect(cells[1].textContent).toBe(formatCurrency(412000, "ZAR"));
+    expect(cells[3].textContent).toBe(formatCurrency(0, "ZAR"));
+    expect(cells[6].textContent).toBe(formatCurrency(112000, "ZAR"));
+    for (const index of [3, 4, 5, 6]) {
+      expect(cells[index]).toHaveClass("hidden", "@4xl:table-cell");
+      expect(cells[index].firstElementChild).toHaveClass("font-sans");
+      expect(cells[index].firstElementChild).not.toHaveClass("font-mono");
+    }
+    expect(screen.getByRole("link", { name: "Naidoo & Co" })).toHaveAttribute(
+      "href",
+      "/org/acme/clients/cust-1"
+    );
   });
 });

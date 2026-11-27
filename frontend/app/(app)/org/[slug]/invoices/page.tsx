@@ -1,19 +1,21 @@
 import { notFound } from "next/navigation";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { StatCard } from "@b2mash/ui/stat-card";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { listClients } from "@/lib/api/clients";
 import { getOrgSettings } from "@/lib/api/settings";
 import type { InvoiceResponse, InvoiceStatus, OutstandingSummary } from "@/lib/types";
 import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
-import { StatusBadge, invoiceStatusLabel } from "@/components/invoices/status-badge";
-import { BroughtForwardBadge } from "@/components/invoices/brought-forward-badge";
-import { BalanceDueHint } from "@/components/invoices/balance-due-hint";
+import { invoiceStatusLabel } from "@/components/invoices/status-badge";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
+import { FeeNotesSubNav } from "@/components/invoices/fee-notes-sub-nav";
+import { FeeNoteStatusFilter } from "@/components/invoices/fee-note-status-filter";
+import { FeeNotesTable } from "@/components/invoices/fee-notes-table";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
-import { formatCurrency, formatDate } from "@/lib/format";
-import { Receipt, CreditCard } from "lucide-react";
-import Link from "next/link";
+import { formatCurrency } from "@/lib/format";
+import { Receipt } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { fetchOutstandingSummaryAction } from "./invoice-crud-actions";
 import { isoDateInSA, todayInSA } from "@b2mash/shared/date";
@@ -42,29 +44,6 @@ function computePaidThisMonth(invoices: InvoiceResponse[], fallbackCurrency: str
   }
 
   return { paidThisMonth, paidCurrency };
-}
-
-const DASH = "\u2014";
-
-function SummaryTile({
-  label,
-  value,
-  valueClassName,
-  testId,
-}: {
-  label: string;
-  value: string;
-  valueClassName: string;
-  testId: string;
-}) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{label}</p>
-      <p data-testid={testId} className={`mt-1 text-2xl font-semibold ${valueClassName}`}>
-        {value}
-      </p>
-    </div>
-  );
 }
 
 export default async function InvoicesPage({
@@ -134,10 +113,11 @@ export default async function InvoicesPage({
 
   // "Paid This Month" from the listed fee notes (when no filter applied, or from filtered set)
   const paid = computePaidThisMonth(invoices, fallbackCurrency);
-  const summaryMoney = (pick: (summary: OutstandingSummary) => number) =>
-    summaryResult.state === "ok"
-      ? formatCurrency(pick(summaryResult.data), summaryResult.data.currency)
-      : DASH;
+  // The three debtor-book tiles: present (ok/error) or absent, never zero-filled (§18.9).
+  const summary = summaryResult.state === "ok" ? summaryResult.data : null;
+  const summaryState = summary ? "ready" : "error";
+  const summaryMoney = (pick: (data: OutstandingSummary) => number) =>
+    summary ? formatCurrency(pick(summary), summary.currency) : null;
 
   const showSummaryTiles = summaryResult.state !== "absent";
 
@@ -159,196 +139,111 @@ export default async function InvoicesPage({
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
             Fee notes
             <HelpTip code="invoices.lifecycle" />
-          </h1>
-          {invoices.length > 0 && (
-            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              {invoices.length}
-            </span>
-          )}
-        </div>
-        <CreateInvoiceButton customers={customers} slug={slug} />
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800">
-        <Link
-          href={`/org/${slug}/invoices`}
-          className="border-b-2 border-slate-900 px-4 py-2 text-sm font-medium text-slate-900 dark:border-slate-100 dark:text-slate-100"
-        >
-          Fee notes
-        </Link>
-        <Link
-          href={`/org/${slug}/invoices/billing-runs`}
-          className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-        >
-          Fee runs
-        </Link>
-      </div>
-
-      {/* Summary Cards — debtor-book tiles from GET /api/invoices/outstanding-summary (ADR-347).
-          Without them "Paid This Month" stands alone at a card's width, not a quarter of a row. */}
-      <div
-        className={
-          showSummaryTiles ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-4 sm:max-w-xs"
+          </span>
         }
-      >
-        {showSummaryTiles && (
+        actions={
           <>
-            <SummaryTile
-              label="Total outstanding"
-              testId="fee-notes-total-outstanding"
-              value={summaryMoney((summary) => summary.outstandingTotal)}
-              valueClassName="text-slate-900 dark:text-slate-100"
-            />
-            <SummaryTile
-              label="Overdue"
-              testId="fee-notes-overdue"
-              value={summaryMoney((summary) => summary.overdueTotal)}
-              valueClassName="text-red-600 dark:text-red-400"
-            />
-            <SummaryTile
-              label="Approved, not sent"
-              testId="fee-notes-approved-unsent"
-              value={summaryMoney((summary) => summary.approvedUnsentTotal)}
-              valueClassName="text-slate-900 dark:text-slate-100"
-            />
+            {invoices.length > 0 && (
+              <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                {invoices.length}
+              </span>
+            )}
+            <CreateInvoiceButton customers={customers} slug={slug} />
           </>
-        )}
-        <SummaryTile
-          label="Paid This Month"
-          testId="fee-notes-paid-this-month"
-          value={formatCurrency(paid.paidThisMonth, paid.paidCurrency)}
-          valueClassName="text-green-600 dark:text-green-400"
-        />
-      </div>
+        }
+      />
 
-      {/* Filter Bar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Filter:</span>
-        <Link
-          href={`/org/${slug}/invoices`}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !validatedStatus
-              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          }`}
+      <FeeNotesSubNav slug={slug} current="fee-notes" />
+
+      {/* Summary tiles — debtor-book tiles from GET /api/invoices/outstanding-summary (ADR-347).
+          Without them "Paid This Month" stands alone at a card's width, not a quarter of a row.
+          Container-query columns: the page column is ~712px at 1024 (2-up) and ~1128px at 1440
+          (4-up); one column under 28rem so an 11-character value never spills its card. */}
+      <div className="@container">
+        <div
+          className={
+            showSummaryTiles
+              ? "grid grid-cols-1 gap-4 @md:grid-cols-2 @3xl:grid-cols-4"
+              : "max-w-xs"
+          }
         >
-          All
-        </Link>
-        {statusOptions.map((status) => (
-          <Link
-            key={status}
-            href={`/org/${slug}/invoices?status=${status}`}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              validatedStatus === status
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
-          >
-            {invoiceStatusLabel(status)}
-          </Link>
-        ))}
+          {showSummaryTiles && (
+            <>
+              <StatCard
+                label="Total outstanding"
+                data-testid="fee-notes-total-outstanding"
+                state={summaryState}
+                value={summaryMoney((s) => s.outstandingTotal)}
+              />
+              <StatCard
+                label="Overdue"
+                data-testid="fee-notes-overdue"
+                state={summaryState}
+                value={
+                  summary ? (
+                    // K-73: red only when something is overdue.
+                    <span
+                      className={summary.overdueTotal > 0 ? "text-danger-foreground" : undefined}
+                    >
+                      {formatCurrency(summary.overdueTotal, summary.currency)}
+                    </span>
+                  ) : null
+                }
+              />
+              <StatCard
+                label="Approved, not sent"
+                data-testid="fee-notes-approved-unsent"
+                state={summaryState}
+                value={summaryMoney((s) => s.approvedUnsentTotal)}
+              />
+            </>
+          )}
+          <StatCard
+            label="Paid This Month"
+            data-testid="fee-notes-paid-this-month"
+            value={
+              <span className="text-success-foreground">
+                {formatCurrency(paid.paidThisMonth, paid.paidCurrency)}
+              </span>
+            }
+          />
+        </div>
       </div>
 
-      {/* Fee note table or empty state */}
-      {invoices.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title={
-            validatedStatus
-              ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found`
-              : t("invoices.list.heading")
-          }
-          description={
-            validatedStatus
-              ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found.`
-              : t("invoices.list.description")
-          }
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Fee note
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Client
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Status
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Issue Date
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
-                  Due Date
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Total
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
-                  Currency
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice) => (
-                <tr
-                  key={invoice.id}
-                  className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/org/${slug}/invoices/${invoice.id}`}
-                      className="font-medium text-slate-950 hover:underline dark:text-slate-50"
-                    >
-                      {invoice.invoiceNumber ?? "Draft"}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {invoice.clientName}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={invoice.status} />
-                      <BroughtForwardBadge takeOnBatchId={invoice.takeOnBatchId} />
-                      {invoice.paymentUrl && (
-                        <span
-                          title="Online payment enabled"
-                          className="text-teal-600 dark:text-teal-400"
-                        >
-                          <CreditCard className="size-3.5" />
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                    {invoice.issueDate ? formatDate(invoice.issueDate) : "\u2014"}
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 lg:table-cell dark:text-slate-400">
-                    {invoice.dueDate ? formatDate(invoice.dueDate) : "\u2014"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(invoice.total, invoice.currency)}
-                    <BalanceDueHint invoice={invoice} />
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
-                    {invoice.currency}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <FeeNotesTable
+        slug={slug}
+        invoices={invoices}
+        toolbar={{
+          filters: (
+            <FeeNoteStatusFilter
+              slug={slug}
+              statusOptions={statusOptions}
+              activeStatus={validatedStatus}
+            />
+          ),
+        }}
+        empty={
+          <EmptyState
+            variant="default"
+            icon={Receipt}
+            title={
+              validatedStatus
+                ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found`
+                : t("invoices.list.heading")
+            }
+            description={
+              validatedStatus
+                ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found.`
+                : t("invoices.list.description")
+            }
+          />
+        }
+      />
     </div>
   );
 }

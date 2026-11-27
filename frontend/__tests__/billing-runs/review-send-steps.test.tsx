@@ -260,7 +260,7 @@ describe("SendStep", () => {
 
     // Wait for completion and click Done
     await waitFor(() => {
-      expect(screen.getByText("Billing Run Complete")).toBeInTheDocument();
+      expect(screen.getByText("Fee run complete")).toBeInTheDocument();
     });
 
     const doneBtn = screen.getByRole("button", { name: /done/i });

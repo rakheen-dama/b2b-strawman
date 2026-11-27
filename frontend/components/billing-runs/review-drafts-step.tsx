@@ -19,7 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { FileText } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import {
   generateAction,
   getItemsAction,
@@ -377,75 +388,68 @@ export function ReviewDraftsStep({
 
       {/* Fee note table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Client
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Fee note #
-              </th>
-              <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
-                Items
-              </th>
-              <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
-                Total
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Client</TableHead>
+              <TableHead>Fee note #</TableHead>
+              <TableHead className="text-right">Items</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {generatedItems.map((item) => (
-              <tr
+              <TableRow
                 key={item.id}
-                className={`border-b border-slate-100 last:border-b-0 dark:border-slate-800 ${
+                className={cn(
+                  "last:border-b-0",
                   item.status === "GENERATED"
-                    ? "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900"
-                    : "bg-red-50 dark:bg-red-950/20"
-                }`}
+                    ? "cursor-pointer"
+                    : "bg-red-50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-950/20"
+                )}
                 onClick={() => handleRowClick(item)}
               >
-                <td className="px-4 py-3">
+                <TableCell className="whitespace-normal">
                   <span
                     className={item.status === "FAILED" ? "text-red-600 dark:text-red-400" : ""}
                   >
                     {item.clientName}
                   </span>
-                </td>
-                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                </TableCell>
+                <TableCell className="text-muted-foreground">
                   {/* BillingRunItem has no invoiceNumber field — use truncated ID as placeholder */}
                   {item.invoiceId ? `INV-${item.invoiceId.slice(0, 8)}` : "—"}
-                </td>
-                <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400">
+                </TableCell>
+                <TableCell className="text-muted-foreground text-right">
                   {item.unbilledTimeCount + item.unbilledExpenseCount}
-                </td>
-                <td className="px-4 py-3 text-right font-medium">
+                </TableCell>
+                <TableCell className="text-right font-medium">
                   {formatCurrency(item.totalUnbilledAmount, currency)}
-                </td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell>
                   {item.status === "GENERATED" ? (
                     <Badge variant="neutral">Draft</Badge>
                   ) : (
                     <Badge variant="destructive">Failed</Badge>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {generatedItems.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
-                >
-                  No fee notes generated.
-                </td>
-              </tr>
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={5}>
+                  <EmptyState
+                    variant="inline"
+                    icon={FileText}
+                    title="No fee notes generated."
+                    description={null}
+                  />
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Summary Bar */}

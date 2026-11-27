@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Hourglass } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
 import { getUnbilledSummary, type CustomerUnbilledSummary } from "@/lib/api/billing-runs";
@@ -79,42 +80,51 @@ export default async function UnbilledWorkPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Unbilled work</h1>
-        <p
-          className="mt-1 text-sm text-slate-600 dark:text-slate-400"
-          data-testid="unbilled-period-help"
-        >
-          Unbilled time and expenses per client from {formatLocalDate(periodFrom)} to{" "}
-          {formatLocalDate(periodTo)}, in {currency}. The period defaults to the last{" "}
-          {DEFAULT_PERIOD_MONTHS} months because the summary needs a start and end date — change the
-          dates or currency below.
-        </p>
-      </div>
-
-      <UnbilledWorkFilters
-        key={`${periodFrom}|${periodTo}|${currency}`}
-        periodFrom={periodFrom}
-        periodTo={periodTo}
-        currency={currency}
-        currencyOptions={currencyOptions}
+      <PageHeader
+        title="Unbilled work"
+        description={
+          <span data-testid="unbilled-period-help">
+            Unbilled time and expenses per client from {formatLocalDate(periodFrom)} to{" "}
+            {formatLocalDate(periodTo)}, in {currency}. The period defaults to the last{" "}
+            {DEFAULT_PERIOD_MONTHS} months because the summary needs a start and end date — change
+            the dates or currency below.
+          </span>
+        }
       />
 
-      {fetchError ? (
-        <EmptyState
-          icon={Hourglass}
-          title="Unable to load unbilled work"
-          description="There was a problem loading the unbilled summary. Please try again later."
-        />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={Hourglass}
-          title="No unbilled work"
-          description="No client has unbilled time or expenses in this period and currency. Widen the period or pick another currency."
-        />
-      ) : (
-        <UnbilledWorkTable rows={rows} currency={currency} slug={slug} />
-      )}
+      <UnbilledWorkTable
+        rows={fetchError ? [] : rows}
+        currency={currency}
+        slug={slug}
+        toolbar={{
+          filters: (
+            <UnbilledWorkFilters
+              key={`${periodFrom}|${periodTo}|${currency}`}
+              periodFrom={periodFrom}
+              periodTo={periodTo}
+              currency={currency}
+              currencyOptions={currencyOptions}
+            />
+          ),
+        }}
+        empty={
+          fetchError ? (
+            <EmptyState
+              variant="default"
+              icon={Hourglass}
+              title="Unable to load unbilled work"
+              description="There was a problem loading the unbilled summary. Please try again later."
+            />
+          ) : (
+            <EmptyState
+              variant="default"
+              icon={Hourglass}
+              title="No unbilled work"
+              description="No client has unbilled time or expenses in this period and currency. Widen the period or pick another currency."
+            />
+          )
+        }
+      />
     </div>
   );
 }

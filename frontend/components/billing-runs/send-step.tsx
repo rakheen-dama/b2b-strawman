@@ -16,6 +16,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { FileText } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import {
   getItemsAction,
@@ -122,7 +132,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
         <div className="rounded-lg border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-950">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Billing Run Complete
+              Fee run complete
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Fee notes have been processed.
@@ -198,53 +208,44 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
 
       {/* Approved fee notes table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Client
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Fee note #
-              </th>
-              <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
-                Total
-              </th>
-              <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Client</TableHead>
+              <TableHead>Fee note #</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items.map((item) => (
-              <tr
-                key={item.id}
-                className="border-b border-slate-100 last:border-b-0 dark:border-slate-800"
-              >
-                <td className="px-4 py-3">{item.clientName}</td>
-                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+              <TableRow key={item.id} className="last:border-b-0">
+                <TableCell className="whitespace-normal">{item.clientName}</TableCell>
+                <TableCell className="text-muted-foreground">
                   {item.invoiceId ? `INV-${item.invoiceId.slice(0, 8)}` : "—"}
-                </td>
-                <td className="px-4 py-3 text-right font-medium">
+                </TableCell>
+                <TableCell className="text-right font-medium">
                   {formatCurrency(item.totalUnbilledAmount, currency)}
-                </td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell>
                   <Badge variant="success">Approved</Badge>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {items.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
-                >
-                  No approved fee notes to send.
-                </td>
-              </tr>
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={4}>
+                  <EmptyState
+                    variant="inline"
+                    icon={FileText}
+                    title="No approved fee notes to send."
+                    description={null}
+                  />
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Summary Bar */}

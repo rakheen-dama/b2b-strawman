@@ -83,6 +83,30 @@ describe("BillingRunWizard", () => {
     expect(screen.getByText("Review Drafts")).toBeInTheDocument();
     expect(screen.getByText("Send")).toBeInTheDocument();
   });
+
+  // K-76: the active badge uses the accent token pair; pending badges are slate-600 (light).
+  it("paints the active step badge with the accent token and pending ones slate-600", () => {
+    render(<BillingRunWizard slug="test-org" />);
+    const badge = (n: string) => screen.getByText(n, { selector: "nav li > div" });
+    expect(badge("1")).toHaveClass("bg-(--button-accent)", "text-(--button-accent-foreground)");
+    expect(badge("1")).not.toHaveClass("bg-teal-600");
+    expect(badge("2")).toHaveClass("text-slate-600");
+    expect(badge("2")).not.toHaveClass("text-slate-500");
+  });
+});
+
+// K-77 (founder-approved wording): the configure step says "fee run".
+describe("ConfigureStep wording", () => {
+  it('titles the step "Configure fee run"', () => {
+    render(<ConfigureStep slug="test-org" onNext={vi.fn()} />);
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Configure fee run" })
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Notes (optional)")).toHaveAttribute(
+      "placeholder",
+      "Internal notes about this fee run..."
+    );
+  });
 });
 
 describe("ConfigureStep", () => {

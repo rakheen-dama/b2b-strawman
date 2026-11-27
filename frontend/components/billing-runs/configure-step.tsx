@@ -50,7 +50,7 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
       if (result.success && result.billingRun) {
         onNext(result.billingRun.id, result.billingRun.currency);
       } else {
-        setError(result.error ?? "Failed to create billing run.");
+        setError(result.error ?? "Failed to create fee run.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -62,7 +62,7 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       <h2 className="mb-6 text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Configure Billing Run
+        Configure fee run
       </h2>
 
       <div className="space-y-5">
@@ -110,7 +110,7 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
             id="notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Internal notes about this billing run..."
+            placeholder="Internal notes about this fee run..."
             rows={3}
           />
         </div>

@@ -2,6 +2,14 @@
 
 import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   UnbilledTimeEntry,
@@ -83,71 +91,52 @@ export function CherryPickCustomerDetail({
               <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 Time Entries
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Include
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Date
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Member
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Task
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Hours
-                      </th>
-                      <th className="pr-3 pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Rate
-                      </th>
-                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.timeEntries.map((entry) => (
-                      <tr
-                        key={entry.id}
-                        className="border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <td className="py-2 pr-3">
-                          <Checkbox
-                            checked={data.includedTimeIds.has(entry.id)}
-                            onCheckedChange={() => onToggleTimeEntry(itemId, entry.id)}
-                            aria-label={`Include time entry ${entry.description ?? entry.id}`}
-                          />
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {formatLocalDate(entry.date)}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">Member</td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {entry.description ?? "Task"}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {(entry.durationMinutes / 60).toFixed(1)}
-                        </td>
-                        <td className="py-2 pr-3 text-right text-slate-600 dark:text-slate-400">
-                          {entry.billingRateSnapshot != null
-                            ? formatCurrency(entry.billingRateSnapshot, currency)
-                            : "N/A"}
-                        </td>
-                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
-                          {entry.billableValue != null
-                            ? formatCurrency(entry.billableValue, currency)
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Include</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Hours</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.timeEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={data.includedTimeIds.has(entry.id)}
+                          onCheckedChange={() => onToggleTimeEntry(itemId, entry.id)}
+                          aria-label={`Include time entry ${entry.description ?? entry.id}`}
+                        />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatLocalDate(entry.date)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">Member</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-normal">
+                        {entry.description ?? "Task"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {(entry.durationMinutes / 60).toFixed(1)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-right">
+                        {entry.billingRateSnapshot != null
+                          ? formatCurrency(entry.billingRateSnapshot, currency)
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {entry.billableValue != null
+                          ? formatCurrency(entry.billableValue, currency)
+                          : "N/A"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
 
@@ -158,57 +147,40 @@ export function CherryPickCustomerDetail({
               <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 Other Disbursements
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Include
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Date
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Description
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Category
-                      </th>
-                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.expenses.map((expense) => (
-                      <tr
-                        key={expense.id}
-                        className="border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <td className="py-2 pr-3">
-                          <Checkbox
-                            checked={data.includedExpenseIds.has(expense.id)}
-                            onCheckedChange={() => onToggleExpenseEntry(itemId, expense.id)}
-                            aria-label={`Include expense ${expense.description ?? expense.id}`}
-                          />
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {formatLocalDate(expense.date)}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {expense.description ?? "\u2014"}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {expense.category}
-                        </td>
-                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
-                          {formatCurrency(expense.billableAmount, currency)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Include</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.expenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={data.includedExpenseIds.has(expense.id)}
+                          onCheckedChange={() => onToggleExpenseEntry(itemId, expense.id)}
+                          aria-label={`Include expense ${expense.description ?? expense.id}`}
+                        />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatLocalDate(expense.date)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-normal">
+                        {expense.description ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{expense.category}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(expense.billableAmount, currency)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
 
@@ -220,65 +192,46 @@ export function CherryPickCustomerDetail({
               <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 Disbursements
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Include
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Date
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Description
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Category
-                      </th>
-                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
-                        Supplier
-                      </th>
-                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.disbursements.map((disbursement) => (
-                      <tr
-                        key={disbursement.id}
-                        className="border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <td className="py-2 pr-3">
-                          <Checkbox
-                            checked={data.includedDisbursementIds.has(disbursement.id)}
-                            onCheckedChange={() =>
-                              onToggleDisbursementEntry(itemId, disbursement.id)
-                            }
-                            aria-label={`Include disbursement ${disbursement.description}`}
-                          />
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {formatLocalDate(disbursement.incurredDate)}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {disbursement.description}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {disbursement.category}
-                        </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                          {disbursement.supplierName}
-                        </td>
-                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
-                          {formatCurrency(disbursement.billableAmount, currency)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Include</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.disbursements.map((disbursement) => (
+                    <TableRow key={disbursement.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={data.includedDisbursementIds.has(disbursement.id)}
+                          onCheckedChange={() => onToggleDisbursementEntry(itemId, disbursement.id)}
+                          aria-label={`Include disbursement ${disbursement.description}`}
+                        />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatLocalDate(disbursement.incurredDate)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-normal">
+                        {disbursement.description}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {disbursement.category}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-normal">
+                        {disbursement.supplierName}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(disbursement.billableAmount, currency)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
 

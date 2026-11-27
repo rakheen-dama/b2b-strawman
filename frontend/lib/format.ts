@@ -45,3 +45,10 @@ export function formatDateInSA(date: string | Date): string {
     timeZone: KAZI_TIME_ZONE,
   });
 }
+
+/** Days relative to the due date: "{n}d overdue" (n > 0), "Due today" (0), "{n}d until due" (n < 0). */
+export function formatDaysOverdue(days: number): string {
+  if (days > 0) return `${days}d overdue`;
+  if (days === 0) return "Due today";
+  return `${Math.abs(days)}d until due`;
+}

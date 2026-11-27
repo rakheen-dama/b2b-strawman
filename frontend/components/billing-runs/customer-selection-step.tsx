@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
 import { loadPreviewAction } from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions";
 import type { BillingRunItem } from "@/lib/api/billing-runs";
@@ -124,58 +132,46 @@ export function CustomerSelectionStep({
             No clients with unbilled work found for this period.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                  <th className="pr-4 pb-3">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>
+                  <Checkbox
+                    checked={selectedIds.size === items.length}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all clients"
+                  />
+                </TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead className="text-right">Unbilled Time</TableHead>
+                <TableHead className="text-right">Unbilled Disbursements</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
                     <Checkbox
-                      checked={selectedIds.size === items.length}
-                      onCheckedChange={toggleAll}
-                      aria-label="Select all clients"
+                      checked={selectedIds.has(item.id)}
+                      onCheckedChange={() => toggleCustomer(item.id)}
+                      aria-label={`Select ${item.clientName}`}
                     />
-                  </th>
-                  <th className="pr-4 pb-3 font-medium text-slate-500 dark:text-slate-400">
-                    Client
-                  </th>
-                  <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Unbilled Time
-                  </th>
-                  <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Unbilled Disbursements
-                  </th>
-                  <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800">
-                    <td className="py-3 pr-4">
-                      <Checkbox
-                        checked={selectedIds.has(item.id)}
-                        onCheckedChange={() => toggleCustomer(item.id)}
-                        aria-label={`Select ${item.clientName}`}
-                      />
-                    </td>
-                    <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                      {item.clientName}
-                    </td>
-                    <td className="py-3 pr-4 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrency(item.unbilledTimeAmount, currency)}
-                    </td>
-                    <td className="py-3 pr-4 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrency(item.unbilledExpenseAmount, currency)}
-                    </td>
-                    <td className="py-3 text-right font-medium text-slate-950 dark:text-slate-50">
-                      {formatCurrency(item.totalUnbilledAmount, currency)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  </TableCell>
+                  <TableCell className="font-medium whitespace-normal">{item.clientName}</TableCell>
+                  <TableCell className="text-muted-foreground text-right">
+                    {formatCurrency(item.unbilledTimeAmount, currency)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-right">
+                    {formatCurrency(item.unbilledExpenseAmount, currency)}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(item.totalUnbilledAmount, currency)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </div>
 

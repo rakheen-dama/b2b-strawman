@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Copy, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@b2mash/ui/button";
@@ -12,12 +12,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TimeCell } from "./time-cell";
+import { planWeekSave, isEmptyPlan, type PlanCell } from "./timesheet-save-plan";
 import {
   saveWeeklyEntries,
   fetchWeekEntries,
   fetchPreviousWeekEntries,
 } from "@/app/(app)/org/[slug]/my-work/timesheet/actions";
+import {
+  updateTimeEntry,
+  deleteTimeEntry,
+} from "@/app/(app)/org/[slug]/matters/[id]/time-entry-actions";
 import { cn } from "@/lib/utils";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
 import { CsvImportDialog } from "./csv-import-dialog";
@@ -118,14 +124,21 @@ export function WeeklyTimeGrid({
 }: WeeklyTimeGridProps) {
   const [taskRows, setTaskRows] = useState<GridTaskRow[]>(initialTasks);
   const [weekStart, setWeekStart] = useState(() => parseIsoDate(initialWeekStart));
+  // The week's entries as last loaded from the server. Save sends only the difference between the
+  // cells and this baseline, so it never re-creates existing time (F-668A-R1).
+  const [baseline, setBaseline] = useState<MyWorkTimeEntryItem[]>(existingEntries);
+  const [baselineError, setBaselineError] = useState(false);
   const [cellValues, setCellValues] = useState<Record<CellKey, number>>(() =>
     buildCellValuesFromEntries(existingEntries, parseIsoDate(initialWeekStart))
   );
   const [cellErrors, setCellErrors] = useState<Record<CellKey, string>>({});
+  const [saveProblems, setSaveProblems] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isNavigating, startNavTransition] = useTransition();
   const [addTaskQuery, setAddTaskQuery] = useState("");
+  // Only the latest week load may set the baseline (fast Previous/Next clicks).
+  const loadSeq = useRef(0);
 
   function handleCellChange(taskId: string, dayIndex: number, hours: number) {
     const key = cellKey(taskId, dayIndex);
@@ -148,107 +161,158 @@ export function WeeklyTimeGrid({
 
   const grandTotal = DAYS.reduce<number>((sum, d) => sum + columnTotal(d), 0);
 
-  function navigateWeek(direction: -1 | 1) {
+  /**
+   * Loads a week's entries as the new baseline and resets the cells to them. On failure the
+   * baseline is unknown, so Save stays disabled until the page is reloaded.
+   */
+  async function loadWeek(monday: Date): Promise<void> {
+    const seq = ++loadSeq.current;
+    let entries: MyWorkTimeEntryItem[] | null = null;
+    try {
+      entries = await fetchWeekEntries(toIsoDate(monday), toIsoDate(addDays(monday, 6)));
+    } catch {
+      entries = null;
+    }
+    if (seq !== loadSeq.current) return;
+    if (!Array.isArray(entries)) {
+      setBaselineError(true);
+      return;
+    }
+    setBaseline(entries);
+    setCellValues(buildCellValuesFromEntries(entries, monday));
+    setBaselineError(false);
+  }
+
+  function switchWeek(monday: Date) {
     if (dirty && !confirm("You have unsaved changes. Discard?")) return;
-    const newMonday = addDays(weekStart, direction * 7);
-    setWeekStart(newMonday);
+    setWeekStart(monday);
+    setBaseline([]);
     setCellValues({});
     setCellErrors({});
+    setSaveProblems([]);
     setDirty(false);
+    startNavTransition(() => loadWeek(monday));
+  }
 
-    const from = toIsoDate(newMonday);
-    const to = toIsoDate(addDays(newMonday, 6));
-    startNavTransition(async () => {
-      const entries = await fetchWeekEntries(from, to);
-      setCellValues(buildCellValuesFromEntries(entries, newMonday));
-    });
+  function navigateWeek(direction: -1 | 1) {
+    switchWeek(addDays(weekStart, direction * 7));
   }
 
   function goToThisWeek() {
-    if (dirty && !confirm("You have unsaved changes. Discard?")) return;
-    const monday = getIsoWeekMonday(new Date());
-    setWeekStart(monday);
-    setCellValues({});
-    setCellErrors({});
-    setDirty(false);
-    const from = toIsoDate(monday);
-    const to = toIsoDate(addDays(monday, 6));
-    startNavTransition(async () => {
-      const entries = await fetchWeekEntries(from, to);
-      setCellValues(buildCellValuesFromEntries(entries, monday));
-    });
+    switchWeek(getIsoWeekMonday(new Date()));
+  }
+
+  function describeCell(cell: PlanCell): string {
+    const title = taskRows.find((t) => t.id === cell.taskId)?.title ?? "Task";
+    return `${formatDayHeader(weekStart, cell.dayIndex)} \u00b7 ${title}`;
+  }
+
+  function withPeriod(message: string): string {
+    const trimmed = message.trim();
+    return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
   }
 
   async function handleSave() {
-    const entries: Array<{
-      taskId: string;
-      dayIndex: number;
-      hours: number;
-    }> = [];
-    for (const task of taskRows) {
-      for (const d of DAYS) {
-        const hours = cellValues[cellKey(task.id, d)] ?? 0;
-        if (hours > 0) {
-          entries.push({ taskId: task.id, dayIndex: d, hours });
-        }
-      }
+    const dayDates = DAYS.map((d) => toIsoDate(addDays(weekStart, d)));
+    const plan = planWeekSave(
+      taskRows.map((t) => t.id),
+      dayDates,
+      (taskId, d) => cellValues[cellKey(taskId, d)] ?? 0,
+      baseline
+    );
+    if (isEmptyPlan(plan)) {
+      setDirty(false);
+      return;
     }
-    if (entries.length === 0) return;
+
+    // `cell` is absent only for a failure that can't be tied to one cell.
+    const problems: Array<{ cell?: PlanCell; message: string }> = [];
+    const editElsewhere = "Change it from the matter\u2019s Time tab.";
+    let saved = 0;
+
+    for (const a of plan.ambiguous) {
+      problems.push({
+        cell: a,
+        message: `${describeCell(a)}: this day has ${a.entryCount} time entries, so the timesheet can\u2019t reduce it. ${editElsewhere}`,
+      });
+    }
 
     setIsSaving(true);
-    const batchEntries = entries.map((e) => ({
-      taskId: e.taskId,
-      date: toIsoDate(addDays(weekStart, e.dayIndex)),
-      durationMinutes: Math.round(e.hours * 60),
-      billable: true as const,
-    }));
-
+    setSaveProblems([]);
     try {
-      const response = await saveWeeklyEntries(slug, batchEntries);
-
-      if (!response.success) {
-        toast.error(response.error ?? "Failed to save entries");
-        return;
-      }
-
-      const { result } = response;
-      if (!result) return;
-
-      if (result.totalErrors === 0) {
-        toast.success(
-          `Saved ${result.totalCreated} ${result.totalCreated === 1 ? "entry" : "entries"}`
+      if (plan.creates.length > 0) {
+        const response = await saveWeeklyEntries(
+          slug,
+          plan.creates.map((c) => ({
+            taskId: c.taskId,
+            date: c.date,
+            durationMinutes: c.durationMinutes,
+            billable: true,
+          }))
         );
-        setDirty(false);
-      } else if (result.totalCreated > 0) {
-        toast.warning(`Saved ${result.totalCreated} entries, ${result.totalErrors} failed`);
-        const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
-        setCellErrors(newCellErrors);
-      } else {
-        toast.error(`Save failed \u2014 ${result.totalErrors} errors`);
-        const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
-        setCellErrors(newCellErrors);
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  function mapErrorsToCells(
-    errors: Array<{ index: number; taskId: string; message: string }>,
-    batchEntries: Array<{ taskId: string; date: string }>
-  ): Record<CellKey, string> {
-    const newCellErrors: Record<CellKey, string> = {};
-    for (const err of errors) {
-      const original = batchEntries[err.index];
-      if (original) {
-        const entryDate = parseIsoDate(original.date);
-        const diff = Math.round((entryDate.getTime() - weekStart.getTime()) / 86400000);
-        if (diff >= 0 && diff <= 6) {
-          newCellErrors[cellKey(original.taskId, diff)] = err.message;
+        if (!response.success || !response.result) {
+          const reason = withPeriod(response.error ?? "Failed to save");
+          for (const c of plan.creates) {
+            problems.push({ cell: c, message: `${describeCell(c)}: ${reason}` });
+          }
+        } else {
+          saved += response.result.totalCreated;
+          for (const err of response.result.errors) {
+            const c = plan.creates[err.index];
+            if (c)
+              problems.push({ cell: c, message: `${describeCell(c)}: ${withPeriod(err.message)}` });
+          }
         }
       }
+
+      for (const u of plan.updates) {
+        const result = await updateTimeEntry(slug, u.matterId, u.entryId, {
+          durationMinutes: u.durationMinutes,
+        });
+        if (result.success) saved += 1;
+        else
+          problems.push({
+            cell: u,
+            message: `${describeCell(u)}: ${withPeriod(result.error ?? "Could not update the entry")} ${editElsewhere}`,
+          });
+      }
+
+      for (const del of plan.deletes) {
+        const result = await deleteTimeEntry(slug, del.matterId, del.entryId);
+        if (result.success) saved += 1;
+        else
+          problems.push({
+            cell: del,
+            message: `${describeCell(del)}: ${withPeriod(result.error ?? "Could not delete the entry")} ${editElsewhere}`,
+          });
+      }
+    } catch {
+      problems.push({ message: "Save failed part-way. The grid now shows what was saved." });
+    } finally {
+      // The server is the source of truth: reload the week so the next Save diffs against it.
+      await loadWeek(weekStart);
+      setDirty(false);
+      setIsSaving(false);
     }
-    return newCellErrors;
+
+    const newCellErrors: Record<CellKey, string> = {};
+    for (const p of problems) {
+      if (p.cell) newCellErrors[cellKey(p.cell.taskId, p.cell.dayIndex)] = p.message;
+    }
+    setCellErrors(newCellErrors);
+    setSaveProblems(problems.map((p) => p.message));
+
+    const changes = (n: number) => `${n} ${n === 1 ? "change" : "changes"}`;
+    if (problems.length === 0) {
+      toast.success(`Saved ${changes(saved)}`);
+    } else {
+      const description = problems.map((p) => p.message).join("\n");
+      if (saved > 0) {
+        toast.warning(`Saved ${changes(saved)}, ${problems.length} not saved`, { description });
+      } else {
+        toast.error(`${changes(problems.length)} not saved`, { description });
+      }
+    }
   }
 
   // Add-task row filtering
@@ -323,9 +387,10 @@ export function WeeklyTimeGrid({
         setTaskRows((prev) => [...prev, ...newTaskRows]);
       }
 
-      // Build cell values from shifted entries
+      // Overwrite only the cells the previous week had time in. Replacing the whole grid would turn
+      // every other existing cell into a 0, which Save now reads as "delete" (F-668A-R1).
       const newCellValues = buildCellValuesFromEntries(shiftedEntries, weekStart);
-      setCellValues(newCellValues);
+      setCellValues((prev) => ({ ...prev, ...newCellValues }));
       setCellErrors({});
       setDirty(true);
       toast.success(`Copied ${entries.length} entries from previous week`);
@@ -458,11 +523,34 @@ export function WeeklyTimeGrid({
               Import CSV
             </Button>
           </CsvImportDialog>
-          <Button onClick={handleSave} disabled={!dirty || isSaving || isNavigating}>
+          <Button
+            onClick={handleSave}
+            disabled={!dirty || isSaving || isNavigating || baselineError}
+          >
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
+
+      {baselineError && (
+        <Alert variant="destructive">
+          <AlertTitle>Couldn&rsquo;t load this week&rsquo;s time entries</AlertTitle>
+          <AlertDescription>Reload the page before saving.</AlertDescription>
+        </Alert>
+      )}
+
+      {saveProblems.length > 0 && (
+        <Alert variant="destructive" data-testid="timesheet-save-problems">
+          <AlertTitle>Not saved</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc pl-4">
+              {saveProblems.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Grid */}
       <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">

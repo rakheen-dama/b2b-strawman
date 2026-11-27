@@ -16,6 +16,12 @@ vi.mock("@/app/(app)/org/[slug]/my-work/timesheet/actions", () => ({
   fetchPreviousWeekEntries: (...args: unknown[]) => mockFetchPreviousWeekEntries(...args),
 }));
 
+// The grid updates/deletes existing entries through the matter time-entry actions (F-668A-R1).
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
+  updateTimeEntry: vi.fn(),
+  deleteTimeEntry: vi.fn(),
+}));
+
 // Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {

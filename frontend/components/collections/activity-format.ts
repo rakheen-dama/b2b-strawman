@@ -3,8 +3,9 @@
 // Consolidated in Phase 91 666B (D-74). Pure: no directive, no JSX.
 
 /**
- * Maps a collection-activity status to a Badge variant. Mirrors the precedent in
- * 591B's `collections-client.tsx` and extends it to the full ledger status set:
+ * Maps a collection-activity status to a Badge variant. First written for 591B's Debtors page
+ * (`collections-client.tsx`; moved to `debtor-book-table.tsx` by 666A) and covers the full ledger
+ * status set:
  *   SENT → success; SEND_FAILED / FLAGGED → destructive; PROPOSED → warning;
  *   REJECTED / CANCELLED_PAYMENT / SKIPPED (and any unknown) → neutral.
  */

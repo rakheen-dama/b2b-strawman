@@ -16,8 +16,13 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { InvoiceLineResponse } from "@/lib/types";
 
-/** K-74: the Description column's floor; it wraps (kit cells are whitespace-nowrap, D-55). */
-const DESCRIPTION_CLASS = "min-w-56 whitespace-normal";
+/**
+ * K-74 / F-666B-A1/A2 floors for the two wrapping columns (kit cells are whitespace-nowrap, D-55),
+ * with px-3 cells: measured on the live stack, the draft table (with Actions) fits its 710 px frame
+ * at 1024, Description wraps onto no more lines than before K-74 and Tax stays on 2 lines.
+ */
+const DESCRIPTION_CLASS = "min-w-40 whitespace-normal";
+const TAX_CLASS = "min-w-32 whitespace-normal";
 
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
@@ -115,7 +120,7 @@ function LineSection({
         <TableRow data-testid={`section-header-${type}`} className="hover:bg-transparent">
           <TableCell
             colSpan={colCount}
-            className="bg-muted/50 text-muted-foreground px-4 py-2 text-xs font-semibold tracking-wide uppercase"
+            className="bg-muted/50 text-muted-foreground px-3 py-2 text-xs font-semibold tracking-wide uppercase"
           >
             {label}
           </TableCell>
@@ -124,7 +129,7 @@ function LineSection({
       {lines.map((line) => (
         <TableRow key={line.id}>
           {/* K-74: a floor for the description so it no longer wraps onto 6 lines at 1024. */}
-          <TableCell className={cn(DESCRIPTION_CLASS, "text-foreground px-4 py-3")}>
+          <TableCell className={cn(DESCRIPTION_CLASS, "text-foreground px-3 py-3")}>
             <span className="flex items-center gap-2">
               {line.description}
               {line.lineSource === "TARIFF" && (
@@ -134,18 +139,18 @@ function LineSection({
               )}
             </span>
           </TableCell>
-          <TableCell className="text-muted-foreground hidden px-4 py-3 whitespace-normal sm:table-cell">
+          <TableCell className="text-muted-foreground hidden px-3 py-3 whitespace-normal sm:table-cell">
             {line.matterName || "\u2014"}
           </TableCell>
-          <TableCell className="text-foreground px-4 py-3 text-right">{line.quantity}</TableCell>
-          <TableCell className="text-foreground px-4 py-3 text-right">
+          <TableCell className="text-foreground px-3 py-3 text-right">{line.quantity}</TableCell>
+          <TableCell className="text-foreground px-3 py-3 text-right">
             {formatCurrency(line.unitPrice, currency)}
           </TableCell>
-          <TableCell className="text-foreground px-4 py-3 text-right font-medium">
+          <TableCell className="text-foreground px-3 py-3 text-right font-medium">
             {formatCurrency(line.amount, currency)}
           </TableCell>
           {hasPerLineTax && (
-            <TableCell className="text-muted-foreground px-4 py-3 text-right whitespace-normal">
+            <TableCell className={cn(TAX_CLASS, "text-muted-foreground px-3 py-3 text-right")}>
               {line.taxExempt ? (
                 <span>Exempt</span>
               ) : line.taxRateName && line.taxAmount != null ? (
@@ -159,7 +164,7 @@ function LineSection({
             </TableCell>
           )}
           {editable && (
-            <TableCell className="px-4 py-3 text-right">
+            <TableCell className="px-3 py-3 text-right">
               <div className="flex items-center justify-end gap-1">
                 {onEditLine && (
                   <button
@@ -233,13 +238,15 @@ export function InvoiceLineTable({
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className={cn(DESCRIPTION_CLASS, "px-4")}>Description</TableHead>
-                <TableHead className="hidden px-4 sm:table-cell">Matter</TableHead>
-                <TableHead className="px-4 text-right">Qty</TableHead>
-                <TableHead className="px-4 text-right">Rate</TableHead>
-                <TableHead className="px-4 text-right">Amount</TableHead>
-                {hasPerLineTax && <TableHead className="px-4 text-right">Tax</TableHead>}
-                {editable && <TableHead className="px-4 text-right">Actions</TableHead>}
+                <TableHead className={cn(DESCRIPTION_CLASS, "px-3")}>Description</TableHead>
+                <TableHead className="hidden px-3 sm:table-cell">Matter</TableHead>
+                <TableHead className="px-3 text-right">Qty</TableHead>
+                <TableHead className="px-3 text-right">Rate</TableHead>
+                <TableHead className="px-3 text-right">Amount</TableHead>
+                {hasPerLineTax && (
+                  <TableHead className={cn(TAX_CLASS, "px-3 text-right")}>Tax</TableHead>
+                )}
+                {editable && <TableHead className="px-3 text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>

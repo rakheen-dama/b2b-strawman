@@ -5,7 +5,7 @@ import { History } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@b2mash/ui/button";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, type EmptyStateVariant } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SeverityPill } from "@/components/audit/severity-pill";
@@ -41,7 +41,7 @@ export interface AuditTimelineProps {
    * The empty state's ADR-393 variant (F-663B-1). `"default"` for a page-level tab panel (matter /
    * client Audit tabs); a section inside a page (the fee-note "Audit trail") passes its own.
    */
-  emptyVariant?: "default" | "compact" | "inline";
+  emptyVariant?: EmptyStateVariant;
 }
 
 function stringDetail(details: Record<string, unknown> | null, key: string): string | null {

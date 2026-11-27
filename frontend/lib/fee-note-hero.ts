@@ -2,7 +2,7 @@ import { createElement, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { daysBetween } from "@b2mash/shared/date";
 import type { HeroTile } from "@/components/shared/detail-hero";
-import { formatCurrency, formatDate, formatDaysOverdue } from "@/lib/format";
+import { formatCurrency, formatDateInSA, formatDaysOverdue } from "@/lib/format";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 
 // Fee-note detail hero tiles (Phase 91 666B, ADR-396, FD-5). Pure and client-safe (no
@@ -66,7 +66,13 @@ export function feeNoteHeroTiles(invoice: InvoiceResponse, todayIso: string): He
   }
   const dueDate = status !== "DRAFT" ? invoice.dueDate : null;
   if (dueDate) {
-    const tile: HeroTile = { id: "due", label: L.due, value: formatDate(dueDate), state: "ready" };
+    // Client-rendered, so the SA calendar (formatDateInSA), never the browser's zone.
+    const tile: HeroTile = {
+      id: "due",
+      label: L.due,
+      value: formatDateInSA(dueDate),
+      state: "ready",
+    };
     if (BALANCE_OWED_STATUSES.has(status) && balance > 0) {
       tile.hint = dueHint(daysBetween(dueDate.slice(0, 10), todayIso));
     }

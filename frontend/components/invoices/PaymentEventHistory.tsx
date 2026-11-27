@@ -156,7 +156,10 @@ function PaymentReceiptCell({ event, invoiceId, slug }: PaymentReceiptCellProps)
           {busy ? "Generating…" : "Generate receipt"}
         </Button>
       )}
-      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && (
+        // The kit cell is whitespace-nowrap (D-55): a long server error wraps instead of widening the table.
+        <p className="mt-1 text-xs whitespace-normal text-red-600 dark:text-red-400">{error}</p>
+      )}
     </>
   );
 }

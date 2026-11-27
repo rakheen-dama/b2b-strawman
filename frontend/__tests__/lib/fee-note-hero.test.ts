@@ -2,7 +2,7 @@ import { createElement, Fragment } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { FEE_NOTE_HERO_TILE_LABELS, feeNoteHeroTiles } from "@/lib/fee-note-hero";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 
 // Phase 91 666B (ADR-396, FD-5): the fee-note hero tiles, derived on the client from the live fee
@@ -83,8 +83,19 @@ describe("feeNoteHeroTiles", () => {
   it("APPROVED: Total + Due, no days hint (not sent, nothing owed yet)", () => {
     const approved = makeInvoice({ status: "APPROVED" });
     expect(ids(approved)).toEqual(["total", "due"]);
-    expect(tile(approved, "due")).toMatchObject({ label: "Due", value: formatDate("2026-03-01") });
+    expect(tile(approved, "due")).toMatchObject({ label: "Due", value: "1 Mar 2026" });
     expect(tile(approved, "due")?.hint).toBeUndefined();
+  });
+
+  it("formats a date-only dueDate in the SA calendar, whatever the runner's zone", () => {
+    // "2026-03-01" parses as UTC midnight; a zone-less formatter would print "28 Feb 2026" west
+    // of UTC. formatDateInSA pins Africa/Johannesburg, so the tile reads the stored calendar day.
+    expect(tile(makeInvoice({ status: "APPROVED", dueDate: "2026-03-01" }), "due")?.value).toBe(
+      "1 Mar 2026"
+    );
+    expect(tile(makeInvoice({ status: "VOID", dueDate: "2026-12-31" }), "due")?.value).toBe(
+      "31 Dec 2026"
+    );
   });
 
   it("SENT overdue: 4 tiles in order, paid 0, balance = balanceDue, '10d overdue' with the danger icon", () => {

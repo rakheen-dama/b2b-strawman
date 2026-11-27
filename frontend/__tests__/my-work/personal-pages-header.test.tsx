@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 // Phase 91 668A: the Timesheet and Notifications server pages render the kit PageHeader, so each
 // has exactly one level-1 heading — empty data included (sidebar-navigation.spec.ts:38-39,
-// notification-bell.spec.ts:112,138). The grid is stubbed: the slice leaves it untouched.
+// notification-bell.spec.ts:112,138). The grid is stubbed.
 
 const { mockApiGet, mockFetchNotifications, gridProps } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
@@ -59,7 +59,7 @@ describe("Timesheet page header", () => {
     expect(screen.getByTestId("weekly-time-grid-stub")).toBeInTheDocument();
   });
 
-  it("still builds the grid rows from assigned tasks only (K-88 held)", async () => {
+  it("builds the grid rows from the week's logged tasks, then the assigned tasks (K-88)", async () => {
     const assigned = [
       { id: "a1", matterId: "m1", matterName: "Khumalo", title: "Heads of argument" },
     ];
@@ -83,7 +83,13 @@ describe("Timesheet page header", () => {
     );
 
     const row = { id: "a1", projectId: "m1", projectName: "Khumalo", title: "Heads of argument" };
-    expect(gridProps.last?.tasks).toEqual([row]);
+    const logged = {
+      id: "unassigned-task",
+      projectId: "m2",
+      projectName: "Ndlovu",
+      title: "Draft transfer documents",
+    };
+    expect(gridProps.last?.tasks).toEqual([logged, row]);
     expect(gridProps.last?.allTasks).toEqual([row]);
   });
 });

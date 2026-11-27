@@ -1,0 +1,770 @@
+{
+  "at": "2026-11-27T18:16:03.642Z",
+  "week": {
+    "MON": "2026-11-23",
+    "SUN": "2026-11-29"
+  },
+  "prevWeek": {
+    "PREV_MON": "2026-11-16",
+    "PREV_SUN": "2026-11-22"
+  },
+  "steps": [
+    {
+      "step": "tasks tab row for \"Close matter\"",
+      "rowText": "Medium Close matter Open Unassigned — Log Time Claim"
+    },
+    {
+      "step": "01c-timesheet-row",
+      "label": "Nov 23 – Nov 29, 2026",
+      "rows": [
+        "Close matter",
+        "Letter of demand"
+      ],
+      "taskRowCount": 1,
+      "taskValues": [
+        "",
+        "",
+        "1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "gridTotals": {
+        "perDay": [
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3
+      },
+      "apiTotals": {
+        "perDay": [
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3
+      },
+      "myWork": {
+        "text": "MON TUE WED THU FRI SAT SUN 3.0h this week",
+        "hours": 3
+      }
+    },
+    {
+      "step": "02-increase-saved",
+      "label": "Nov 23 – Nov 29, 2026",
+      "rows": [
+        "Close matter",
+        "Letter of demand"
+      ],
+      "taskRowCount": 1,
+      "taskValues": [
+        "",
+        "",
+        "1.5",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "gridTotals": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      },
+      "apiTotals": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      },
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "wedEntries": [
+        {
+          "id": "e35ea888-f378-40b6-bf55-a06a1e9e4f5f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 30
+        },
+        {
+          "id": "beb96f2b-3e51-4e7c-8d76-ee9d2697120f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "step": "03a-previous-week",
+      "label": "Nov 16 – Nov 22, 2026",
+      "rows": [],
+      "taskRowCount": 0,
+      "taskValues": null,
+      "gridTotals": {
+        "perDay": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "week": 0
+      },
+      "apiTotals": {
+        "perDay": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "week": 0
+      }
+    },
+    {
+      "step": "03b-this-week-again",
+      "label": "Nov 23 – Nov 29, 2026",
+      "rows": [
+        "Close matter",
+        "Letter of demand"
+      ],
+      "taskRowCount": 1,
+      "taskValues": [
+        "",
+        "",
+        "1.5",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "gridTotals": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      },
+      "apiTotals": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      },
+      "myWork": {
+        "text": "MON TUE WED THU FRI SAT SUN 3.5h this week",
+        "hours": 3.5
+      }
+    },
+    {
+      "step": "tasks tab row for \"Close matter\"",
+      "rowText": "Medium Close matter Open Unassigned — Log Time Claim"
+    },
+    {
+      "step": "browser dialog accepted",
+      "message": "Current week has data. Copy previous week will overwrite existing entries. Continue?"
+    },
+    {
+      "step": "04e-after-save",
+      "label": "Nov 23 – Nov 29, 2026",
+      "rows": [
+        "Close matter",
+        "Letter of demand"
+      ],
+      "taskRowCount": 1,
+      "taskValues": [
+        "",
+        "1",
+        "1.5",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "gridTotals": {
+        "perDay": [
+          0,
+          1,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 4.5
+      },
+      "apiTotals": {
+        "perDay": [
+          0,
+          1,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 4.5
+      },
+      "duringCopy": {
+        "copyLabel": "Copying...",
+        "copyDisabled": true,
+        "saveDisabled": true,
+        "nextDisabled": true,
+        "prevDisabled": true,
+        "thisWeekDisabled": true
+      },
+      "saveClickBlocked": true,
+      "afterCopy": {
+        "values": [
+          "",
+          "1",
+          "1.5",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "label": "Nov 23 – Nov 29, 2026",
+        "saveDisabled": false
+      },
+      "duringSave": {
+        "saveLabel": "Saving...",
+        "copyDisabled": true,
+        "nextDisabled": true
+      },
+      "delayedActionPosts": 3,
+      "alert": null,
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "copiedOutcome": [
+        {
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-24",
+          "copiedMinutes": 60,
+          "serverMinutes": 60,
+          "onServer": true
+        }
+      ],
+      "labelBefore": "Nov 23 – Nov 29, 2026"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "1: the Log Time dialog created one 60-min Wed entry",
+      "ok": true,
+      "detail": [
+        {
+          "id": "beb96f2b-3e51-4e7c-8d76-ee9d2697120f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "name": "1: the non-assigned task has exactly one row",
+      "ok": true,
+      "detail": [
+        "Close matter",
+        "Letter of demand"
+      ]
+    },
+    {
+      "name": "1: its Wed cell shows 1",
+      "ok": true,
+      "detail": [
+        "",
+        "",
+        "1",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "1: daily + weekly totals equal the week's entries (API)",
+      "ok": true,
+      "detail": {
+        "grid": {
+          "perDay": [
+            0,
+            0,
+            1,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3
+        },
+        "api": {
+          "perDay": [
+            0,
+            0,
+            1,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3
+        }
+      }
+    },
+    {
+      "name": "1: weekly total equals My Work 'this week'",
+      "ok": true,
+      "detail": {
+        "grid": 3,
+        "myWork": {
+          "text": "MON TUE WED THU FRI SAT SUN 3.0h this week",
+          "hours": 3
+        }
+      }
+    },
+    {
+      "name": "2: Wed now has two entries: the original 60 (same id) + one new 30",
+      "ok": true,
+      "detail": [
+        {
+          "id": "e35ea888-f378-40b6-bf55-a06a1e9e4f5f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 30
+        },
+        {
+          "id": "beb96f2b-3e51-4e7c-8d76-ee9d2697120f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "name": "2: exactly one entry was added this week",
+      "ok": true,
+      "detail": {
+        "before": 2,
+        "after": 3
+      }
+    },
+    {
+      "name": "2: toast says 1 change",
+      "ok": true,
+      "detail": [
+        "Saved 1 change"
+      ]
+    },
+    {
+      "name": "2: grid shows Wed 1.5 and Save is disabled",
+      "ok": true,
+      "detail": [
+        "",
+        "",
+        "1.5",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "2: totals equal the API",
+      "ok": true,
+      "detail": {
+        "grid": {
+          "perDay": [
+            0,
+            0,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3.5
+        },
+        "api": {
+          "perDay": [
+            0,
+            0,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3.5
+        }
+      }
+    },
+    {
+      "name": "3: previous week's totals equal its entries (API)",
+      "ok": true,
+      "detail": {
+        "grid": {
+          "perDay": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "week": 0
+        },
+        "api": {
+          "perDay": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "week": 0
+        }
+      }
+    },
+    {
+      "name": "3: previous week: the task has no row (no time there yet)",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "3: This Week: the row is back once with Wed 1.5",
+      "ok": true,
+      "detail": [
+        "",
+        "",
+        "1.5",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "3: This Week: totals equal the API",
+      "ok": true,
+      "detail": {
+        "grid": {
+          "perDay": [
+            0,
+            0,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3.5
+        },
+        "api": {
+          "perDay": [
+            0,
+            0,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 3.5
+        }
+      }
+    },
+    {
+      "name": "3: This Week: weekly total equals My Work 'this week'",
+      "ok": true,
+      "detail": {
+        "grid": 3.5,
+        "myWork": {
+          "text": "MON TUE WED THU FRI SAT SUN 3.5h this week",
+          "hours": 3.5
+        }
+      }
+    },
+    {
+      "name": "4: both server actions were delayed (copy fetch + save)",
+      "ok": true,
+      "detail": 3
+    },
+    {
+      "name": "4: during the copy: Copying..., Copy + Save + week nav disabled",
+      "ok": true,
+      "detail": {
+        "copyLabel": "Copying...",
+        "copyDisabled": true,
+        "saveDisabled": true,
+        "nextDisabled": true,
+        "prevDisabled": true,
+        "thisWeekDisabled": true
+      }
+    },
+    {
+      "name": "4: clicking Save during the copy does nothing",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "4: the copy landed on this week: the task's Tue shows 1, Save enabled",
+      "ok": true,
+      "detail": {
+        "values": [
+          "",
+          "1",
+          "1.5",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "label": "Nov 23 – Nov 29, 2026",
+        "saveDisabled": false
+      }
+    },
+    {
+      "name": "4: during the save: Saving..., Copy disabled",
+      "ok": true,
+      "detail": {
+        "saveLabel": "Saving...",
+        "copyDisabled": true,
+        "nextDisabled": true
+      }
+    },
+    {
+      "name": "4: no copied value lost silently (each copied cell is on the server or in the alert)",
+      "ok": true,
+      "detail": {
+        "copiedOutcome": [
+          {
+            "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+            "date": "2026-11-24",
+            "copiedMinutes": 60,
+            "serverMinutes": 60,
+            "onServer": true
+          }
+        ],
+        "alert": null
+      }
+    },
+    {
+      "name": "4: the task's copied Tue 60 is on the server once",
+      "ok": true,
+      "detail": {
+        "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+        "date": "2026-11-24",
+        "copiedMinutes": 60,
+        "serverMinutes": 60,
+        "onServer": true
+      }
+    },
+    {
+      "name": "4: the task's Wed is unchanged (60 + 30)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "e35ea888-f378-40b6-bf55-a06a1e9e4f5f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 30
+        },
+        {
+          "id": "beb96f2b-3e51-4e7c-8d76-ee9d2697120f",
+          "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+          "date": "2026-11-25",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "name": "4: totals equal the API after the save",
+      "ok": true,
+      "detail": {
+        "grid": {
+          "perDay": [
+            0,
+            1,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 4.5
+        },
+        "api": {
+          "perDay": [
+            0,
+            1,
+            1.5,
+            0,
+            2,
+            0,
+            0
+          ],
+          "week": 4.5
+        }
+      }
+    },
+    {
+      "name": "4: weekly total equals My Work 'this week' after the save",
+      "ok": true,
+      "detail": {
+        "grid": 4.5,
+        "myWork": {
+          "text": "MON TUE WED THU FRI SAT SUN 4.5h this week",
+          "hours": 4.5
+        }
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "task": {
+    "id": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+    "title": "Close matter",
+    "matterId": "48a77dcb-1c16-4d97-869e-e1a05c0fe772",
+    "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzavnj844b1"
+  },
+  "assignedTaskCount": 0,
+  "entriesBefore": [
+    {
+      "id": "0b5a04ab-375c-4f3c-8a10-7a060ce2a43a",
+      "taskId": "981f28a0-4e7e-4a55-a3b6-482e61495cb4",
+      "date": "2026-11-27",
+      "minutes": 120
+    }
+  ],
+  "prevWeekEntries": [
+    {
+      "id": "093ec606-9583-4f27-82ef-d63834fa01ef",
+      "taskId": "804e9d27-4ef0-4388-97c2-9a8e0e11afbb",
+      "date": "2026-11-17",
+      "minutes": 60
+    }
+  ],
+  "entriesBeforeStep4": 3,
+  "totalsByStep": {
+    "step1": {
+      "grid": {
+        "perDay": [
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3
+      },
+      "myWork": 3
+    },
+    "step2": {
+      "grid": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      }
+    },
+    "step3": {
+      "previous": {
+        "perDay": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "week": 0
+      },
+      "thisWeek": {
+        "perDay": [
+          0,
+          0,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 3.5
+      },
+      "myWork": 3.5
+    },
+    "step4": {
+      "grid": {
+        "perDay": [
+          0,
+          1,
+          1.5,
+          0,
+          2,
+          0,
+          0
+        ],
+        "week": 4.5
+      },
+      "myWork": 4.5
+    }
+  },
+  "pass": true
+}

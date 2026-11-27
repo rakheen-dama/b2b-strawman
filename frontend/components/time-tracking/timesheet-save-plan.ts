@@ -53,7 +53,7 @@ export function isEmptyPlan(plan: WeekSavePlan): boolean {
 }
 
 /**
- * @param taskIds   the grid's rows, in display order
+ * @param taskIds   the grid's rows, in display order (a repeated id is planned once)
  * @param dayDates  the week's seven ISO dates, Monday first
  * @param hoursFor  the cell's current value in decimal hours (0 when empty)
  * @param baseline  the week's entries as last loaded from the server
@@ -73,7 +73,8 @@ export function planWeekSave(
   }
 
   const plan: WeekSavePlan = { creates: [], updates: [], deletes: [], ambiguous: [] };
-  for (const taskId of taskIds) {
+  // A task listed twice must not post its creates twice (review r1 M1 backstop).
+  for (const taskId of new Set(taskIds)) {
     dayDates.forEach((date, dayIndex) => {
       const existing = byCell.get(`${taskId}|${date}`) ?? [];
       const existingMinutes = existing.reduce((sum, e) => sum + e.durationMinutes, 0);

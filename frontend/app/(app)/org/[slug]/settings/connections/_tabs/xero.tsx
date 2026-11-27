@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { HelpTip } from "@/components/help-tip";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
@@ -121,78 +122,85 @@ export async function renderXeroTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Integrations
-          <HelpTip code="integrations.overview" />
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Connect third-party tools and services to your organization.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Integrations
+            <HelpTip code="integrations.overview" />
+          </span>
+        }
+        description="Connect third-party tools and services to your organization."
+      />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {DOMAIN_CONFIG.map((config) => {
-          const integration = integrations.find((i) => i.domain === config.domain) ?? null;
-          const domainProviders = providers[config.domain] ?? [];
+      {/* K-100 (F-664A-1): the grid follows the panel width, not the viewport — one column in the
+          496px panel at 1024, two from a 48rem panel (1440). */}
+      <div className="@container">
+        <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-2">
+          {DOMAIN_CONFIG.map((config) => {
+            const integration = integrations.find((i) => i.domain === config.domain) ?? null;
+            const domainProviders = providers[config.domain] ?? [];
 
-          if (config.domain === "ACCOUNTING") {
+            if (config.domain === "ACCOUNTING") {
+              return (
+                <AccountingIntegrationCard
+                  key={config.domain}
+                  slug={slug}
+                  xeroStatus={xeroConnection?.status ?? null}
+                  xeroOrgName={xeroConnection?.xeroOrgName ?? null}
+                />
+              );
+            }
+
+            if (config.domain === "EMAIL") {
+              return <EmailIntegrationCard key={config.domain} />;
+            }
+
+            if (config.domain === "PAYMENT") {
+              return (
+                <PaymentIntegrationCard
+                  key={config.domain}
+                  integration={integration}
+                  providers={domainProviders}
+                  slug={slug}
+                />
+              );
+            }
+
+            if (config.domain === "KYC_VERIFICATION") {
+              return (
+                <KycIntegrationCard key={config.domain} integration={integration} slug={slug} />
+              );
+            }
+
             return (
-              <AccountingIntegrationCard
+              <IntegrationCard
                 key={config.domain}
-                slug={slug}
-                xeroStatus={xeroConnection?.status ?? null}
-                xeroOrgName={xeroConnection?.xeroOrgName ?? null}
-              />
-            );
-          }
-
-          if (config.domain === "EMAIL") {
-            return <EmailIntegrationCard key={config.domain} />;
-          }
-
-          if (config.domain === "PAYMENT") {
-            return (
-              <PaymentIntegrationCard
-                key={config.domain}
+                domain={config.domain}
+                label={config.label}
+                description={config.description}
                 integration={integration}
                 providers={domainProviders}
                 slug={slug}
               />
             );
-          }
+          })}
 
-          if (config.domain === "KYC_VERIFICATION") {
-            return <KycIntegrationCard key={config.domain} integration={integration} slug={slug} />;
-          }
-
-          return (
-            <IntegrationCard
-              key={config.domain}
-              domain={config.domain}
-              label={config.label}
-              description={config.description}
-              integration={integration}
-              providers={domainProviders}
-              slug={slug}
-            />
-          );
-        })}
-
-        <McpIntegrationCard slug={slug} status={mcpStatus} />
+          <McpIntegrationCard slug={slug} status={mcpStatus} />
+        </div>
       </div>
 
       <section id="xero" aria-labelledby="xero-heading" className="scroll-mt-6 space-y-6">
         <div>
-          <h2 id="xero-heading" className="font-display text-2xl text-slate-950 dark:text-slate-50">
+          {/* The SettingsSection h2 style (one step below the PageHeader h1). */}
+          <h2 id="xero-heading" className="text-foreground text-lg leading-none font-semibold">
             Xero Integration
           </h2>
           {canManageIntegrations ? (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-muted-foreground mt-1 text-sm">
               Manage your Xero connection, tax mappings, and sync settings.
             </p>
           ) : (
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-muted-foreground mt-3 text-sm">
               You do not have permission to manage integrations. Contact your administrator.
             </p>
           )}

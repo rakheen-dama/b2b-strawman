@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Mail, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { IntegrationSectionTitle } from "@/components/integrations/integration-section-title";
 import { getEmailStats, sendTestEmail } from "@/lib/actions/email";
 import type { EmailDeliveryStats } from "@/lib/api/email";
 
@@ -47,20 +48,12 @@ export function EmailIntegrationCard() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <Mail className="size-5 text-slate-600 dark:text-slate-400" />
-            </div>
-            <CardTitle className="font-display text-lg">Email Delivery</CardTitle>
-          </div>
-          <Badge variant="success">Active</Badge>
-        </div>
-        <CardDescription>Platform email delivery with optional BYOAK configuration</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SettingsSection
+      title={<IntegrationSectionTitle icon={Mail}>Email Delivery</IntegrationSectionTitle>}
+      description="Platform email delivery with optional BYOAK configuration"
+      actions={<Badge variant="success">Active</Badge>}
+    >
+      <div className="space-y-4">
         {error && (
           <p className="text-destructive text-sm" role="alert">
             {error}
@@ -141,7 +134,7 @@ export function EmailIntegrationCard() {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }

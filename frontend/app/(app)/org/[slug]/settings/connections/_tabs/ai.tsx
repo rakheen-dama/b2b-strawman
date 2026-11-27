@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getAiProfile, getAiCostSummary } from "@/lib/api/ai";
 import { AiProfileForm } from "@/components/ai/ai-profile-form";
 import { AiCostSummary } from "@/components/ai/ai-cost-summary";
+import { SettingsSection } from "@/components/settings/settings-section";
 import type { AiProfileResponse, AiCostSummaryResponse } from "@/lib/api/ai";
 import { settingsHref } from "@/lib/settings-nav";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -27,14 +29,10 @@ export async function renderAiTab({ slug }: SettingsTabProps) {
   if (!isAdmin && !caps.capabilities.includes("AI_MANAGE")) {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            AI Configuration
-          </h1>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-            You do not have permission to manage AI settings. Contact your administrator.
-          </p>
-        </div>
+        <PageHeader title="AI Configuration" />
+        <p className="text-muted-foreground text-sm">
+          You do not have permission to manage AI settings. Contact your administrator.
+        </p>
       </div>
     );
   }
@@ -70,52 +68,46 @@ export async function renderAiTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {profile?.coldStartCompleted ? "AI Configuration" : "Set Up AI"}
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure your firm&apos;s AI profile to get tailored results across all AI skills.
-        </p>
-      </div>
+      {/* DA-13: the h1 text is unchanged (K-124 does not list the AI tab). */}
+      <PageHeader
+        title={profile?.coldStartCompleted ? "AI Configuration" : "Set Up AI"}
+        description={
+          <>Configure your firm&apos;s AI profile to get tailored results across all AI skills.</>
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <AiProfileForm slug={slug} initialData={formData} />
-        </div>
-        <div className="space-y-6">
-          <AiCostSummary costSummary={costSummary} />
-
-          {/* Execution History Card */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-              Execution History
-            </h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              View all AI skill executions, costs, and outcomes.
-            </p>
-            <Link
-              href={`/org/${slug}/settings/connections/ai/history`}
-              className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-            >
-              View execution history →
-            </Link>
+      {/* K-100: the form/aside split follows the panel width (48rem), not the viewport. */}
+      <div className="@container">
+        <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-3">
+          <div className="@3xl:col-span-2">
+            <AiProfileForm slug={slug} initialData={formData} />
           </div>
+          <div className="space-y-6">
+            <AiCostSummary costSummary={costSummary} />
 
-          {/* API Key Status Info Card */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-              AI Integration
-            </h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              API keys and provider settings are managed in the Integrations page.
-            </p>
-            <Link
-              href={settingsHref(slug, "connections", "xero")}
-              className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+            <SettingsSection
+              title="Execution History"
+              description="View all AI skill executions, costs, and outcomes."
             >
-              Manage integrations →
-            </Link>
+              <Link
+                href={`/org/${slug}/settings/connections/ai/history`}
+                className="inline-block text-sm font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+              >
+                View execution history →
+              </Link>
+            </SettingsSection>
+
+            <SettingsSection
+              title="AI Integration"
+              description="API keys and provider settings are managed in the Integrations page."
+            >
+              <Link
+                href={settingsHref(slug, "connections", "xero")}
+                className="inline-block text-sm font-medium text-(--button-accent) hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+              >
+                Manage integrations →
+              </Link>
+            </SettingsSection>
           </div>
         </div>
       </div>

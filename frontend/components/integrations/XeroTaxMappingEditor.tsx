@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { RotateCcw, Save } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@b2mash/ui/input";
 import {
   Select,
@@ -155,100 +155,95 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="font-display text-lg">Tax Code Mappings</CardTitle>
-              <CardDescription>
-                Map Kazi tax modes to Xero tax codes for accurate fee note syncing.
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowResetDialog(true)}>
-              <RotateCcw className="mr-2 size-4" />
-              Reset to Defaults
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {mappings.length === 0 ? (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              No tax mappings configured. Connect to Xero to set up mappings.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Kazi Tax Mode</TableHead>
-                  <TableHead>Xero Tax Code</TableHead>
-                  <TableHead>Display Label</TableHead>
-                  <TableHead className="w-[100px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mappings.map((mapping) => {
-                  const state = getEditState(mapping);
-                  const isSaving = savingIds.has(mapping.id);
-                  const changed = hasChanges(mapping);
+      {/* Inline editable cells stay on the kit `ui/table` primitives (no DataTable row model). */}
+      <SettingsSection
+        as="h3"
+        title="Tax Code Mappings"
+        description="Map Kazi tax modes to Xero tax codes for accurate fee note syncing."
+        actions={
+          <Button variant="outline" size="sm" onClick={() => setShowResetDialog(true)}>
+            <RotateCcw className="mr-2 size-4" />
+            Reset to Defaults
+          </Button>
+        }
+      >
+        {mappings.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            No tax mappings configured. Connect to Xero to set up mappings.
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Kazi Tax Mode</TableHead>
+                <TableHead>Xero Tax Code</TableHead>
+                <TableHead>Display Label</TableHead>
+                <TableHead className="w-[100px]" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mappings.map((mapping) => {
+                const state = getEditState(mapping);
+                const isSaving = savingIds.has(mapping.id);
+                const changed = hasChanges(mapping);
 
-                  return (
-                    <TableRow key={mapping.id}>
-                      <TableCell>
-                        <Badge variant="outline">{mapping.kaziTaxMode}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={state.externalTaxCode || NONE_VALUE}
-                          onValueChange={(val) =>
-                            updateEditState(
-                              mapping.id,
-                              "externalTaxCode",
-                              val === NONE_VALUE ? "" : val
-                            )
-                          }
-                        >
-                          <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder="Select tax code" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={NONE_VALUE}>Not mapped</SelectItem>
-                            {taxRates.map((rate) => (
-                              <SelectItem key={rate.taxType} value={rate.taxType}>
-                                {rate.name} ({rate.effectiveRate}%)
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={state.displayLabel}
-                          onChange={(e) =>
-                            updateEditState(mapping.id, "displayLabel", e.target.value)
-                          }
-                          placeholder="Display label"
-                          className="w-[200px]"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSave(mapping)}
-                          disabled={isSaving || !changed}
-                        >
-                          <Save className="mr-2 size-4" />
-                          {isSaving ? "Saving..." : "Save"}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                return (
+                  <TableRow key={mapping.id}>
+                    <TableCell>
+                      <Badge variant="outline">{mapping.kaziTaxMode}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={state.externalTaxCode || NONE_VALUE}
+                        onValueChange={(val) =>
+                          updateEditState(
+                            mapping.id,
+                            "externalTaxCode",
+                            val === NONE_VALUE ? "" : val
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Select tax code" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE_VALUE}>Not mapped</SelectItem>
+                          {taxRates.map((rate) => (
+                            <SelectItem key={rate.taxType} value={rate.taxType}>
+                              {rate.name} ({rate.effectiveRate}%)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={state.displayLabel}
+                        onChange={(e) =>
+                          updateEditState(mapping.id, "displayLabel", e.target.value)
+                        }
+                        placeholder="Display label"
+                        className="w-[200px]"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSave(mapping)}
+                        disabled={isSaving || !changed}
+                      >
+                        <Save className="mr-2 size-4" />
+                        {isSaving ? "Saving..." : "Save"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </SettingsSection>
 
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>

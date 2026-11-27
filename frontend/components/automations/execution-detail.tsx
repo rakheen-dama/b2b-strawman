@@ -9,7 +9,10 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@b2mash/ui/badge";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
-import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
+import {
+  TriggerTypeBadge,
+  triggerTypeFromEvent,
+} from "@/components/automations/trigger-type-badge";
 import { computeDuration } from "@/lib/format";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Check, X, ChevronDown } from "lucide-react";
@@ -82,7 +85,9 @@ export function ExecutionDetail({ execution, open, onOpenChange }: ExecutionDeta
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Trigger
                 </span>
-                <TriggerTypeBadge triggerType={execution.triggerEventType as TriggerType} />
+                <TriggerTypeBadge
+                  triggerType={triggerTypeFromEvent(execution.triggerEventType) as TriggerType}
+                />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">

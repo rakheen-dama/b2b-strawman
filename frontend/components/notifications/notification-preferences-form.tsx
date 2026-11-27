@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@b2mash/ui/label";
+import { SettingsActionBar, SettingsSection } from "@/components/settings/settings-section";
 import { updateNotificationPreferences } from "@/lib/actions/notifications";
 import type { NotificationPreference } from "@/lib/actions/notifications";
 
@@ -18,6 +19,8 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   PROJECT_COMPLETED: { label: "Matter Completed", category: "Matters" },
   PROJECT_ARCHIVED: { label: "Matter Archived", category: "Matters" },
   PREREQUISITE_BLOCKED_ACTIVATION: { label: "Prerequisite Blocked", category: "Matters" },
+  MATTER_CLOSED: { label: "Matter closed", category: "Matters" },
+  MATTER_REOPENED: { label: "Matter reopened", category: "Matters" },
   // Collaboration
   COMMENT_ADDED: { label: "Comment Added", category: "Collaboration" },
   DOCUMENT_SHARED: { label: "Document Shared", category: "Collaboration" },
@@ -36,6 +39,8 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   BILLING_RUN_COMPLETED: { label: "Billing Run Completed", category: "Billing" },
   BILLING_RUN_SENT: { label: "Billing Run Sent", category: "Billing" },
   BILLING_RUN_FAILURES: { label: "Billing Run Failures", category: "Billing" },
+  COLLECTION_ESCALATED: { label: "Collection escalated", category: "Billing" },
+  CASH_DIGEST: { label: "Daily cash summary", category: "Billing" },
   // Client Requests
   INFORMATION_REQUEST_ITEM_SUBMITTED: {
     label: "Request Item Submitted",
@@ -52,6 +57,18 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   ROLE_PERMISSIONS_CHANGED: { label: "Role Permissions Changed", category: "Security" },
   RETENTION_PURGE_WARNING: { label: "Retention Purge Warning", category: "Security" },
   DSAR_DEADLINE_WARNING: { label: "DSAR Deadline Warning", category: "Security" },
+  // K-115 (founder-approved names, 2026-11-26): the types that rendered as raw enum names
+  // Diary
+  COURT_DATE_REMINDER: { label: "Court date reminder", category: "Diary" },
+  PRESCRIPTION_WARNING: { label: "Prescription warning", category: "Diary" },
+  // Trust
+  TRUST_PAYMENT_AWAITING_APPROVAL: { label: "Trust payment awaiting approval", category: "Trust" },
+  TRUST_PAYMENT_APPROVED: { label: "Trust payment approved", category: "Trust" },
+  TRUST_PAYMENT_REJECTED: { label: "Trust payment rejected", category: "Trust" },
+  TRUST_RECONCILIATION_OVERDUE: { label: "Trust reconciliation overdue", category: "Trust" },
+  TRUST_INVESTMENT_MATURING: { label: "Trust investment maturing", category: "Trust" },
+  TRUST_APPROVAL_AGING: { label: "Trust approval waiting too long", category: "Trust" },
+  TRUST_RECONCILIATION_COMPLETED: { label: "Trust reconciliation completed", category: "Trust" },
 };
 
 interface NotificationPreferencesFormProps {
@@ -108,96 +125,97 @@ export function NotificationPreferencesForm({
     "Client Requests",
     "Time Tracking",
     "Security",
+    "Diary",
+    "Trust",
     "Other",
   ];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]);
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        {/* Table header */}
-        <div className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Notification Type
-          </p>
-          <p className="text-center text-sm font-semibold text-slate-900 dark:text-slate-100">
-            In-App
-          </p>
-          <p className="text-center text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Email
-          </p>
-        </div>
-
-        {/* Grouped preference rows */}
-        {sortedCategories.map((category) => (
-          <div key={category}>
-            {/* Category header */}
-            <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                {category}
-              </p>
-            </div>
-
-            {/* Preferences in this category */}
-            {grouped[category].map((pref) => {
-              const meta = NOTIFICATION_TYPE_LABELS[pref.notificationType];
-              const label = meta?.label ?? pref.notificationType;
-              const inAppId = `inapp-${pref.notificationType}`;
-              const emailId = `email-${pref.notificationType}`;
-
-              return (
-                <div
-                  key={pref.notificationType}
-                  className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800"
-                >
-                  <Label
-                    htmlFor={inAppId}
-                    className="text-sm font-medium text-slate-800 dark:text-slate-200"
-                  >
-                    {label}
-                  </Label>
-                  <div className="flex justify-center">
-                    <Switch
-                      id={inAppId}
-                      checked={pref.inAppEnabled}
-                      onCheckedChange={(checked: boolean) =>
-                        handleToggle(pref.notificationType, "inAppEnabled", checked)
-                      }
-                    />
-                  </div>
-                  <div className="flex justify-center">
-                    <Switch
-                      id={emailId}
-                      checked={pref.emailEnabled}
-                      onCheckedChange={(checked: boolean) =>
-                        handleToggle(pref.notificationType, "emailEnabled", checked)
-                      }
-                    />
-                  </div>
-                </div>
-              );
-            })}
+      {/* One untitled section (no heading today); `py-0` + `-mx-6` keep the full-bleed rows. */}
+      <SettingsSection className="overflow-hidden py-0">
+        <div className="-mx-6">
+          {/* Table header — K-115: `minmax(0,1fr)` lets long labels wrap instead of widening the grid */}
+          <div className="grid grid-cols-[minmax(0,1fr)_80px_80px] items-center gap-4 border-b px-4 py-3">
+            <p className="text-foreground text-sm font-semibold break-words">Notification Type</p>
+            <p className="text-foreground text-center text-sm font-semibold">In-App</p>
+            <p className="text-foreground text-center text-sm font-semibold">Email</p>
           </div>
-        ))}
-      </div>
 
-      {/* Save button and feedback */}
-      <div className="flex items-center gap-4">
+          {/* Grouped preference rows */}
+          {sortedCategories.map((category) => (
+            <div key={category}>
+              {/* Category header */}
+              <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900">
+                {/* K-85: slate-600 on the slate-50 band (was slate-500, 4.48:1); dark unchanged */}
+                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  {category}
+                </p>
+              </div>
+
+              {/* Preferences in this category */}
+              {grouped[category].map((pref) => {
+                const meta = NOTIFICATION_TYPE_LABELS[pref.notificationType];
+                const label = meta?.label ?? pref.notificationType;
+                const inAppId = `inapp-${pref.notificationType}`;
+                const emailId = `email-${pref.notificationType}`;
+
+                return (
+                  <div
+                    key={pref.notificationType}
+                    className="grid grid-cols-[minmax(0,1fr)_80px_80px] items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800"
+                  >
+                    <Label
+                      htmlFor={inAppId}
+                      className="text-sm font-medium break-words text-slate-800 dark:text-slate-200"
+                    >
+                      {label}
+                    </Label>
+                    <div className="flex justify-center">
+                      <Switch
+                        id={inAppId}
+                        checked={pref.inAppEnabled}
+                        onCheckedChange={(checked: boolean) =>
+                          handleToggle(pref.notificationType, "inAppEnabled", checked)
+                        }
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        id={emailId}
+                        checked={pref.emailEnabled}
+                        onCheckedChange={(checked: boolean) =>
+                          handleToggle(pref.notificationType, "emailEnabled", checked)
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </SettingsSection>
+
+      {/* Page-level save (one Save for the whole list); the message is the bar's status. */}
+      <SettingsActionBar
+        status={
+          saveMessage && (
+            <p
+              className={
+                saveMessage.includes("success") ? "text-success-foreground" : "text-destructive"
+              }
+            >
+              {saveMessage}
+            </p>
+          )
+        }
+      >
         <Button onClick={handleSave} disabled={isSaving}>
           {isSaving ? "Saving..." : "Save preferences"}
         </Button>
-        {saveMessage && (
-          <p
-            className={`text-sm ${
-              saveMessage.includes("success")
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
-            }`}
-          >
-            {saveMessage}
-          </p>
-        )}
-      </div>
+      </SettingsActionBar>
     </div>
   );
 }

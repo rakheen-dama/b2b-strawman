@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { Bot, Check, Copy, ShieldCheck } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Separator } from "@b2mash/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { IntegrationSectionTitle } from "@/components/integrations/integration-section-title";
 import {
   Dialog,
   DialogContent,
@@ -116,157 +117,156 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <Bot className="size-5 text-slate-600 dark:text-slate-400" />
-            </div>
-            <CardTitle className="font-display text-lg">Claude / MCP Connector</CardTitle>
-          </div>
-          {enabled ? (
+    <>
+      <SettingsSection
+        title={<IntegrationSectionTitle icon={Bot}>Claude / MCP Connector</IntegrationSectionTitle>}
+        description={
+          <>
+            Let your firm&apos;s own Claude (Desktop or Code) securely read your Kazi matters,
+            clients, and documents over the Model Context Protocol.
+          </>
+        }
+        actions={
+          enabled ? (
             <Badge variant="success">Enabled</Badge>
           ) : (
             <Badge variant="neutral">Disabled</Badge>
+          )
+        }
+      >
+        <div className="space-y-6">
+          {error && (
+            <p className="text-destructive text-sm" role="alert">
+              {error}
+            </p>
           )}
-        </div>
-        <CardDescription>
-          Let your firm&apos;s own Claude (Desktop or Code) securely read your Kazi matters,
-          clients, and documents over the Model Context Protocol.
-        </CardDescription>
-      </CardHeader>
 
-      <CardContent className="space-y-6">
-        {error && (
-          <p className="text-destructive text-sm" role="alert">
-            {error}
-          </p>
-        )}
-
-        {/* Enablement toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {enabled ? "Connector enabled" : "Connector disabled"}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {enabled
-                ? "Client data can flow into your external AI context."
-                : "Enable to acknowledge POPIA responsibility and connect Claude."}
-            </p>
-          </div>
-          <Switch
-            aria-label="Enabled"
-            checked={enabled}
-            onCheckedChange={handleToggle}
-            disabled={isPending}
-          />
-        </div>
-
-        {enabled && (
-          <>
-            <Separator />
-
-            {/* Server URL */}
-            <div className="space-y-2">
+          {/* Enablement toggle */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                MCP server URL
+                {enabled ? "Connector enabled" : "Connector disabled"}
               </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-md bg-slate-100 px-3 py-2 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                  {serverUrl}
-                </code>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  aria-label="Copy server URL"
-                  onClick={() => handleCopy("url", serverUrl)}
-                >
-                  {copied === "url" ? <Check className="size-4" /> : <Copy className="size-4" />}
-                </Button>
-              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {enabled
+                  ? "Client data can flow into your external AI context."
+                  : "Enable to acknowledge POPIA responsibility and connect Claude."}
+              </p>
             </div>
+            <Switch
+              aria-label="Enabled"
+              checked={enabled}
+              onCheckedChange={handleToggle}
+              disabled={isPending}
+            />
+          </div>
 
-            {/* Connection instructions */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Connect from Claude Desktop or Claude Code
-              </p>
-              <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-400">
-                <li>Open Claude Desktop settings (or your Claude Code config).</li>
-                <li>Add a new MCP server using the URL above.</li>
-                <li>
-                  Complete the OAuth sign-in flow when prompted — Claude authenticates against your
-                  Kazi organization before any data is read.
-                </li>
-              </ol>
+          {enabled && (
+            <>
+              <Separator />
+
+              {/* Server URL */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Config snippet
-                  </p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  MCP server URL
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate rounded-md bg-slate-100 px-3 py-2 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                    {serverUrl}
+                  </code>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label="Copy config snippet"
-                    onClick={() => handleCopy("snippet", configSnippet)}
+                    aria-label="Copy server URL"
+                    onClick={() => handleCopy("url", serverUrl)}
                   >
-                    {copied === "snippet" ? (
-                      <>
-                        <Check className="mr-2 size-4" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="mr-2 size-4" />
-                        Copy
-                      </>
-                    )}
+                    {copied === "url" ? <Check className="size-4" /> : <Copy className="size-4" />}
                   </Button>
                 </div>
-                <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                  {configSnippet}
-                </pre>
               </div>
-            </div>
 
-            {/* Consent metadata */}
-            {consent?.granted && (
-              <>
-                <Separator />
-                <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                  <p className="font-medium text-slate-700 dark:text-slate-300">POPIA consent</p>
-                  {consent.version && (
-                    <p>
-                      Version: <span className="font-mono">{consent.version}</span>
+              {/* Connection instructions */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Connect from Claude Desktop or Claude Code
+                </p>
+                <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-400">
+                  <li>Open Claude Desktop settings (or your Claude Code config).</li>
+                  <li>Add a new MCP server using the URL above.</li>
+                  <li>
+                    Complete the OAuth sign-in flow when prompted — Claude authenticates against
+                    your Kazi organization before any data is read.
+                  </li>
+                </ol>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Config snippet
                     </p>
-                  )}
-                  {consent.consentedBy && <p>Acknowledged by: {consent.consentedBy}</p>}
-                  {consent.consentedAt && (
-                    <p>Acknowledged on: {formatDateTime(consent.consentedAt)}</p>
-                  )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      aria-label="Copy config snippet"
+                      onClick={() => handleCopy("snippet", configSnippet)}
+                    >
+                      {copied === "snippet" ? (
+                        <>
+                          <Check className="mr-2 size-4" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="mr-2 size-4" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <pre className="overflow-x-auto rounded-md bg-slate-100 p-3 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                    {configSnippet}
+                  </pre>
                 </div>
-              </>
-            )}
+              </div>
 
-            {/* Revoke control */}
-            <div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setRevokeOpen(true)}
-                className="text-destructive hover:text-destructive"
-              >
-                Revoke access
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
+              {/* Consent metadata */}
+              {consent?.granted && (
+                <>
+                  <Separator />
+                  <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                    <p className="font-medium text-slate-700 dark:text-slate-300">POPIA consent</p>
+                    {consent.version && (
+                      <p>
+                        Version: <span className="font-mono">{consent.version}</span>
+                      </p>
+                    )}
+                    {consent.consentedBy && <p>Acknowledged by: {consent.consentedBy}</p>}
+                    {consent.consentedAt && (
+                      <p>Acknowledged on: {formatDateTime(consent.consentedAt)}</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </SettingsSection>
+
+      {/* Revoke control: its own untitled destructive section (DA-10; no new words). */}
+      {enabled && (
+        <SettingsSection variant="destructive">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setRevokeOpen(true)}
+            className="text-destructive hover:text-destructive dark:text-destructive"
+          >
+            Revoke access
+          </Button>
+        </SettingsSection>
+      )}
 
       {/* POPIA consent acknowledgement modal (controlled — no asChild trigger) */}
       <Dialog
@@ -363,6 +363,6 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </>
   );
 }

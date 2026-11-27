@@ -2,23 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@b2mash/ui/badge";
-import { Button } from "@b2mash/ui/button";
-import { ChevronLeft, ChevronRight, Activity } from "lucide-react";
+import { Activity } from "lucide-react";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { StatusBadgeCell } from "@/components/data-table/cells";
+import { EmptyState } from "@/components/empty-state";
 import type { AiExecutionListItem } from "@/lib/api/ai";
-import { formatCurrencyFromCents } from "@/lib/format";
+import { formatCurrencyFromCents, formatDateInSA } from "@/lib/format";
 
 interface ExecutionHistoryClientProps {
   slug: string;
   executions: AiExecutionListItem[];
+  /** Zero-based, as in the URL's `?page=`. */
   currentPage: number;
   totalPages: number;
   totalElements: number;
@@ -49,6 +44,65 @@ function formatSkillId(skillId: string): string {
   return skillId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// No handlers or render-time state in the cells, so the columns are a module constant.
+const COLUMNS = defineColumns<AiExecutionListItem>([
+  {
+    id: "date",
+    meta: {
+      label: "Date",
+      cellClassName: "text-muted-foreground font-mono text-xs tabular-nums",
+    },
+    cell: ({ row }) => formatDateInSA(row.original.createdAt),
+  },
+  {
+    id: "skill",
+    meta: { label: "Skill", cellClassName: "text-foreground text-sm font-medium" },
+    cell: ({ row }) => formatSkillId(row.original.skillId),
+  },
+  {
+    id: "target",
+    meta: { label: "Target", cellClassName: "text-muted-foreground text-xs" },
+    cell: ({ row }) => row.original.entityType,
+  },
+  {
+    id: "status",
+    meta: { label: "Status" },
+    cell: ({ row }) => (
+      <StatusBadgeCell
+        label={row.original.status}
+        variant={getStatusVariant(row.original.status)}
+      />
+    ),
+  },
+  {
+    id: "cost",
+    meta: { label: "Cost", align: "end", cellClassName: "font-mono text-xs tabular-nums" },
+    cell: ({ row }) => formatCurrencyFromCents(row.original.costCents),
+  },
+  {
+    id: "tokens",
+    meta: {
+      label: "Tokens",
+      align: "end",
+      cellClassName: "text-muted-foreground font-mono text-xs tabular-nums",
+    },
+    cell: ({ row }) => (row.original.inputTokens + row.original.outputTokens).toLocaleString(),
+  },
+  {
+    id: "duration",
+    meta: {
+      label: "Duration",
+      align: "end",
+      cellClassName: "text-muted-foreground font-mono text-xs tabular-nums",
+    },
+    cell: ({ row }) => formatDuration(row.original.durationMs),
+  },
+]);
+
+/**
+ * AI execution history (665F): server-paged DataTable, callback-owned (ADR-395) — the pager calls
+ * `navigate`, which keeps today's `router.push` inside `startTransition`.
+ */
 export function ExecutionHistoryClient({
   slug,
   executions,
@@ -72,97 +126,31 @@ export function ExecutionHistoryClient({
     });
   }
 
-  if (executions.length === 0 && currentPage === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 px-6 py-12 text-center dark:border-slate-800">
-        <Activity className="mb-3 size-10 text-slate-300 dark:text-slate-600" />
-        <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-          No executions yet
-        </h3>
-        <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-          AI skill executions will appear here once skills are run. Configure your AI profile and
-          execute a skill to get started.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Skill</TableHead>
-              <TableHead>Target</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Cost</TableHead>
-              <TableHead className="text-right">Tokens</TableHead>
-              <TableHead className="text-right">Duration</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {executions.map((exec) => (
-              <TableRow key={exec.id} className={isPending ? "opacity-60" : undefined}>
-                <TableCell className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                  {new Date(exec.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {formatSkillId(exec.skillId)}
-                </TableCell>
-                <TableCell className="text-xs text-slate-500 dark:text-slate-400">
-                  {exec.entityType}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(exec.status)}>{exec.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs tabular-nums">
-                  {formatCurrencyFromCents(exec.costCents)}
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                  {(exec.inputTokens + exec.outputTokens).toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                  {formatDuration(exec.durationMs)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {totalElements} execution{totalElements !== 1 ? "s" : ""} total
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Previous page"
-              disabled={currentPage === 0 || isPending}
-              onClick={() => navigate(currentPage - 1)}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Next page"
-              disabled={currentPage >= totalPages - 1 || isPending}
-              onClick={() => navigate(currentPage + 1)}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+    // The rows dim while a page change is pending, as before (the kit pager has no pending prop).
+    <div aria-busy={isPending || undefined} className={isPending ? "opacity-60" : undefined}>
+      <DataTable
+        columns={COLUMNS}
+        data={executions}
+        getRowId={(exec) => exec.id}
+        pagination={{ pageIndex: currentPage, pageCount: totalPages, onPageChange: navigate }}
+        stickyHeader={false}
+        footer={
+          totalPages > 1 ? (
+            <p className="text-muted-foreground text-xs">
+              {totalElements} execution{totalElements !== 1 ? "s" : ""} total
+            </p>
+          ) : undefined
+        }
+        empty={
+          <EmptyState
+            variant="default"
+            icon={Activity}
+            title="No executions yet"
+            description="AI skill executions will appear here once skills are run. Configure your AI profile and execute a skill to get started."
+          />
+        }
+      />
     </div>
   );
 }

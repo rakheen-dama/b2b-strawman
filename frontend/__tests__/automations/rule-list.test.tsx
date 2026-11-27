@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { act, cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { RuleList } from "@/components/automations/rule-list";
 import type { AutomationRuleResponse } from "@/lib/api/automations";
 
@@ -104,6 +104,25 @@ describe("RuleList", () => {
     render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
     fireEvent.click(screen.getByLabelText("Toggle Auto-assign tasks"));
     expect(mockToggleRule).toHaveBeenCalledWith("acme", "rule-1");
+  });
+
+  // 665F: the columns keep their identity, so a toggle re-renders the Switch in place (no remount).
+  it("keeps the same Switch element while a toggle is pending and after it settles", async () => {
+    let settle!: (result: { success: boolean }) => void;
+    mockToggleRule.mockImplementationOnce(
+      () => new Promise<{ success: boolean }>((resolve) => (settle = resolve))
+    );
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
+    const toggle = screen.getByRole("switch", { name: "Toggle Auto-assign tasks" });
+
+    fireEvent.click(toggle);
+    await waitFor(() => expect(toggle).toBeDisabled());
+    expect(screen.getByRole("switch", { name: "Toggle Auto-assign tasks" })).toBe(toggle);
+
+    await act(async () => settle({ success: true }));
+    await waitFor(() => expect(toggle).toBeEnabled());
+    expect(mockToggleRule).toHaveBeenCalledWith("acme", "rule-1");
+    expect(screen.getByRole("switch", { name: "Toggle Auto-assign tasks" })).toBe(toggle);
   });
 
   it("disables toggles for non-managers", () => {

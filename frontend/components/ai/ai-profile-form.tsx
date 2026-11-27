@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SettingsActionBar, SettingsSection } from "@/components/settings/settings-section";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@b2mash/ui/label";
@@ -191,19 +192,17 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
         {/* Practice Areas */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Practice Areas
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Define your firm&apos;s primary practice areas for tailored AI responses.
-          </p>
-
+        <SettingsSection
+          title="Practice Areas"
+          description={
+            <>Define your firm&apos;s primary practice areas for tailored AI responses.</>
+          }
+        >
           <FormField
             control={form.control}
             name="practiceAreas"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormControl>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
@@ -266,20 +265,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* Jurisdiction */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Jurisdiction</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Select the primary jurisdiction for regulatory and compliance context.
-          </p>
-
+        <SettingsSection
+          title="Jurisdiction"
+          description="Select the primary jurisdiction for regulatory and compliance context."
+        >
           <FormField
             control={form.control}
             name="jurisdiction"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormLabel>Province</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -299,22 +296,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* Risk Calibration */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Risk Calibration
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Set how conservatively the AI interprets legal requirements and risk.
-          </p>
-
+        <SettingsSection
+          title="Risk Calibration"
+          description="Set how conservatively the AI interprets legal requirements and risk."
+        >
           <FormField
             control={form.control}
             name="riskCalibration"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -340,22 +333,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* House Style Notes */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            House Style Notes
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Firm-specific writing and drafting guidelines for AI-generated content.
-          </p>
-
+        <SettingsSection
+          title="House Style Notes"
+          description="Firm-specific writing and drafting guidelines for AI-generated content."
+        >
           <FormField
             control={form.control}
             name="houseStyleNotes"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormControl>
                   <Textarea
                     {...field}
@@ -373,18 +362,14 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* FICA Requirements */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            FICA Requirements
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Configure Know Your Client (KYC) and anti-money laundering preferences.
-          </p>
-
-          <div className="mt-4 space-y-3">
+        <SettingsSection
+          title="FICA Requirements"
+          description="Configure Know Your Client (KYC) and anti-money laundering preferences."
+        >
+          <div className="space-y-3">
             <FormField
               control={form.control}
               name="ficaRequirements.enhancedDueDiligence"
@@ -439,22 +424,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               )}
             />
           </div>
-        </div>
+        </SettingsSection>
 
         {/* Fee Estimation Notes */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Fee Estimation Notes
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Guidance for AI when generating fee estimates and cost projections.
-          </p>
-
+        <SettingsSection
+          title="Fee Estimation Notes"
+          description="Guidance for AI when generating fee estimates and cost projections."
+        >
           <FormField
             control={form.control}
             name="feeEstimationNotes"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormControl>
                   <Textarea
                     {...field}
@@ -472,22 +453,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* Model Preference */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Model Preference
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Choose the default AI model for your firm&apos;s invocations.
-          </p>
-
+        <SettingsSection
+          title="Model Preference"
+          description={<>Choose the default AI model for your firm&apos;s invocations.</>}
+        >
           <FormField
             control={form.control}
             name="preferredModel"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -516,22 +493,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
         {/* Monthly Budget */}
-        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Monthly Budget
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Set an optional monthly spending limit for AI invocations. Leave empty for unlimited.
-          </p>
-
+        <SettingsSection
+          title="Monthly Budget"
+          description="Set an optional monthly spending limit for AI invocations. Leave empty for unlimited."
+        >
           <FormField
             control={form.control}
             name="monthlyBudgetCents"
             render={({ field }) => (
-              <FormItem className="mt-4">
+              <FormItem>
                 <FormLabel>Budget (ZAR)</FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -586,22 +559,21 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
               </FormItem>
             )}
           />
-        </div>
+        </SettingsSection>
 
-        {/* Submit */}
-        <div className="flex items-center gap-3">
+        {/* Submit: one save for all the sections above = page-level bar, inside the <form> (DA-12) */}
+        <SettingsActionBar
+          status={
+            message && (
+              <p className={isError ? "text-destructive" : "text-success-foreground"}>{message}</p>
+            )
+          }
+        >
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
             {initialData.coldStartCompleted ? "Save Configuration" : "Complete Setup"}
           </Button>
-          {message && (
-            <p
-              className={`text-sm ${isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
-            >
-              {message}
-            </p>
-          )}
-        </div>
+        </SettingsActionBar>
       </form>
     </Form>
   );

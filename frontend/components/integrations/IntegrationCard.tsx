@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { SettingsSection } from "@/components/settings/settings-section";
+import { IntegrationSectionTitle } from "@/components/integrations/integration-section-title";
 import {
   Select,
   SelectContent,
@@ -167,20 +168,12 @@ export function IntegrationCard({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <Icon className="size-5 text-slate-600 dark:text-slate-400" />
-            </div>
-            <CardTitle className="font-display text-lg">{label}</CardTitle>
-          </div>
-          {getStatusBadge()}
-        </div>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SettingsSection
+      title={<IntegrationSectionTitle icon={Icon}>{label}</IntegrationSectionTitle>}
+      description={description}
+      actions={getStatusBadge()}
+    >
+      <div className="space-y-4">
         {error && (
           <p className="text-destructive text-sm" role="alert">
             {error}
@@ -239,7 +232,7 @@ export function IntegrationCard({
                     size="sm"
                     onClick={handleDeleteKey}
                     disabled={isDeletingKey}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive hover:text-destructive dark:text-destructive"
                   >
                     {isDeletingKey ? "Removing..." : "Remove Key"}
                   </Button>
@@ -306,7 +299,7 @@ export function IntegrationCard({
         {hasProvider && isEnabled && (
           <ConnectionTestButton slug={slug} domain={domain} disabled={!isEnabled || !hasKey} />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }

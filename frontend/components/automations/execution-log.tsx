@@ -1,14 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+import { useMemo, useState, useTransition } from "react";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import {
   Select,
   SelectContent,
@@ -18,7 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@b2mash/ui/button";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
-import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
+import {
+  TriggerTypeBadge,
+  triggerTypeFromEvent,
+} from "@/components/automations/trigger-type-badge";
 import { ExecutionDetail } from "@/components/automations/execution-detail";
 import { computeDuration } from "@/lib/format";
 import { RelativeDate } from "@/components/ui/relative-date";
@@ -30,6 +27,87 @@ import type {
   TriggerType,
   PaginatedResponse,
 } from "@/lib/api/automations";
+
+/**
+ * The table columns. The detail Sheet opens from a button in the Rule cell (or, when the Rule column
+ * is hidden, the Triggered At cell): DataTable has no row-click callback (only `rowHref`), so the
+ * opener is a real button — the keyboard path the old clickable `<tr>` never had (DA-15).
+ */
+function executionColumns(
+  showRule: boolean,
+  onOpen: (execution: AutomationExecutionResponse) => void
+) {
+  return defineColumns<AutomationExecutionResponse>([
+    ...(showRule
+      ? defineColumns<AutomationExecutionResponse>([
+          {
+            id: "rule",
+            enableHiding: false,
+            meta: { label: "Rule", cellClassName: "whitespace-normal" },
+            cell: ({ row }) => (
+              <button
+                type="button"
+                className="text-left font-medium hover:underline"
+                onClick={() => onOpen(row.original)}
+              >
+                {row.original.ruleName}
+              </button>
+            ),
+          },
+        ])
+      : []),
+    {
+      id: "trigger",
+      meta: { label: "Trigger" },
+      cell: ({ row }) => (
+        <TriggerTypeBadge
+          triggerType={triggerTypeFromEvent(row.original.triggerEventType) as TriggerType}
+        />
+      ),
+    },
+    {
+      id: "triggeredAt",
+      meta: { label: "Triggered At", cellClassName: "text-muted-foreground text-sm" },
+      cell: ({ row }) =>
+        showRule ? (
+          <RelativeDate iso={row.original.startedAt} />
+        ) : (
+          <button
+            type="button"
+            className="text-left hover:underline"
+            onClick={() => onOpen(row.original)}
+          >
+            <RelativeDate iso={row.original.startedAt} />
+          </button>
+        ),
+    },
+    {
+      id: "status",
+      meta: { label: "Status" },
+      cell: ({ row }) => <ExecutionStatusBadge status={row.original.status} />,
+    },
+    {
+      id: "conditions",
+      meta: { label: "Conditions" },
+      cell: ({ row }) =>
+        row.original.conditionsMet ? (
+          <Check className="size-4 text-emerald-600" />
+        ) : (
+          <X className="size-4 text-red-500" />
+        ),
+    },
+    {
+      id: "actions",
+      meta: { label: "Actions", cellClassName: "font-mono text-sm tabular-nums" },
+      cell: ({ row }) => row.original.actionExecutions.length,
+    },
+    {
+      id: "duration",
+      meta: { label: "Duration", cellClassName: "font-mono text-sm tabular-nums" },
+      cell: ({ row }) => computeDuration(row.original.startedAt, row.original.completedAt),
+    },
+  ]);
+}
 
 interface ExecutionLogProps {
   initialExecutions: PaginatedResponse<AutomationExecutionResponse>;
@@ -105,111 +183,88 @@ export function ExecutionLog({ initialExecutions, ruleId, rules }: ExecutionLogP
     });
   }
 
-  function handleRowClick(execution: AutomationExecutionResponse) {
-    setSelectedExecution(execution);
-    setDetailOpen(true);
-  }
+  // Memoised once per `ruleId`: TanStack renders each cell as a component, so a new column array
+  // would remount every cell. The opener only calls state setters, which are stable.
+  const columns = useMemo(
+    () =>
+      executionColumns(!ruleId, (execution) => {
+        setSelectedExecution(execution);
+        setDetailOpen(true);
+      }),
+    [ruleId]
+  );
 
   const items = executions.content;
   const totalPages = executions.page.totalPages;
 
-  return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center gap-3">
-        {!ruleId && rules && rules.length > 0 && (
-          <Select value={ruleFilter} onValueChange={handleRuleChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="All Rules" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Rules</SelectItem>
-              {rules.map((r) => (
-                <SelectItem key={r.id} value={r.id}>
-                  {r.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <Select value={statusFilter} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All Statuses" />
+  const filters = (
+    <>
+      {!ruleId && rules && rules.length > 0 && (
+        <Select value={ruleFilter} onValueChange={handleRuleChange}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="All Rules" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="TRIGGERED">Running</SelectItem>
-            <SelectItem value="ACTIONS_COMPLETED">Completed</SelectItem>
-            <SelectItem value="ACTIONS_FAILED">Failed</SelectItem>
-            <SelectItem value="CONDITIONS_NOT_MET">Skipped</SelectItem>
+            <SelectItem value="all">All Rules</SelectItem>
+            {rules.map((r) => (
+              <SelectItem key={r.id} value={r.id}>
+                {r.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" onClick={() => handleRefresh()} disabled={isPending}>
-          <RefreshCw className={`mr-1 size-4 ${isPending ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
-      </div>
-
-      {/* Table */}
-      {items.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500 italic dark:text-slate-400">
-          No executions found.
-        </p>
-      ) : (
-        <div className="rounded-md border border-slate-200 dark:border-slate-700">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {!ruleId && <TableHead>Rule</TableHead>}
-                <TableHead>Trigger</TableHead>
-                <TableHead>Triggered At</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Conditions</TableHead>
-                <TableHead>Actions</TableHead>
-                <TableHead>Duration</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((execution) => (
-                <TableRow
-                  key={execution.id}
-                  className="cursor-pointer"
-                  onClick={() => handleRowClick(execution)}
-                >
-                  {!ruleId && <TableCell className="font-medium">{execution.ruleName}</TableCell>}
-                  <TableCell>
-                    <TriggerTypeBadge triggerType={execution.triggerEventType as TriggerType} />
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-600 dark:text-slate-400">
-                    <RelativeDate iso={execution.startedAt} />
-                  </TableCell>
-                  <TableCell>
-                    <ExecutionStatusBadge status={execution.status} />
-                  </TableCell>
-                  <TableCell>
-                    {execution.conditionsMet ? (
-                      <Check className="size-4 text-emerald-600" />
-                    ) : (
-                      <X className="size-4 text-red-500" />
-                    )}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
-                    {execution.actionExecutions.length}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm tabular-nums">
-                    {computeDuration(execution.startedAt, execution.completedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
       )}
+      <Select value={statusFilter} onValueChange={handleStatusChange}>
+        <SelectTrigger className="w-[160px]">
+          <SelectValue placeholder="All Statuses" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Statuses</SelectItem>
+          <SelectItem value="TRIGGERED">Running</SelectItem>
+          <SelectItem value="ACTIONS_COMPLETED">Completed</SelectItem>
+          <SelectItem value="ACTIONS_FAILED">Failed</SelectItem>
+          <SelectItem value="CONDITIONS_NOT_MET">Skipped</SelectItem>
+        </SelectContent>
+      </Select>
+    </>
+  );
 
-      {/* Pagination */}
+  return (
+    <div className="space-y-4">
+      {/* Client-mode rows of the current server page; filters/Refresh in the toolbar. */}
+      <DataTable
+        columns={columns}
+        data={items}
+        getRowId={(execution) => execution.id}
+        toolbar={{
+          filters,
+          actions: (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleRefresh()}
+              disabled={isPending}
+            >
+              <RefreshCw className={`mr-1 size-4 ${isPending ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          ),
+        }}
+        pageSize={null}
+        columnVisibility={false}
+        stickyHeader={false}
+        empty={
+          <p className="text-muted-foreground py-8 text-center text-sm italic">
+            No executions found.
+          </p>
+        }
+      />
+
+      {/* Pagination — kept hand-rolled: the kit pager has no slot for "({total} total)"
+          (F-665E-12 kit gap; COPY-FREEZE). */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-muted-foreground text-sm">
             Page {currentPage + 1} of {totalPages} ({executions.page.totalElements} total)
           </p>
           <div className="flex gap-2">

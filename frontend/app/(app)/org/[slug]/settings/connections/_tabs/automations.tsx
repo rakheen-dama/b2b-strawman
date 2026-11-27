@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listRules } from "@/lib/api/automations";
 import { RuleList } from "@/components/automations/rule-list";
@@ -16,8 +17,8 @@ export async function renderAutomationsTab({ slug }: SettingsTabProps) {
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("AUTOMATIONS")) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Automations</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <PageHeader title="Automations" />
+        <p className="text-muted-foreground text-sm">
           You do not have permission to view automation rules.
         </p>
       </div>
@@ -36,20 +37,19 @@ export async function renderAutomationsTab({ slug }: SettingsTabProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Automations</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Enable or disable the automation rules installed with your practice packs.
-        </p>
+      <PageHeader
+        title="Automations"
+        description="Enable or disable the automation rules installed with your practice packs."
+      >
         {isAdmin && (
           <Link
             href={`/org/${slug}/settings/connections/automations/executions`}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+            className="inline-flex items-center gap-1 text-sm text-(--button-accent) underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
           >
             View Execution Log &rarr;
           </Link>
         )}
-      </div>
+      </PageHeader>
 
       <RuleList slug={slug} rules={rules} canManage={isAdmin} />
     </div>

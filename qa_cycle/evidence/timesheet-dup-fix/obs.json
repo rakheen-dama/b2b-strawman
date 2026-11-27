@@ -1,0 +1,545 @@
+{
+  "at": "2026-11-27T15:32:40.600Z",
+  "week": {
+    "MON": "2026-11-23",
+    "SUN": "2026-11-29"
+  },
+  "steps": [
+    {
+      "step": "claimed \"Time Task 2q8r\" on Time Test Project 2q8r via the Tasks tab Claim button"
+    },
+    {
+      "step": "save 01-mon-1h",
+      "saveEnabledBeforeClick": true,
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "alert": null,
+      "valuesAfterSave": [
+        "1",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "saveDisabledAfter": true,
+      "entries": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "reload after-01",
+      "values": [
+        "1",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "dailyTotal": "Daily Total 1h — — — — — — 1h",
+      "saveDisabled": true
+    },
+    {
+      "step": "save 02-tue-0.5h",
+      "saveEnabledBeforeClick": true,
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "alert": null,
+      "valuesAfterSave": [
+        "1",
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "saveDisabledAfter": true,
+      "entries": [
+        {
+          "id": "9216cea3-656f-4ba8-86c7-b625cd509721",
+          "date": "2026-11-24",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "reload after-02",
+      "values": [
+        "1",
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "dailyTotal": "Daily Total 1h 0.5h — — — — — 1.5h",
+      "saveDisabled": true
+    },
+    {
+      "step": "save 03-mon-to-0.5h",
+      "saveEnabledBeforeClick": true,
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "alert": null,
+      "valuesAfterSave": [
+        "0.5",
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "saveDisabledAfter": true,
+      "entries": [
+        {
+          "id": "9216cea3-656f-4ba8-86c7-b625cd509721",
+          "date": "2026-11-24",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "reload after-03",
+      "values": [
+        "0.5",
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "dailyTotal": "Daily Total 0.5h 0.5h — — — — — 1h",
+      "saveDisabled": true
+    },
+    {
+      "step": "save 04-clear-tue",
+      "saveEnabledBeforeClick": true,
+      "toasts": [
+        "Saved 1 change"
+      ],
+      "alert": null,
+      "valuesAfterSave": [
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "saveDisabledAfter": true,
+      "entries": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "log time dialog: second Mon entry 1h",
+      "entries": [
+        {
+          "id": "c992fc3b-3cf0-4ddb-8c10-50af3f89152b",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": "OBS F-668A-R1 second Monday entry"
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "reload after-05",
+      "values": [
+        "1.5",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "dailyTotal": "Daily Total 1.5h — — — — — — 1.5h",
+      "saveDisabled": true
+    },
+    {
+      "step": "save 06-multi-entry-refused",
+      "saveEnabledBeforeClick": true,
+      "toasts": [
+        "Saved 1 change, 1 not saved Mon 23 · Time Task 2q8r: this day has 2 time entries, so the timesheet can’t reduce it. Change it from the matter’s Time tab."
+      ],
+      "alert": "Not saved Mon 23 · Time Task 2q8r: this day has 2 time entries, so the timesheet can’t reduce it. Change it from the matter’s Time tab.",
+      "valuesAfterSave": [
+        "1.5",
+        "",
+        "0.25",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "saveDisabledAfter": true,
+      "entries": [
+        {
+          "id": "e17ccd77-8ff7-4c10-a09e-30866de221d8",
+          "date": "2026-11-25",
+          "minutes": 15,
+          "billable": true,
+          "description": null
+        },
+        {
+          "id": "c992fc3b-3cf0-4ddb-8c10-50af3f89152b",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": "OBS F-668A-R1 second Monday entry"
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "step": "reload final",
+      "values": [
+        "1.5",
+        "",
+        "0.25",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "dailyTotal": "Daily Total 1.5h — 0.25h — — — — 1.75h",
+      "saveDisabled": true
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "1: one Mon entry of 60",
+      "ok": true,
+      "detail": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "2: still exactly one Mon entry of 60 (no duplicate)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "2: one Tue entry of 30",
+      "ok": true,
+      "detail": [
+        {
+          "id": "9216cea3-656f-4ba8-86c7-b625cd509721",
+          "date": "2026-11-24",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "2: toast says 1 change",
+      "ok": true,
+      "detail": [
+        "Saved 1 change"
+      ]
+    },
+    {
+      "name": "2: reload shows Mon 1, Tue 0.5",
+      "ok": true,
+      "detail": [
+        "1",
+        "0.5",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "3: Mon is the same entry id, now 30",
+      "ok": true,
+      "detail": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "4: Tue has no entries",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "4: Mon unchanged (1 × 30)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "5: Mon now has 2 entries (30 + 60)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "c992fc3b-3cf0-4ddb-8c10-50af3f89152b",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": "OBS F-668A-R1 second Monday entry"
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "6: timesheet shows Mon 1.5",
+      "ok": true,
+      "detail": [
+        "1.5",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "6: alert names the day and task and the Time tab",
+      "ok": true,
+      "detail": "Not saved Mon 23 · Time Task 2q8r: this day has 2 time entries, so the timesheet can’t reduce it. Change it from the matter’s Time tab."
+    },
+    {
+      "name": "6: toast warns 1 saved, 1 not saved",
+      "ok": true,
+      "detail": [
+        "Saved 1 change, 1 not saved Mon 23 · Time Task 2q8r: this day has 2 time entries, so the timesheet can’t reduce it. Change it from the matter’s Time tab."
+      ]
+    },
+    {
+      "name": "6: Mon entries unchanged (30 + 60)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "c992fc3b-3cf0-4ddb-8c10-50af3f89152b",
+          "date": "2026-11-23",
+          "minutes": 60,
+          "billable": true,
+          "description": "OBS F-668A-R1 second Monday entry"
+        },
+        {
+          "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+          "date": "2026-11-23",
+          "minutes": 30,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "6: Wed saved (1 × 15)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "e17ccd77-8ff7-4c10-a09e-30866de221d8",
+          "date": "2026-11-25",
+          "minutes": 15,
+          "billable": true,
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "6: grid shows the server values (Mon 1.5, Wed 0.25)",
+      "ok": true,
+      "detail": [
+        "1.5",
+        "",
+        "0.25",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "7: Save disabled after reload (no edits)",
+      "ok": true,
+      "detail": {
+        "step": "reload final",
+        "values": [
+          "1.5",
+          "",
+          "0.25",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "dailyTotal": "Daily Total 1.5h — 0.25h — — — — 1.75h",
+        "saveDisabled": true
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "entriesBeforeAllTasks": [
+    {
+      "id": "01041abb-ce95-4130-bbc5-c461709349e7",
+      "date": "2026-11-27",
+      "minutes": 120,
+      "billable": true,
+      "description": "Drafted and served letter of demand on the Road Accident Fund (mwz506gb3709)"
+    },
+    {
+      "id": "22a278bc-b29b-47f8-a66c-7cf46c268818",
+      "date": "2026-11-27",
+      "minutes": 360,
+      "billable": true,
+      "description": "Preparation of Liquidation & Distribution account"
+    },
+    {
+      "id": "4464f2b3-8930-447c-8204-84cd21c45933",
+      "date": "2026-11-27",
+      "minutes": 60,
+      "billable": true,
+      "description": "Draft combined summons — RAF claim"
+    },
+    {
+      "id": "43131f66-5ca1-4e70-b0e7-9e7a442b6749",
+      "date": "2026-11-27",
+      "minutes": 30,
+      "billable": true,
+      "description": "Scoping call — shareholder agreement (fixed-fee engagement)"
+    },
+    {
+      "id": "6ab59b83-8699-4ccc-96b6-bc27e4ea56c3",
+      "date": "2026-11-27",
+      "minutes": 60,
+      "billable": true,
+      "description": "Report to Master of the High Court — initial filing"
+    }
+  ],
+  "assignedBefore": 0,
+  "task": {
+    "id": "84262f37-3c3f-4e86-8fdb-55056b1c07d6",
+    "title": "Time Task 2q8r",
+    "matterId": "e0b25e6a-aa88-456f-b414-d52623118a28",
+    "matterName": "Time Test Project 2q8r"
+  },
+  "entriesFinal": [
+    {
+      "id": "e17ccd77-8ff7-4c10-a09e-30866de221d8",
+      "date": "2026-11-25",
+      "minutes": 15,
+      "billable": true,
+      "description": null
+    },
+    {
+      "id": "c992fc3b-3cf0-4ddb-8c10-50af3f89152b",
+      "date": "2026-11-23",
+      "minutes": 60,
+      "billable": true,
+      "description": "OBS F-668A-R1 second Monday entry"
+    },
+    {
+      "id": "fc06b228-f673-4380-9ae7-7a8f0e74d55a",
+      "date": "2026-11-23",
+      "minutes": 30,
+      "billable": true,
+      "description": null
+    }
+  ],
+  "totals": {
+    "MON": 90,
+    "TUE": 0,
+    "WED": 15,
+    "entryCount": 3
+  },
+  "pass": true
+}

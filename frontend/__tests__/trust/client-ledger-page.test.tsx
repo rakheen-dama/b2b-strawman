@@ -325,12 +325,14 @@ describe("Client ledger card — server running balance (630C)", () => {
     await renderDetailPage();
 
     const refund = amountSpan("tx-ref");
-    expect(refund.className).not.toContain("text-green-600");
+    expect(refund.className).not.toContain("text-success-foreground");
+    expect(refund).toHaveAttribute("data-direction", "out");
     expect(refund.querySelector(".lucide-arrow-up-right")).not.toBeNull();
     expect(refund.querySelector(".lucide-arrow-down-left")).toBeNull();
 
     const deposit = amountSpan("tx-dep");
-    expect(deposit.className).toContain("text-green-600");
+    expect(deposit.className).toContain("text-success-foreground");
+    expect(deposit).toHaveAttribute("data-direction", "in");
     expect(deposit.querySelector(".lucide-arrow-down-left")).not.toBeNull();
   });
 
@@ -357,7 +359,8 @@ describe("Client ledger card — server running balance (630C)", () => {
     await renderDetailPage();
 
     const reversal = amountSpan("tx-rev");
-    expect(reversal.className).toContain("text-green-600");
+    expect(reversal.className).toContain("text-success-foreground");
+    expect(reversal).toHaveAttribute("data-direction", "in");
     expect(reversal.querySelector(".lucide-arrow-down-left")).not.toBeNull();
     expect(within(screen.getByTestId("history-row-tx-rev")).getByText("Reversal")).toBeVisible();
   });
@@ -432,6 +435,17 @@ describe("Client ledger card — totals reconcile to the balance (G89-F13)", () 
     expect(total("fee-transfers")).toBe(formatCurrency(1150, "ZAR"));
     expect(total("refunds")).toBe(formatCurrency(1000, "ZAR"));
     expect(total("balance")).toBe(formatCurrency(7850, "ZAR"));
+    // F-667A-A1: each tile is a valid dl group — one dt (label) and one dd (amount)
+    for (const group of Array.from(
+      within(summary).getByTestId("ledger-totals-breakdown").children
+    )) {
+      expect(group.tagName).toBe("DIV");
+      expect(group.getAttribute("data-testid")).toMatch(/^ledger-total-/);
+      expect(Array.from(group.children).map((c) => c.tagName)).toEqual(["DT", "DD"]);
+    }
+    expect(screen.getByTestId("ledger-total-balance").querySelector("dt")!.textContent).toBe(
+      "Balance"
+    );
     // Transfer rows are hidden while zero
     expect(screen.queryByTestId("ledger-total-transfers-in")).toBeNull();
     expect(screen.queryByTestId("ledger-total-transfers-out")).toBeNull();

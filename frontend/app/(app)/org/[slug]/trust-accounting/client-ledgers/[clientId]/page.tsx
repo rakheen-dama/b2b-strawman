@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ArrowLeft, Receipt } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
-import { Badge } from "@b2mash/ui/badge";
-import { Button } from "@b2mash/ui/button";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { StatCard } from "@b2mash/ui/stat-card";
 import {
   fetchTrustAccounts,
   fetchTrustTransactionTypes,
@@ -15,10 +15,14 @@ import {
   fetchClientHistory,
   type ClientHistoryPage,
 } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
+import { EmptyState } from "@/components/empty-state";
 import { PrintStatementButton } from "@/components/trust/print-statement-button";
+import { ClientHistoryDataTable } from "@/components/trust/client-history-data-table";
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
-import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { searchParamsToQuery } from "@/lib/search-params-query";
 import {
   offeredTransactionTypes,
   type TrustTransactionStatus,
@@ -28,22 +32,10 @@ import {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-function statusBadgeVariant(
-  status: TrustTransactionStatus
-): "success" | "warning" | "destructive" | "neutral" {
-  switch (status) {
-    case "APPROVED":
-      return "success";
-    case "AWAITING_APPROVAL":
-      return "warning";
-    case "REJECTED":
-      return "destructive";
-    case "RECORDED":
-    case "REVERSED":
-    default:
-      return "neutral";
-  }
-}
+const PILL_CLASS = "rounded-full px-3 py-1 text-sm transition-colors";
+const PILL_ACTIVE = "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900";
+const PILL_IDLE =
+  "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700";
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [
   "RECORDED",
@@ -158,13 +150,14 @@ export default async function ClientDetailPage({
 
   const types = await typesPromise;
 
-  const currentPage = historyPage?.pageNumber ?? 0;
-  const totalPages = historyPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
   // 648E: held for the client in section 86(4) investments placed from this account
   const invested = ledgerCard.investedBalance;
+  const basePath = `/org/${slug}/trust-accounting/client-ledgers/${clientId}`;
+  // Every string param, in the URL's order: the pager keeps them all and sets `page` (DA-8).
+  const query = searchParamsToQuery(search);
 
-  // Build filter URL helper
+  // Build filter URL helper (filter links drop `page`)
   function filterUrl(overrides: Record<string, string | undefined>): string {
     const newParams = new URLSearchParams();
     const merged = { ...search, ...overrides };
@@ -172,93 +165,18 @@ export default async function ClientDetailPage({
       if (value && key !== "page") newParams.set(key, value);
     }
     const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/client-ledgers/${clientId}${qs ? `?${qs}` : ""}`;
+    return `${basePath}${qs ? `?${qs}` : ""}`;
   }
 
-  function pageUrl(page: number): string {
-    const newParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(search)) {
-      if (value) newParams.set(key, value);
-    }
-    newParams.set("page", String(page));
-    const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/client-ledgers/${clientId}?${qs}`;
-  }
-
-  return (
-    <div className="space-y-8" data-testid="client-detail-page">
-      {/* Back link + Header */}
-      <div>
-        <Link
-          href={`/org/${slug}/trust-accounting/client-ledgers`}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          data-testid="back-link"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Client Ledgers
-        </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {ledgerCard.clientName}
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Client ledger detail and transaction history
-        </p>
-      </div>
-
-      {/* Summary: the balance and the posted totals that make it up (G89-F13) */}
-      <div className="grid gap-4 md:grid-cols-3" data-testid="client-summary">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Trust Balance</p>
-            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledgerCard.balance, currency)}
-            </p>
-            {/* 648E (ADR-379 L7): money invested for the client stays theirs — show it beside the
-                general balance with the unchanged total; the breakdown carries the figures */}
-            {invested !== 0 && (
-              <p
-                className="mt-1 text-sm text-slate-600 dark:text-slate-400"
-                data-testid="client-summary-invested"
-              >
-                Plus {formatCurrency(invested, currency)} invested (section 86(4)) —{" "}
-                {formatCurrency(ledgerCard.balance + invested, currency)} held in trust in total
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardContent className="pt-6">
-            <p className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-              Ledger totals
-            </p>
-            <LedgerTotalsBreakdown ledger={ledgerCard} currency={currency} />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Print Statement */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Statement</CardTitle>
-          <CardDescription>
-            Select a date range and generate a PDF statement for this client
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PrintStatementButton accountId={accountId} customerId={clientId} />
-        </CardContent>
-      </Card>
-
-      {/* Status Filter Pills */}
+  // Status pills, type pills and the date filters: the table's toolbar, or on their own above the
+  // error when the read failed (a bad filter must stay fixable).
+  const filters = (
+    <div className="w-full space-y-3">
       <div className="flex flex-wrap items-center gap-3" data-testid="status-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Status:</span>
+        <span className="text-muted-foreground text-sm font-medium">Status:</span>
         <Link
           href={filterUrl({ status: undefined })}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !search.status
-              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          }`}
+          className={cn(PILL_CLASS, !search.status ? PILL_ACTIVE : PILL_IDLE)}
         >
           All
         </Link>
@@ -266,11 +184,7 @@ export default async function ClientDetailPage({
           <Link
             key={status}
             href={filterUrl({ status })}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.status === status
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+            className={cn(PILL_CLASS, search.status === status ? PILL_ACTIVE : PILL_IDLE)}
           >
             {status === "AWAITING_APPROVAL"
               ? "Awaiting Approval"
@@ -279,16 +193,11 @@ export default async function ClientDetailPage({
         ))}
       </div>
 
-      {/* Type Filter Pills */}
       <div className="flex flex-wrap items-center gap-3" data-testid="type-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Type:</span>
+        <span className="text-muted-foreground text-sm font-medium">Type:</span>
         <Link
           href={filterUrl({ type: undefined })}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !search.type
-              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          }`}
+          className={cn(PILL_CLASS, !search.type ? PILL_ACTIVE : PILL_IDLE)}
         >
           All
         </Link>
@@ -296,11 +205,7 @@ export default async function ClientDetailPage({
           <Link
             key={t.code}
             href={filterUrl({ type: t.code })}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.type === t.code
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+            className={cn(PILL_CLASS, search.type === t.code ? PILL_ACTIVE : PILL_IDLE)}
           >
             {t.label}
           </Link>
@@ -309,16 +214,67 @@ export default async function ClientDetailPage({
 
       {/* Date Range Filters */}
       <ClientHistoryFilters slug={slug} customerId={clientId} search={search} />
+    </div>
+  );
 
-      {/* Error State */}
+  return (
+    <div className="space-y-8" data-testid="client-detail-page">
+      {/* Back link + Header */}
+      <div>
+        <Link
+          href={`/org/${slug}/trust-accounting/client-ledgers`}
+          className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
+          data-testid="back-link"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Client Ledgers
+        </Link>
+        <PageHeader
+          title={ledgerCard.clientName}
+          description="Client ledger detail and transaction history"
+          actions={<PrintStatementButton accountId={accountId} customerId={clientId} />}
+        />
+      </div>
+
+      {/* Summary: the balance and the posted totals that make it up (G89-F13). Ledger read only —
+          never computed from the history rows (X2). */}
+      <div className="space-y-4" data-testid="client-summary">
+        <StatCard
+          label="Trust Balance"
+          value={formatCurrency(ledgerCard.balance, currency)}
+          className="sm:max-w-md"
+          hint={
+            // 648E (ADR-379 L7): money invested for the client stays theirs — show it beside the
+            // general balance with the unchanged total; the breakdown carries the figures
+            invested !== 0 ? (
+              <span data-testid="client-summary-invested">
+                Plus {formatCurrency(invested, currency)} invested (section 86(4)) —{" "}
+                {formatCurrency(ledgerCard.balance + invested, currency)} held in trust in total
+              </span>
+            ) : undefined
+          }
+        />
+        <div>
+          <p className="text-muted-foreground mb-2 text-sm font-medium">Ledger totals</p>
+          <LedgerTotalsBreakdown ledger={ledgerCard} currency={currency} layout="tiles" />
+        </div>
+      </div>
+
+      {/* Error State: the filters stay usable */}
       {fetchError && (
-        <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Unable to load transaction history. Please try again later.
-            </p>
-          </CardContent>
-        </Card>
+        <>
+          {filters}
+          <Card>
+            <CardContent>
+              <EmptyState
+                variant="compact"
+                icon={AlertCircle}
+                title="Unable to load transaction history. Please try again later."
+                description={null}
+              />
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Transaction History Table */}
@@ -332,125 +288,23 @@ export default async function ClientDetailPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {historyPage.content.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  No transactions match the current filters
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm" data-testid="history-table">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Date
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Reference
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Type
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Amount
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Status
-                        </th>
-                        <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Running Balance
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historyPage.content.map((tx) => (
-                        <tr
-                          key={tx.id}
-                          className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                          data-testid={`history-row-${tx.id}`}
-                        >
-                          <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                            {formatLocalDate(tx.transactionDate)}
-                          </td>
-                          <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                            {tx.reference}
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant="neutral">{tx.typeLabel}</Badge>
-                          </td>
-                          <td className="py-3 pr-4 text-right">
-                            {/* 646E F8: styling from the row's direction; NEUTRAL draws no arrow */}
-                            <span
-                              className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                tx.direction === "IN"
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-slate-950 dark:text-slate-50"
-                              }`}
-                            >
-                              {tx.direction === "IN" && <ArrowDownLeft className="size-3" />}
-                              {tx.direction === "OUT" && <ArrowUpRight className="size-3" />}
-                              {formatCurrency(tx.amount, currency)}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge
-                              variant={statusBadgeVariant(tx.status as TrustTransactionStatus)}
-                            >
-                              {tx.status.replace(/_/g, " ")}
-                            </Badge>
-                          </td>
-                          <td className="py-3 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {/* ADR-361: server-computed; null on unposted rows only (647C #2) */}
-                            {tx.runningBalance != null
-                              ? formatCurrency(tx.runningBalance, currency)
-                              : "\u2014"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Page {currentPage + 1} of {totalPages}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {currentPage > 0 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage - 1)}>
-                            <ChevronLeft className="mr-1 size-4" />
-                            Previous
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          <ChevronLeft className="mr-1 size-4" />
-                          Previous
-                        </Button>
-                      )}
-                      {currentPage < totalPages - 1 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage + 1)}>
-                            Next
-                            <ChevronRight className="ml-1 size-4" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          Next
-                          <ChevronRight className="ml-1 size-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <ClientHistoryDataTable
+              rows={historyPage.content}
+              currency={currency}
+              pageIndex={historyPage.pageNumber}
+              pageCount={historyPage.totalPages}
+              basePath={basePath}
+              query={query}
+              toolbar={{ filters }}
+              empty={
+                <EmptyState
+                  variant="inline"
+                  icon={Receipt}
+                  title="No transactions match the current filters"
+                  description={null}
+                />
+              }
+            />
           </CardContent>
         </Card>
       )}

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, fireEvent, within } from "@testing-library/react";
 import { formatCurrency } from "@/lib/format";
+import { unserializableProps } from "./helpers/rsc-props";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
@@ -86,6 +87,35 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
+
+// OQ #19 (667A): capture the props the server pages hand their client wrappers while still
+// rendering the real tables, so the RSC-boundary guard inspects what the pages pass.
+const wrapperProps = vi.hoisted(() => ({
+  ledgers: [] as Record<string, unknown>[],
+  history: [] as Record<string, unknown>[],
+}));
+vi.mock("@/components/trust/client-ledgers-data-table", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/components/trust/client-ledgers-data-table")>();
+  return {
+    ...actual,
+    ClientLedgersDataTable: (props: React.ComponentProps<typeof actual.ClientLedgersDataTable>) => {
+      wrapperProps.ledgers.push(props as unknown as Record<string, unknown>);
+      return <actual.ClientLedgersDataTable {...props} />;
+    },
+  };
+});
+vi.mock("@/components/trust/client-history-data-table", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/components/trust/client-history-data-table")>();
+  return {
+    ...actual,
+    ClientHistoryDataTable: (props: React.ComponentProps<typeof actual.ClientHistoryDataTable>) => {
+      wrapperProps.history.push(props as unknown as Record<string, unknown>);
+      return <actual.ClientHistoryDataTable {...props} />;
+    },
+  };
+});
 
 // ── Imports after mocks ──────────────────────────────────────────
 import ClientLedgersPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/page";
@@ -427,5 +457,202 @@ describe("Client Ledgers", () => {
       "2026-01-01",
       "2026-03-31"
     );
+  });
+});
+
+// Phase 91 667A: both pages on PageHeader + server-paged DataTable wrappers.
+describe("Client Ledgers — PageHeader + server-paged DataTable (667A)", () => {
+  const LIST = "/org/acme/trust-accounting/client-ledgers";
+
+  beforeEach(() => {
+    wrapperProps.ledgers.length = 0;
+    wrapperProps.history.length = 0;
+    setupDefaultMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  function ledgerPage(content: unknown[], pageNumber = 0, totalPages = 1) {
+    return { content, totalElements: content.length, totalPages, pageSize: 20, pageNumber };
+  }
+
+  it("list: one h1, the search form in the toolbar and only serializable wrapper props", async () => {
+    mockFetchClientLedgers.mockResolvedValue(ledgerPage([makeLedgerCard()]));
+
+    await renderListPage({ search: "acme" });
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Client Ledgers");
+    expect(screen.getByTestId("client-ledgers-page")).toBeInTheDocument();
+    const search = screen.getByTestId("client-search");
+    expect(search).toHaveAttribute("name", "search");
+    expect(search).toHaveAttribute("placeholder", "Search clients...");
+    expect(search).toHaveValue("acme");
+    expect(search.closest("form")).toHaveAttribute("action", LIST);
+    // The page's own submit (a string name matches exactly in Testing Library)
+    expect(screen.getByRole("button", { name: "Search" })).toHaveAttribute("type", "submit");
+    expect(screen.getByTestId("non-zero-filter")).toHaveAttribute(
+      "href",
+      `${LIST}?search=acme&nonZeroOnly=true`
+    );
+
+    expect(wrapperProps.ledgers).toHaveLength(1);
+    expect(wrapperProps.ledgers[0]).toEqual(
+      expect.objectContaining({
+        rows: expect.any(Array),
+        basePath: LIST,
+        query: { search: "acme" },
+        pageIndex: 0,
+        pageCount: 1,
+      })
+    );
+    expect(unserializableProps(wrapperProps.ledgers[0], new Set(["toolbar", "empty"]))).toEqual([]);
+    // The row link is built from basePath (no slug prop)
+    expect(wrapperProps.ledgers[0]).not.toHaveProperty("slug");
+  });
+
+  it("list: page 2 deep link keeps every param in the pager", async () => {
+    mockFetchClientLedgers.mockResolvedValue(ledgerPage([makeLedgerCard()], 1, 2));
+
+    await renderListPage({ nonZeroOnly: "true", page: "1" });
+
+    expect(mockFetchClientLedgers).toHaveBeenCalledWith("acc-1", {
+      page: 1,
+      size: 20,
+      nonZeroOnly: true,
+      search: undefined,
+    });
+    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+      "href",
+      `${LIST}?nonZeroOnly=true&page=0`
+    );
+    // The toggle drops page
+    expect(screen.getByTestId("non-zero-filter")).toHaveAttribute("href", LIST);
+  });
+
+  it("list: keeps the empty-state testid on the shared empty state", async () => {
+    mockFetchClientLedgers.mockResolvedValue(ledgerPage([]));
+
+    await renderListPage({ search: "nobody" });
+
+    expect(screen.queryByTestId("client-ledgers-table")).not.toBeInTheDocument();
+    expect(screen.getByTestId("empty-state")).toHaveTextContent(
+      "No client ledgers match the current filters"
+    );
+    expect(screen.getByTestId("client-search")).toBeInTheDocument();
+  });
+
+  it("list: keeps the error-state testid and the search form when the read fails", async () => {
+    mockFetchClientLedgers.mockRejectedValue(new Error("boom"));
+
+    await renderListPage();
+
+    expect(screen.getByTestId("error-state")).toHaveTextContent(
+      "Unable to load client ledgers. Please try again later."
+    );
+    expect(screen.getByTestId("client-search")).toBeInTheDocument();
+  });
+
+  it("list: adds the s86(4) columns while a client has an investment (K-89)", async () => {
+    mockFetchClientLedgers.mockResolvedValue(
+      ledgerPage([makeLedgerCard({ totalInvestmentPlacements: 30000, investedBalance: 30095 })])
+    );
+
+    await renderListPage();
+
+    const table = within(screen.getByTestId("client-ledgers-table"));
+    expect(table.getByRole("columnheader", { name: "General balance" })).toBeInTheDocument();
+    expect(table.getByRole("columnheader", { name: "Placed in s86(4)" })).toBeInTheDocument();
+    expect(table.getByRole("columnheader", { name: "Invested (s86(4))" })).toBeInTheDocument();
+    expect(table.queryByRole("columnheader", { name: "Trust Balance" })).toBeNull();
+  });
+
+  it("detail: h1 is the client name, Generate Statement sits in the header actions", async () => {
+    mockFetchClientLedger.mockResolvedValue(makeLedgerCard({ clientName: "Acme Corp" }));
+    mockFetchClientHistory.mockResolvedValue(ledgerPage([makeTx()]));
+
+    await renderDetailPage();
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Acme Corp");
+    const header = screen.getByTestId("page-header");
+    expect(within(header).getByTestId("print-statement")).toBeInTheDocument();
+    expect(screen.getByTestId("back-link")).toHaveAttribute("href", LIST);
+    expect(screen.getByTestId("history-row-tx-1")).toBeInTheDocument();
+  });
+
+  it("detail: the summary tiles keep every ledger-total testid once, each with a dd", async () => {
+    mockFetchClientLedger.mockResolvedValue(
+      makeLedgerCard({
+        balance: 20000,
+        totalDeposits: 50000,
+        totalPayments: 0,
+        totalFeeTransfers: 0,
+        totalInvestmentPlacements: 30000,
+        investedBalance: 30000,
+      })
+    );
+    mockFetchClientHistory.mockResolvedValue(ledgerPage([]));
+
+    await renderDetailPage();
+
+    const summary = within(screen.getByTestId("client-summary"));
+    expect(summary.getByTestId("ledger-totals-breakdown")).toBeInTheDocument();
+    for (const key of ["deposits", "investment-placements", "balance", "invested", "held"]) {
+      expect(screen.getAllByTestId(`ledger-total-${key}`)).toHaveLength(1);
+      expect(summary.getByTestId(`ledger-total-${key}`).querySelector("dd")).not.toBeNull();
+    }
+    expect(summary.getByTestId("client-summary-invested")).toHaveTextContent(
+      "held in trust in total"
+    );
+  });
+
+  it("detail: history pager keeps every param; wrapper props are serializable", async () => {
+    mockFetchClientLedger.mockResolvedValue(makeLedgerCard());
+    mockFetchClientHistory.mockResolvedValue({
+      content: [makeTx()],
+      totalElements: 22,
+      totalPages: 2,
+      pageSize: 20,
+      pageNumber: 1,
+    });
+
+    await renderDetailPage({ status: "APPROVED", page: "1" });
+
+    const base = `${LIST}/cust-1`;
+    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+      "href",
+      `${base}?status=APPROVED&page=0`
+    );
+    for (const pill of within(screen.getByTestId("status-filters")).getAllByRole("link")) {
+      expect(pill.getAttribute("href")).not.toContain("page=");
+    }
+    expect(wrapperProps.history).toHaveLength(1);
+    expect(wrapperProps.history[0]).toEqual(
+      expect.objectContaining({ basePath: base, query: { status: "APPROVED", page: "1" } })
+    );
+    expect(unserializableProps(wrapperProps.history[0], new Set(["toolbar", "empty"]))).toEqual([]);
+  });
+
+  it("detail: keeps the filters usable when the history read fails", async () => {
+    mockFetchClientLedger.mockResolvedValue(makeLedgerCard());
+    mockFetchClientHistory.mockRejectedValue(new Error("boom"));
+
+    await renderDetailPage();
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Unable to load transaction history. Please try again later.",
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("date-filters")).toBeInTheDocument();
+    expect(screen.queryByTestId("history-table")).not.toBeInTheDocument();
   });
 });

@@ -1,0 +1,7 @@
+667A OBS scripts (Node Playwright library, not the MCP). Node 20 (nvm); Playwright resolves from the worktree's frontend/node_modules or the sibling main checkout's.
+  00-seed.cjs     RUN ONCE (done for before; idempotent, a re-run changes nothing). Writes ../seed.json (ids read by 01/02).
+  01-capture.cjs  read-only capture (opens + cancels the Reverse dialog and the Record Transaction menu; never approves/reverses). Raw → /tmp/667A-$PHASE-raw/.
+  02-assemble.cjs JSON (measurements / sel-compat / console / discover) + contact sheets + K-10 crops → ../../$PHASE/.
+  probe.cjs, lib.cjs helpers.
+OBS-after (same data, frontend rebuilt from the slice head; do NOT re-seed), from this directory, unedited:
+  PHASE=after node 01-capture.cjs && PHASE=after STACK="<frontend image + SHA>" node 02-assemble.cjs

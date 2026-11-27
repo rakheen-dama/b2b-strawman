@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, Landmark, Receipt } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { listClients } from "@/lib/api/clients";
 import { getCurrentUserEmail } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
-import { Badge } from "@b2mash/ui/badge";
-import { Button } from "@b2mash/ui/button";
+import { PageHeader } from "@b2mash/ui/page-header";
 import {
   fetchTrustAccounts,
   fetchTrustTransactionTypes,
@@ -17,15 +16,14 @@ import {
   fetchTransactions,
   type TransactionPage,
 } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { EmptyState } from "@/components/empty-state";
 import { TransactionActions } from "@/components/trust/transaction-actions";
-import { ApprovalBadge } from "@/components/trust/approval-badge";
-import { ReversalButton } from "@/components/trust/reversal-button";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
-import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { TransactionsDataTable } from "@/components/trust/transactions-data-table";
+import { cn } from "@/lib/utils";
+import { searchParamsToQuery } from "@/lib/search-params-query";
 import {
-  canOfferReversal,
   offeredTransactionTypes,
-  reversalRuleFor,
   type OrgMember,
   type TrustTransactionStatus,
   type TrustTransactionTypeInfo,
@@ -33,22 +31,10 @@ import {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-function statusBadgeVariant(
-  status: TrustTransactionStatus
-): "success" | "warning" | "destructive" | "neutral" {
-  switch (status) {
-    case "APPROVED":
-      return "success";
-    case "AWAITING_APPROVAL":
-      return "warning";
-    case "REJECTED":
-      return "destructive";
-    case "RECORDED":
-    case "REVERSED":
-    default:
-      return "neutral";
-  }
-}
+const PILL_CLASS = "rounded-full px-3 py-1 text-sm transition-colors";
+const PILL_ACTIVE = "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900";
+const PILL_IDLE =
+  "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700";
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [
   "RECORDED",
@@ -59,18 +45,6 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
 ];
 
 // ── Page ──────────────────────────────────────────────────────────
-
-/**
- * Rows whose description names where the money goes, so the approver can judge them: the
- * unidentified-deposit resolutions (647D) and the investment placements (648A — "Placed in section
- * 86(4) investment at … (account)").
- */
-const DESCRIBED_TYPES: ReadonlySet<string> = new Set([
-  "UNIDENT_ALLOC_OUT",
-  "UNIDENT_FUND_PAY",
-  "INV_PLACE",
-  "FIRM_INV_PLACE",
-]);
 
 export default async function TransactionsPage({
   params,
@@ -207,11 +181,12 @@ export default async function TransactionsPage({
     }
   }
 
-  const currentPage = transactionPage?.pageNumber ?? 0;
-  const totalPages = transactionPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
+  const basePath = `/org/${slug}/trust-accounting/transactions`;
+  // Every string param, in the URL's order: the pager keeps them all and sets `page` (DA-8).
+  const query = searchParamsToQuery(search);
 
-  // Build filter URL helper
+  // Build filter URL helper (filter links drop `page`)
   function filterUrl(overrides: Record<string, string | undefined>): string {
     const newParams = new URLSearchParams();
     const merged = { ...search, ...overrides };
@@ -219,49 +194,18 @@ export default async function TransactionsPage({
       if (value && key !== "page") newParams.set(key, value);
     }
     const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/transactions${qs ? `?${qs}` : ""}`;
+    return `${basePath}${qs ? `?${qs}` : ""}`;
   }
 
-  function pageUrl(page: number): string {
-    const newParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(search)) {
-      if (value) newParams.set(key, value);
-    }
-    newParams.set("page", String(page));
-    const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/transactions?${qs}`;
-  }
-
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Transactions</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Trust account transaction history
-          </p>
-        </div>
-        {canManageTrust && accountId && (
-          <TransactionActions
-            accountId={accountId}
-            slug={slug}
-            customers={pickerCustomers}
-            lockedThrough={lockedThrough}
-          />
-        )}
-      </div>
-
-      {/* Status Filter Pills */}
+  // Status pills, type pills and the date / client / matter filters: the table's toolbar, or on
+  // their own above the error when the read failed (a bad filter must stay fixable).
+  const filters = (
+    <div className="w-full space-y-3">
       <div className="flex flex-wrap items-center gap-3" data-testid="status-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Status:</span>
+        <span className="text-muted-foreground text-sm font-medium">Status:</span>
         <Link
           href={filterUrl({ status: undefined })}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !search.status
-              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          }`}
+          className={cn(PILL_CLASS, !search.status ? PILL_ACTIVE : PILL_IDLE)}
         >
           All
         </Link>
@@ -269,11 +213,7 @@ export default async function TransactionsPage({
           <Link
             key={status}
             href={filterUrl({ status })}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.status === status
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+            className={cn(PILL_CLASS, search.status === status ? PILL_ACTIVE : PILL_IDLE)}
           >
             {status === "AWAITING_APPROVAL"
               ? "Awaiting Approval"
@@ -282,16 +222,11 @@ export default async function TransactionsPage({
         ))}
       </div>
 
-      {/* Type Filter Pills */}
       <div className="flex flex-wrap items-center gap-3" data-testid="type-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Type:</span>
+        <span className="text-muted-foreground text-sm font-medium">Type:</span>
         <Link
           href={filterUrl({ type: undefined })}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !search.type
-              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-          }`}
+          className={cn(PILL_CLASS, !search.type ? PILL_ACTIVE : PILL_IDLE)}
         >
           All
         </Link>
@@ -300,11 +235,7 @@ export default async function TransactionsPage({
           <Link
             key={t.code}
             href={filterUrl({ type: t.code })}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.type === t.code
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+            className={cn(PILL_CLASS, search.type === t.code ? PILL_ACTIVE : PILL_IDLE)}
           >
             {t.label}
           </Link>
@@ -313,25 +244,53 @@ export default async function TransactionsPage({
 
       {/* Date Range, Client & Matter Filters */}
       <TransactionFilters slug={slug} search={search} />
+    </div>
+  );
 
-      {/* Error State */}
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        title="Transactions"
+        description="Trust account transaction history"
+        actions={
+          canManageTrust && accountId ? (
+            <TransactionActions
+              accountId={accountId}
+              slug={slug}
+              customers={pickerCustomers}
+              lockedThrough={lockedThrough}
+            />
+          ) : undefined
+        }
+      />
+
+      {/* Error State: the filters stay usable */}
       {fetchError && (
-        <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Unable to load transactions. Please try again later.
-            </p>
-          </CardContent>
-        </Card>
+        <>
+          {filters}
+          <Card>
+            <CardContent>
+              <EmptyState
+                variant="compact"
+                icon={AlertCircle}
+                title="Unable to load transactions. Please try again later."
+                description={null}
+              />
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Account Fetch Error State */}
       {accountFetchError && (
         <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Unable to load trust accounts. Please try again later.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={AlertCircle}
+              title="Unable to load trust accounts. Please try again later."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -339,10 +298,13 @@ export default async function TransactionsPage({
       {/* No Account State */}
       {!fetchError && !accountFetchError && !accountId && (
         <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No trust accounts have been set up yet.
-            </p>
+          <CardContent>
+            <EmptyState
+              variant="compact"
+              icon={Landmark}
+              title="No trust accounts have been set up yet."
+              description={null}
+            />
           </CardContent>
         </Card>
       )}
@@ -358,172 +320,27 @@ export default async function TransactionsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {transactionPage.content.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  No transactions match the current filters
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm" data-testid="transactions-table">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Date
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Reference
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Type
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Amount
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Status
-                        </th>
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactionPage.content.map((tx) => (
-                        <tr
-                          key={tx.id}
-                          className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                          data-testid={`transaction-row-${tx.id}`}
-                        >
-                          <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                            {formatLocalDate(tx.transactionDate)}
-                          </td>
-                          <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                            {tx.reference}
-                          </td>
-                          <td className="py-3 pr-4">
-                            {/* 647D OBS h: long registry labels ("Unidentified deposit paid to
-                                the Fund") wrap instead of pushing Actions off-screen at 1280 */}
-                            <Badge
-                              variant="neutral"
-                              className="shrink whitespace-normal"
-                              data-testid={`transaction-type-${tx.id}`}
-                            >
-                              {tx.typeLabel}
-                            </Badge>
-                            {/* 647D / 648A: an unidentified deposit's allocation or payment to
-                                the Fund, and an investment placement, say where the money goes
-                                so the approver can judge it (no other row's description is
-                                shown here) */}
-                            {DESCRIBED_TYPES.has(tx.transactionType) && tx.description && (
-                              <span
-                                className="mt-1 block max-w-xs text-xs whitespace-normal text-slate-500 dark:text-slate-400"
-                                data-testid={`transaction-description-${tx.id}`}
-                              >
-                                {tx.description}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 pr-4 text-right">
-                            {/* 646E F8: styling from the row's direction (a reversal is the
-                                opposite of what it reverses); NEUTRAL draws no arrow */}
-                            <span
-                              className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                tx.direction === "IN"
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-slate-950 dark:text-slate-50"
-                              }`}
-                            >
-                              {tx.direction === "IN" && <ArrowDownLeft className="size-3" />}
-                              {tx.direction === "OUT" && <ArrowUpRight className="size-3" />}
-                              {formatCurrency(tx.amount, currency)}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant={statusBadgeVariant(tx.status)}>
-                              {tx.status.replace(/_/g, " ")}
-                            </Badge>
-                            {/* LZKC-016: dual-mode first approval keeps status
-                                AWAITING_APPROVAL — surface the progress. */}
-                            {tx.status === "AWAITING_APPROVAL" && tx.approvedBy && (
-                              <span
-                                className="mt-1 block text-xs text-slate-500 dark:text-slate-400"
-                                data-testid={`approval-progress-${tx.id}`}
-                              >
-                                1 of 2 approvals
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3">
-                            {tx.status === "AWAITING_APPROVAL" && canApproveTrust && (
-                              <span data-testid={`approval-actions-${tx.id}`}>
-                                <ApprovalBadge
-                                  transactionId={tx.id}
-                                  status={tx.status}
-                                  firstApprovedBy={tx.approvedBy}
-                                  currentMemberId={currentMemberId}
-                                />
-                              </span>
-                            )}
-                            {/* Phase 92 649B: any posted row, per its type's reversal rule */}
-                            {canManageTrust && canOfferReversal(tx, types) && (
-                              <span data-testid={`reversal-action-${tx.id}`}>
-                                <ReversalButton
-                                  transactionId={tx.id}
-                                  transactionDate={tx.transactionDate}
-                                  needsApproval={
-                                    reversalRuleFor(tx.transactionType, types) === "NEEDS_APPROVAL"
-                                  }
-                                />
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Page {currentPage + 1} of {totalPages}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {currentPage > 0 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage - 1)}>
-                            <ChevronLeft className="mr-1 size-4" />
-                            Previous
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          <ChevronLeft className="mr-1 size-4" />
-                          Previous
-                        </Button>
-                      )}
-                      {currentPage < totalPages - 1 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(currentPage + 1)}>
-                            Next
-                            <ChevronRight className="ml-1 size-4" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          Next
-                          <ChevronRight className="ml-1 size-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+            <TransactionsDataTable
+              rows={transactionPage.content}
+              currency={currency}
+              pageIndex={transactionPage.pageNumber}
+              pageCount={transactionPage.totalPages}
+              basePath={basePath}
+              query={query}
+              types={types}
+              canApproveTrust={canApproveTrust}
+              canManageTrust={canManageTrust}
+              currentMemberId={currentMemberId}
+              toolbar={{ filters }}
+              empty={
+                <EmptyState
+                  variant="inline"
+                  icon={Receipt}
+                  title="No transactions match the current filters"
+                  description={null}
+                />
+              }
+            />
           </CardContent>
         </Card>
       )}

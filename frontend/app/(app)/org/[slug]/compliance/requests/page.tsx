@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/empty-state";
 import { DataRequestTable } from "@/components/compliance/DataRequestTable";
 import { CreateDataRequestDialog } from "@/components/compliance/CreateDataRequestDialog";
 import { ShieldCheck } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import Link from "next/link";
 import type { DataRequestStatus, DataRequestResponse } from "@/lib/types";
 
@@ -23,8 +24,8 @@ export default async function DataRequestsPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Compliance" />
+        <p className="text-muted-foreground">
           You do not have permission to view compliance data. Only admins and owners can access this
           page.
         </p>
@@ -49,22 +50,24 @@ export default async function DataRequestsPage({
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Requests</h1>
-          {requests.length > 0 && (
-            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              {requests.length}
-            </span>
-          )}
-        </div>
-        <CreateDataRequestDialog slug={slug} />
-      </div>
+      {/* Page Header — the count pill sits in `actions`, outside the h1 (DA-2) */}
+      <PageHeader
+        title="Data Requests"
+        actions={
+          <>
+            {requests.length > 0 && (
+              <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-sm">
+                {requests.length}
+              </span>
+            )}
+            <CreateDataRequestDialog slug={slug} />
+          </>
+        }
+      />
 
       {/* Filter Bar — pill-style links */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Filter:</span>
+        <span className="text-muted-foreground text-sm font-medium">Filter:</span>
         <Link
           href={`/org/${slug}/compliance/requests`}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -99,6 +102,7 @@ export default async function DataRequestsPage({
         </div>
       ) : requests.length === 0 ? (
         <EmptyState
+          variant="default"
           icon={ShieldCheck}
           title="No data requests found"
           description={

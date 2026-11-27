@@ -4,6 +4,7 @@ import { getRequest } from "@/lib/api/information-requests";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RequestDetailClient } from "@/components/information-requests/request-detail-client";
+import { PageHeader } from "@b2mash/ui/page-header";
 
 export default async function InformationRequestDetailPage({
   params,
@@ -18,10 +19,8 @@ export default async function InformationRequestDetailPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Information Request
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Information Request" />
+        <p className="text-muted-foreground">
           You do not have permission to view information requests.
         </p>
       </div>
@@ -41,7 +40,7 @@ export default async function InformationRequestDetailPage({
       <div>
         <Link
           href={`/org/${slug}/clients/${request.clientId}`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm transition-colors"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to {request.clientName}

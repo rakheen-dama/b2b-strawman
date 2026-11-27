@@ -23,6 +23,7 @@ import {
   instantiateChecklist,
 } from "@/app/(app)/org/[slug]/clients/[id]/checklist-actions";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/empty-state";
 import type {
   ChecklistInstanceResponse,
   ChecklistInstanceStatus,
@@ -143,10 +144,12 @@ export function ChecklistInstancePanel({
 
   if (instances.length === 0 && !isAdmin) {
     return (
-      <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-        <ClipboardList className="mx-auto mb-3 size-8 text-slate-300 dark:text-slate-600" />
-        No checklists yet.
-      </div>
+      <EmptyState
+        variant="default"
+        icon={ClipboardList}
+        title="No checklists yet."
+        description={null}
+      />
     );
   }
 
@@ -213,10 +216,12 @@ export function ChecklistInstancePanel({
 
       {/* Empty state */}
       {instances.length === 0 && (
-        <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-          <ClipboardList className="mx-auto mb-3 size-8 text-slate-300 dark:text-slate-600" />
-          No checklists yet.
-        </div>
+        <EmptyState
+          variant="default"
+          icon={ClipboardList}
+          title="No checklists yet."
+          description={null}
+        />
       )}
 
       {/* Instance list */}

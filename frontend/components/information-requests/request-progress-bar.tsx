@@ -13,7 +13,7 @@ export function RequestProgressBar({ totalItems, acceptedItems }: RequestProgres
   return (
     <div className="flex items-center gap-3">
       <Progress value={percentage} className="h-2 w-24" />
-      <span className="text-xs text-slate-500 dark:text-slate-400">
+      <span className="text-muted-foreground text-xs">
         {acceptedItems}/{totalItems} accepted
       </span>
     </div>

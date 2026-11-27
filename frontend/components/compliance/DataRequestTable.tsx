@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { cn } from "@/lib/utils";
 import { isOverdue, formatLocalDate, formatComplianceDate } from "@/lib/format";
 import type { DataRequestResponse, DataRequestType } from "@/lib/types";
@@ -20,83 +23,87 @@ const TYPE_LABELS: Record<DataRequestType, string> = {
 };
 
 export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Client
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Type
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Status
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Deadline
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Requested
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {requests.map((request) => {
+  const columns = useMemo(
+    () =>
+      defineColumns<DataRequestResponse>([
+        {
+          id: "client",
+          enableHiding: false,
+          meta: { label: "Client", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => (
+            <Link
+              href={`/org/${slug}/compliance/requests/${row.original.id}`}
+              className="text-foreground font-medium hover:underline"
+            >
+              {row.original.clientName}
+            </Link>
+          ),
+        },
+        {
+          id: "type",
+          meta: { label: "Type" },
+          cell: ({ row }) => (
+            <Badge variant="neutral">
+              {TYPE_LABELS[row.original.requestType] ?? row.original.requestType}
+            </Badge>
+          ),
+        },
+        {
+          id: "status",
+          meta: { label: "Status" },
+          cell: ({ row }) => {
+            const statusConfig = STATUS_CONFIG[row.original.status] ?? {
+              label: row.original.status,
+              variant: "neutral" as BadgeVariant,
+            };
+            return (
+              <Badge variant={statusConfig.variant} className={statusConfig.className}>
+                {statusConfig.label}
+              </Badge>
+            );
+          },
+        },
+        {
+          id: "deadline",
+          meta: { label: "Deadline" },
+          cell: ({ row }) => {
+            const request = row.original;
             const overdue =
               isOverdue(request.deadline) &&
               request.status !== "COMPLETED" &&
               request.status !== "REJECTED";
-            const statusConfig = STATUS_CONFIG[request.status] ?? {
-              label: request.status,
-              variant: "neutral" as BadgeVariant,
-            };
-
             return (
-              <tr
-                key={request.id}
-                className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
+              <span
+                className={cn(
+                  "text-sm",
+                  overdue
+                    ? "font-medium text-red-600 dark:text-red-400"
+                    : "text-slate-700 dark:text-slate-300"
+                )}
               >
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/org/${slug}/compliance/requests/${request.id}`}
-                    className="font-medium text-slate-950 hover:underline dark:text-slate-50"
-                  >
-                    {request.clientName}
-                  </Link>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant="neutral">
-                    {TYPE_LABELS[request.requestType] ?? request.requestType}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusConfig.variant} className={statusConfig.className}>
-                    {statusConfig.label}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "text-sm",
-                      overdue
-                        ? "font-medium text-red-600 dark:text-red-400"
-                        : "text-slate-700 dark:text-slate-300"
-                    )}
-                  >
-                    {formatLocalDate(request.deadline)}
-                    {overdue && " (Overdue)"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                  {formatComplianceDate(request.requestedAt)}
-                </td>
-              </tr>
+                {formatLocalDate(request.deadline)}
+                {overdue && " (Overdue)"}
+              </span>
             );
-          })}
-        </tbody>
-      </table>
-    </div>
+          },
+        },
+        {
+          id: "requested",
+          meta: { label: "Requested", cellClassName: "text-muted-foreground text-sm" },
+          cell: ({ row }) => formatComplianceDate(row.original.requestedAt),
+        },
+      ]),
+    [slug]
+  );
+
+  return (
+    <DataTable
+      columns={columns}
+      data={requests}
+      getRowId={(request) => request.id}
+      columnVisibility={false}
+      stickyHeader={false}
+      empty={null}
+    />
   );
 }

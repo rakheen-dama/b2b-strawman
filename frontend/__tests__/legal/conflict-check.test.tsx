@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks (before component imports) ---
@@ -72,6 +72,7 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { NAV_GROUPS } from "@/lib/nav-items";
 import type { ConflictCheck } from "@/lib/types";
+import { formatDateInSA } from "@/lib/format";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -276,6 +277,58 @@ describe("ConflictCheckHistory", () => {
     expect(screen.getAllByText("No Conflict").length).toBeGreaterThanOrEqual(1);
     // "Conflict" badge for CONFLICT_FOUND result
     expect(screen.getAllByText("Conflict").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders the history as a table with today's column labels", () => {
+    render(
+      <ConflictCheckHistory initialChecks={[makeConflictCheck()]} initialTotal={1} slug="acme" />
+    );
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Date",
+      "Checked Name",
+      "Type",
+      "Result",
+      "Resolution",
+      "Actions",
+    ]);
+  });
+
+  it("prints the check date on the South African calendar (DA-8)", () => {
+    render(
+      <ConflictCheckHistory
+        initialChecks={[makeConflictCheck({ checkedAt: "2026-04-01T23:30:00Z" })]}
+        initialTotal={1}
+        slug="acme"
+      />
+    );
+    const row = within(screen.getByRole("table")).getAllByRole("row")[1];
+    expect(within(row).getAllByRole("cell")[0]).toHaveTextContent(
+      formatDateInSA("2026-04-01T23:30:00Z")
+    );
+  });
+
+  it("offers Resolve only on unresolved rows that found a conflict", () => {
+    const checks: ConflictCheck[] = [
+      makeConflictCheck({ id: "cc-1", checkedName: "Clear Co", result: "NO_CONFLICT" }),
+      makeConflictCheck({ id: "cc-2", checkedName: "Open Co", result: "CONFLICT_FOUND" }),
+      makeConflictCheck({
+        id: "cc-3",
+        checkedName: "Done Co",
+        result: "POTENTIAL_CONFLICT",
+        resolution: "PROCEED",
+      }),
+    ];
+    render(<ConflictCheckHistory initialChecks={checks} initialTotal={3} slug="acme" />);
+    const resolve = screen.getAllByRole("button", { name: "Resolve" });
+    expect(resolve).toHaveLength(1);
+    expect(resolve[0].closest("tr")).toHaveTextContent("Open Co");
+  });
+
+  it("shows an inline empty line, not a heading, and no table when there are no checks", () => {
+    render(<ConflictCheckHistory initialChecks={[]} initialTotal={0} slug="acme" />);
+    expect(screen.getByText("No conflict checks found.").tagName).toBe("P");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 });
 

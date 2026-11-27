@@ -1,0 +1,26 @@
+# 669A — Found during the build and pre-existing findings (route, never fix)
+
+Slice: Epic 669A (light pass: compliance, conflict check, adverse parties, disbursements, tariffs, information requests). Base `main` @ `ed22a7bfa`, OBS-before @ `2bbab3168`.
+Nothing below is fixed in 669A unless it says so. Each item has a routing target. "Code-read" means the builder found it by reading the code and did not reproduce it in a browser. The builder does not drive the :3001 stack.
+
+## Found during the build
+
+| Id | Severity | What | Where | Routing |
+|---|---|---|---|---|
+| **F-669A-K1** | LOW (kit docs) | **A column array rebuilt on every render remounts every cell.** `flexRender` renders a function `cell` as a component (`<Cell {...ctx} />`), so a new function identity is a new component type, and React remounts the cell's subtree. A consumer that memoises its columns on unstable inputs (handlers from a hook, `deleting` state) loses DOM identity in every cell, and so loses focus. It showed up in 669A as two failing `use-disbursement-write-off.test.tsx` cases: after the write-off dialog closed, focus did not return to the row "…" trigger. **Handled in 669A** without a kit edit. `disbursement-list-view.tsx` and `adverse-party-registry-client.tsx` now define their columns as module constants, and the per-render inputs reach the cells through a React context. The kit's JSDoc says "Memoise the column array" but does not warn that memo deps must be stable, or that this is why. | `frontend/components/data-table/define-columns.tsx` (header JSDoc); `data-table.tsx` (`flexRender(cell.column.columnDef.cell, …)`) | 670A kit follow-up: document the rule in `define-columns.tsx`, or add a kit-level escape hatch (for example `meta`/context for row actions). |
+| **F-669A-T1** | LOW (tokens) | Slate pairs left on touched files because no token covers them exactly (DA-15): the value spans `text-slate-700 dark:text-slate-300` (disbursement detail `Row`, list Matter / Description / Supplier cells, DSAR detail description/notes, `DataRequestTable` Deadline), the selected / unselected filter pills on `/compliance/requests` (`bg-slate-900 text-white dark:bg-slate-100 …`), the native `<select>` borders (`border-slate-200 … dark:border-slate-700`, guard D-3), and the semantic badge tints. | the files named | 670A token sweep (needs a `--foreground-secondary`-style token, or an explicit ruling that slate-700/300 maps to `text-foreground`). |
+| **F-669A-D1** | LOW (design note) | The three detail h1s with inline badges (DSAR detail, disbursement detail, information-request detail) stay hand-rolled `<h1>` elements on the PageHeader title recipe (DA-1). `PageHeader` has no "beside the title, outside the h1" slot. | `packages/ui/src/page-header.tsx` | 670A kit follow-up: if a `titleAdornment` slot is added, move the three onto `PageHeader`. |
+
+## Pre-existing findings from OBS-before (`before/README.md` › Findings), routed
+
+| Id | What | Routing |
+|---|---|---|
+| **F-669A-B-1** | Conflict-check dates in US order. **669A part (DA-8, ruled):** History Date → `DateCell` (`formatDateInSA`, "1 Apr 2026"). **Not fixed:** the result panel's "Checked … at 11/27/2026, 10:41:35 AM" (`conflict-check-result.tsx:93`, `toLocaleString()`). That is not in the slice row, and it is a date-time format change. | 670A list (`formatDateTime` on the result line; a format change, so it needs founder sign-off as copy/format). |
+| **F-669A-B-2** | Compliance › Overview › Data Requests row prints raw enums "ACCESS" / "RECEIVED" (now `urgent-data-requests-table.tsx`, the Type and Status cells), while `/compliance/requests` prints "Access" / "Received". Copied over verbatim (COPY-FREEZE). | 670A list / backlog (visible copy change: reuse `TYPE_LABELS` and `STATUS_CONFIG`; needs founder sign-off). |
+| **F-669A-B-3** | `/compliance` tabs are not URL-addressable (`?tab=ai-audit` ignored). The data-request status pills carry no `aria-current`. | Backlog (tabs: behaviour). `aria-current="page"` on the selected pill: 670A a11y list (no new words). |
+| **F-669A-B-4** | Light contrast below 4.5 that is not in the register: Compliance "29d remaining" (emerald-600, 3.62), "View All Requests" (teal-600, 3.13), conflict History "Resolve" (teal-600, 3.13), the matter-header client links (3.13), "No unbilled disbursements" (4.48 on slate-50). `statements-empty` is now the shared inline EmptyState: its title is `text-foreground` and the slate-50 dashed panel is gone. OBS-after should re-measure it. | 670A contrast list (the K-32 / K-37 `text-(--button-accent)` pattern for the teal links; a darker step for the countdown colours). |
+| F-668A-B-4 (seen again) | Carol on a matter she is not on: no h1 in `#main-content` (OBS-before §9). | 670A (global h1 sweep), as routed in 668A. |
+
+## Routed follow-ups named "669A" or "669A/670A" in earlier slices — not taken (orchestrator ruling)
+
+D-24 (my-work 232 px compact empty, founder list), F-668A-B-2 / F-668A-B-3 (court-date list overflow and raw date/time), F-668A-T1 (`upcoming-diary-list.tsx` K-39 lines), F-668A-K1 / K-2, F-667B-R1/R2/R3, D-44 / D-52 / D-54 / D-55 / D-59 / D-63 / D-69 / D-74 / D-76 / D-82 / D-84 / D-86 items. All of them are outside 669A's files or kit-level → **670A follow-up list**, unchanged.

@@ -109,7 +109,7 @@ export function ConflictCheckForm({
   }
 
   return (
-    <div data-testid="conflict-check-form" className="space-y-6">
+    <div data-testid="conflict-check-form" className="max-w-3xl space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField

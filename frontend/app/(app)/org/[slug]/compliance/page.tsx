@@ -9,6 +9,7 @@ import { DataRequestsSection } from "@/components/compliance/DataRequestsSection
 import { DormancyCheckSection } from "@/components/compliance/DormancyCheckSection";
 import { ComplianceAuditTab } from "@/components/ai/compliance-audit-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@b2mash/ui/page-header";
 import type { PaginatedResponse, ComplianceAuditReportResponse } from "@/lib/api/compliance-audit";
 
 export default async function ComplianceDashboardPage({
@@ -61,7 +62,7 @@ export default async function ComplianceDashboardPage({
   if (!result.success || !result.data) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
+        <PageHeader title="FICA &amp; compliance" />
         <p className="text-sm text-red-600 dark:text-red-400">
           {result.error ?? "Failed to load compliance dashboard."}
         </p>
@@ -73,7 +74,7 @@ export default async function ComplianceDashboardPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
+      <PageHeader title="FICA &amp; compliance" />
 
       <Tabs defaultValue="overview">
         <TabsList>

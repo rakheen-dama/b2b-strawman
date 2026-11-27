@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
@@ -37,7 +36,6 @@ export function DisbursementsListClient({
   initialTotal,
   initialProjectNames,
 }: DisbursementsListClientProps) {
-  const router = useRouter();
   const [disbursements, setDisbursements] = useState(initialDisbursements);
   const [total, setTotal] = useState(initialTotal);
   const [isPending, startTransition] = useTransition();
@@ -197,7 +195,7 @@ export function DisbursementsListClient({
 
         {projectFilter && <UnbilledDisbursementsSummary matterId={projectFilter} />}
 
-        <div className="text-sm text-slate-500 dark:text-slate-400">
+        <div className="text-muted-foreground text-sm">
           {total} disbursement{total !== 1 ? "s" : ""}
           {(dateFrom || dateTo) && visibleDisbursements.length !== total && (
             <span className="ml-2">({visibleDisbursements.length} match current filters)</span>
@@ -208,7 +206,7 @@ export function DisbursementsListClient({
         <DisbursementListView
           disbursements={visibleDisbursements}
           projectNames={projectNames}
-          onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
+          rowHref={(d) => `/org/${slug}/legal/disbursements/${d.id}`}
           onWriteOff={writeOff.onWriteOff}
           onRestore={writeOff.onRestore}
         />

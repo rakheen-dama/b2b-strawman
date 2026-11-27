@@ -34,7 +34,10 @@ import { KAZI_TIME_ZONE, todayInSA } from "./date";
  * Robust against non-finite input ("R 0.00") and unknown currency codes
  * (falls back to "R <amount>").
  */
-export function formatCurrency(amount: number, currency: string = "ZAR"): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = "ZAR",
+): string {
   if (!Number.isFinite(amount)) return "R 0.00";
 
   try {
@@ -56,7 +59,7 @@ export function formatCurrency(amount: number, currency: string = "ZAR"): string
  */
 export function formatCurrencySafe(
   amount: number | null | undefined,
-  currency: string | null | undefined
+  currency: string | null | undefined,
 ): string {
   if (amount == null || !currency) return "N/A";
   return formatCurrency(amount, currency);
@@ -111,8 +114,9 @@ export function formatLocalDate(yyyyMmDd: string): string {
 }
 
 /**
- * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026").
- * (Staff-app helper, retained.)
+ * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026") on the South African
+ * calendar, whatever the runtime zone (K-68: a request logged 00:00–01:59 SAST printed the previous
+ * day on the UTC SSR server). (Staff-app helper, retained.)
  */
 export function formatComplianceDate(isoString: string): string {
   const d = new Date(isoString);
@@ -121,6 +125,7 @@ export function formatComplianceDate(isoString: string): string {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: KAZI_TIME_ZONE,
   });
 }
 
@@ -204,10 +209,12 @@ export function formatRelativeDate(date: string | Date): string {
   const diffYears = Math.floor(diffDays / 365);
 
   if (diffYears > 0) return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
-  if (diffMonths > 0) return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  if (diffMonths > 0)
+    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
   if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffMinutes > 0) return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  if (diffMinutes > 0)
+    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
   return "just now";
 }
 
@@ -254,7 +261,10 @@ export function formatDuration(minutes: number): string {
  * Returns "..." if completedAt is null (still running).
  * (Staff-app helper, retained.)
  */
-export function computeDuration(startedAt: string, completedAt: string | null): string {
+export function computeDuration(
+  startedAt: string,
+  completedAt: string | null,
+): string {
   if (!completedAt) return "...";
   const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
   if (ms < 1000) return `${ms}ms`;

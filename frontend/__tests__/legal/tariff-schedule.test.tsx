@@ -126,6 +126,7 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { NAV_GROUPS } from "@/lib/nav-items";
 import type { TariffSchedule } from "@/lib/types";
+import { formatLocalDate } from "@/lib/format";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -167,6 +168,36 @@ describe("Tariff schedule list", () => {
     expect(screen.getByText("MC_PP")).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("2 schedules")).toBeInTheDocument();
+  });
+
+  it("renders no code badge when the schedule has no code (K-81)", () => {
+    const schedules = [
+      makeSchedule({ id: "ts-1", name: "No Code Schedule", code: "", active: false }),
+    ];
+    const { container } = render(
+      <TariffBrowserClient initialSchedules={schedules} initialTotal={1} slug="acme" />
+    );
+    const row = screen.getByTestId("schedule-row-ts-1");
+    expect(row.querySelectorAll('[data-slot="badge"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-slot="badge"]')).toHaveLength(0);
+  });
+
+  it("prints the effective dates day-first (K-79)", () => {
+    const schedules = [
+      makeSchedule({ id: "ts-1", effectiveFrom: "2026-01-01", effectiveTo: "2026-12-31" }),
+    ];
+    render(<TariffBrowserClient initialSchedules={schedules} initialTotal={1} slug="acme" />);
+    const row = screen.getByTestId("schedule-row-ts-1");
+    expect(row).toHaveTextContent(
+      `Effective from ${formatLocalDate("2026-01-01")} to ${formatLocalDate("2026-12-31")}`
+    );
+    expect(row).not.toHaveTextContent("2026-01-01");
+  });
+
+  it("shows an inline empty line when there are no schedules", () => {
+    render(<TariffBrowserClient initialSchedules={[]} initialTotal={0} slug="acme" />);
+    expect(screen.getByText("No tariff schedules found.").tagName).toBe("P");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 });
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect, useRef } from "react";
+import { createContext, use, useState, useTransition, useCallback, useEffect, useRef } from "react";
+import type { CellContext } from "@tanstack/react-table";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
@@ -20,9 +21,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Search, Link2, Trash2 } from "lucide-react";
+import { MoreHorizontal, Search, Link2, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { EmptyState } from "@/components/empty-state";
 import { AdversePartyDialog } from "@/components/legal/adverse-party-dialog";
 import { LinkAdversePartyDialog } from "@/components/legal/link-adverse-party-dialog";
 import { fetchAdverseParties, deleteAdverseParty } from "./actions";
@@ -64,6 +68,86 @@ function partyTypeBadge(partyType: AdversePartyType) {
       return <Badge variant="neutral">{partyType}</Badge>;
   }
 }
+
+/**
+ * The row menu's per-render inputs. `COLUMNS` is a module constant and its actions cell reads these
+ * from context: a column array rebuilt when `deleting` changes would give `flexRender` new cell
+ * component types and remount every cell, dropping the "…" trigger the delete dialog returns
+ * focus to.
+ */
+interface PartyRowContextValue {
+  deleting: string | null;
+  onLink: (party: AdverseParty) => void;
+  onDelete: (party: AdverseParty) => void;
+}
+
+const PartyRowContext = createContext<PartyRowContextValue | null>(null);
+
+function PartyActionsCell({ row }: CellContext<AdverseParty, unknown>) {
+  const context = use(PartyRowContext);
+  if (!context) throw new Error("PartyActionsCell needs PartyRowContext");
+  const { deleting, onLink, onDelete } = context;
+  const party = row.original;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="size-8 p-0">
+          <MoreHorizontal className="size-4" />
+          <span className="sr-only">Actions</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onLink(party)}>
+          <Link2 className="mr-2 size-4" />
+          Link to Matter
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onDelete(party)}
+          disabled={deleting === party.id || party.linkedMatterCount > 0}
+          className="text-red-600 focus:text-red-600"
+        >
+          <Trash2 className="mr-2 size-4" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+const COLUMNS = defineColumns<AdverseParty>([
+  {
+    id: "name",
+    enableHiding: false,
+    meta: { label: "Name", cellClassName: "text-foreground font-medium whitespace-normal" },
+    cell: ({ row }) => row.original.name,
+  },
+  {
+    id: "idNumber",
+    meta: { label: "ID Number", cellClassName: "text-muted-foreground font-mono text-sm" },
+    cell: ({ row }) => row.original.idNumber ?? "-",
+  },
+  {
+    id: "registrationNumber",
+    meta: { label: "Reg. Number", cellClassName: "text-muted-foreground font-mono text-sm" },
+    cell: ({ row }) => row.original.registrationNumber ?? "-",
+  },
+  {
+    id: "type",
+    meta: { label: "Type" },
+    cell: ({ row }) => partyTypeBadge(row.original.partyType),
+  },
+  {
+    id: "links",
+    meta: { label: "Links", cellClassName: "text-muted-foreground text-sm" },
+    cell: ({ row }) => row.original.linkedMatterCount,
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    meta: { label: "Actions", align: "end" },
+    cell: PartyActionsCell,
+  },
+]);
 
 interface AdversePartyRegistryClientProps {
   initialParties: AdverseParty[];
@@ -175,88 +259,30 @@ export function AdversePartyRegistryClient({
       </div>
 
       {/* Count */}
-      <div className="text-sm text-slate-500 dark:text-slate-400">
+      <div className="text-muted-foreground text-sm">
         {total} part{total !== 1 ? "ies" : "y"}
       </div>
 
       {/* Table */}
-      <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
-        {parties.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">No adverse parties found.</p>
-          </div>
-        ) : (
-          <table className="w-full" data-testid="adverse-party-table">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  ID Number
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Reg. Number
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Links
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {parties.map((party) => (
-                <tr
-                  key={party.id}
-                  className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
-                >
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                    {party.name}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
-                    {party.idNumber ?? "-"}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
-                    {party.registrationNumber ?? "-"}
-                  </td>
-                  <td className="px-4 py-3">{partyTypeBadge(party.partyType)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {party.linkedMatterCount}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="size-8 p-0">
-                          <MoreHorizontal className="size-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setLinkTarget(party)}>
-                          <Link2 className="mr-2 size-4" />
-                          Link to Matter
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setDeleteTarget(party)}
-                          disabled={deleting === party.id || party.linkedMatterCount > 0}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="mr-2 size-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className={cn(isPending && "opacity-50 transition-opacity")}>
+        <PartyRowContext value={{ deleting, onLink: setLinkTarget, onDelete: setDeleteTarget }}>
+          <DataTable
+            columns={COLUMNS}
+            data={parties}
+            getRowId={(party) => party.id}
+            tableTestId="adverse-party-table"
+            columnVisibility={false}
+            stickyHeader={false}
+            empty={
+              <EmptyState
+                variant="inline"
+                icon={Users}
+                title="No adverse parties found."
+                description={null}
+              />
+            }
+          />
+        </PartyRowContext>
       </div>
 
       {linkTarget && (

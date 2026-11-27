@@ -86,4 +86,28 @@ describe("DataRequestTable", () => {
     // Acme Corp has a future deadline — should NOT show overdue
     expect(screen.queryByText(/Overdue/)).not.toBeInTheDocument();
   });
+
+  it("renders one column header per label", () => {
+    render(<DataRequestTable requests={mockRequests} slug="acme" />);
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Client",
+      "Type",
+      "Status",
+      "Deadline",
+      "Requested",
+    ]);
+  });
+
+  it("links the client name to the request detail", () => {
+    render(<DataRequestTable requests={mockRequests} slug="acme" />);
+    expect(screen.getByRole("link", { name: "Acme Corp" })).toHaveAttribute(
+      "href",
+      "/org/acme/compliance/requests/req-1"
+    );
+  });
+
+  it("renders no table when there are no requests (the page owns the empty state)", () => {
+    render(<DataRequestTable requests={[]} slug="acme" />);
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
 });

@@ -3,6 +3,7 @@ import { getOrgSettings } from "@/lib/api/settings";
 import { fetchTariffSchedules } from "./actions";
 import { TariffBrowserClient } from "./tariff-browser-client";
 import type { TariffSchedule } from "@/lib/types";
+import { PageHeader } from "@b2mash/ui/page-header";
 
 export default async function TariffsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -17,13 +18,16 @@ export default async function TariffsPage({ params }: { params: Promise<{ slug: 
   const enabledModules = settings.enabledModules ?? [];
   if (!enabledModules.includes("lssa_tariff")) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <h2 className="font-display text-xl font-semibold text-slate-950 dark:text-slate-50">
-          Module Not Available
-        </h2>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          The Tariff Schedules module is not enabled for your organization.
-        </p>
+      <div className="space-y-6">
+        <PageHeader title="Tariff Schedules" />
+        <div className="flex flex-col items-center justify-center py-20">
+          <h2 className="font-display text-foreground text-xl font-semibold">
+            Module Not Available
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            The Tariff Schedules module is not enabled for your organization.
+          </p>
+        </div>
       </div>
     );
   }
@@ -41,14 +45,10 @@ export default async function TariffsPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Tariff Schedules
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Browse and manage LSSA tariff schedules and items
-        </p>
-      </div>
+      <PageHeader
+        title="Tariff Schedules"
+        description="Browse and manage LSSA tariff schedules and items"
+      />
 
       <TariffBrowserClient
         initialSchedules={initialSchedules}

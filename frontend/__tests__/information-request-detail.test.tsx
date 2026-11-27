@@ -227,4 +227,29 @@ describe("Information Request Detail", () => {
 
     expect(screen.getByText("Reason: Document is expired")).toBeInTheDocument();
   });
+
+  // DA-1: the h1 is exactly the request number (information-request-crud.spec.ts:147 anchors it).
+  it("renders one h1 whose text is exactly the request number", () => {
+    render(<RequestDetailClient request={makeRequest()} slug="test-org" />);
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0].textContent).toBe("REQ-0001");
+  });
+
+  // K-67 (founder-approved copy): the reminder interval reads naturally for every value.
+  it.each([
+    // The type says number, but the API sends null for "use the firm default" (REQ-0001).
+    [null as unknown as number, "Firm default"],
+    [undefined as unknown as number, "Firm default"],
+    [0, "Off"],
+    [1, "Every day"],
+    [5, "Every 5 days"],
+  ])("shows reminderIntervalDays %s as %s", (days, label) => {
+    render(
+      <RequestDetailClient request={makeRequest({ reminderIntervalDays: days })} slug="test-org" />
+    );
+    const value = screen.getByText("Reminder Interval").nextElementSibling;
+    expect(value).toHaveTextContent(label);
+    expect(value?.textContent).toBe(label);
+  });
 });

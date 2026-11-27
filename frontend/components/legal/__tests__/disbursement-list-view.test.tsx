@@ -3,6 +3,11 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
+import { formatLocalDate } from "@/lib/format";
+
+// DataTable (kit) opens `rowHref` through the App Router.
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mockPush }) }));
 
 function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): DisbursementResponse {
   return {
@@ -57,13 +62,18 @@ function cellUnder(label: string, rowId = "d1"): HTMLElement {
 describe("DisbursementListView", () => {
   afterEach(() => {
     cleanup();
+    mockPush.mockReset();
   });
 
   it("renders an empty state when no disbursements are provided", () => {
     render(<DisbursementListView disbursements={[]} />);
 
-    expect(screen.getByText("No disbursements found.")).toBeInTheDocument();
+    // `inline`: the title is a <p>, never a heading (day-05:428 matches any heading containing
+    // "Disbursements" in the matter tab).
+    expect(screen.getByText("No disbursements found.").tagName).toBe("P");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     expect(screen.queryByTestId("disbursement-list")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("renders one row per disbursement with supplier, category and amount", () => {
@@ -91,17 +101,38 @@ describe("DisbursementListView", () => {
     expect(cellUnder("Category", "d2")).toHaveTextContent("Counsel Fees");
   });
 
-  it("calls onSelect when a row is clicked", async () => {
+  it("opens the row href when a row is clicked", async () => {
     const user = userEvent.setup();
-    const onSelect = vi.fn();
     const row = makeDisbursement({ id: "row-1" });
 
-    render(<DisbursementListView disbursements={[row]} onSelect={onSelect} />);
+    render(
+      <DisbursementListView
+        disbursements={[row]}
+        rowHref={(d) => `/org/acme/legal/disbursements/${d.id}`}
+      />
+    );
 
     await user.click(screen.getByTestId("disbursement-row-row-1"));
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith(row);
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/legal/disbursements/row-1");
+  });
+
+  it("shows the incurred date day-first, not as a mono ISO string (K-79)", () => {
+    render(<DisbursementListView disbursements={[makeDisbursement({ id: "d1" })]} />);
+
+    const date = cellUnder("Date");
+    expect(date).toHaveTextContent(formatLocalDate("2026-02-12"));
+    expect(date).not.toHaveTextContent("2026-02-12");
+    expect(date).not.toHaveClass("font-mono");
+  });
+
+  it("sorts by date, newest first, and marks the Date header as the active sort", () => {
+    render(<DisbursementListView disbursements={[makeDisbursement({ id: "d1" })]} />);
+
+    expect(headerFor("Date")).toHaveAttribute("aria-sort", "descending");
+    expect(headerFor("Supplier")).toHaveAttribute("aria-sort", "none");
+    expect(headerFor("Description")).not.toHaveAttribute("aria-sort");
   });
 
   it("resolves matter name from projectNames map", () => {
@@ -127,14 +158,13 @@ describe("DisbursementListView", () => {
 
   it("offers Write off on an UNBILLED row (any approval state) without selecting the row", async () => {
     const user = userEvent.setup();
-    const onSelect = vi.fn();
     const onWriteOff = vi.fn();
     const approved = makeDisbursement({ id: "d-wo", approvalStatus: "APPROVED" });
 
     render(
       <DisbursementListView
         disbursements={[approved]}
-        onSelect={onSelect}
+        rowHref={(d) => `/org/acme/legal/disbursements/${d.id}`}
         onWriteOff={onWriteOff}
         onRestore={vi.fn()}
       />
@@ -148,12 +178,11 @@ describe("DisbursementListView", () => {
     await waitFor(() => expect(onWriteOff).toHaveBeenCalledWith(approved));
     expect(onWriteOff).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("disbursement-actions-d-wo")).toHaveFocus();
-    expect(onSelect).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("offers Undo write-off on a WRITTEN_OFF row", async () => {
     const user = userEvent.setup();
-    const onSelect = vi.fn();
     const onRestore = vi.fn();
     const writtenOff = makeDisbursement({
       id: "d-ro",
@@ -165,7 +194,7 @@ describe("DisbursementListView", () => {
     render(
       <DisbursementListView
         disbursements={[writtenOff]}
-        onSelect={onSelect}
+        rowHref={(d) => `/org/acme/legal/disbursements/${d.id}`}
         onWriteOff={vi.fn()}
         onRestore={onRestore}
       />
@@ -176,7 +205,7 @@ describe("DisbursementListView", () => {
     await user.click(screen.getByRole("menuitem", { name: "Undo write-off" }));
 
     expect(onRestore).toHaveBeenCalledWith(writtenOff);
-    expect(onSelect).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("shows no write-off actions on a BILLED row", () => {
@@ -294,7 +323,7 @@ describe("DisbursementListView — fitting the container", () => {
   it("shows each hidden column's value on the Description's second line until its column returns", () => {
     renderRow();
     const line = secondaryLine();
-    expect(line).toHaveClass("text-xs", "text-slate-500", "@min-[84rem]:hidden");
+    expect(line).toHaveClass("text-xs", "text-muted-foreground", "@min-[84rem]:hidden");
 
     const matter = within(line).getByText("Khumalo Property Holdings — Erf 1234 Sandton Transfer");
     expect(matter).toHaveClass("truncate");
@@ -355,11 +384,17 @@ describe("DisbursementListView — fitting the container", () => {
     expect(breakpointOf(stacked, "hidden")).toBe(billing);
     for (const label of ["Date", "Description", "Amount (incl VAT)", "Approval", "Actions"]) {
       expect(breakpointOf(cellUnder(label), "px-4"), label).toBe(billing);
+    }
+    // Sortable headers keep the kit's `pr-5` sort-icon slot, so only their left padding widens.
+    for (const label of ["Date", "Amount (incl VAT)", "Approval"]) {
+      expect(breakpointOf(headerFor(label), "pl-4"), label).toBe(billing);
+      expect(headerFor(label), label).toHaveClass("pr-5");
+    }
+    for (const label of ["Description", "Actions"]) {
       expect(breakpointOf(headerFor(label), "px-4"), label).toBe(billing);
     }
     expect(breakpointOf(cellUnder("Description"), "max-w-[28ch]")).toBe(billing);
-    const amountButton = within(headerFor("Amount (incl VAT)")).getByRole("button");
-    expect(breakpointOf(amountButton, "whitespace-nowrap")).toBe(billing);
+    expect(breakpointOf(headerFor("Amount (incl VAT)"), "whitespace-nowrap")).toBe(billing);
   });
 
   it("keeps Supplier sorting reachable: a Description-header control while the column is hidden", async () => {

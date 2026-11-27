@@ -9,6 +9,7 @@ import { isOverdue, formatLocalDate, formatComplianceDateWithTime } from "@/lib/
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@b2mash/ui/page-header";
 import type { DataRequestType } from "@/lib/types";
 
 const TYPE_LABELS: Record<DataRequestType, string> = {
@@ -31,8 +32,8 @@ export default async function DataRequestDetailPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Request</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <PageHeader title="Data Request" />
+        <p className="text-muted-foreground">
           You do not have permission to view data requests. Only admins and owners can access this
           page.
         </p>
@@ -61,7 +62,7 @@ export default async function DataRequestDetailPage({
       <div>
         <Link
           href={`/org/${slug}/compliance/requests`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm transition-colors"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Data Requests
@@ -71,7 +72,8 @@ export default async function DataRequestDetailPage({
       {/* Header */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-3xl font-bold text-slate-950 dark:text-slate-50">
+          {/* DA-1 exception: badges sit beside the h1, which PageHeader cannot hold; same title recipe. */}
+          <h1 className="font-display text-foreground text-2xl font-semibold tracking-tight">
             {request.clientName}
           </h1>
           <Badge variant={statusConfig.variant} className={statusConfig.className}>
@@ -80,7 +82,7 @@ export default async function DataRequestDetailPage({
           <Badge variant="neutral">{TYPE_LABELS[request.requestType] ?? request.requestType}</Badge>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
           <span>Requested: {formatComplianceDateWithTime(request.requestedAt)}</span>
           <span className={cn(overdue ? "font-medium text-red-600 dark:text-red-400" : "")}>
             Deadline: {formatLocalDate(request.deadline)}
@@ -100,8 +102,8 @@ export default async function DataRequestDetailPage({
         {/* Main content */}
         <div className="space-y-6 lg:col-span-2">
           {/* Description */}
-          <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
-            <h2 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+          <div className="border-border rounded-lg border p-6">
+            <h2 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
               Description
             </h2>
             <p className="text-sm text-slate-700 dark:text-slate-300">{request.description}</p>
@@ -119,8 +121,8 @@ export default async function DataRequestDetailPage({
 
           {/* Notes */}
           {request.notes && (
-            <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
-              <h2 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            <div className="border-border rounded-lg border p-6">
+              <h2 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
                 Notes
               </h2>
               <p className="text-sm text-slate-700 dark:text-slate-300">{request.notes}</p>
@@ -129,8 +131,8 @@ export default async function DataRequestDetailPage({
 
           {/* Action buttons */}
           {isAdmin && (
-            <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
-              <h2 className="mb-4 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            <div className="border-border rounded-lg border p-6">
+              <h2 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
                 Actions
               </h2>
               <DataRequestActions request={request} slug={slug} />
@@ -140,8 +142,8 @@ export default async function DataRequestDetailPage({
 
         {/* Sidebar: timeline */}
         <div>
-          <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
-            <h2 className="mb-4 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+          <div className="border-border rounded-lg border p-6">
+            <h2 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
               Status Timeline
             </h2>
             <DataRequestTimeline request={request} />

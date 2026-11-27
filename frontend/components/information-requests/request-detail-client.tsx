@@ -54,6 +54,14 @@ import {
   getItemDocumentDownloadUrl,
 } from "@/app/(app)/org/[slug]/information-requests/[id]/actions";
 
+/** K-67 (founder-approved copy, 2026-11-26): the API sends null for "use the firm default". */
+function reminderIntervalLabel(days: number | null | undefined): string {
+  if (days === null || days === undefined) return "Firm default";
+  if (days === 0) return "Off";
+  if (days === 1) return "Every day";
+  return `Every ${days} days`;
+}
+
 interface RequestDetailClientProps {
   request: InformationRequestResponse;
   slug: string;
@@ -159,7 +167,9 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            {/* DA-1 exception: the status badge sits beside the h1 (whose name must stay exactly the
+                request number), which PageHeader cannot hold; same title recipe. */}
+            <h1 className="font-display text-foreground text-2xl font-semibold tracking-tight">
               {request.requestNumber}
             </h1>
             <RequestStatusBadge status={request.status} />
@@ -167,13 +177,13 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
           <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
             <Link
               href={`/org/${slug}/clients/${request.clientId}`}
-              className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+              className="text-(--button-accent) hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
             >
               {request.clientName}
             </Link>
             {request.matterName && (
               <>
-                <span className="text-slate-300 dark:text-slate-700">|</span>
+                <span className="text-muted-foreground">|</span>
                 <span>{request.matterName}</span>
               </>
             )}
@@ -223,26 +233,26 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
       {/* Metadata */}
       <div className="grid grid-cols-2 gap-6 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900">
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
             <Mail className="size-3.5" />
             Contact
           </div>
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
             {request.portalContactName}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{request.portalContactEmail}</p>
+          <p className="text-muted-foreground text-xs">{request.portalContactEmail}</p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
             <Clock className="size-3.5" />
             Reminder Interval
           </div>
-          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Every {request.reminderIntervalDays} days
+          <p className="text-foreground text-sm font-medium">
+            {reminderIntervalLabel(request.reminderIntervalDays)}
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
             <Calendar className="size-3.5" />
             Sent
           </div>
@@ -251,7 +261,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
             <Calendar className="size-3.5" />
             Due
           </div>
@@ -260,7 +270,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
           </p>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
             <Check className="size-3.5" />
             Progress
           </div>

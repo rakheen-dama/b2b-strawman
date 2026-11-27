@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef, useCallback, useTransition } from "react";
 import { Badge } from "@b2mash/ui/badge";
 import { Input } from "@b2mash/ui/input";
-import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { ListChecks, Search, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
+import { EmptyState } from "@/components/empty-state";
 import { fetchTariffItems } from "@/app/(app)/org/[slug]/legal/tariffs/actions";
 import type { TariffItem } from "@/lib/types";
 
@@ -126,9 +127,12 @@ export function TariffItemBrowser({
       {/* Items */}
       <div className={cn("space-y-1", isPending && "opacity-50 transition-opacity")}>
         {items.length === 0 && !isPending ? (
-          <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
-            No tariff items found.
-          </p>
+          <EmptyState
+            variant="inline"
+            icon={ListChecks}
+            title="No tariff items found."
+            description={null}
+          />
         ) : (
           grouped.map((group) => (
             <div key={group.section}>
@@ -145,7 +149,7 @@ export function TariffItemBrowser({
                   <ChevronDown className="size-3.5" />
                 )}
                 {group.section}
-                <span className="text-slate-400">({group.items.length})</span>
+                <span className="text-muted-foreground">({group.items.length})</span>
               </button>
 
               {/* Section items */}

@@ -52,7 +52,7 @@ export function InvoiceDraftForm({
 }: InvoiceDraftFormProps) {
   return (
     <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">Fee note details</h2>
+      <h2 className="font-display text-foreground mb-4 text-lg">Fee note details</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="invoice-due-date" className={labelClass}>

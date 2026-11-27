@@ -1,16 +1,20 @@
 "use client";
 
 import { Button } from "@b2mash/ui/button";
+import { DetailHero } from "@/components/shared/detail-hero";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { BroughtForwardBadge } from "@/components/invoices/brought-forward-badge";
 import { Eye } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
+import { feeNoteHeroTiles } from "@/lib/fee-note-hero";
 import { formatDate } from "@/lib/format";
 import { RequiresCapability } from "@/lib/capabilities";
 import type { InvoiceResponse } from "@/lib/types";
 
 interface InvoiceHeaderActionsProps {
   invoice: InvoiceResponse;
+  /** The business date (yyyy-MM-dd, SA calendar) from the server page — never computed here (ADR-396). */
+  todayIso: string;
   isAdmin: boolean;
   isPending: boolean;
   isDraft: boolean;
@@ -28,6 +32,7 @@ interface InvoiceHeaderActionsProps {
 
 export function InvoiceHeaderActions({
   invoice,
+  todayIso,
   isAdmin,
   isPending,
   isDraft,
@@ -42,27 +47,30 @@ export function InvoiceHeaderActions({
   onShowPaymentForm,
 }: InvoiceHeaderActionsProps) {
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="min-w-0">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display flex items-center gap-2 text-2xl text-slate-950 dark:text-slate-50">
-            {invoice.invoiceNumber ?? "Draft fee note"}
-            <HelpTip code="invoices.numbering" />
-          </h1>
+    <DetailHero
+      title={
+        <span className="inline-flex items-center gap-2">
+          {invoice.invoiceNumber ?? "Draft fee note"}
+          <HelpTip code="invoices.numbering" />
+        </span>
+      }
+      status={
+        <>
           <StatusBadge status={invoice.status} />
           <BroughtForwardBadge takeOnBatchId={invoice.takeOnBatchId} />
-        </div>
-        <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
+        </>
+      }
+      subtitle={
+        <div className="flex flex-wrap gap-x-6 gap-y-1">
           <span>Client: {invoice.clientName}</span>
           {invoice.issueDate && <span>Issued: {formatDate(invoice.issueDate)}</span>}
           {invoice.dueDate && !isDraft && <span>Due: {formatDate(invoice.dueDate)}</span>}
           <span>Currency: {invoice.currency}</span>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex shrink-0 flex-wrap gap-2">
-        {isAdmin && (
+      }
+      actions={
+        // null for non-admins: DetailHero treats any fragment as content (empty actions div).
+        isAdmin ? (
           <>
             <Button variant="soft" size="sm" onClick={onPreview}>
               <Eye className="mr-1.5 size-4" />
@@ -102,8 +110,12 @@ export function InvoiceHeaderActions({
               </Button>
             )}
           </>
-        )}
-      </div>
-    </div>
+        ) : null
+      }
+      // Derived from the live fee note on every render (ADR-396): Record Payment, Approve, Send,
+      // Void and line edits all setInvoice, so the strip never shows pre-action figures.
+      tiles={feeNoteHeroTiles(invoice, todayIso)}
+      tileTestIdPrefix="fee-note-hero-tile-"
+    />
   );
 }

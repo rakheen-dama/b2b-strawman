@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
 
-type EmptyStateVariant = "default" | "compact" | "inline";
+export type EmptyStateVariant = "default" | "compact" | "inline";
 
 interface EmptyStateProps {
   icon: LucideIcon;

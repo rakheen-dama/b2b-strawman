@@ -86,6 +86,9 @@ vi.mock("@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursement
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 
+/** The server page's business date (ADR-396: the client never computes "today"). */
+const TODAY = "2026-11-27";
+
 describe("Invoice Generation Validation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -249,7 +252,9 @@ describe("Invoice Generation Validation", () => {
       hasPerLineTax: false,
     };
 
-    render(<InvoiceDetailClient invoice={mockInvoice} slug="test-org" isAdmin={true} />);
+    render(
+      <InvoiceDetailClient todayIso={TODAY} invoice={mockInvoice} slug="test-org" isAdmin={true} />
+    );
 
     // Click Send fee note
     await user.click(screen.getByText("Send fee note"));

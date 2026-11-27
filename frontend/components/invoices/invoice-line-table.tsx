@@ -1,10 +1,28 @@
 "use client";
 
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { ListPlus, Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Badge } from "@b2mash/ui/badge";
+import { EmptyState } from "@/components/empty-state";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { InvoiceLineResponse } from "@/lib/types";
+
+/**
+ * K-74 / F-666B-A1/A2 floors for the two wrapping columns (kit cells are whitespace-nowrap, D-55),
+ * with px-3 cells: measured on the live stack, the draft table (with Actions) fits its 710 px frame
+ * at 1024, Description wraps onto no more lines than before K-74 and Tax stays on 2 lines.
+ */
+const DESCRIPTION_CLASS = "min-w-40 whitespace-normal";
+const TAX_CLASS = "min-w-32 whitespace-normal";
 
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
@@ -99,21 +117,19 @@ function LineSection({
   return (
     <>
       {showHeader && (
-        <tr data-testid={`section-header-${type}`}>
-          <td
+        <TableRow data-testid={`section-header-${type}`} className="hover:bg-transparent">
+          <TableCell
             colSpan={colCount}
-            className="bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-600 uppercase dark:bg-slate-900/50 dark:text-slate-400"
+            className="bg-muted/50 text-muted-foreground px-3 py-2 text-xs font-semibold tracking-wide uppercase"
           >
             {label}
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       )}
       {lines.map((line) => (
-        <tr
-          key={line.id}
-          className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
-        >
-          <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
+        <TableRow key={line.id}>
+          {/* K-74: a floor for the description so it no longer wraps onto 6 lines at 1024. */}
+          <TableCell className={cn(DESCRIPTION_CLASS, "text-foreground px-3 py-3")}>
             <span className="flex items-center gap-2">
               {line.description}
               {line.lineSource === "TARIFF" && (
@@ -122,23 +138,21 @@ function LineSection({
                 </Badge>
               )}
             </span>
-          </td>
-          <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
+          </TableCell>
+          <TableCell className="text-muted-foreground hidden px-3 py-3 whitespace-normal sm:table-cell">
             {line.matterName || "\u2014"}
-          </td>
-          <td className="px-4 py-3 text-right text-sm text-slate-900 dark:text-slate-100">
-            {line.quantity}
-          </td>
-          <td className="px-4 py-3 text-right text-sm text-slate-900 dark:text-slate-100">
+          </TableCell>
+          <TableCell className="text-foreground px-3 py-3 text-right">{line.quantity}</TableCell>
+          <TableCell className="text-foreground px-3 py-3 text-right">
             {formatCurrency(line.unitPrice, currency)}
-          </td>
-          <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
+          </TableCell>
+          <TableCell className="text-foreground px-3 py-3 text-right font-medium">
             {formatCurrency(line.amount, currency)}
-          </td>
+          </TableCell>
           {hasPerLineTax && (
-            <td className="px-4 py-3 text-right text-sm text-slate-600 dark:text-slate-400">
+            <TableCell className={cn(TAX_CLASS, "text-muted-foreground px-3 py-3 text-right")}>
               {line.taxExempt ? (
-                <span className="text-slate-500 dark:text-slate-400">Exempt</span>
+                <span>Exempt</span>
               ) : line.taxRateName && line.taxAmount != null ? (
                 <span>
                   {line.taxRateName} ({line.taxRatePercent}%){" "}
@@ -147,10 +161,10 @@ function LineSection({
               ) : (
                 "\u2014"
               )}
-            </td>
+            </TableCell>
           )}
           {editable && (
-            <td className="px-4 py-3 text-right">
+            <TableCell className="px-3 py-3 text-right">
               <div className="flex items-center justify-end gap-1">
                 {onEditLine && (
                   <button
@@ -173,9 +187,9 @@ function LineSection({
                   </button>
                 )}
               </div>
-            </td>
+            </TableCell>
           )}
-        </tr>
+        </TableRow>
       ))}
     </>
   );
@@ -203,7 +217,7 @@ export function InvoiceLineTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Line Items</h2>
+        <h2 className="font-display text-foreground text-lg">Line Items</h2>
         {editable && onAddLine && (
           <Button variant="outline" size="sm" onClick={onAddLine}>
             <Plus className="mr-1.5 size-4" />
@@ -213,42 +227,29 @@ export function InvoiceLineTable({
       </div>
 
       {lines.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          No line items yet. Add a line item to get started.
-        </p>
+        <EmptyState
+          variant="inline"
+          icon={ListPlus}
+          title="No line items yet. Add a line item to get started."
+          description={null}
+        />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Description
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Matter
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Qty
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Rate
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Amount
-                </th>
+        <div className="bg-card rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className={cn(DESCRIPTION_CLASS, "px-3")}>Description</TableHead>
+                <TableHead className="hidden px-3 sm:table-cell">Matter</TableHead>
+                <TableHead className="px-3 text-right">Qty</TableHead>
+                <TableHead className="px-3 text-right">Rate</TableHead>
+                <TableHead className="px-3 text-right">Amount</TableHead>
                 {hasPerLineTax && (
-                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                    Tax
-                  </th>
+                  <TableHead className={cn(TAX_CLASS, "px-3 text-right")}>Tax</TableHead>
                 )}
-                {editable && (
-                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
+                {editable && <TableHead className="px-3 text-right">Actions</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {renderGroupedLines(
                 lines,
                 currency,
@@ -257,8 +258,8 @@ export function InvoiceLineTable({
                 onEditLine,
                 onDeleteLine
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

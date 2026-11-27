@@ -113,6 +113,29 @@ describe("<AuditTimeline>", () => {
     });
   });
 
+  it("renders the default empty variant unless the caller passes emptyVariant (F-663B-1)", async () => {
+    mocked.mockResolvedValueOnce(makePage([], 0, 0));
+    const { container, unmount } = render(<AuditTimeline entityType="invoice" entityId="inv-1" />);
+    await screen.findByText("No audit events");
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "default"
+    );
+    unmount();
+
+    mocked.mockResolvedValueOnce(makePage([], 0, 0));
+    const inline = render(
+      <AuditTimeline entityType="invoice" entityId="inv-1" emptyVariant="inline" />
+    );
+    await screen.findByText("No audit events");
+    expect(inline.container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "inline"
+    );
+    // inline titles are a <p>, so the fee-note section adds no heading
+    expect(screen.queryByRole("heading", { name: "No audit events" })).not.toBeInTheDocument();
+  });
+
   it("'Load more' fetches the next page and appends rows", async () => {
     const firstPage = makePage(
       [makeRow({ id: "p1-a", occurredAt: "2026-05-03T10:00:00Z", label: "Page 1 row A" })],

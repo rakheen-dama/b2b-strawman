@@ -21,8 +21,8 @@ export interface HeroTile {
 interface DetailHeroProps {
   /** Mono chip (matter reference / client number); omitted when absent. */
   identifier?: ReactNode;
-  /** The page's single <h1>. */
-  title: string;
+  /** The page's single <h1>: a string, or nodes such as the fee-note number + its HelpTip (666B). */
+  title: ReactNode;
   /** e.g. "matter-name" / "client-name". */
   titleTestId?: string;
   subtitle?: ReactNode;
@@ -34,6 +34,8 @@ interface DetailHeroProps {
   facts?: ReactNode;
   /** 0–4 tiles, rendered as compact StatCards. */
   tiles?: HeroTile[];
+  /** When set, each tile's StatCard gets data-testid `${tileTestIdPrefix}${tile.id}` (fee note, 666B). */
+  tileTestIdPrefix?: string;
   className?: string;
   /** e.g. "matter-header-card" / "client-header-card". */
   "data-testid"?: string;
@@ -66,6 +68,7 @@ export function DetailHero({
   actions,
   facts,
   tiles = [],
+  tileTestIdPrefix,
   className,
   "data-testid": testId,
 }: DetailHeroProps) {
@@ -126,6 +129,7 @@ export function DetailHero({
                 hint={tile.hint}
                 state={tile.state}
                 className="h-full"
+                data-testid={tileTestIdPrefix ? `${tileTestIdPrefix}${tile.id}` : undefined}
               />
             );
             return tile.href ? (

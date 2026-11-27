@@ -1,9 +1,20 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import type { InvoiceResponse } from "@/lib/types";
+
+/** The server page's business date (ADR-396: the client never computes "today"). */
+const TODAY = "2026-11-27";
+
+/**
+ * The totals block (Subtotal … Balance due). The hero repeats "Total" / "Amount paid" / "Balance
+ * due" (ADR-396), so totals assertions are scoped — same anchor as e2e `feeNoteTotalsRow`.
+ */
+const totalsBlock = () =>
+  screen.getByText("Subtotal", { exact: true }).parentElement!.parentElement as HTMLElement;
+const heroTile = (id: string) => screen.getByTestId(`fee-note-hero-tile-${id}`);
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -156,7 +167,7 @@ describe("InvoiceDetailClient", () => {
 
   it("renders draft invoice with editable fields", () => {
     const invoice = makeDraftInvoice();
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Draft fee note")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument(); // StatusBadge
@@ -179,8 +190,13 @@ describe("InvoiceDetailClient", () => {
     const thousandElements = screen.getAllByText(/US\$1\s000,00/);
     expect(thousandElements.length).toBeGreaterThanOrEqual(2);
 
-    // Total
-    expect(screen.getByText(/US\$1\s100,00/)).toBeInTheDocument();
+    // Total (totals block) + the hero's Total tile — the only tile on a draft (ADR-396)
+    expect(within(totalsBlock()).getByText(/US\$1\s100,00/)).toBeInTheDocument();
+    expect(within(heroTile("total")).getByText(/US\$1\s100,00/)).toBeInTheDocument();
+    expect(screen.queryByTestId("fee-note-hero-tile-paid")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("fee-note-hero-tile-balance")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("fee-note-hero-tile-due")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
   it("renders APPROVED invoice with lifecycle buttons", () => {
@@ -190,7 +206,7 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("INV-2026-001")).toBeInTheDocument();
     expect(screen.getByText("Approved")).toBeInTheDocument(); // StatusBadge
@@ -212,7 +228,7 @@ describe("InvoiceDetailClient", () => {
       paidAt: "2026-02-01T00:00:00Z",
       paymentReference: "CHK-12345",
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Paid")).toBeInTheDocument(); // StatusBadge
     expect(screen.getByText("Payment Received")).toBeInTheDocument();
@@ -225,7 +241,7 @@ describe("InvoiceDetailClient", () => {
 
   it("does not render admin buttons for non-admin", () => {
     const invoice = makeDraftInvoice();
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={false} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={false} />);
 
     expect(screen.getByText("Draft fee note")).toBeInTheDocument();
 
@@ -245,7 +261,7 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Sent")).toBeInTheDocument(); // StatusBadge
     expect(screen.getByRole("button", { name: /record payment/i })).toBeInTheDocument();
@@ -268,6 +284,7 @@ describe("InvoiceDetailClient", () => {
     });
     render(
       <InvoiceDetailClient
+        todayIso={TODAY}
         invoice={invoice}
         slug="acme"
         isAdmin={true}
@@ -298,8 +315,15 @@ describe("InvoiceDetailClient", () => {
 
     expect(screen.getByText("Part payment received")).toBeInTheDocument();
     expect(screen.getByTestId("invoice-balance-due").textContent).toMatch(/37\s182,00/);
-    // Totals gain Amount paid + Balance due rows
-    expect(screen.getByText("Amount paid")).toBeInTheDocument();
+    // Totals gain Amount paid + Balance due rows (scoped: the hero repeats the labels)
+    expect(within(totalsBlock()).getByText("Amount paid")).toBeInTheDocument();
+    // Hero: Total / Amount paid / Balance due / Due (+ days overdue) from the same fee note
+    expect(within(heroTile("total")).getByText(/42\s182,00/)).toBeInTheDocument();
+    expect(within(heroTile("paid")).getByText(/5\s000,00/)).toBeInTheDocument();
+    expect(within(heroTile("balance")).getByText(/37\s182,00/)).toBeInTheDocument();
+    expect(within(heroTile("due")).getByText("285d overdue")).toBeInTheDocument();
+    expect(screen.getAllByTestId("invoice-balance-due")).toHaveLength(1);
+    expect(screen.getAllByTestId("totals-balance-due")).toHaveLength(1);
     expect(screen.getByTestId("totals-balance-due").textContent).toMatch(/37\s182,00/);
     // Payment history is shown for PARTIALLY_PAID
     expect(screen.getByText("Payment History")).toBeInTheDocument();
@@ -315,7 +339,7 @@ describe("InvoiceDetailClient", () => {
       amountPaid: 5000,
       balanceDue: 37182,
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /record payment/i }));
@@ -331,7 +355,7 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Void")).toBeInTheDocument(); // StatusBadge
     expect(screen.getByText("This fee note has been voided.")).toBeInTheDocument();
@@ -350,7 +374,7 @@ describe("InvoiceDetailClient", () => {
     // Mock confirm for happy-dom
     window.confirm = vi.fn().mockReturnValue(true);
 
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     const deleteBtn = screen.getByRole("button", { name: /delete draft/i });
     await user.click(deleteBtn);
@@ -360,7 +384,7 @@ describe("InvoiceDetailClient", () => {
 
   it("renders preview button for DRAFT invoice", () => {
     const invoice = makeDraftInvoice();
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByRole("button", { name: /preview/i })).toBeInTheDocument();
   });
@@ -372,7 +396,7 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByRole("button", { name: /preview/i })).toBeInTheDocument();
   });
@@ -383,7 +407,7 @@ describe("InvoiceDetailClient", () => {
 
     const mockOpen = vi.spyOn(window, "open").mockImplementation(() => null);
 
-    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+    render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
     const previewBtn = screen.getByRole("button", { name: /preview/i });
     await user.click(previewBtn);

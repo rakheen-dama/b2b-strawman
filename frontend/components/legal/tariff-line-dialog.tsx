@@ -149,6 +149,7 @@ export function TariffLineDialog({
       <DialogContent
         className="flex max-h-[85vh] flex-col sm:max-w-2xl"
         data-testid="tariff-line-dialog"
+        aria-describedby={undefined}
       >
         <DialogHeader>
           <DialogTitle>Add Tariff Items</DialogTitle>

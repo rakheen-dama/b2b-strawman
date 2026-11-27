@@ -1,10 +1,13 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
 import { formatCurrency } from "@/lib/format";
 import type { InvoiceResponse, PaymentEvent } from "@/lib/types";
+
+/** The server page's business date (ADR-396: the client never computes "today"). */
+const TODAY = "2026-11-27";
 
 vi.mock("server-only", () => ({}));
 
@@ -176,7 +179,7 @@ describe("PaymentEventHistory", () => {
     expect(screen.getAllByText("\u2014").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("keeps provider and method readable below xl in a compact line (PR #1752 review)", () => {
+  it("keeps provider and method readable below a 67rem frame in a compact line (PR #1752 review)", () => {
     render(
       <PaymentEventHistory
         events={[makePaymentEvent({ id: "pe-eft", providerSlug: "manual", paymentMethod: "EFT" })]}
@@ -188,8 +191,10 @@ describe("PaymentEventHistory", () => {
     const compact = screen.getByTestId("payment-provider-method-compact");
     expect(compact).toHaveTextContent("Manual");
     expect(compact).toHaveTextContent("EFT");
-    expect(compact).toHaveClass("xl:hidden");
-    // Below xl the Provider / Method headers are hidden, so each value carries its own
+    // 666B: Provider / Method are DataTable `priority: "low"` columns (shown from a 67rem frame),
+    // so the compact line hides at the same container threshold.
+    expect(compact).toHaveClass("@min-[67rem]:hidden");
+    // Below that frame the Provider / Method headers are hidden, so each value carries its own
     // screen-reader label (PR #1752 CodeRabbit review).
     const srLabels = Array.from(compact.querySelectorAll(".sr-only")).map((el) =>
       el.textContent?.trim()
@@ -219,6 +224,7 @@ describe("InvoiceDetailClient — Payment Link Section", () => {
     const { InvoiceDetailClient } = await import("@/components/invoices/invoice-detail-client");
     return render(
       <InvoiceDetailClient
+        todayIso={TODAY}
         invoice={makeInvoice(invoiceOverrides)}
         slug="test-org"
         isAdmin={true}
@@ -320,6 +326,7 @@ describe("InvoiceDetailClient — Record Payment form (Phase 88 U15)", () => {
     const { InvoiceDetailClient } = await import("@/components/invoices/invoice-detail-client");
     render(
       <InvoiceDetailClient
+        todayIso={TODAY}
         invoice={makeInvoice({
           status: "SENT",
           total: 42182,
@@ -378,6 +385,10 @@ describe("InvoiceDetailClient — Record Payment form (Phase 88 U15)", () => {
       }),
     });
     const user = await openPaymentForm();
+    const heroTile = (id: string) => screen.getByTestId(`fee-note-hero-tile-${id}`);
+    // Hero before the payment (ADR-396: derived from the live fee note)
+    expect(within(heroTile("paid")).getByText(/5\s000,00/)).toBeInTheDocument();
+    expect(within(heroTile("balance")).getByText(/37\s182,00/)).toBeInTheDocument();
 
     const amount = screen.getByLabelText("Amount");
     await user.clear(amount);
@@ -397,6 +408,10 @@ describe("InvoiceDetailClient — Record Payment form (Phase 88 U15)", () => {
       expect(screen.queryByTestId("record-payment-form")).not.toBeInTheDocument()
     );
     expect(screen.getByTestId("invoice-balance-due").textContent).toMatch(/32\s182,00/);
+    // The hero follows setInvoice with no reload and agrees with the totals block
+    expect(within(heroTile("paid")).getByText(/10\s000,00/)).toBeInTheDocument();
+    expect(within(heroTile("balance")).getByText(/32\s182,00/)).toBeInTheDocument();
+    expect(screen.getByTestId("totals-balance-due").textContent).toMatch(/32\s182,00/);
   });
 
   it("omits an empty reference from the body", async () => {

@@ -5,6 +5,9 @@ import { BroughtForwardBadge } from "@/components/invoices/brought-forward-badge
 import { InvoiceHeaderActions } from "@/components/invoices/invoice-header-actions";
 import type { InvoiceResponse } from "@/lib/types";
 
+/** The server page's business date (ADR-396: the client never computes "today"). */
+const TODAY = "2026-11-27";
+
 vi.mock("server-only", () => ({}));
 
 vi.mock("@/lib/capabilities", () => ({
@@ -65,6 +68,7 @@ function renderHeader(invoice: InvoiceResponse) {
   const status = invoice.status;
   return render(
     <InvoiceHeaderActions
+      todayIso={TODAY}
       invoice={invoice}
       isAdmin
       isPending={false}

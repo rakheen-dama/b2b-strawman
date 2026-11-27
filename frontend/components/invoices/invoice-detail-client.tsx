@@ -30,6 +30,8 @@ interface InvoiceDetailClientProps {
   isAdmin: boolean;
   paymentEvents?: PaymentEvent[];
   taxRates?: TaxRateResponse[];
+  /** The business date (yyyy-MM-dd, SA calendar), computed once by the server page (ADR-396). */
+  todayIso: string;
 }
 
 export function InvoiceDetailClient({
@@ -38,6 +40,7 @@ export function InvoiceDetailClient({
   isAdmin,
   paymentEvents,
   taxRates = [],
+  todayIso,
 }: InvoiceDetailClientProps) {
   const h = useInvoiceDetail({ initialInvoice, slug, taxRates });
   const [showTariffDialog, setShowTariffDialog] = useState(false);
@@ -76,6 +79,7 @@ export function InvoiceDetailClient({
       {/* Header */}
       <InvoiceHeaderActions
         invoice={h.invoice}
+        todayIso={todayIso}
         isAdmin={isAdmin}
         isPending={h.isPending}
         isDraft={h.isDraft}
@@ -166,33 +170,29 @@ export function InvoiceDetailClient({
         onDeleteLine={h.handleDeleteLine}
       />
 
-      {/* Add Tariff Items (module-gated) */}
+      {/* Add Tariff Items + Add Disbursements (module-gated) — one action row (K-75). ModuleGate
+          renders a fragment, so each button and its dialog sit in the same flex row; empty:hidden keeps
+          the old no-gap layout when both modules are off. */}
       {h.isDraft && isAdmin && (
-        <ModuleGate module="lssa_tariff">
-          <div className="flex">
+        <div className="flex flex-wrap gap-2 empty:hidden">
+          <ModuleGate module="lssa_tariff">
             <Button variant="outline" size="sm" onClick={() => setShowTariffDialog(true)}>
               <FileSpreadsheet className="mr-1.5 size-4" />
               Add Tariff Items
             </Button>
-          </div>
-          <TariffLineDialog
-            open={showTariffDialog}
-            onOpenChange={setShowTariffDialog}
-            invoiceId={h.invoice.id}
-            slug={slug}
-            customerId={h.invoice.clientId}
-            onSuccess={async () => {
-              setShowTariffDialog(false);
-              await h.handleRefresh();
-            }}
-          />
-        </ModuleGate>
-      )}
-
-      {/* Add Disbursements (module-gated) */}
-      {h.isDraft && isAdmin && (
-        <ModuleGate module="disbursements">
-          <div className="flex">
+            <TariffLineDialog
+              open={showTariffDialog}
+              onOpenChange={setShowTariffDialog}
+              invoiceId={h.invoice.id}
+              slug={slug}
+              customerId={h.invoice.clientId}
+              onSuccess={async () => {
+                setShowTariffDialog(false);
+                await h.handleRefresh();
+              }}
+            />
+          </ModuleGate>
+          <ModuleGate module="disbursements">
             <Button
               variant="outline"
               size="sm"
@@ -202,20 +202,20 @@ export function InvoiceDetailClient({
               <Receipt className="mr-1.5 size-4" />
               Add Disbursements
             </Button>
-          </div>
-          <AddDisbursementsPicker
-            open={showDisbursementsDialog}
-            onOpenChange={setShowDisbursementsDialog}
-            invoiceId={h.invoice.id}
-            slug={slug}
-            customerId={h.invoice.clientId}
-            projectId={invoiceProjectId}
-            onSuccess={async () => {
-              setShowDisbursementsDialog(false);
-              await h.handleRefresh();
-            }}
-          />
-        </ModuleGate>
+            <AddDisbursementsPicker
+              open={showDisbursementsDialog}
+              onOpenChange={setShowDisbursementsDialog}
+              invoiceId={h.invoice.id}
+              slug={slug}
+              customerId={h.invoice.clientId}
+              projectId={invoiceProjectId}
+              onSuccess={async () => {
+                setShowDisbursementsDialog(false);
+                await h.handleRefresh();
+              }}
+            />
+          </ModuleGate>
+        </div>
       )}
 
       {/* Add Line Form */}

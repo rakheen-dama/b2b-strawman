@@ -19,7 +19,7 @@ export function InvoiceDetailsReadonly({ invoice }: InvoiceDetailsReadonlyProps)
 
   return (
     <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">Fee note details</h2>
+      <h2 className="font-display text-foreground mb-4 text-lg">Fee note details</h2>
       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {invoice.dueDate && (
           <div>

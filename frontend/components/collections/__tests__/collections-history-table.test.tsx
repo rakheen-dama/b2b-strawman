@@ -1,6 +1,13 @@
 import React from "react";
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+// DataTable (666B) calls useRouter() unconditionally.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => "/org/acme/invoices/inv-1",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 import { CollectionsHistoryTable } from "../collections-history-table";
 import { CollectionsHistoryPagination } from "../collections-history-pagination";
 import type { CollectionActivityResponse } from "@/lib/api/collections";

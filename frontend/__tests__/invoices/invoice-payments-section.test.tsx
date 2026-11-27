@@ -9,6 +9,13 @@ import userEvent from "@testing-library/user-event";
  * nothing for a member without INVOICING or for a non-COMPLETED payment.
  */
 
+// DataTable (666B) calls useRouter() unconditionally.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => "/org/acme/invoices/inv-1",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 const mockGenerate = vi.fn();
 const mockDownload = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({

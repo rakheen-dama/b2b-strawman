@@ -19,6 +19,7 @@ vi.mock("next/link", () => ({
 
 import { DetailHero, type HeroTile } from "@/components/shared/detail-hero";
 import { HeaderFactsStrip } from "@/components/shared/header-facts-strip";
+import { HelpTip } from "@/components/help-tip";
 
 afterEach(() => {
   cleanup();
@@ -155,5 +156,37 @@ describe("DetailHero", () => {
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "/org/acme/trust-accounting");
     expect(within(link).getByRole("group", { name: "Trust balance" })).toBeInTheDocument();
+  });
+
+  it("renders a ReactNode title (number + nested HelpTip) as the single h1 (666B)", () => {
+    render(
+      <DetailHero
+        title={
+          <span className="inline-flex items-center gap-2">
+            INV-0042
+            <HelpTip code="invoices.numbering" />
+          </span>
+        }
+      />
+    );
+    expect(screen.getAllByRole("heading")).toHaveLength(1);
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1).toHaveTextContent("INV-0042");
+    expect(within(h1).getByRole("button", { name: /^Help:/ })).toBeInTheDocument();
+  });
+
+  it("puts a data-testid on each tile only when tileTestIdPrefix is set (666B)", () => {
+    const { unmount } = render(
+      <DetailHero title="Mokoena v RAF" tiles={TILES} tileTestIdPrefix="t-" />
+    );
+    expect(screen.getByTestId("t-wip")).toHaveAccessibleName("Unbilled time");
+    expect(screen.getByTestId("t-court")).toHaveAccessibleName("Next court date");
+    unmount();
+
+    const { container } = render(<DetailHero title="Mokoena v RAF" tiles={TILES} />);
+    for (const group of screen.getAllByRole("group")) {
+      expect(group).not.toHaveAttribute("data-testid");
+    }
+    expect(container.querySelectorAll("[data-testid]")).toHaveLength(0);
   });
 });

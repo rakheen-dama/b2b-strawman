@@ -37,6 +37,11 @@ export interface AuditTimelineProps {
    * or `initialPageSize` change); the latest loader is used for the next fetch.
    */
   loadPage?: AuditTimelinePageLoader;
+  /**
+   * The empty state's ADR-393 variant (F-663B-1). `"default"` for a page-level tab panel (matter /
+   * client Audit tabs); a section inside a page (the fee-note "Audit trail") passes its own.
+   */
+  emptyVariant?: "default" | "compact" | "inline";
 }
 
 function stringDetail(details: Record<string, unknown> | null, key: string): string | null {
@@ -81,6 +86,7 @@ export function AuditTimeline({
   showFilters: _showFilters = false,
   severityPillSize = "sm",
   loadPage,
+  emptyVariant = "default",
 }: AuditTimelineProps) {
   // Latest-value ref so an unmemoised caller cannot cause a refetch loop (the effect below is keyed
   // on entity identity, not on the loader's identity).
@@ -172,7 +178,7 @@ export function AuditTimeline({
   if (events.length === 0) {
     return (
       <EmptyState
-        variant="default"
+        variant={emptyVariant}
         icon={History}
         title="No audit events"
         description={`No audit events for this ${entityTypeLabel(entityType).toLowerCase()}`}

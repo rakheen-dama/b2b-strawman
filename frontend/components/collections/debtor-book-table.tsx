@@ -7,6 +7,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { EmptyCell, MoneyCell } from "@/components/data-table/cells";
 import { defineColumns, type DataTableColumn } from "@/components/data-table/define-columns";
 import { TriageBadges } from "@/components/collections/triage-badges";
+import { activityBadgeVariant, formatSnakeCase } from "@/components/collections/activity-format";
 import { formatDateTime, formatDaysOverdue } from "@/lib/format";
 import type { DebtorResponse } from "@/lib/api/collections";
 
@@ -16,27 +17,6 @@ interface DebtorBookTableProps {
   debtors: DebtorResponse[];
   /** Pre-rendered empty state (server), shown instead of the table. */
   empty: ReactNode;
-}
-
-function activityBadgeVariant(status: string) {
-  switch (status) {
-    case "SENT":
-      return "success" as const;
-    case "SEND_FAILED":
-    case "FLAGGED":
-      return "destructive" as const;
-    case "PROPOSED":
-      return "warning" as const;
-    default:
-      return "neutral" as const;
-  }
-}
-
-function formatActivityStatus(status: string): string {
-  return status
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const getDebtorRowId = (debtor: DebtorResponse) => `${debtor.clientId}-${debtor.currency}`;
@@ -142,7 +122,7 @@ export function DebtorBookTable({ slug, debtors, empty }: DebtorBookTableProps) 
             return activity ? (
               <div className="flex flex-col gap-0.5">
                 <Badge variant={activityBadgeVariant(activity.status)}>
-                  {formatActivityStatus(activity.status)}
+                  {formatSnakeCase(activity.status)}
                 </Badge>
                 <span className="text-muted-foreground font-mono text-xs tabular-nums">
                   {formatDateTime(activity.at)}

@@ -6,6 +6,9 @@ import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import type { InvoiceResponse, InvoiceLineResponse, TaxRateResponse } from "@/lib/types";
 
+/** The server page's business date (ADR-396: the client never computes "today"). */
+const TODAY = "2026-11-27";
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -175,6 +178,7 @@ describe("Invoice Tax UI", () => {
       const invoice = makeInvoice();
       render(
         <InvoiceDetailClient
+          todayIso={TODAY}
           invoice={invoice}
           slug="acme"
           isAdmin={true}
@@ -193,7 +197,15 @@ describe("Invoice Tax UI", () => {
     it("does not render tax rate select when no tax rates provided", async () => {
       const user = userEvent.setup();
       const invoice = makeInvoice();
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} taxRates={[]} />);
+      render(
+        <InvoiceDetailClient
+          todayIso={TODAY}
+          invoice={invoice}
+          slug="acme"
+          isAdmin={true}
+          taxRates={[]}
+        />
+      );
 
       // Click "Add Line" button
       const addLineBtn = screen.getByRole("button", { name: /add line/i });
@@ -276,7 +288,7 @@ describe("Invoice Tax UI", () => {
         ],
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       // Must render the tax name + percent, not the literal "(%)"
       expect(screen.getByText("VAT — Standard (15%)")).toBeInTheDocument();
@@ -296,7 +308,7 @@ describe("Invoice Tax UI", () => {
         ],
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       // Tax breakdown should show rate name and percentage in totals
       expect(screen.getByText("VAT (15%)")).toBeInTheDocument();
@@ -305,7 +317,7 @@ describe("Invoice Tax UI", () => {
     it("shows simple Tax row when hasPerLineTax is false", () => {
       const invoice = makeInvoice({ hasPerLineTax: false });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       // Simple Tax row should appear in totals
       // Tax appears both as column header "TAX" (but only when hasPerLineTax) and as "Tax" label
@@ -322,7 +334,7 @@ describe("Invoice Tax UI", () => {
         hasPerLineTax: false,
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.getByLabelText("Tax Amount")).toBeInTheDocument();
     });
@@ -341,7 +353,7 @@ describe("Invoice Tax UI", () => {
         ],
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.queryByLabelText("Tax Amount")).not.toBeInTheDocument();
     });
@@ -354,7 +366,7 @@ describe("Invoice Tax UI", () => {
         taxLabel: "VAT",
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.getByText("Prices include VAT")).toBeInTheDocument();
     });
@@ -365,7 +377,7 @@ describe("Invoice Tax UI", () => {
         taxLabel: "VAT",
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.queryByText("Prices include VAT")).not.toBeInTheDocument();
     });
@@ -376,7 +388,7 @@ describe("Invoice Tax UI", () => {
         taxLabel: null,
       });
 
-      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+      render(<InvoiceDetailClient todayIso={TODAY} invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.queryByText(/Prices include/)).not.toBeInTheDocument();
     });

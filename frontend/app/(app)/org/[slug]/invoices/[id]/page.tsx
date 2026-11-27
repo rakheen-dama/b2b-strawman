@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { todayInSA } from "@b2mash/shared/date";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   api,
@@ -163,6 +164,7 @@ export default async function InvoiceDetailPage({
         isAdmin={isAdmin}
         paymentEvents={paymentEvents}
         taxRates={taxRates}
+        todayIso={todayInSA()}
       />
 
       {/* Custom Fields */}
@@ -188,9 +190,7 @@ export default async function InvoiceDetailPage({
 
       {/* Generated Documents section */}
       <div className="space-y-4">
-        <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
-          Generated Documents
-        </h2>
+        <h2 className="font-display text-foreground text-lg">Generated Documents</h2>
         {/* Both panels fetch once on mount: the key remounts them when a send / payment /
             void changes the fee note, so they never go stale until a reload (G88-M9). */}
         <GeneratedDocumentsList
@@ -207,9 +207,7 @@ export default async function InvoiceDetailPage({
 
       {/* Collection activity ledger (591C.1) */}
       <div className="space-y-4">
-        <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
-          Collection activity
-        </h2>
+        <h2 className="font-display text-foreground text-lg">Collection activity</h2>
         <CollectionsHistoryTable
           activities={collectionActivities}
           slug={slug}

@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { api } from "@/lib/api";
 import type { MyWorkTasksResponse, MyWorkTimeEntryItem } from "@/lib/types";
 import { WeeklyTimeGrid } from "@/components/time-tracking/weekly-time-grid";
@@ -71,14 +72,7 @@ export default async function TimesheetPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          Timesheet
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Log your weekly hours across all tasks.
-        </p>
-      </div>
+      <PageHeader title="Timesheet" description="Log your weekly hours across all tasks." />
       <WeeklyTimeGrid
         tasks={uniqueRows}
         existingEntries={existingEntries}

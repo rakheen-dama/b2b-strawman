@@ -35,7 +35,6 @@ import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { findCurrentMemberId } from "@/lib/current-member";
 import { ClipboardList } from "lucide-react";
-import Link from "next/link";
 import { todayInSA } from "@b2mash/shared/date";
 import { resolveMyWorkDateRange } from "./my-work-date-range";
 
@@ -168,16 +167,8 @@ export default async function MyWorkPage({
 
   return (
     <div className="space-y-6">
-      {/* Page Header with Date Range Selector */}
-      <div className="flex items-center justify-between">
-        <MyWorkHeader from={from} to={to} />
-        <Link
-          href={`/org/${slug}/my-work/timesheet`}
-          className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          Timesheet
-        </Link>
-      </div>
+      {/* Page header: Timesheet link as the action, date range in the toolbar row (K-96) */}
+      <MyWorkHeader slug={slug} from={from} to={to} />
 
       {/* Hero: Today's Agenda */}
       <TodaysAgenda

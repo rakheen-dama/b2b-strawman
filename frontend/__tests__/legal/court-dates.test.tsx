@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks (before component imports) ---
@@ -141,10 +141,13 @@ describe("CourtDateListView", () => {
 
     const list = screen.getByTestId("court-date-list");
     expect(list).toBeInTheDocument();
-    expect(screen.getByText("Scheduled")).toBeInTheDocument();
-    expect(screen.getByText("Postponed")).toBeInTheDocument();
-    expect(screen.getByText("Heard")).toBeInTheDocument();
-    expect(screen.getByText("Cancelled")).toBeInTheDocument();
+    // Phase 91 668A: the shared CourtDateStatusBadge — visible label (e2e filters rows by it) plus
+    // a decorative icon, so colour is never the only signal.
+    for (const label of ["Scheduled", "Postponed", "Heard", "Cancelled"]) {
+      const badge = within(list).getByText(label);
+      expect(badge).toHaveAttribute("data-slot", "badge");
+      expect(badge.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    }
   });
 
   it("shows empty state when no court dates", () => {

@@ -1,43 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import { CheckCircle, AlertTriangle, Clock, CalendarDays } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatDuration, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
-import { daysBetween, todayInSA } from "@b2mash/shared/date";
+import type { MyWorkTaskItem } from "@/lib/types";
+import { todayInSA } from "@b2mash/shared/date";
 import { addDays, parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
-
-// --- Priority badge config ---
-
-const PRIORITY_BADGE: Record<
-  TaskPriority,
-  { label: string; variant: "destructive" | "warning" | "neutral" }
-> = {
-  HIGH: { label: "High", variant: "destructive" },
-  MEDIUM: { label: "Medium", variant: "warning" },
-  LOW: { label: "Low", variant: "neutral" },
-};
-
-const STATUS_BADGE: Record<
-  TaskStatus,
-  { label: string; variant: "success" | "warning" | "neutral" | "destructive" }
-> = {
-  OPEN: { label: "Open", variant: "neutral" },
-  IN_PROGRESS: { label: "In Progress", variant: "warning" },
-  DONE: { label: "Done", variant: "success" },
-  CANCELLED: { label: "Cancelled", variant: "destructive" },
-};
+import { MyWorkTaskTable } from "./task-table";
 
 // --- Urgency grouping ---
 
@@ -87,116 +58,6 @@ export function groupByUrgency(tasks: MyWorkTaskItem[]): UrgencyGroups {
   return { overdue, dueThisWeek, upcoming, noDueDate };
 }
 
-function getOverdueDays(dueDate: string): number {
-  return daysBetween(dueDate.slice(0, 10), todayInSA());
-}
-
-// --- Task table for a group ---
-
-interface TaskGroupTableProps {
-  tasks: MyWorkTaskItem[];
-  slug: string;
-  isOverdue?: boolean;
-  onTaskClick?: (taskId: string) => void;
-}
-
-function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableProps) {
-  const router = useRouter();
-
-  return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-800">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Matter
-            </TableHead>
-            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Title
-            </TableHead>
-            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Priority
-            </TableHead>
-            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Status
-            </TableHead>
-            <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-              Due Date
-            </TableHead>
-            <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-              Logged
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tasks.map((task) => {
-            const priorityBadge =
-              PRIORITY_BADGE[task.priority as TaskPriority] ?? PRIORITY_BADGE.MEDIUM;
-            const statusBadge = STATUS_BADGE[task.status as TaskStatus] ?? STATUS_BADGE.OPEN;
-
-            return (
-              <TableRow
-                key={task.id}
-                className={cn(
-                  "cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
-                  isOverdue && "bg-red-50/30 dark:bg-red-950/10"
-                )}
-                onClick={() => {
-                  if (onTaskClick) {
-                    onTaskClick(task.id);
-                  } else {
-                    router.push(`/org/${slug}/matters/${task.matterId}`);
-                  }
-                }}
-              >
-                <TableCell>
-                  <Badge variant="member">{task.matterName}</Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
-                      {task.title}
-                    </p>
-                    {isOverdue && task.dueDate && (
-                      <Badge variant="destructive" className="shrink-0">
-                        {getOverdueDays(task.dueDate)}d overdue
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 text-sm",
-                      isOverdue
-                        ? "font-medium text-red-600 dark:text-red-400"
-                        : "text-slate-600 dark:text-slate-400"
-                    )}
-                  >
-                    {isOverdue && <AlertTriangle className="size-3.5 shrink-0" />}
-                    {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
-                  </span>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {task.totalTimeMinutes > 0 ? formatDuration(task.totalTimeMinutes) : "\u2014"}
-                  </span>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
 // --- Section header ---
 
 interface GroupHeaderProps {
@@ -224,6 +85,9 @@ function GroupHeader({ icon, label, count, variant }: GroupHeaderProps) {
 
 // --- Main Component ---
 
+/** The Overdue group's row tint (the kit has no row-class hook: wrapper variant, D-84 DA-6). */
+const OVERDUE_ROW_TINT = "[&_tbody_tr]:bg-red-50/30 dark:[&_tbody_tr]:bg-red-950/10";
+
 interface UrgencyTaskListProps {
   tasks: MyWorkTaskItem[];
   slug: string;
@@ -231,11 +95,14 @@ interface UrgencyTaskListProps {
 }
 
 export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListProps) {
+  // Memoised: each group array is a DataTable `data` prop (a new identity resets the table).
+  const groups = useMemo(() => groupByUrgency(tasks), [tasks]);
+
   if (tasks.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
+          <h2 className="text-foreground font-semibold">My Tasks</h2>
         </div>
         <EmptyState
           variant="compact"
@@ -247,7 +114,6 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
     );
   }
 
-  const groups = groupByUrgency(tasks);
   const hasOverdue = groups.overdue.length > 0;
   const hasDueThisWeek = groups.dueThisWeek.length > 0;
   const hasUpcoming = groups.upcoming.length > 0;
@@ -256,7 +122,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
+        <h2 className="text-foreground font-semibold">My Tasks</h2>
         <Badge variant="neutral">{tasks.length}</Badge>
       </div>
 
@@ -269,11 +135,13 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
               count={groups.overdue.length}
               variant="destructive"
             />
-            <TaskGroupTable
+            <MyWorkTaskTable
               tasks={groups.overdue}
               slug={slug}
-              isOverdue
+              columns="full"
+              overdueTone="group"
               onTaskClick={onTaskClick}
+              className={OVERDUE_ROW_TINT}
             />
           </div>
         )}
@@ -286,7 +154,13 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
               count={groups.dueThisWeek.length}
               variant="warning"
             />
-            <TaskGroupTable tasks={groups.dueThisWeek} slug={slug} onTaskClick={onTaskClick} />
+            <MyWorkTaskTable
+              tasks={groups.dueThisWeek}
+              slug={slug}
+              columns="full"
+              overdueTone="never"
+              onTaskClick={onTaskClick}
+            />
           </div>
         )}
 
@@ -298,7 +172,13 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
               count={groups.upcoming.length}
               variant="neutral"
             />
-            <TaskGroupTable tasks={groups.upcoming} slug={slug} onTaskClick={onTaskClick} />
+            <MyWorkTaskTable
+              tasks={groups.upcoming}
+              slug={slug}
+              columns="full"
+              overdueTone="never"
+              onTaskClick={onTaskClick}
+            />
           </div>
         )}
 
@@ -310,7 +190,13 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
               count={groups.noDueDate.length}
               variant="neutral"
             />
-            <TaskGroupTable tasks={groups.noDueDate} slug={slug} onTaskClick={onTaskClick} />
+            <MyWorkTaskTable
+              tasks={groups.noDueDate}
+              slug={slug}
+              columns="full"
+              overdueTone="never"
+              onTaskClick={onTaskClick}
+            />
           </div>
         )}
       </div>

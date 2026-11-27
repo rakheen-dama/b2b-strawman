@@ -110,6 +110,9 @@ describe("TodaysAgenda", () => {
 
     expect(screen.getByText("Nothing in the diary today")).toBeInTheDocument();
     expect(screen.queryByText("Event o1")).not.toBeInTheDocument();
+    // K-39 (Phase 91 668A): the muted token, not slate-400 (2.64:1 in light).
+    expect(screen.getByText("Nothing in the diary today")).toHaveClass("text-muted-foreground");
+    expect(screen.getByText("Nothing in the diary today")).not.toHaveClass("text-slate-400");
   });
 
   it("links the overdue band to the Diary's Day view", () => {
@@ -387,6 +390,12 @@ describe("TodaysAgenda", () => {
     expect(
       within(screen.getByTestId("next-deadline")).getByText("No upcoming deadlines")
     ).toBeInTheDocument();
+    // K-39 (Phase 91 668A).
+    const noDeadlines = within(screen.getByTestId("next-deadline")).getByText(
+      "No upcoming deadlines"
+    );
+    expect(noDeadlines).toHaveClass("text-muted-foreground");
+    expect(noDeadlines).not.toHaveClass("text-slate-400");
   });
 
   it("says the upcoming diary could not be loaded when the load failed", () => {

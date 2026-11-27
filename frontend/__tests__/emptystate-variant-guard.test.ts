@@ -15,9 +15,6 @@ const SHARED_MODULE = "components/empty-state";
 
 /** File (relative to `frontend/`) → the Phase 91 slice that sets its variants and deletes the line. */
 const ALLOWLIST: Record<string, string> = {
-  // 668A — Diary, notifications
-  "app/(app)/org/[slug]/diary/diary-page-client.tsx": "668A",
-  "components/notifications/notifications-page-client.tsx": "668A",
   // 669A — Light pass I
   "app/(app)/org/[slug]/compliance/requests/page.tsx": "669A",
   // 669B — Light pass II (last entries; 669B also makes `variant` required)

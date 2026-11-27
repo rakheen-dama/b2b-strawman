@@ -18,7 +18,13 @@ import {
   humaniseSubtype,
   type DiaryEventResponse,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
-import { DIARY_KIND_SINGULAR, DiaryKindIcon, kindRailClass } from "./diary-event-row";
+import { CourtDateStatusBadge } from "@/components/legal/court-date-status-badge";
+import {
+  DIARY_KIND_SINGULAR,
+  DiaryKindIcon,
+  kindRailClass,
+  showsCourtDateStatus,
+} from "./diary-event-row";
 import { DiaryRowActions } from "./diary-row-actions";
 
 interface DiaryListViewProps {
@@ -49,8 +55,8 @@ function GroupHeading({
         colSpan={COLUMN_COUNT}
         className={cn(
           HEAD,
-          "bg-slate-50 text-sm font-semibold dark:bg-slate-900/50",
-          tone === "overdue" ? "text-destructive" : "text-slate-900 dark:text-slate-100"
+          "bg-muted/50 text-sm font-semibold",
+          tone === "overdue" ? "text-destructive" : "text-foreground"
         )}
       >
         {label}
@@ -78,14 +84,10 @@ function EventRow({
       <TableCell className={cn("w-28 align-top", kindRailClass(event.kind))}>
         <span className="flex flex-col">
           {showDate && (
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              {formatDiaryDay(event.date)}
-            </span>
+            <span className="text-muted-foreground text-xs">{formatDiaryDay(event.date)}</span>
           )}
           {time && (
-            <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-              {time}
-            </span>
+            <span className="text-muted-foreground font-mono text-xs tabular-nums">{time}</span>
           )}
         </span>
       </TableCell>
@@ -97,24 +99,20 @@ function EventRow({
         >
           <DiaryKindIcon kind={event.kind} className="mt-0.5" />
           <span className="sr-only">{DIARY_KIND_SINGULAR[event.kind]}</span>
-          <span
-            className={cn(
-              "font-medium",
-              isTask ? "text-muted-foreground" : "text-slate-900 dark:text-slate-100"
-            )}
-          >
+          <span className={cn("font-medium", isTask ? "text-muted-foreground" : "text-foreground")}>
             {event.title}
           </span>
         </Link>
-        {(subtype || event.overdue) && (
-          <span className="mt-1 ml-6 flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+        {(subtype || event.overdue || showsCourtDateStatus(event)) && (
+          <span className="text-muted-foreground mt-1 ml-6 flex flex-wrap items-center gap-2 text-xs">
             {subtype && <span>{subtype}</span>}
+            {showsCourtDateStatus(event) && <CourtDateStatusBadge status={event.status} />}
             {event.overdue && <Badge variant="destructive">Overdue</Badge>}
           </span>
         )}
       </TableCell>
       <TableCell className="align-top whitespace-normal">
-        <span className="block text-slate-900 dark:text-slate-100">{event.matterName}</span>
+        <span className="text-foreground block">{event.matterName}</span>
         {reference && <span className="text-muted-foreground block text-xs">{reference}</span>}
       </TableCell>
       <TableCell className="text-muted-foreground align-top">
@@ -144,59 +142,66 @@ function ListHeader() {
   );
 }
 
+/** The DataTable kit's frame (`data-table.tsx` root) around the grouped table (Phase 91 E8A). */
+const FRAME = "bg-card rounded-lg border";
+
 /** List view — the Overdue band first, then rows grouped by date (server order kept). */
 export function DiaryListView({ events, band, slug }: DiaryListViewProps) {
   const byDate = groupByDate(events);
 
   return (
-    <Table data-testid="diary-list">
-      <TableCaption className="sr-only">Diary events</TableCaption>
-      <ListHeader />
-      {band.length > 0 && (
-        <TableBody data-testid="diary-list-group-overdue">
-          <GroupHeading label="Overdue" tone="overdue" />
-          {band.map((event) => (
-            <EventRow key={event.id} event={event} slug={slug} showDate />
-          ))}
-        </TableBody>
-      )}
-      {[...byDate.entries()].map(([iso, dayEvents]) => (
-        <TableBody key={iso} data-testid={`diary-list-group-${iso}`}>
-          <GroupHeading label={formatDiaryDay(iso, "long")} />
-          {dayEvents.map((event) => (
-            <EventRow key={event.id} event={event} slug={slug} showDate={false} />
-          ))}
-        </TableBody>
-      ))}
-    </Table>
+    <div className={FRAME}>
+      <Table data-testid="diary-list">
+        <TableCaption className="sr-only">Diary events</TableCaption>
+        <ListHeader />
+        {band.length > 0 && (
+          <TableBody data-testid="diary-list-group-overdue">
+            <GroupHeading label="Overdue" tone="overdue" />
+            {band.map((event) => (
+              <EventRow key={event.id} event={event} slug={slug} showDate />
+            ))}
+          </TableBody>
+        )}
+        {[...byDate.entries()].map(([iso, dayEvents]) => (
+          <TableBody key={iso} data-testid={`diary-list-group-${iso}`}>
+            <GroupHeading label={formatDiaryDay(iso, "long")} />
+            {dayEvents.map((event) => (
+              <EventRow key={event.id} event={event} slug={slug} showDate={false} />
+            ))}
+          </TableBody>
+        ))}
+      </Table>
+    </div>
   );
 }
 
 /** Loading shape for the List view: the same columns with placeholder rows. */
 export function DiaryListSkeleton() {
   return (
-    <Table data-testid="diary-list-skeleton" aria-busy="true">
-      <TableCaption className="sr-only">Loading diary events</TableCaption>
-      <ListHeader />
-      <TableBody>
-        {Array.from({ length: 6 }, (_, i) => (
-          <TableRow key={i} className="hover:bg-transparent">
-            <TableCell className="w-28">
-              <Skeleton className="h-4 w-12" />
-            </TableCell>
-            <TableCell>
-              <Skeleton className="h-4 w-48" />
-            </TableCell>
-            <TableCell>
-              <Skeleton className="h-4 w-32" />
-            </TableCell>
-            <TableCell>
-              <Skeleton className="h-4 w-24" />
-            </TableCell>
-            <TableCell className="w-10" />
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className={FRAME}>
+      <Table data-testid="diary-list-skeleton" aria-busy="true">
+        <TableCaption className="sr-only">Loading diary events</TableCaption>
+        <ListHeader />
+        <TableBody>
+          {Array.from({ length: 6 }, (_, i) => (
+            <TableRow key={i} className="hover:bg-transparent">
+              <TableCell className="w-28">
+                <Skeleton className="h-4 w-12" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell className="w-10" />
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

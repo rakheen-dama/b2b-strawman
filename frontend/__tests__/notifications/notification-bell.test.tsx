@@ -78,6 +78,23 @@ describe("NotificationBell", () => {
     });
   });
 
+  it("fills the badge with the accent button token, not raw teal-600 (K-31)", async () => {
+    mockFetchUnreadCount.mockResolvedValue({ count: 7 });
+
+    render(
+      <SWRTestProvider>
+        <NotificationBell orgSlug="acme" />
+      </SWRTestProvider>
+    );
+
+    const badge = await screen.findByText("7");
+    expect(badge).toHaveAttribute("aria-hidden", "true");
+    expect(badge.className).toContain("bg-(--button-accent)");
+    expect(badge.className).toContain("text-(--button-accent-foreground)");
+    expect(badge.className).not.toContain("bg-teal-600");
+    expect(badge.className).not.toContain("text-white");
+  });
+
   it("renders 99+ when unread count exceeds 99", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 150 });
 

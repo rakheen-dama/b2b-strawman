@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchNotifications } from "@/lib/actions/notifications";
 import { NotificationsPageClient } from "@/components/notifications/notifications-page-client";
 import type { NotificationsResponse } from "@/lib/actions/notifications";
@@ -21,8 +22,8 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Notifications</h1>
+    <div className="space-y-6">
+      <PageHeader title="Notifications" />
 
       <NotificationsPageClient
         initialNotifications={initialNotifications.content}

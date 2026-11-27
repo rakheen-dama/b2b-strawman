@@ -125,6 +125,22 @@ describe("Diary page (613B)", () => {
     expect(loader).toHaveAttribute("data-kinds", "");
   });
 
+  // Phase 91 668A: the kit PageHeader renders the page's only h1 (sidebar-navigation.spec.ts:38-39).
+  it("renders the kit PageHeader with exactly one h1 'Diary' and its subtitle", async () => {
+    const { container } = render(
+      await DiaryPage({
+        params: Promise.resolve({ slug: "acme" }),
+        searchParams: Promise.resolve({}),
+      })
+    );
+    expect(container.querySelector('[data-slot="page-header"]')).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole("heading", { level: 1, name: "Diary" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Court dates, prescription dates, matter due dates and task due dates.")
+    ).toBeInTheDocument();
+  });
+
   // 613C amendment (B-7): every view has its own skeleton now (month was week's before).
   it("uses the view's skeleton as the Suspense fallback", async () => {
     loaderState.suspend = true;

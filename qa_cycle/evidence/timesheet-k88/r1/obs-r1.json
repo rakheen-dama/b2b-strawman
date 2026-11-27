@@ -1,0 +1,283 @@
+{
+  "at": "2026-11-27T19:11:32.189Z",
+  "week": {
+    "MON": "2026-11-23",
+    "SUN": "2026-11-29"
+  },
+  "steps": [
+    {
+      "step": "browser dialog accepted",
+      "message": "Current week has data. Copy previous week will overwrite existing entries. Continue?"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "setup: H has no row on the timesheet",
+      "ok": true,
+      "detail": {
+        "id": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+        "title": "Draft power of attorney to pass transfer",
+        "matterId": "7ac75706-71f4-4760-abd5-d648000b29b6",
+        "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+      }
+    },
+    {
+      "name": "B-L1: Save is enabled before the copy (real edit made)",
+      "ok": true,
+      "detail": {
+        "saveEnabled": true,
+        "addEnabled": true,
+        "hOptionOffered": true
+      }
+    },
+    {
+      "name": "M1: Add task offers H before the copy",
+      "ok": true,
+      "detail": {
+        "saveEnabled": true,
+        "addEnabled": true,
+        "hOptionOffered": true
+      }
+    },
+    {
+      "name": "B-L1: during the copy Save is disabled (it was enabled) and a click does nothing",
+      "ok": true,
+      "detail": {
+        "duringCopy": {
+          "copyLabel": "Copying...",
+          "saveDisabled": true,
+          "addDisabled": true,
+          "hOptionVisible": false,
+          "cellDisabled": true,
+          "nextDisabled": true
+        },
+        "saveClickBlocked": true
+      }
+    },
+    {
+      "name": "M1: during the copy Add task is disabled and H's option is gone",
+      "ok": true,
+      "detail": {
+        "duringCopy": {
+          "copyLabel": "Copying...",
+          "saveDisabled": true,
+          "addDisabled": true,
+          "hOptionVisible": false,
+          "cellDisabled": true,
+          "nextDisabled": true
+        },
+        "addTypeBlocked": true
+      }
+    },
+    {
+      "name": "A-L1: during the copy the cells and week nav are disabled",
+      "ok": true,
+      "detail": {
+        "copyLabel": "Copying...",
+        "saveDisabled": true,
+        "addDisabled": true,
+        "hOptionVisible": false,
+        "cellDisabled": true,
+        "nextDisabled": true
+      }
+    },
+    {
+      "name": "M1: after the copy H has exactly one row, Tue 1",
+      "ok": true,
+      "detail": {
+        "hRows": 1,
+        "hValues": [
+          "",
+          "1",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    },
+    {
+      "name": "B-L1: the edit survived the copy",
+      "ok": true,
+      "detail": "0.5"
+    },
+    {
+      "name": "both server actions were delayed (copy fetch + save)",
+      "ok": true,
+      "detail": 3
+    },
+    {
+      "name": "during the save: Saving..., Copy and Add task disabled",
+      "ok": true,
+      "detail": {
+        "saveLabel": "Saving...",
+        "copyDisabled": true,
+        "addDisabled": true
+      }
+    },
+    {
+      "name": "M1: H's Tue posted once (1 entry, 60 min)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "dbda245f-c14a-42d1-8d02-b74bdf8373e8",
+          "taskId": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+          "date": "2026-11-24",
+          "minutes": 60
+        }
+      ]
+    },
+    {
+      "name": "B-L1: the edit posted once (+1 entry of 30 on Mon)",
+      "ok": true,
+      "detail": {
+        "editTaskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+        "before": [
+          {
+            "id": "ac8963a1-5551-48db-8e42-a3b1ec05a713",
+            "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+            "date": "2026-11-27",
+            "minutes": 120
+          }
+        ],
+        "after": [
+          {
+            "id": "ac8963a1-5551-48db-8e42-a3b1ec05a713",
+            "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+            "date": "2026-11-27",
+            "minutes": 120
+          },
+          {
+            "id": "1de9d8e6-b4dc-463b-b344-fb6414d99cea",
+            "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+            "date": "2026-11-23",
+            "minutes": 30
+          }
+        ]
+      }
+    },
+    {
+      "name": "no (task, date) gained more than one entry",
+      "ok": true,
+      "detail": [
+        {
+          "taskId": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+          "date": "2026-11-24",
+          "before": 0,
+          "after": 1
+        },
+        {
+          "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+          "date": "2026-11-23",
+          "before": 0,
+          "after": 1
+        }
+      ]
+    },
+    {
+      "name": "toast: Saved one change per new entry, no alert",
+      "ok": true,
+      "detail": {
+        "toasts": [
+          "Saved 2 changes"
+        ],
+        "alert": null,
+        "newEntryCells": 2
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "claimed": [
+    {
+      "id": "fbd5c0a9-f044-44ab-ab7b-a2e949d01dda",
+      "title": "Close matter",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "a3216906-d98c-4dad-a4d4-bc0b8a321d2f",
+      "title": "Finalise financial statement & disburse",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "f1b673c5-0170-4109-b316-f86deea76828",
+      "title": "Registration & collection of title deed",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "6781d7db-9e65-425e-b89f-9f815b149aaf",
+      "title": "Respond to Deeds Office notes",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "d11ae0af-a0cd-418d-9882-2510f5a2fac4",
+      "title": "Lodge documents at Deeds Office",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+      "title": "Draft power of attorney to pass transfer",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    },
+    {
+      "id": "ca2c4c90-1e0a-4155-a619-a5fb6545cf51",
+      "title": "Draft deed of transfer",
+      "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+    }
+  ],
+  "hidden": {
+    "id": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+    "title": "Draft power of attorney to pass transfer",
+    "matterId": "7ac75706-71f4-4760-abd5-d648000b29b6",
+    "matterName": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzcvai8ab90"
+  },
+  "prevWeekEntries": [
+    {
+      "id": "2061a694-62a9-4bcd-83ac-b9288eaa7030",
+      "taskId": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+      "date": "2026-11-17",
+      "minutes": 60
+    }
+  ],
+  "edit": {
+    "title": "Letter of demand",
+    "matter": "Ndlovu v RAF — Depth II mwzcvai8ab90",
+    "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+    "monBefore": 0,
+    "monAfter": 0.5
+  },
+  "saveResult": {
+    "delayedActionPosts": 3,
+    "duringSave": {
+      "saveLabel": "Saving...",
+      "copyDisabled": true,
+      "addDisabled": true
+    },
+    "toasts": [
+      "Saved 2 changes"
+    ],
+    "alert": null,
+    "grew": [
+      {
+        "taskId": "9dba0848-1a15-4734-b965-bbd2aed74b94",
+        "date": "2026-11-24",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "taskId": "c5f0e230-bf28-4ea7-a3c5-40f68e939886",
+        "date": "2026-11-23",
+        "before": 0,
+        "after": 1
+      }
+    ],
+    "entriesBefore": 1,
+    "entriesAfter": 3
+  },
+  "pass": true
+}

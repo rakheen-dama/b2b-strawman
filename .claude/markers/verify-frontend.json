@@ -1,7 +1,7 @@
 {
-  "commit": "092a21309",
-  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, worktree-epic-665E, PR #1874)",
+  "commit": "cec81dad5",
+  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-665F, PR #1875)",
   "exit": 0,
-  "ts": "2026-11-26T22:27:24Z",
-  "summary": "PR #1874 @092a21309 (PR head) — lint 0 errors (76 warnings, none in touched files), typecheck 0, format clean, vitest 529 files / 5348 passed / 2 skipped, build 0; orchestrator run"
+  "ts": "2026-11-26T23:53:28Z",
+  "summary": "PR #1875 @cec81dad5 (PR head) — lint 0 errors (76 warnings, pre-existing), typecheck 0, format clean, vitest 530 files / 5374 passed / 2 skipped, build 0; orchestrator run"
 }

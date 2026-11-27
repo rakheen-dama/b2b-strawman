@@ -65,6 +65,15 @@ const STICKY_ACTIONS_CLASS =
   "sticky right-0 z-[1] bg-card pr-0 shadow-[inset_1px_0_0_var(--border)]";
 
 /**
+ * F-667B-A2 (D-81 precedent): below a 56rem table frame (1024 with the rail expanded) the action
+ * buttons' labels wrap ("Record / interest"), so the sticky column narrows from 135 to 97 px and
+ * clears the Balance amount by 38 px instead of 0. Status still sits partly under the sticky column
+ * at scroll 0 (the accepted D-81 residual); from 56rem the buttons are untouched.
+ */
+const NARROW_ACTION_BUTTONS_CLASS =
+  "@max-[56rem]:[&_button]:h-auto @max-[56rem]:[&_button]:min-h-8 @max-[56rem]:[&_button]:shrink @max-[56rem]:[&_button]:py-1 @max-[56rem]:[&_button]:whitespace-normal";
+
+/**
  * The maturity highlight (G88-F49) on the `maturity-alert` row, set from this wrapper because the
  * kit has no row-class hook. The last cell (the sticky Actions cell, when shown) is opaque, so in
  * dark it takes the row's amber-over-card colour as a solid fill instead of the card colour.
@@ -270,7 +279,7 @@ export function InvestmentsDataTable({
         meta: {
           label: "Actions",
           headerClassName: cn(HEAD, STICKY_ACTIONS_CLASS),
-          cellClassName: cn(CELL, STICKY_ACTIONS_CLASS),
+          cellClassName: cn(CELL, STICKY_ACTIONS_CLASS, NARROW_ACTION_BUTTONS_CLASS),
         },
         cell: ({ row }) => {
           const inv = row.original;

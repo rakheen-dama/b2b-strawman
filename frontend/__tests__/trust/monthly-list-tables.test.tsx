@@ -1,10 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import {
-  MonthlyListAfterLockTable,
-  MonthlyListCreditorsTable,
-} from "@/components/trust/monthly-list-tables";
+import { MonthlyListCreditorsTable } from "@/components/trust/monthly-list-creditors-table";
+import { MonthlyListAfterLockTable } from "@/components/trust/monthly-list-tables";
 import { formatCurrency, formatDateTime, formatLocalDate } from "@/lib/format";
 import type { CreditorLine, MonthlyListAdjustmentEntry } from "@/lib/types";
 

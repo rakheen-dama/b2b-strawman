@@ -10,10 +10,8 @@ import { ApiError } from "@/lib/api";
 import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { fetchMonthlyList } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { EmptyState } from "@/components/empty-state";
-import {
-  MonthlyListAfterLockTable,
-  MonthlyListCreditorsTable,
-} from "@/components/trust/monthly-list-tables";
+import { MonthlyListCreditorsTable } from "@/components/trust/monthly-list-creditors-table";
+import { MonthlyListAfterLockTable } from "@/components/trust/monthly-list-tables";
 import { formatCurrency, formatDateTime, formatLocalDate } from "@/lib/format";
 import { integrityFlagLabel, integritySeverityLabel } from "@/lib/trust-integrity";
 import type { MonthlyList } from "@/lib/types";

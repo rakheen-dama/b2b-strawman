@@ -16,8 +16,9 @@ import { EmptyState } from "@/components/empty-state";
 import {
   OpenStatementsDataTable,
   ReconciliationsDataTable,
+  type OpenStatementRow,
 } from "@/components/trust/reconciliations-data-table";
-import type { BankStatementResponse, TrustAccount } from "@/lib/types";
+import type { TrustAccount } from "@/lib/types";
 
 // ── Page ────────────────────────────��─────────────────────────────
 
@@ -91,7 +92,7 @@ export default async function ReconciliationListPage({
   // retired and not listed). One left behind by a refused wizard can be discarded here. Every trust
   // account the wizard offers (its account select reads the same fetchTrustAccounts list), so a
   // statement imported into a non-primary account can be discarded too (CodeRabbit round 1).
-  let openStatements: { statement: BankStatementResponse; accountName: string }[] | null = null;
+  let openStatements: OpenStatementRow[] | null = null;
   let statementsFetchError = false;
   if (accounts.length > 0) {
     try {

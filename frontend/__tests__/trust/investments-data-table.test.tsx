@@ -142,6 +142,14 @@ describe("InvestmentsDataTable", () => {
     for (const th of Array.from(table.querySelectorAll("thead th")).slice(0, 7)) {
       expect(th.className).not.toContain("sticky");
     }
+    // F-667B-A2: below a 56rem frame the buttons' labels wrap, so the sticky column narrows
+    for (const cls of [
+      "@max-[56rem]:[&_button]:whitespace-normal",
+      "@max-[56rem]:[&_button]:h-auto",
+      "@max-[56rem]:[&_button]:shrink",
+    ]) {
+      expect(actionsCell.className).toContain(cls);
+    }
   });
 
   it("K-91: a section 86(3) note is a sans sub-line; the principal alone is mono", () => {
@@ -162,6 +170,7 @@ describe("InvestmentsDataTable", () => {
       "Interest is the Fund's — record it from the investment account's statement"
     );
     expect(note.className).toContain("font-sans");
+    expect(note.closest(".font-mono")).toBeNull();
     const principalCell = row.querySelectorAll("td")[4];
     expect(principalCell.className).not.toContain("font-mono");
     expect(principalCell.className).toContain("text-right");

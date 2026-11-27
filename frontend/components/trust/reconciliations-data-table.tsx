@@ -59,7 +59,9 @@ function moneyColumn(
  *
  * Fit at 1024 (F-667B-1): seven columns of which three are money cannot fit a 662 px card, so the
  * Period wraps ("06 Nov" / "2026") and Completed is hidden below a 67rem frame (D-73) — the Monthly
- * list link stays in view; at 1440 every column shows.
+ * list link stays in view; at 1440 every column shows. F-667B-A3: with Completed shown, the
+ * seven columns' min-content is 758 px at 1024 (the money amounts, the "Unbalanced" chip, the
+ * "COMPLETED" header and the "List locked" chip don't wrap), so it stays hidden there.
  */
 export function ReconciliationsDataTable({
   rows,
@@ -199,11 +201,19 @@ export function OpenStatementsDataTable({ rows, canManageTrust }: OpenStatements
         },
         {
           id: "period",
-          meta: { label: "Period" },
-          cell: ({ row }) =>
-            `${formatLocalDate(row.original.statement.periodStart)} – ${formatLocalDate(
-              row.original.statement.periodEnd
-            )}`,
+          // F-667B-A1: the range wraps between its two dates (never inside one), so the table
+          // fits at 1024 with Discard in view
+          meta: { label: "Period", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => (
+            <>
+              <span className="whitespace-nowrap">
+                {formatLocalDate(row.original.statement.periodStart)} –
+              </span>{" "}
+              <span className="whitespace-nowrap">
+                {formatLocalDate(row.original.statement.periodEnd)}
+              </span>
+            </>
+          ),
         },
         {
           id: "lineCount",

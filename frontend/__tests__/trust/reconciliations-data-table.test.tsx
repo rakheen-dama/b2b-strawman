@@ -260,6 +260,15 @@ describe("OpenStatementsDataTable", () => {
     expect(cells[2]).toHaveTextContent(
       `${formatLocalDate("2026-11-02")} – ${formatLocalDate("2026-11-03")}`
     );
+    // F-667B-A1: the range wraps between its two dates, never inside one
+    expect(cells[2].className).toContain("whitespace-normal");
+    expect(cells[2].className).not.toContain("whitespace-nowrap");
+    const dates = Array.from(cells[2].querySelectorAll("span"));
+    expect(dates.map((span) => span.textContent)).toEqual([
+      `${formatLocalDate("2026-11-02")} –`,
+      formatLocalDate("2026-11-03"),
+    ]);
+    for (const span of dates) expect(span.className).toContain("whitespace-nowrap");
     expect(cells[3]).toHaveTextContent("2");
     expect(cells[4]).toHaveTextContent("0");
     expect(within(row).getByTestId("discard-statement-stmt-open")).toBeInTheDocument();

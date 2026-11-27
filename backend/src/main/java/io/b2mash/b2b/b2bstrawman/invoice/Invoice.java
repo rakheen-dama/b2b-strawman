@@ -183,6 +183,12 @@ public class Invoice {
     updateDraft(dueDate, notes, paymentTerms, taxAmount, null, null, null, null);
   }
 
+  /**
+   * Edits the draft's details. {@code taxAmount} is the header (manual) tax: a value sets it and
+   * {@code total = subtotal + taxAmount}; {@code null} leaves tax and total as they are — omitting
+   * it never zeroes the VAT (F-666B-B1). Per-line-tax totals come from {@link #recalculateTotals},
+   * which the service runs after every draft edit.
+   */
   public void updateDraft(
       LocalDate dueDate,
       String notes,
@@ -198,8 +204,10 @@ public class Invoice {
     this.dueDate = dueDate;
     this.notes = notes;
     this.paymentTerms = paymentTerms;
-    this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
-    this.total = this.subtotal.add(this.taxAmount);
+    if (taxAmount != null) {
+      this.taxAmount = taxAmount;
+      this.total = this.subtotal.add(this.taxAmount);
+    }
     this.poNumber = poNumber != null ? poNumber : this.poNumber;
     this.taxType = taxType != null ? taxType : this.taxType;
     this.billingPeriodStart =

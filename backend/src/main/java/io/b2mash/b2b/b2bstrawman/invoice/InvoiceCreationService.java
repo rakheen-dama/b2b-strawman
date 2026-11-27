@@ -355,6 +355,9 @@ public class InvoiceCreationService {
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Fee note not editable", e.getMessage());
     }
+    // The lines are the source of truth for tax and total (F-666B-B1): per-line VAT is re-summed,
+    // a header-tax draft keeps the tax set above.
+    invoiceTaxService.recalculateInvoiceTotals(invoice);
 
     invoice = invoiceRepository.save(invoice);
     log.info("Updated draft invoice {}", invoiceId);

@@ -26,3 +26,12 @@ Nothing below is fixed in 668A. Each item has a routing target. "Code-read" mean
 | **F-668A-B-4** | A member who opens a matter she is not on gets a page with no h1 in `#main-content`. | 670A (global h1 invariant sweep) or backlog (matter page permission branch). |
 | **F-668A-B-5** | Timesheet grid at 1024: 996 px in a 710 px scroller (+286); Sat, Sun and Total are out of view. | With F-668A-R1 / K-88 (the grid is frozen in 668A), or 669A/670A as a layout-only item if authorised separately. |
 | **F-668A-B-6** | The Notifications All / Unread toggle buttons exposed no pressed state (`aria-pressed` absent). | **Addressed in 668A** (DA-12: `aria-pressed` on both buttons, no new words). OBS-after to confirm. |
+
+## Found during OBS-after, review and CodeRabbit (post-build), routed
+
+- **F-668A-R1, reproduced** (HIGH, money, pre-existing): on the e2e stack at `ee7929515`, Alice entered Monday 1h on task `4743c754` and saved ("Saved 1 entry", `3a63018c`). She reloaded, entered Tuesday 0.5h and saved again ("Saved 2 entries": `e2883c20` for Tuesday, plus `1c6ea6f5`, a copy of Monday). The API then returned **2 Monday entries of 60 min each**, and the grid showed Monday as 2h. Evidence: `after/seed-r1.json`, `after/README.md`. → **Own fix PR (test first)**, top of the founder list with F-666B-B1. K-88 follows that fix (D-89).
+- **F-668A-A-1** (MEDIUM, introduced, **fixed** in `7d0336046`): the court-date Status icon widened the list at 1024 from 814 to 824 px in 664. With Status `px-2` it is 808/664, page overflow 56. The court-date list still overflows its scroller at 1024 (pre-existing F-668A-B-2) → 669A/670A.
+- **F-668A-A-2** (LOW, pre-existing): the Today's agenda `text-slate-500` labels are 3.80:1 in dark → 669A/670A dark list.
+- **F-668A-A-3** (LOW, **fixed** in `7d0336046`): Status now shows from 34rem and Logged from 38rem.
+- **F-668A-CR2-1** (Minor, CodeRabbit round 2 on `task-table.tsx:107`, **deferred** under the one-round rule): when `MyWorkTaskTable` gets no `onTaskClick`, the title is plain text with no focusable link. Every production caller passes `onTaskClick`. → 669A/670A kit follow-up, together with F-668A-K1 (kit `onRowClick`).
+- **CodeRabbit CR-2..CR-5** (round 1, on the executed `before/` README and scripts): declined, D-22. Their effect is noted in `after/README.md`: K-88 is reported as held, and K-39 and the K-96 header controls were measured by new scripts.

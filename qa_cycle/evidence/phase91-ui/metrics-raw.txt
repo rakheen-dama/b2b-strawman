@@ -1,0 +1,391 @@
+# 670A metrics raw output — HEAD c897562a81400b191c3d9103b23153108c97a29e (docs(phase91/670A): exit matrix part 2 — fee notes, trust, 6); product code = main c4595f924: git log --oneline c4595f924..HEAD -- backend frontend portal packages gateway compose prints 0 lines
+# date 2026-11-27T13:59:25Z; git 2.52.0; shell bash -c; B='frontend/app/(app)/org/[slug]'
+
+### 1 Pages under org/[slug]
+$ find "$B" -name page.tsx | wc -l
+      58
+(exit 0)
+
+### 2 PageHeader adoption
+$ find "$B" -name page.tsx -exec grep -l "PageHeader" {} + | wc -l
+      44
+(exit 0)
+
+### 2a PageHeader adoption (listing)
+$ find "$B" -name page.tsx -exec grep -l "PageHeader" {} + | sort
+frontend/app/(app)/org/[slug]/ai/reviews/page.tsx
+frontend/app/(app)/org/[slug]/clients/page.tsx
+frontend/app/(app)/org/[slug]/compliance/page.tsx
+frontend/app/(app)/org/[slug]/compliance/requests/[id]/page.tsx
+frontend/app/(app)/org/[slug]/compliance/requests/page.tsx
+frontend/app/(app)/org/[slug]/conflict-check/page.tsx
+frontend/app/(app)/org/[slug]/diary/page.tsx
+frontend/app/(app)/org/[slug]/information-requests/[id]/page.tsx
+frontend/app/(app)/org/[slug]/invoices/billing-runs/[id]/page.tsx
+frontend/app/(app)/org/[slug]/invoices/billing-runs/new/page.tsx
+frontend/app/(app)/org/[slug]/invoices/billing-runs/page.tsx
+frontend/app/(app)/org/[slug]/invoices/collections/page.tsx
+frontend/app/(app)/org/[slug]/invoices/page.tsx
+frontend/app/(app)/org/[slug]/invoices/unbilled/page.tsx
+frontend/app/(app)/org/[slug]/legal/adverse-parties/page.tsx
+frontend/app/(app)/org/[slug]/legal/disbursements/page.tsx
+frontend/app/(app)/org/[slug]/legal/tariffs/page.tsx
+frontend/app/(app)/org/[slug]/matters/page.tsx
+frontend/app/(app)/org/[slug]/my-work/timesheet/page.tsx
+frontend/app/(app)/org/[slug]/notifications/page.tsx
+frontend/app/(app)/org/[slug]/reports/page.tsx
+frontend/app/(app)/org/[slug]/reports/profitability/page.tsx
+frontend/app/(app)/org/[slug]/settings/connections/ai/history/page.tsx
+frontend/app/(app)/org/[slug]/settings/connections/automations/executions/page.tsx
+frontend/app/(app)/org/[slug]/settings/connections/xero/sync-log/page.tsx
+frontend/app/(app)/org/[slug]/settings/documents/templates/[id]/edit/page.tsx
+frontend/app/(app)/org/[slug]/settings/documents/templates/new/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/checklists/[id]/edit/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/checklists/[id]/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/checklists/new/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/request-templates/[id]/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/request-templates/new/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/templates/[id]/page.tsx
+frontend/app/(app)/org/[slug]/team/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/client-ledgers/[clientId]/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/client-ledgers/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/investments/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/other-creditors/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/lists/[listId]/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/reports/page.tsx
+frontend/app/(app)/org/[slug]/trust-accounting/transactions/page.tsx
+(exit 0)
+
+### 2b page.tsx WITHOUT PageHeader (listing)
+$ find "$B" -name page.tsx -exec grep -L "PageHeader" {} + | sort
+frontend/app/(app)/org/[slug]/clients/[id]/page.tsx
+frontend/app/(app)/org/[slug]/dashboard/page.tsx
+frontend/app/(app)/org/[slug]/invoices/[id]/page.tsx
+frontend/app/(app)/org/[slug]/legal/disbursements/[id]/page.tsx
+frontend/app/(app)/org/[slug]/matters/[id]/page.tsx
+frontend/app/(app)/org/[slug]/matters/new/page.tsx
+frontend/app/(app)/org/[slug]/my-work/page.tsx
+frontend/app/(app)/org/[slug]/reports/[reportSlug]/page.tsx
+frontend/app/(app)/org/[slug]/settings/connections/page.tsx
+frontend/app/(app)/org/[slug]/settings/documents/page.tsx
+frontend/app/(app)/org/[slug]/settings/fees/page.tsx
+frontend/app/(app)/org/[slug]/settings/firm/page.tsx
+frontend/app/(app)/org/[slug]/settings/matters/page.tsx
+frontend/app/(app)/org/[slug]/settings/page.tsx
+(exit 0)
+
+### 2c page.tsx with a <PageHeader tag (2 minus comment-only hits)
+$ find "$B" -name page.tsx -exec grep -l "<PageHeader" {} + | wc -l
+      43
+(exit 0)
+
+### 2d page.tsx matching PageHeader but with no <PageHeader tag
+$ find "$B" -name page.tsx -exec grep -l "PageHeader" {} + | while read f; do grep -q "<PageHeader" "$f" || echo "$f"; done
+frontend/app/(app)/org/[slug]/settings/documents/templates/[id]/edit/page.tsx
+(exit 0)
+
+### 3 Files with <h1
+$ grep -rl '<h1' "$B" | wc -l
+       5
+(exit 0)
+
+### 3a Files with <h1 (listing)
+$ grep -rl '<h1' "$B" | sort
+frontend/app/(app)/org/[slug]/compliance/requests/[id]/page.tsx
+frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx
+frontend/app/(app)/org/[slug]/matters/new/new-matter-page-client.tsx
+frontend/app/(app)/org/[slug]/not-found.tsx
+frontend/app/(app)/org/[slug]/reports/[reportSlug]/page.tsx
+(exit 0)
+
+### 4 Display h1
+$ git grep -c "font-display text-3xl" -- frontend/app frontend/components | awk -F: '{s+=$NF} END {print s}'
+3
+(exit 0)
+
+### 4a Display h1 (listing)
+$ git grep -n "font-display text-3xl" -- frontend/app frontend/components
+frontend/app/(app)/org/[slug]/reports/[reportSlug]/page.tsx:52:        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+frontend/components/auth-page.tsx:24:            className="font-display text-3xl text-slate-900 dark:text-slate-100"
+frontend/components/marketing/cta-section.tsx:15:        <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl">
+(exit 0)
+
+### 5 Direct tables (listing)
+$ grep -rlE "<Table\b|<table\b" "$B" | sort
+frontend/app/(app)/org/[slug]/documents/loading.tsx
+frontend/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker.tsx
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/templates-table.tsx
+frontend/app/(app)/org/[slug]/settings/firm/_tabs/capability-reference.tsx
+(exit 0)
+
+### 5a Direct tables by first path segment
+$ grep -rlE "<Table\b|<table\b" "$B" | awk -v b="$B/" '{print substr($0, length(b)+1)}' | awk -F/ '{print $1}' | sort | uniq -c
+   1 documents
+   1 invoices
+   2 settings
+(exit 0)
+
+### 5b Direct tables (line hits)
+$ grep -rnE "<Table\b|<table\b" "$B"
+frontend/app/(app)/org/[slug]/settings/firm/_tabs/capability-reference.tsx:30:          <Table>
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/templates-table.tsx:24:// `table-fixed` (the kit has no <table> class prop). Auto layout treats `width` as a hint and falls
+frontend/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker.tsx:196:            <table className="w-full text-sm" data-testid="picker-table">
+frontend/app/(app)/org/[slug]/documents/loading.tsx:17:        <table className="w-full">
+(exit 0)
+
+### 6 EmptyState without variant (interim perl scan)
+$ perl qa_cycle/evidence/phase91-ui/baseline/scripts/emptystate-scan.pl
+tags=117 files=91 shared_tags=117 shared_files=91 shared_with_variant=117 shared_without_variant=0 all_without_variant=0
+(exit 0)
+
+### 6a EmptyState scan listing
+$ LIST=1 perl qa_cycle/evidence/phase91-ui/baseline/scripts/emptystate-scan.pl
+tags=117 files=91 shared_tags=117 shared_files=91 shared_with_variant=117 shared_without_variant=0 all_without_variant=0
+(exit 0)
+
+### 6b Guard allowlist
+$ grep -n "const ALLOWLIST" frontend/__tests__/emptystate-variant-guard.test.ts
+18:const ALLOWLIST: Record<string, string> = {};
+(exit 0)
+
+### 6c variant required in the type
+$ grep -n "variant" frontend/components/empty-state.tsx
+21:   * `__tests__/emptystate-variant-guard.test.ts` also checks it is written at the call site.
+23:  variant: EmptyStateVariant;
+29: * Sizing rule (Phase 91, ADR-393). Every call site passes `variant` explicitly — the prop is
+30: * required in the type (669B) and `__tests__/emptystate-variant-guard.test.ts` rejects a spread
+33: * | variant   | use when | markup |
+52:  variant,
+54:  const inline = variant === "inline";
+55:  const compact = variant === "compact";
+59:      <Button size="sm" variant="outline" onClick={onAction}>
+63:      <Button asChild size="sm" variant="outline">
+91:        data-variant={variant}
+107:      data-variant={variant}
+(exit 0)
+
+### 7 Raw hex (PCRE, *.tsx)
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | wc -l
+      33
+(exit 0)
+
+### 7a Raw hex (PCRE) listing
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx"
+frontend/app/(app)/org/[slug]/dashboard/page.tsx:71:    // "Revoke always wins" (PR #1859): the backend refuses a person whose invitation was revoked at
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:30:  const [brandColor, setBrandColor] = useState(settings.brandColor ?? "#000000");
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:93:      setError("Brand color must be a valid hex color (e.g., #1a2b3c).");
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:201:              placeholder="#000000"
+frontend/app/(app)/org/[slug]/settings/firm/_tabs/general.tsx:59:        brandColor={settings.brandColor ?? "#000000"}
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content.tsx:243:  /** Names of inactive definitions that are still group members, by id (PR #1752 review). */
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields.tsx:67:  // before it is removed (PR #1752 review). Usually none; failures leave the id-prefix fallback.
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx:33:// `--slate-950` is oklch(13.5% 0.006 258) (packages/ui/styles/globals.css) ≈ sRGB #07080B.
+frontend/app/(app)/org/[slug]/team/page.tsx:22:  // custom role's badge shows its name, not its slug (PR #1752 review).
+frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:217:            // do their own data loading and remain usable independently. PR #1004 review.
+frontend/components/__tests__/app-sidebar.test.tsx:469:    const { unmount } = renderSidebar({ brandColor: "#1B3A4B" });
+frontend/components/__tests__/app-sidebar.test.tsx:475:    expect(document.documentElement.style.getPropertyValue("--brand-color")).toBe("#1B3A4B");
+frontend/components/comments/edit-comment-dialog.tsx:163:  // collide on Radix Slot reconciliation (PR #1242 pattern).
+frontend/components/customers/XeroContactBadge.tsx:32:      <Badge variant="neutral" className="bg-[#13B5EA]/10 text-[#13B5EA]">
+frontend/components/customers/edit-customer-dialog.tsx:164:  // OBS-2103 (PR #1239) avoided Radix `Slot` (`asChild`) because two adjacent
+frontend/components/field-definitions/FieldGroupDialog.tsx:445:                  // so two inactive members are told apart (PR #1752 review). With no name, the
+frontend/components/integrations/XeroConnectionCard.tsx:99:              className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#13B5EA]/10"
+frontend/components/integrations/XeroConnectionCard.tsx:101:              <span className="text-lg font-bold text-[#13B5EA]">X</span>
+frontend/components/integrations/XeroConnectionCard.tsx:144:                className="bg-[#13B5EA] text-slate-950 hover:bg-[#0e9fd0]"
+frontend/components/matters/matter-tabs.tsx:127:  // at all — otherwise they click through to an empty pane (PR #1281 follow-up).
+frontend/components/rates/customer-rates-tab.tsx:48:// on Radix Slot reconciliation. Mirrors PR #1242's pattern for customer dialogs.
+frontend/components/settings/general-settings-form.tsx:138:      setMessage("Brand color must be a valid hex color (e.g., #1a2b3c).");
+frontend/components/settings/general-settings-form.tsx:299:              value={brandColor || "#000000"}
+frontend/components/settings/general-settings-form.tsx:307:              placeholder="#000000"
+frontend/components/shell/app-sidebar.tsx:227:            (#1B3A4B) on the old slate-950 rail was illegible (G-A3, Phase 88 628B). It stays
+frontend/components/tags/TagDialog.tsx:65:      setError("Color must be a valid hex color (e.g. #FF5733).");
+frontend/components/tags/TagDialog.tsx:129:                  placeholder="#FF5733"
+frontend/components/tags/TagDialog.tsx:139:              <p className="text-xs text-slate-500 dark:text-slate-400">Hex format, e.g. #FF5733</p>
+frontend/components/tags/TagInput.tsx:26:  return luminance > 0.5 ? "#000000" : "#FFFFFF";
+frontend/components/team/member-list.tsx:32:  /** Custom-role display names for the Role badge, for every viewer (PR #1752 review). */
+frontend/components/trust/TrustBalanceCard.tsx:129:  // (rendered only when `ledger` is present) instead of blanking the card (PR #1746 review).
+frontend/components/trust/ledger-totals-breakdown.tsx:184:            {/* The visual "−" is aria-hidden; say it for screen readers (PR #1746 review) */}
+frontend/components/ui/chart.tsx:68:          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-surface:focus-visible]:outline-ring flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden [&_.recharts-surface:focus-visible]:outline-2 [&_.recharts-surface:focus-visible]:outline-offset-2 [&_.recharts-surface:focus-visible]:outline-solid",
+(exit 0)
+
+### 7b Raw hex ERE companion
+$ git grep -nE "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | wc -l
+       2
+(exit 0)
+
+### 8 dark: lines, whole frontend
+$ git grep -c "dark:" -- "frontend/**/*.ts" "frontend/**/*.tsx" | awk -F: '{s+=$NF} END {print s}'
+2521
+(exit 0)
+
+### 8a dark: occurrences, whole frontend
+$ git grep -o "dark:" -- "frontend/**/*.ts" "frontend/**/*.tsx" | wc -l
+    3154
+(exit 0)
+
+### 8b dark: lines at baseline 551778100 (git grep on the commit)
+$ git grep -c "dark:" 551778100 -- "frontend/**/*.ts" "frontend/**/*.tsx" | awk -F: '{s+=$NF} END {print s}'
+3842
+(exit 0)
+
+### 8c dark: lines at 663C 5daacb930
+$ git grep -c "dark:" 5daacb930 -- "frontend/**/*.ts" "frontend/**/*.tsx" | awk -F: '{s+=$NF} END {print s}'
+3836
+(exit 0)
+
+### 9 page.tsx containing <h1
+$ find "$B" -name page.tsx -exec grep -l '<h1' {} + | wc -l
+       2
+(exit 0)
+
+### 10 frontend/components non-test files with <h1
+$ git grep -l '<h1' -- frontend/components | grep -vE '__tests__|\.test\.' | wc -l
+       5
+(exit 0)
+
+### 10a listing
+$ git grep -l '<h1' -- frontend/components | grep -vE '__tests__|\.test\.'
+frontend/components/auth-page.tsx
+frontend/components/information-requests/request-detail-client.tsx
+frontend/components/marketing/hero-section.tsx
+frontend/components/shared/detail-hero.tsx
+frontend/components/templates/TemplateEditorClient.tsx
+(exit 0)
+
+### 11 backend/gateway diff over the phase
+$ git diff --name-only 551778100..c4595f924 -- backend gateway | wc -l
+       0
+(exit 0)
+
+### 12 dependency files diff over the phase
+$ git diff --stat 551778100..c4595f924 -- frontend/package.json portal/package.json packages/*/package.json pnpm-lock.yaml
+(exit 0)
+
+### 13 migrations over the phase
+$ git diff --name-only 551778100..c4595f924 -- "backend/src/main/resources/db" | wc -l
+       0
+(exit 0)
+
+# ---- like-with-like: the same metrics on the baseline commit 551778100 via git grep on the tree (no checkout) ----
+
+### B3 Files with <h1 @551778100
+$ git grep -l '<h1' 551778100 -- 'frontend/app/(app)/org/*' | wc -l
+      71
+(exit 0)
+
+### B5 Direct tables @551778100 by first path segment (git grep -P: macOS git ERE has no \\b)
+$ git grep -lP '<Table\b|<table\b' 551778100 -- 'frontend/app/(app)/org/*' | sed 's|^551778100:||' | awk -v b="$B/" '{print substr($0, length(b)+1)}' | awk -F/ '{print $1}' | sort | uniq -c
+   1 documents
+   4 invoices
+   1 legal
+  10 settings
+   6 trust-accounting
+(exit 0)
+
+### B7 Raw hex PCRE @551778100
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" 551778100 -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | wc -l
+      33
+(exit 0)
+
+### B7a Raw hex lines removed / added (file:text, line numbers stripped, LC_ALL=C sort; < baseline only, > exit only)
+$ diff <(git grep -nP "#[0-9a-fA-F]{3,6}\b" 551778100 -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | sed -E "s/^551778100://; s/^([^:]+):[0-9]+:[[:space:]]*/\1: /" | LC_ALL=C sort) <(git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | sed -E "s/^([^:]+):[0-9]+:[[:space:]]*/\1: /" | LC_ALL=C sort)
+8c8
+< frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx: return luminance > 0.5 ? "#000000" : "#FFFFFF";
+---
+> frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx: // `--slate-950` is oklch(13.5% 0.006 258) (packages/ui/styles/globals.css) ≈ sRGB #07080B.
+17d16
+< frontend/components/integrations/XeroConnectionCard.tsx: <div className="flex size-10 items-center justify-center rounded-lg bg-[#13B5EA]/10">
+19a19
+> frontend/components/integrations/XeroConnectionCard.tsx: className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#13B5EA]/10"
+25c25
+< frontend/components/shell/app-sidebar.tsx: (#1B3A4B) on the slate-950 rail was illegible (G-A3, Phase 88 628B). */}
+---
+> frontend/components/shell/app-sidebar.tsx: (#1B3A4B) on the old slate-950 rail was illegible (G-A3, Phase 88 628B). It stays
+(exit 1)
+
+### B7b Raw hex files @551778100 vs exit (count per file)
+$ diff <(git grep -cP "#[0-9a-fA-F]{3,6}\b" 551778100 -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | sed "s/^551778100://") <(git grep -cP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx")
+(exit 0)
+
+### B8a dark: occurrences @551778100
+$ git grep -o "dark:" 551778100 -- "frontend/**/*.ts" "frontend/**/*.tsx" | wc -l
+    4666
+(exit 0)
+
+### B9 page.tsx containing <h1 @551778100
+$ git grep -l '<h1' 551778100 -- 'frontend/app/(app)/org/*page.tsx' | wc -l
+      37
+(exit 0)
+
+### B10 frontend/components non-test files with <h1 @551778100
+$ git grep -l '<h1' 551778100 -- frontend/components | grep -vE '__tests__|\.test\.' | wc -l
+       6
+(exit 0)
+
+### D1 dark: lines whole frontend, per Phase 91 squash (parent -> commit)
+$ c(){ git grep -c "dark:" $1 -- "frontend/**/*.ts" "frontend/**/*.tsx" | awk -F: '{s+=$NF} END {print s}'; }; for x in 1862:0474dcf4e 1863:023ddb315 1864:cb8c26839 1865:d1fdeb475 1866:c66dd0575 1867:5daacb930 1868:6d0f5377e 1869:d90376640 1870:dac162907 1871:cccc20cde 1872:582ad0511 1873:4ccb88b07 1874:f8f51f37e 1875:05ea3eb5d 1876:55de88b29 1877:f8417b892 1878:795571eea 1879:8e6af4c6b 1880:22eb92ec6 1881:99f18aea3 1882:23c441961; do s=${x##*:}; a=$(c $s^); b=$(c $s); echo "#${x%%:*} $s $a -> $b ($((b-a)))"; done
+#1862 0474dcf4e 3842 -> 3842 (0)
+#1863 023ddb315 3842 -> 3842 (0)
+#1864 cb8c26839 3842 -> 3842 (0)
+#1865 d1fdeb475 3842 -> 3836 (-6)
+#1866 c66dd0575 3836 -> 3836 (0)
+#1867 5daacb930 3836 -> 3836 (0)
+#1868 6d0f5377e 3836 -> 3834 (-2)
+#1869 d90376640 3834 -> 3832 (-2)
+#1870 dac162907 3832 -> 3688 (-144)
+#1871 cccc20cde 3688 -> 3623 (-65)
+#1872 582ad0511 3623 -> 3469 (-154)
+#1873 4ccb88b07 3469 -> 3352 (-117)
+#1874 f8f51f37e 3352 -> 3303 (-49)
+#1875 05ea3eb5d 3303 -> 3171 (-132)
+#1876 55de88b29 3171 -> 2989 (-182)
+#1877 f8417b892 2989 -> 2925 (-64)
+#1878 795571eea 2925 -> 2831 (-94)
+#1879 8e6af4c6b 2831 -> 2737 (-94)
+#1880 22eb92ec6 2737 -> 2674 (-63)
+#1881 99f18aea3 2674 -> 2542 (-132)
+#1882 23c441961 2542 -> 2521 (-21)
+(exit 0)
+
+### D2 non-PR commits in the range touching frontend (should be none)
+$ git log --oneline 551778100..c4595f924 -- frontend | grep -vE "\(#18(6[2-9]|7[0-9]|8[0-2])\)$"
+(exit 1)
+
+### D3 new files with dark: in the slices whose DARK-AUDIT differs from git
+$ for s in 6d0f5377e 55de88b29 795571eea 8e6af4c6b 4ccb88b07; do git diff --name-only $s^ $s -- "frontend/**/*.ts" "frontend/**/*.tsx" | while read f; do a=$(git show $s^:"$f" 2>/dev/null | grep -c "dark:"); b=$(git show $s:"$f" 2>/dev/null | grep -c "dark:"); [ "$b" -gt "$a" ] && echo "$s $f $a -> $b"; done; done; true
+6d0f5377e frontend/__tests__/components/settings/settings-family-notice.test.tsx 0 -> 2
+6d0f5377e frontend/components/settings/settings-section.tsx 0 -> 1
+55de88b29 frontend/__tests__/invoices/fee-note-status-filter.test.tsx 0 -> 2
+55de88b29 frontend/components/invoices/fee-note-columns.tsx 0 -> 1
+55de88b29 frontend/components/invoices/fee-note-status-filter.tsx 0 -> 2
+795571eea frontend/components/trust/client-ledgers-data-table.tsx 0 -> 1
+8e6af4c6b frontend/__tests__/trust/investments-data-table.test.tsx 0 -> 1
+8e6af4c6b frontend/components/trust/investments-data-table.tsx 0 -> 3
+4ccb88b07 frontend/__tests__/app/settings/tax-rates.test.tsx 0 -> 1
+(exit 0)
+
+### D4 665C (582ad0511) per-file dark: before -> after
+$ git diff --name-only 582ad0511^ 582ad0511 -- "frontend/**/*.ts" "frontend/**/*.tsx" | while read f; do a=$(git show 582ad0511^:"$f" 2>/dev/null | grep -c "dark:"); b=$(git show 582ad0511:"$f" 2>/dev/null | grep -c "dark:"); [ "$a" != "$b" ] && echo "$f $a -> $b"; done; true
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/checklists.tsx 20 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content.tsx 10 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields.tsx 4 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/naming.tsx 4 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/request-settings.tsx 4 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/request-templates.tsx 19 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx 11 -> 1
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags.tsx 2 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/take-on-tab.tsx 3 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/templates.tsx 2 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/checklists/[id]/edit/page.tsx 6 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/checklists/[id]/page.tsx 18 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/checklists/new/page.tsx 3 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/request-templates/[id]/page.tsx 4 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/request-templates/new/page.tsx 6 -> 0
+frontend/app/(app)/org/[slug]/settings/matters/templates/[id]/page.tsx 4 -> 0
+frontend/components/information-requests/request-reminder-settings-form.tsx 6 -> 0
+frontend/components/project-naming/project-naming-settings.tsx 11 -> 0
+frontend/components/take-on/go-live-checklist-card.tsx 6 -> 5
+frontend/components/templates/TemplateList.tsx 18 -> 1
+(exit 0)
+

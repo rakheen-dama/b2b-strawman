@@ -1,0 +1,8 @@
+  ✓  173 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:53:7 › ROLE-01: Roles & Capabilities › Create, edit and delete a custom role (4.6s)
+  ✓  178 [chromium] › e2e/tests/settings/tax-settings.spec.ts:61:7 › SET-03: Tax Settings › Tax applies to invoices (1.8s)
+  ✓  180 [chromium] › e2e/tests/smoke.spec.ts:27:5 › member cannot access admin settings (801ms)
+  ✓  177 [chromium] › e2e/tests/settings/tags.spec.ts:57:7 › TAG-01: Tags › Apply tag to entity (4.0s)
+  ✓  179 [chromium] › e2e/tests/projects/project-tasks.spec.ts:322:7 › PROJ-02: Project Tasks › 9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7) (3.5s)
+
+  13 skipped
+  167 passed (1.0m)

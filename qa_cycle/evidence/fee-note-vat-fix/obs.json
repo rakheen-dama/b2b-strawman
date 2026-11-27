@@ -1,0 +1,299 @@
+{
+  "at": "2026-11-27T19:03:22.477Z",
+  "source": {
+    "generatedFrom": {
+      "id": "4f2dd116-ecf3-4576-bf35-457a61705788",
+      "name": "Apex Holdings mwzcg9x7120d",
+      "unbilledZarEntries": 1
+    }
+  },
+  "invoiceId": "a6dd3053-82b8-4de7-b22a-a83123fd174c",
+  "steps": [
+    {
+      "name": "0-draft-opening",
+      "dom": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      },
+      "api": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": null,
+        "notes": null,
+        "poNumber": null,
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "1-after-due-date-save",
+      "dom": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      },
+      "api": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": "2027-01-11",
+        "notes": null,
+        "poNumber": null,
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "2-after-notes-po-save",
+      "dom": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      },
+      "api": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": "2027-01-11",
+        "notes": "F-666B-B1 OBS — notes edit",
+        "poNumber": "PO-VAT-OBS",
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "3-approved",
+      "dom": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      },
+      "api": {
+        "status": "APPROVED",
+        "invoiceNumber": "INV-0006",
+        "dueDate": "2027-01-11",
+        "notes": "F-666B-B1 OBS — notes edit",
+        "poNumber": "PO-VAT-OBS",
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "opening draft has per-line VAT",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": null,
+        "notes": null,
+        "poNumber": null,
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "opening tax == sum of line taxes",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": null,
+        "notes": null,
+        "poNumber": null,
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "step 1: due date saved",
+      "ok": true,
+      "detail": {
+        "due": "2027-01-11",
+        "api": "2027-01-11"
+      }
+    },
+    {
+      "name": "step 1: API taxAmount unchanged",
+      "ok": true,
+      "detail": {
+        "was": 187.5,
+        "now": 187.5
+      }
+    },
+    {
+      "name": "step 1: API total unchanged",
+      "ok": true,
+      "detail": {
+        "was": 1437.5,
+        "now": 1437.5
+      }
+    },
+    {
+      "name": "step 1: DOM Total unchanged",
+      "ok": true,
+      "detail": {
+        "was": "R 1 437,50",
+        "now": "R 1 437,50"
+      }
+    },
+    {
+      "name": "step 1: DOM VAT rows unchanged",
+      "ok": true,
+      "detail": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      }
+    },
+    {
+      "name": "step 2: notes + PO saved",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "invoiceNumber": null,
+        "dueDate": "2027-01-11",
+        "notes": "F-666B-B1 OBS — notes edit",
+        "poNumber": "PO-VAT-OBS",
+        "hasPerLineTax": true,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineTaxSum": 187.5,
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "step 2: API taxAmount unchanged",
+      "ok": true,
+      "detail": {
+        "was": 187.5,
+        "now": 187.5
+      }
+    },
+    {
+      "name": "step 2: API total unchanged",
+      "ok": true,
+      "detail": {
+        "was": 1437.5,
+        "now": 1437.5
+      }
+    },
+    {
+      "name": "step 2: DOM Total unchanged",
+      "ok": true,
+      "detail": {
+        "was": "R 1 437,50",
+        "now": "R 1 437,50"
+      }
+    },
+    {
+      "name": "step 2: DOM VAT rows unchanged",
+      "ok": true,
+      "detail": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      }
+    },
+    {
+      "name": "step 3: approved",
+      "ok": true,
+      "detail": "APPROVED"
+    },
+    {
+      "name": "step 3: API taxAmount unchanged",
+      "ok": true,
+      "detail": {
+        "was": 187.5,
+        "now": 187.5
+      }
+    },
+    {
+      "name": "step 3: API total unchanged",
+      "ok": true,
+      "detail": {
+        "was": 1437.5,
+        "now": 1437.5
+      }
+    },
+    {
+      "name": "step 3: DOM Total unchanged",
+      "ok": true,
+      "detail": {
+        "was": "R 1 437,50",
+        "now": "R 1 437,50"
+      }
+    },
+    {
+      "name": "step 3: DOM VAT rows unchanged",
+      "ok": true,
+      "detail": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50"
+      }
+    }
+  ],
+  "allChecksPass": true
+}

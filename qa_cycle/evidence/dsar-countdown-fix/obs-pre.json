@@ -1,0 +1,174 @@
+{
+  "phase": "pre",
+  "startedAt": "2026-11-27T20:35:27.892Z",
+  "todaySA": "2026-11-27",
+  "steps": [
+    {
+      "step": "setting Data Request Deadline (days) 1 → 1",
+      "reloadedValue": "1"
+    },
+    {
+      "step": "created request \"T (deadline days 1)\" for Acme Corpcontact@acme.example.com at 2026-11-27T20:35:33.754Z (SA 2026-11-27)"
+    },
+    {
+      "step": "setting Data Request Deadline (days) 1 → 2",
+      "reloadedValue": "2"
+    },
+    {
+      "step": "created request \"U (deadline days 2)\" for Acme Corpcontact@acme.example.com at 2026-11-27T20:35:36.509Z (SA 2026-11-27)"
+    },
+    {
+      "step": "setting Data Request Deadline (days) 2 → 30",
+      "reloadedValue": "30"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "0-before-create: Subject: E2E DSAR vbdt\nReceived: 2026-11-27 (deadline 2026-12-27) shows \"30d remaining\"",
+      "ok": true,
+      "detail": {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    },
+    {
+      "name": "setting saved as 1",
+      "ok": true,
+      "detail": {
+        "before": "1",
+        "after": "1"
+      }
+    },
+    {
+      "name": "setting saved as 2",
+      "ok": true,
+      "detail": {
+        "before": "1",
+        "after": "2"
+      }
+    },
+    {
+      "name": "setting saved as 30",
+      "ok": true,
+      "detail": {
+        "before": "2",
+        "after": "30"
+      }
+    },
+    {
+      "name": "1-after-create: OBS F-669A-A-4 T (deadline days 1) (deadline 2026-11-28) shows \"1d remaining\"",
+      "ok": true,
+      "detail": {
+        "clientName": "Acme Corp",
+        "description": "OBS F-669A-A-4 T (deadline days 1)",
+        "deadline": "2026-11-28",
+        "todaySA": "2026-11-27",
+        "expected": "1d remaining",
+        "observed": "1d remaining",
+        "mainFormulaWouldShow": "Due today",
+        "deadlineCell": "28 Nov 2026\n1d remaining"
+      }
+    },
+    {
+      "name": "1-after-create: OBS F-669A-A-4 U (deadline days 2) (deadline 2026-11-29) shows \"2d remaining\"",
+      "ok": true,
+      "detail": {
+        "clientName": "Acme Corp",
+        "description": "OBS F-669A-A-4 U (deadline days 2)",
+        "deadline": "2026-11-29",
+        "todaySA": "2026-11-27",
+        "expected": "2d remaining",
+        "observed": "2d remaining",
+        "mainFormulaWouldShow": "1d remaining",
+        "deadlineCell": "29 Nov 2026\n2d remaining"
+      }
+    },
+    {
+      "name": "1-after-create: Subject: E2E DSAR vbdt\nReceived: 2026-11-27 (deadline 2026-12-27) shows \"30d remaining\"",
+      "ok": true,
+      "detail": {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    }
+  ],
+  "openRequestsAtStart": [
+    {
+      "id": "67520382-25aa-4eee-865b-87e1d428e18d",
+      "clientName": "DSAR Client vbdt",
+      "status": "RECEIVED",
+      "deadline": "2026-12-27",
+      "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27"
+    }
+  ],
+  "overview_0-before-create": {
+    "at": "2026-11-27T20:35:29.408Z",
+    "todaySA": "2026-11-27",
+    "openRequests": 1,
+    "rows": [
+      {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    ]
+  },
+  "originalDeadlineDays": "30",
+  "overview_1-after-create": {
+    "at": "2026-11-27T20:35:39.170Z",
+    "todaySA": "2026-11-27",
+    "openRequests": 3,
+    "rows": [
+      {
+        "clientName": "Acme Corp",
+        "description": "OBS F-669A-A-4 T (deadline days 1)",
+        "deadline": "2026-11-28",
+        "todaySA": "2026-11-27",
+        "expected": "1d remaining",
+        "observed": "1d remaining",
+        "mainFormulaWouldShow": "Due today",
+        "deadlineCell": "28 Nov 2026\n1d remaining"
+      },
+      {
+        "clientName": "Acme Corp",
+        "description": "OBS F-669A-A-4 U (deadline days 2)",
+        "deadline": "2026-11-29",
+        "todaySA": "2026-11-27",
+        "expected": "2d remaining",
+        "observed": "2d remaining",
+        "mainFormulaWouldShow": "1d remaining",
+        "deadlineCell": "29 Nov 2026\n2d remaining"
+      },
+      {
+        "clientName": "DSAR Client vbdt",
+        "description": "Subject: E2E DSAR vbdt\nReceived: 2026-11-27",
+        "deadline": "2026-12-27",
+        "todaySA": "2026-11-27",
+        "expected": "30d remaining",
+        "observed": "30d remaining",
+        "mainFormulaWouldShow": "29d remaining",
+        "deadlineCell": "27 Dec 2026\n30d remaining"
+      }
+    ]
+  },
+  "finishedAt": "2026-11-27T20:35:40.719Z",
+  "allChecksPass": true
+}

@@ -1,0 +1,99 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-dsar-countdown/frontend
+
+ ❯ __tests__/compliance/DataRequestsSection.test.tsx (16 tests | 10 failed) 379ms
+       × at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 21ms
+       × at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 18ms
+       × at 00:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 22ms
+       × at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 21ms
+       × at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 24ms
+       × at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 32ms
+       × at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 40ms
+       × at 00:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 36ms
+       × at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 25ms
+       × at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining 37ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone UTC > at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone UTC > at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Africa/Johannesburg > at 00:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Africa/Johannesburg > at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Africa/Johannesburg > at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone America/New_York > at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone America/New_York > at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Pacific/Kiritimati > at 00:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Pacific/Kiritimati > at 11:40 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+AssertionError: expected [ [ 'Yesterday Client', …(1) ], …(2) ] to deeply equal [ [ 'Yesterday Client', …(1) ], …(2) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "Yesterday Client",
+-     "1d overdue",
++     "2d overdue",
+    ],
+    [
+      "Today Client",
+-     "Due today",
++     "1d overdue",
+    ],
+    [
+      "Tomorrow Client",
+-     "1d remaining",
++     "Due today",
+    ],
+  ]
+
+ ❯ __tests__/compliance/DataRequestsSection.test.tsx:155:26
+    153|           within(r).getByText(/overdue|Due today|remaining/).textConte…
+    154|         ]);
+    155|       expect(countdowns).toEqual([
+       |                          ^
+    156|         ["Yesterday Client", "1d overdue"],
+    157|         ["Today Client", "Due today"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  __tests__/compliance/DataRequestsSection.test.tsx > DataRequestsSection countdown on the South African calendar (F-669A-A-4) > runtime zone Pacific/Kiritimati > at 23:30 SAST, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining
+AssertionError: expected [ [ 'Yesterday Client', …(1) ], …(2) ] to deeply equal [ [ 'Yesterday Client', …(1) ], …(2) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "Yesterday Client",
+-     "1d overdue",
++     "3d overdue",
+    ],
+    [
+      "Today Client",
+-     "Due today",
++     "2d overdue",
+    ],
+    [
+      "Tomorrow Client",
+-     "1d remaining",
++     "1d overdue",
+    ],
+  ]
+
+ ❯ __tests__/compliance/DataRequestsSection.test.tsx:155:26
+    153|           within(r).getByText(/overdue|Due today|remaining/).textConte…
+    154|         ]);
+    155|       expect(countdowns).toEqual([
+       |                          ^
+    156|         ["Yesterday Client", "1d overdue"],
+    157|         ["Today Client", "Due today"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 6 passed (16)
+   Start at  22:21:14
+   Duration  1.72s (transform 141ms, setup 80ms, import 398ms, tests 379ms, environment 144ms)
+

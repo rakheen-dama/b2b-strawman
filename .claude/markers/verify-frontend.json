@@ -1,7 +1,7 @@
 {
-  "commit": "6f29c04cc",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, wt-fix-timesheet-dup, PR #1884 review round 1)",
+  "commit": "9a71c251e",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, wt-k88-timesheet-rows, PR #1885 review round 1)",
   "exit": 0,
-  "ts": "2026-11-27T16:08:03Z",
-  "summary": "PR #1884 @6f29c04cc (final head; gate ran on product commit d19cb2418, head adds OBS evidence only) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 550 files / 5635 passed / 2 skipped, build 0. E2E fresh stack from the worktree @d19cb2418: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped. OBS r1 21/21 PASS."
+  "ts": "2026-11-27T19:12:56Z",
+  "summary": "PR #1885 @9a71c251e (final head; gate ran on product commit 31ee87cdf, head adds OBS-r1 evidence + raw e2e logs only) — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, vitest 553 files / 5653 passed / 2 skipped, build 0. E2E fresh stack per suite from the worktree @31ee87cdf: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (raw/ list output). OBS-r1 15/15 PASS."
 }

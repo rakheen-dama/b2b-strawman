@@ -759,7 +759,7 @@
 | 666 | Fee Notes — List, Billing Runs, Collections, Unbilled on the Kit + Client-Derived Fee-Note Hero (E6) | Frontend | 663A, 664A | L | 666A, 666B (0 verifies) | **Done** (PRs #1876, #1877) |
 | 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | **Done** — 667A (PR #1878), 667B (PR #1879) |
 | 668 | Diary, My Work, Timesheet, Notifications on the Kit (E8) | Frontend | 663A, 664B | M | 668A (0 verifies) | **Done** — 668A (PR #1880) |
-| 669 | Light Pass + EmptyState Guard Finalised (E9) | Frontend | 663A, 664B; every allowlist owner for 669B | M | 669A, 669B (0 verifies) | **In progress** — 669A (PR #1881) |
+| 669 | Light Pass + EmptyState Guard Finalised (E9) | Frontend | 663A, 664B; every allowlist owner for 669B | M | 669A, 669B (0 verifies) | **Done** — 669A (PR #1881), 669B (PR #1882) |
 | 670 | Exit Gate — Fresh-Stack Suites, Observation Matrix, Metrics vs Baseline, Closure (E10; gate epic, no product code) | QA / Process / Docs | every slice merged | M | 670A (0 verifies; FE-GATE + PORTAL-GATE on `main`) | |
 
 ---

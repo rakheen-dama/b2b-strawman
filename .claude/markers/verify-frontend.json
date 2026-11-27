@@ -1,7 +1,7 @@
 {
-  "commit": "d61e5dd4e",
-  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-669A, PR #1881)",
+  "commit": "089a05400",
+  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-669B, PR #1882)",
   "exit": 0,
-  "ts": "2026-11-27T09:48:55Z",
-  "summary": "PR #1881 @d61e5dd4e (product head; 47a944685 adds evidence only) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 548 files / 5594 passed / 2 skipped, build 0; orchestrator run. E2E fresh stack @d61e5dd4e: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, compliance + information-requests 7/7"
+  "ts": "2026-11-27T11:29:52Z",
+  "summary": "PR #1882 @089a05400 (final head) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 549 files / 5622 passed / 2 skipped, build 0; orchestrator run. E2E fresh stack (frontend image from 810b8708f, product-identical to head): legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, navigation 17/17, rbac-capabilities 8/8"
 }

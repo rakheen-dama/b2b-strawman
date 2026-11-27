@@ -1,0 +1,24 @@
+﻿Fee note,Client,Status,Issue Date,Due Date,Total,Currency
+Draft,InvCrud Client p3zp,Draft,,,2875,ZAR
+Draft,InvLife Client p3zn,Draft,,,1725,ZAR
+INV-0011,InvLife Client p3zn,Approved,27 Nov 2026,27 Dec 2026,1725,ZAR
+INV-0010,InvLife Client p3zn,Void,27 Nov 2026,27 Dec 2026,1725,ZAR
+INV-0009,InvLife Client p3zn,Void,27 Nov 2026,27 Dec 2026,1725,ZAR
+Draft,Arith Client p3zn,Draft,,,1840,ZAR
+Draft,Arith Client p3zn,Draft,,,345,ZAR
+Draft,Arith Client p3zn,Draft,,,0,ZAR
+Draft,InvCrud Client p3zp,Draft,,,2875,ZAR
+Draft,Arith Client p3zn,Draft,,,575,ZAR
+INV-0008,InvLife Client p3zn,Paid,27 Nov 2026,27 Dec 2026,1725,ZAR
+Draft,Arith Client p3zn,Draft,,,2875,ZAR
+Draft,Arith Client p3zn,Draft,,,1552.5,ZAR
+INV-0007,Sipho Ndlovu mwy7iyj8bd18,Approved,27 Nov 2026,27 Dec 2026,2156.25,ZAR
+INV-0006,Khumalo Property Holdings mwy7mytk9055,Approved,27 Nov 2026,27 Dec 2026,4312.5,ZAR
+INV-0005,Apex Holdings mwy7mytk9055,Sent,27 Nov 2026,27 Dec 2026,4025,ZAR
+Draft,Sipho Ndlovu mwy7iyj8bd18,Draft,,,2875,ZAR
+Draft,QuickCollect Services mwy7iyj8bd18,Draft,,,1610,ZAR
+INV-0002,Moroka Family Trust mwy7iyj8bd18,Partially Paid,27 Nov 2026,27 Dec 2026,8625,ZAR
+INV-0004,Apex Holdings mwy7iyj8bd18,Paid,27 Nov 2026,27 Dec 2026,40250,ZAR
+INV-0003,Sipho Ndlovu mwy7iyj8bd18,Sent,27 Nov 2026,27 Dec 2026,5482.63,ZAR
+INV-0001,Acme Corp,Sent,27 Nov 2026,27 Dec 2026,8625,ZAR
+Draft,Acme Corp,Draft,,,3450,ZAR

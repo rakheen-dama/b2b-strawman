@@ -146,7 +146,7 @@ describe("ReconciliationsDataTable", () => {
     expect(cells[5]).toHaveTextContent(formatLocalDate("2026-11-02"));
   });
 
-  it("fits 1024: Period wraps, money headers wrap, Completed hides below a 67rem frame (F-667B-1)", () => {
+  it("fits 1024: Period wraps, money headers wrap, Completed hides below a 56rem frame (F-667B-1, F-667B-A3)", () => {
     renderHistory([recon()]);
 
     const table = screen.getByTestId("reconciliations-table");
@@ -155,11 +155,11 @@ describe("ReconciliationsDataTable", () => {
       expect(ths[index].className).toContain("whitespace-normal");
     }
     expect(ths[5].className).toContain("hidden");
-    expect(ths[5].className).toContain("@min-[67rem]:table-cell");
+    expect(ths[5].className).toContain("@min-[56rem]:table-cell");
     const cells = screen.getByTestId("reconciliation-row-recon-1").querySelectorAll("td");
     expect(cells[0].className).toContain("whitespace-normal");
     expect(cells[0].className).not.toContain("whitespace-nowrap");
-    expect(cells[5].className).toContain("@min-[67rem]:table-cell");
+    expect(cells[5].className).toContain("@min-[56rem]:table-cell");
     // The Monthly list link is never hidden
     expect(ths[6].className).not.toContain("hidden");
   });

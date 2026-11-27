@@ -52,14 +52,17 @@ function moneyColumn(
   };
 }
 
+/** Completed shows from a 56rem table frame (F-667B-A3). */
+const COMPLETED_FROM_56REM = "hidden @min-[56rem]:table-cell";
+
 /**
  * Trust › Reconciliation history on `DataTable` (Phase 91 667B, ADR-395 server paging). The server
  * page fetches and pre-renders the empty state; this client wrapper receives only serializable
  * props and builds the columns, pager hrefs and row testids itself.
  *
  * Fit at 1024 (F-667B-1): seven columns of which three are money cannot fit a 662 px card, so the
- * Period wraps ("06 Nov" / "2026") and Completed is hidden below a 67rem frame (D-73) — the Monthly
- * list link stays in view; at 1440 every column shows. F-667B-A3: with Completed shown, the
+ * Period wraps ("06 Nov" / "2026") and Completed is hidden below a 56rem frame (D-73) — the Monthly
+ * list link stays in view; from 1280 every column shows. F-667B-A3: with Completed shown, the
  * seven columns' min-content is 758 px at 1024 (the money amounts, the "Unbalanced" chip, the
  * "COMPLETED" header and the "List locked" chip don't wrap), so it stays hidden there.
  */
@@ -108,7 +111,13 @@ export function ReconciliationsDataTable({
         },
         {
           id: "completedAt",
-          meta: { label: "Completed", priority: "low" },
+          meta: {
+            label: "Completed",
+            // F-667B-A3: hidden only below a 56rem frame (1024 with the rail expanded); the kit's
+            // `priority: "low"` (67rem) would also hide it at 1280 and 1366, where it fits.
+            headerClassName: COMPLETED_FROM_56REM,
+            cellClassName: COMPLETED_FROM_56REM,
+          },
           cell: ({ row }) =>
             row.original.completedAt
               ? formatLocalDate(row.original.completedAt.split("T")[0])

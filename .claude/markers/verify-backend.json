@@ -1,7 +1,7 @@
 {
-  "commit": "e6ac1daae",
-  "command": "bash backend/scripts/verify.sh (wt-fix-feenote-vat, fix/fee-note-draft-save-vat)",
+  "commit": "e3273bcdb",
+  "command": "bash backend/scripts/verify.sh (wt-fix-stale-vat, fix/stale-vat-after-clearing-rate)",
   "exit": 0,
-  "ts": "2026-11-27T18:46:32Z",
-  "summary": "F-666B-B1 @e6ac1daae — 8217 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 29:06)"
+  "ts": "2026-11-27T21:04:45Z",
+  "summary": "Stale VAT after last taxed line cleared @e3273bcdb — 8223 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 28:19)"
 }

@@ -75,9 +75,16 @@ function daysRemaining(prescriptionDate: string): number {
   return daysBetween(todayInSA(), prescriptionDate);
 }
 
-function daysLeftLabel(remaining: number): string | number {
+/**
+ * The Days left cell. Day 0 follows the backend's status: the stored prescription date is the
+ * anniversary, which under the backend's rule (and SA's civilian computation) is already the first
+ * prescribed day, so it arrives EXPIRED and reads "—". "Today" shows only for a day-0 tracker the
+ * backend still treats as live (so it appears by itself if that expiry rule ever changes).
+ */
+function daysLeftLabel(remaining: number, status: PrescriptionStatus): string | number {
   if (remaining > 0) return remaining;
-  return remaining === 0 ? "Today" : "—";
+  const live = status !== "EXPIRED" && status !== "INTERRUPTED";
+  return remaining === 0 && live ? "Today" : "—";
 }
 
 const TH =
@@ -162,7 +169,7 @@ export function PrescriptionTrackerList({
                               : "text-slate-600 dark:text-slate-400"
                         )}
                       >
-                        {daysLeftLabel(remaining)}
+                        {daysLeftLabel(remaining, tracker.status)}
                       </span>
                     </td>
                     {canManageLegal && (

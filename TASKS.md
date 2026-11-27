@@ -757,7 +757,7 @@
 | 664 | Settings Shell (SettingsSection, Rail, Mobile Family Bar, Underline Tabs) + DataTable Server-Paged Mode (E4) | Frontend | 663A | M | 664A, 664B (0 verifies) | **Done** — 664A (PR #1868), 664B (PR #1869) |
 | 665 | Settings Content — 32 Tabs and 11 Sub-Pages on SettingsSection + DataTable (E5) | Frontend | 664A; 664B for 665B, 665F; Phase 93 for 665C | XL | 665A–665F (0 verifies) | **Done** — 665A **Done** (PR #1870), 665B **Done** (PR #1871), 665C **Done** (PR #1872), 665D **Done** (PR #1873), 665E **Done** (PR #1874), 665F **Done** (PR #1875) |
 | 666 | Fee Notes — List, Billing Runs, Collections, Unbilled on the Kit + Client-Derived Fee-Note Hero (E6) | Frontend | 663A, 664A | L | 666A, 666B (0 verifies) | **Done** (PRs #1876, #1877) |
-| 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | |
+| 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | In progress — 667A **Done** (PR #1878) |
 | 668 | Diary, My Work, Timesheet, Notifications on the Kit (E8) | Frontend | 663A, 664B | M | 668A (0 verifies) | |
 | 669 | Light Pass + EmptyState Guard Finalised (E9) | Frontend | 663A, 664B; every allowlist owner for 669B | M | 669A, 669B (0 verifies) | |
 | 670 | Exit Gate — Fresh-Stack Suites, Observation Matrix, Metrics vs Baseline, Closure (E10; gate epic, no product code) | QA / Process / Docs | every slice merged | M | 670A (0 verifies; FE-GATE + PORTAL-GATE on `main`) | |

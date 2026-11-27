@@ -1,7 +1,7 @@
 {
-  "commit": "b8a2e2032",
-  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-666B, PR #1877)",
+  "commit": "c8cbb4d53",
+  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-667A, PR #1878)",
   "exit": 0,
-  "ts": "2026-11-27T02:53:24Z",
-  "summary": "PR #1877 @b8a2e2032 (PR head) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 535 files / 5435 passed / 2 skipped, build 0; orchestrator run. E2E fresh stacks @b8a2e2032: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, e2e/tests/invoices/ 21/21 (stack 1); take-on 17/17 (stack 2); exit-month 16/16 with portal :3002 (stack 3)"
+  "ts": "2026-11-27T04:26:19Z",
+  "summary": "PR #1878 @c8cbb4d53 (PR head) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 539 files / 5480 passed / 2 skipped, build 0; orchestrator run. E2E fresh stacks @c8cbb4d53: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (stack 1); exit-month 16/16 with portal :3002 (stack 2)"
 }

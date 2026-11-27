@@ -397,6 +397,22 @@ describe("DisbursementListView — fitting the container", () => {
     expect(breakpointOf(headerFor("Amount (incl VAT)"), "whitespace-nowrap")).toBe(billing);
   });
 
+  it("renders the sort buttons in the same uppercase as the plain headers", () => {
+    render(<DisbursementListView disbursements={[makeDisbursement()]} />);
+    // A <button> does not inherit the <th>'s `uppercase` (browser stylesheet), so each sortable
+    // header forces it on its kit sort button.
+    for (const label of ["Date", "Supplier", "Amount (incl VAT)", "Approval"]) {
+      const header = headerFor(label);
+      expect(within(header).getByRole("button"), label).toBeInTheDocument();
+      expect(header, label).toHaveClass("[&_button]:uppercase");
+    }
+    // The Description header's own Supplier sort control matches the kit header text.
+    expect(screen.getByRole("button", { name: "Sort by supplier" })).toHaveClass(
+      "uppercase",
+      "tracking-wider"
+    );
+  });
+
   it("keeps Supplier sorting reachable: a Description-header control while the column is hidden", async () => {
     const user = userEvent.setup();
     const rows = [

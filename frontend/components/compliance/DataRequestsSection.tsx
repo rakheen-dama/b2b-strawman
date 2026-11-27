@@ -4,7 +4,7 @@ import type { DataRequestResponse } from "@/lib/types";
 import {
   UrgentDataRequestsTable,
   type UrgentDataRequestRow,
-} from "@/components/compliance/urgent-data-requests-table";
+} from "@/components/compliance/UrgentDataRequestsTable";
 
 interface DataRequestsSectionProps {
   openCount: number;

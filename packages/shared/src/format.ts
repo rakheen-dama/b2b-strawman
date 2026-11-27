@@ -34,10 +34,7 @@ import { KAZI_TIME_ZONE, todayInSA } from "./date";
  * Robust against non-finite input ("R 0.00") and unknown currency codes
  * (falls back to "R <amount>").
  */
-export function formatCurrency(
-  amount: number,
-  currency: string = "ZAR",
-): string {
+export function formatCurrency(amount: number, currency: string = "ZAR"): string {
   if (!Number.isFinite(amount)) return "R 0.00";
 
   try {
@@ -59,7 +56,7 @@ export function formatCurrency(
  */
 export function formatCurrencySafe(
   amount: number | null | undefined,
-  currency: string | null | undefined,
+  currency: string | null | undefined
 ): string {
   if (amount == null || !currency) return "N/A";
   return formatCurrency(amount, currency);
@@ -209,12 +206,10 @@ export function formatRelativeDate(date: string | Date): string {
   const diffYears = Math.floor(diffDays / 365);
 
   if (diffYears > 0) return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
-  if (diffMonths > 0)
-    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  if (diffMonths > 0) return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
   if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffMinutes > 0)
-    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  if (diffMinutes > 0) return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
   return "just now";
 }
 
@@ -261,10 +256,7 @@ export function formatDuration(minutes: number): string {
  * Returns "..." if completedAt is null (still running).
  * (Staff-app helper, retained.)
  */
-export function computeDuration(
-  startedAt: string,
-  completedAt: string | null,
-): string {
+export function computeDuration(startedAt: string, completedAt: string | null): string {
   if (!completedAt) return "...";
   const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
   if (ms < 1000) return `${ms}ms`;

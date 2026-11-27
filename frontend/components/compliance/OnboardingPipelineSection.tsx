@@ -1,7 +1,7 @@
 import {
   OnboardingPipelineTable,
   type OnboardingPipelineRow,
-} from "@/components/compliance/onboarding-pipeline-table";
+} from "@/components/compliance/OnboardingPipelineTable";
 
 interface OnboardingCustomer {
   id: string;

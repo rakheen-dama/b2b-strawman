@@ -119,9 +119,12 @@ const COMPACT = {
 const CELL = COMPACT.cell;
 /**
  * A sortable header: the kit reserves `pr-5` for the sort icon (`SORTABLE_HEAD_CLASS`), so only
- * the left padding follows the compact breakpoint — a `px-*` here would drop that slot.
+ * the left padding follows the compact breakpoint — a `px-*` here would drop that slot. The kit
+ * sort `<button>` does not inherit the `<th>`'s `uppercase` (the browser stylesheet sets
+ * `text-transform: none` on buttons; preflight already makes font and letter-spacing inherit), so
+ * `[&_button]:uppercase` keeps these labels in the same case as the plain headers.
  */
-const SORT_HEAD = "pl-2 py-3 @min-[58rem]:pl-4";
+const SORT_HEAD = "pl-2 py-3 @min-[58rem]:pl-4 [&_button]:uppercase";
 
 /** The kit header button's look (`DataTableColumnHeader`), for the Description header's Supplier sort. */
 const SORT_CONTROL =

@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -65,6 +66,7 @@ class InvoiceTaxIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private TaxRateRepository taxRateRepository;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -663,7 +665,154 @@ class InvoiceTaxIntegrationTest {
                 }));
   }
 
+  // --- F-666B-B1: saving draft details must never zero the fee note's VAT ---
+
+  @Test
+  void updateDraft_detailsOnly_keepsPerLineVatAndTotal() {
+    // INV-0009's shape: one line of R 1 875,00 at VAT 15% → VAT R 281,25, total R 2 156,25.
+    var invoiceId = draftWithTaxedLine(new BigDecimal("1875.00"));
+
+    // Due date only — the UI sends no taxAmount for a per-line-tax fee note.
+    runInTenant(
+        () ->
+            invoiceService.updateDraft(
+                invoiceId,
+                new UpdateInvoiceRequest(
+                    LocalDate.of(2026, 12, 31), null, null, null, null, null, null, null)));
+    assertStoredTotals(invoiceId, "1875.00", "281.25", "2156.25");
+
+    // A second save of other details (notes, PO number) leaves the totals alone too.
+    runInTenant(
+        () -> {
+          var response =
+              invoiceService.updateDraft(
+                  invoiceId,
+                  new UpdateInvoiceRequest(
+                      LocalDate.of(2026, 12, 31),
+                      "Please pay promptly",
+                      null,
+                      null,
+                      "PO-777",
+                      null,
+                      null,
+                      null));
+          assertThat(response.taxAmount()).isEqualByComparingTo(new BigDecimal("281.25"));
+          assertThat(response.total()).isEqualByComparingTo(new BigDecimal("2156.25"));
+          assertThat(response.notes()).isEqualTo("Please pay promptly");
+          assertThat(response.poNumber()).isEqualTo("PO-777");
+        });
+    assertStoredTotals(invoiceId, "1875.00", "281.25", "2156.25");
+  }
+
+  @Test
+  void updateDraft_detailsOnly_taxInclusive_keepsVatInsideTotal() {
+    setTaxInclusive(true);
+    try {
+      // Tax-inclusive: R 1 150,00 line carries R 150,00 VAT; total stays R 1 150,00.
+      var invoiceId = draftWithTaxedLine(new BigDecimal("1150.00"));
+      assertStoredTotals(invoiceId, "1150.00", "150.00", "1150.00");
+
+      runInTenant(
+          () ->
+              invoiceService.updateDraft(
+                  invoiceId,
+                  new UpdateInvoiceRequest(
+                      LocalDate.of(2026, 12, 31), null, null, null, null, null, null, null)));
+
+      assertStoredTotals(invoiceId, "1150.00", "150.00", "1150.00");
+    } finally {
+      setTaxInclusive(false);
+    }
+  }
+
+  @Test
+  void updateDraft_headerTax_omittedTaxAmount_keepsHeaderTax() {
+    var invoiceId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // No tax rates — a header-tax fee note.
+                  var invoice = createDraftInvoice();
+                  invoiceService.addLineItem(
+                      invoice.getId(),
+                      new AddLineItemRequest(
+                          projectId,
+                          "No tax service",
+                          BigDecimal.ONE,
+                          new BigDecimal("100.00"),
+                          0,
+                          null,
+                          null));
+                  invoiceService.updateDraft(
+                      invoice.getId(),
+                      new UpdateInvoiceRequest(
+                          null, null, null, new BigDecimal("15.00"), null, null, null, null));
+                  invoiceId[0] = invoice.getId();
+                }));
+    assertStoredTotals(invoiceId[0], "100.00", "15.00", "115.00");
+
+    // A details save that omits taxAmount keeps the header tax; an explicit value still sets it.
+    runInTenant(
+        () ->
+            invoiceService.updateDraft(
+                invoiceId[0],
+                new UpdateInvoiceRequest(
+                    LocalDate.of(2026, 12, 31), null, null, null, null, null, null, null)));
+    assertStoredTotals(invoiceId[0], "100.00", "15.00", "115.00");
+
+    runInTenant(
+        () ->
+            invoiceService.updateDraft(
+                invoiceId[0],
+                new UpdateInvoiceRequest(
+                    null, null, null, BigDecimal.ZERO, null, null, null, null)));
+    assertStoredTotals(invoiceId[0], "100.00", "0.00", "100.00");
+  }
+
   // --- Helpers ---
+
+  /** A draft with one R {@code amount} line at the default VAT 15% rate; returns its id. */
+  private UUID draftWithTaxedLine(BigDecimal amount) {
+    var invoiceId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  taxRateRepository.save(
+                      new TaxRate("Standard (15%)", new BigDecimal("15.00"), true, false, 0));
+                  var invoice = createDraftInvoice();
+                  invoiceService.addLineItem(
+                      invoice.getId(),
+                      new AddLineItemRequest(
+                          projectId, "Taxed service", BigDecimal.ONE, amount, 0, null, null));
+                  invoiceId[0] = invoice.getId();
+                }));
+    return invoiceId[0];
+  }
+
+  private void assertStoredTotals(UUID invoiceId, String subtotal, String tax, String total) {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var stored = invoiceRepository.findById(invoiceId).orElseThrow();
+                  assertThat(stored.getSubtotal()).isEqualByComparingTo(new BigDecimal(subtotal));
+                  assertThat(stored.getTaxAmount()).isEqualByComparingTo(new BigDecimal(tax));
+                  assertThat(stored.getTotal()).isEqualByComparingTo(new BigDecimal(total));
+                }));
+  }
+
+  private void setTaxInclusive(boolean taxInclusive) {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                  settings.getTax().setTaxInclusive(taxInclusive);
+                  orgSettingsRepository.save(settings);
+                }));
+  }
 
   private Invoice createDraftInvoice() {
     var invoice =

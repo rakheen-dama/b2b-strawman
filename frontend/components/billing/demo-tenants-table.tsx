@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, use, useState } from "react";
+import type { CellContext } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -25,6 +20,89 @@ import type { AdminTenantBilling } from "@/app/(app)/platform-admin/billing/acti
 interface DemoTenantsTableProps {
   tenants: AdminTenantBilling[];
 }
+
+/**
+ * The actions cell's per-render inputs. `COLUMNS` is a module constant and its actions cell reads
+ * these from context (669A adverse-parties precedent): a column array rebuilt when `reseedingId`
+ * changes would remount every cell.
+ */
+interface DemoRowContextValue {
+  reseedingId: string | null;
+  onReseed: (orgId: string) => void;
+  onDelete: (tenant: AdminTenantBilling) => void;
+}
+
+const DemoRowContext = createContext<DemoRowContextValue | null>(null);
+
+function DemoActionsCell({ row }: CellContext<AdminTenantBilling, unknown>) {
+  const context = use(DemoRowContext);
+  if (!context) throw new Error("DemoActionsCell needs DemoRowContext");
+  const { reseedingId, onReseed, onDelete } = context;
+  const tenant = row.original;
+  return (
+    <div className="flex justify-end gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={reseedingId === tenant.organizationId}
+        onClick={() => onReseed(tenant.organizationId)}
+      >
+        {reseedingId === tenant.organizationId ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Reseeding...
+          </>
+        ) : (
+          "Reseed Data"
+        )}
+      </Button>
+      <Button variant="destructive" size="sm" onClick={() => onDelete(tenant)}>
+        Delete Tenant
+      </Button>
+    </div>
+  );
+}
+
+const COLUMNS = defineColumns<AdminTenantBilling>([
+  {
+    id: "organizationName",
+    enableHiding: false,
+    meta: { label: "Org Name", cellClassName: "font-medium" },
+    cell: ({ row }) => row.original.organizationName,
+  },
+  {
+    id: "verticalProfile",
+    meta: { label: "Profile" },
+    cell: ({ row }) => <Badge variant="outline">{row.original.verticalProfile}</Badge>,
+  },
+  {
+    id: "subscriptionStatus",
+    meta: { label: "Status" },
+    cell: ({ row }) => <StatusBadge status={row.original.subscriptionStatus} />,
+  },
+  {
+    id: "billingMethod",
+    meta: { label: "Billing Method" },
+    cell: ({ row }) => <MethodBadge method={row.original.billingMethod} />,
+  },
+  {
+    id: "createdAt",
+    meta: { label: "Created" },
+    // Kept verbatim ("01 May 2026", as BillingDetailSheet): D-95.
+    cell: ({ row }) => formatDate(row.original.createdAt),
+  },
+  {
+    id: "memberCount",
+    meta: { label: "Members", align: "end" },
+    cell: ({ row }) => row.original.memberCount,
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    meta: { label: "Actions", align: "end" },
+    cell: DemoActionsCell,
+  },
+]);
 
 export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
   const router = useRouter();
@@ -56,74 +134,27 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
     router.refresh();
   }
 
-  if (demoTenants.length === 0) {
-    return (
-      <EmptyState
-        icon={Users}
-        title="No demo tenants"
-        description="No demo tenants have been provisioned yet."
-      />
-    );
-  }
-
   return (
-    <div data-testid="demo-tenants-table">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Org Name</TableHead>
-            <TableHead>Profile</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Billing Method</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Members</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {demoTenants.map((tenant) => (
-            <TableRow
-              key={tenant.organizationId}
-              data-testid={`demo-tenant-row-${tenant.organizationName}`}
-            >
-              <TableCell className="font-medium">{tenant.organizationName}</TableCell>
-              <TableCell>
-                <Badge variant="outline">{tenant.verticalProfile}</Badge>
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={tenant.subscriptionStatus} />
-              </TableCell>
-              <TableCell>
-                <MethodBadge method={tenant.billingMethod} />
-              </TableCell>
-              <TableCell>{formatDate(tenant.createdAt)}</TableCell>
-              <TableCell className="text-right">{tenant.memberCount}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={reseedingId === tenant.organizationId}
-                    onClick={() => handleReseed(tenant.organizationId)}
-                  >
-                    {reseedingId === tenant.organizationId ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Reseeding...
-                      </>
-                    ) : (
-                      "Reseed Data"
-                    )}
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(tenant)}>
-                    Delete Tenant
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <>
+      <DemoRowContext value={{ reseedingId, onReseed: handleReseed, onDelete: setDeleteTarget }}>
+        <DataTable
+          columns={COLUMNS}
+          data={demoTenants}
+          getRowId={(tenant) => tenant.organizationId}
+          rowTestId={(tenant) => `demo-tenant-row-${tenant.organizationName}`}
+          tableTestId="demo-tenants-table"
+          columnVisibility={false}
+          stickyHeader={false}
+          empty={
+            <EmptyState
+              variant="compact"
+              icon={Users}
+              title="No demo tenants"
+              description="No demo tenants have been provisioned yet."
+            />
+          }
+        />
+      </DemoRowContext>
 
       {deleteTarget && (
         <DeleteTenantDialog
@@ -141,6 +172,6 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
           onSuccess={handleDeleteSuccess}
         />
       )}
-    </div>
+    </>
   );
 }

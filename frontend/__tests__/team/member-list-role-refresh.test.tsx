@@ -20,6 +20,20 @@ vi.mock("motion/react", () => ({
   },
 }));
 
+// DataTable calls useRouter() unconditionally (Next 16 throws without the App Router context).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/org/acme/team",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 vi.mock("@/lib/auth/client", () => ({
   useOrgMembers: vi.fn().mockReturnValue({ members: [], isLoaded: true }),
 }));
@@ -197,5 +211,78 @@ describe("Team member list reloads (PR #1752 review)", () => {
     const row = await screen.findByTestId("member-row-carol@test.com");
     expect(within(row).getByTestId("member-role-badge")).toHaveTextContent("Associate (no trust)");
     expect(row.textContent).not.toContain("associate-no-trust");
+  });
+});
+
+describe("Team member table (669B: DataTable, name button opens the panel)", () => {
+  const capabilities = {
+    memberId: carol.id,
+    roleName: "Member",
+    roleCapabilities: ["VIEW_LEGAL"],
+    overrides: [],
+    effectiveCapabilities: ["VIEW_LEGAL"],
+  };
+  const bob = { id: "m-bob", name: "Bob Admin", email: "bob@test.com", role: "org:admin" };
+
+  it("renders today's headers and one body row per member, no interactive tr", async () => {
+    mockListMembers.mockResolvedValue([bob, { ...carol, role: "org:member" }]);
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    expect(row.tagName).toBe("TR");
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Member",
+      "Email",
+      "Role",
+    ]);
+    const table = screen.getByRole("table");
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    expect(screen.getByTestId("member-row-bob@test.com")).toBeInTheDocument();
+    // The row is no longer the interactive element: the name button is.
+    expect(row).not.toHaveAttribute("role");
+    expect(row).not.toHaveAttribute("tabindex");
+    expect(within(row).getByRole("button", { name: "Carol Mokoena" })).toBeInTheDocument();
+  });
+
+  it("an admin opens the panel from the keyboard: Enter on the name button", async () => {
+    mockListMembers.mockResolvedValue([{ ...carol, role: "org:member" }]);
+    mockFetchMemberCapabilities.mockResolvedValue(capabilities);
+    const user = userEvent.setup();
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    within(row).getByRole("button", { name: "Carol Mokoena" }).focus();
+    await user.keyboard("{Enter}");
+
+    expect(await screen.findByRole("button", { name: "Save" })).toBeInTheDocument();
+    expect(mockFetchMemberCapabilities).toHaveBeenCalledWith(carol.id);
+  });
+
+  it("an admin opens the panel by clicking the name button or another cell of the row", async () => {
+    mockListMembers.mockResolvedValue([{ ...carol, role: "org:member" }]);
+    mockFetchMemberCapabilities.mockResolvedValue(capabilities);
+    const user = userEvent.setup();
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    await user.click(within(row).getByText("carol@test.com"));
+    expect(await screen.findByRole("button", { name: "Save" })).toBeInTheDocument();
+  });
+
+  it("a non-admin gets no name button, and clicking the row opens nothing", async () => {
+    mockListMembers.mockResolvedValue([{ ...carol, role: "org:member" }]);
+    const user = userEvent.setup();
+
+    render(<MemberList isAdmin={false} roles={[]} slug="acme" />);
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    expect(within(row).queryByRole("button")).toBeNull();
+    expect(within(row).getByText("Carol Mokoena").tagName).toBe("SPAN");
+    await user.click(row);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(mockFetchMemberCapabilities).not.toHaveBeenCalled();
   });
 });

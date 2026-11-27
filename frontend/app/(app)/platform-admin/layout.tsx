@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSessionIdentity } from "@/lib/auth";
+import { PlatformAdminNav } from "@/components/platform-admin/platform-admin-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -19,27 +19,10 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
 
   return (
     <div>
-      <nav className="flex gap-6 border-b border-slate-200 bg-white px-6 py-3">
-        <Link
-          href="/platform-admin/access-requests"
-          className="text-sm font-medium text-slate-700 hover:text-slate-950"
-        >
-          Access Requests
-        </Link>
-        <Link
-          href="/platform-admin/billing"
-          className="text-sm font-medium text-slate-700 hover:text-slate-950"
-        >
-          Billing
-        </Link>
-        <Link
-          href="/platform-admin/demo"
-          className="text-sm font-medium text-slate-700 hover:text-slate-950"
-        >
-          Demo
-        </Link>
-      </nav>
-      {children}
+      <PlatformAdminNav />
+      {/* The only <main> on these pages: (app)/layout.tsx is a fragment, and the root layout's
+          "Skip to content" link targets #main-content (K-98). */}
+      <main id="main-content">{children}</main>
     </div>
   );
 }

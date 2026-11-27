@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { TeamTabs } from "@/components/team/team-tabs";
@@ -30,16 +31,19 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
 
   return (
     <div className="space-y-8">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-          Team
-          <HelpTip code="team.overview" />
-        </h1>
-        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
-        </span>
-      </div>
+      <PageHeader
+        title={
+          <span className="inline-flex items-center gap-2">
+            Team
+            <HelpTip code="team.overview" />
+          </span>
+        }
+        actions={
+          <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-sm">
+            {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
+          </span>
+        }
+      />
 
       {/* Invite section (admin only) */}
       {isAdmin && (

@@ -3,14 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import {
   Select,
   SelectContent,
@@ -86,10 +80,69 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
     [filtered]
   );
 
-  function handleOpenDetail(tenant: AdminTenantBilling) {
-    setSelectedTenant(tenant);
-    setSheetOpen(true);
-  }
+  // Dates keep `components/billing/utils` formatDate ("01 May 2026", as BillingDetailSheet): D-95.
+  const columns = useMemo(
+    () =>
+      defineColumns<AdminTenantBilling>([
+        {
+          id: "organizationName",
+          enableHiding: false,
+          meta: { label: "Org Name", cellClassName: "font-medium" },
+          cell: ({ row }) => row.original.organizationName,
+        },
+        {
+          id: "verticalProfile",
+          meta: { label: "Profile", cellClassName: "text-sm text-slate-500" },
+          cell: ({ row }) => row.original.verticalProfile,
+        },
+        {
+          id: "subscriptionStatus",
+          meta: { label: "Status" },
+          cell: ({ row }) => <StatusBadge status={row.original.subscriptionStatus} />,
+        },
+        {
+          id: "billingMethod",
+          meta: { label: "Billing Method" },
+          cell: ({ row }) => <MethodBadge method={row.original.billingMethod} />,
+        },
+        {
+          id: "periodEnd",
+          meta: { label: "Trial / Period End", cellClassName: "text-sm" },
+          cell: ({ row }) =>
+            row.original.trialEndsAt
+              ? formatDate(row.original.trialEndsAt, "\u2014")
+              : formatDate(row.original.currentPeriodEnd, "\u2014"),
+        },
+        {
+          id: "memberCount",
+          meta: { label: "Members", align: "end" },
+          cell: ({ row }) => row.original.memberCount,
+        },
+        {
+          id: "createdAt",
+          meta: { label: "Created", cellClassName: "text-sm" },
+          cell: ({ row }) => formatDate(row.original.createdAt, "\u2014"),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) => (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedTenant(row.original);
+                setSheetOpen(true);
+              }}
+            >
+              Open
+            </Button>
+          ),
+        },
+      ]),
+    []
+  );
 
   function handleSuccess() {
     router.refresh();
@@ -144,54 +197,21 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
       </div>
 
       {/* Table */}
-      {sorted.length === 0 ? (
-        <EmptyState
-          icon={CreditCard}
-          title="No tenants found"
-          description="No tenants match the current filters."
-        />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Org Name</TableHead>
-              <TableHead>Profile</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Billing Method</TableHead>
-              <TableHead>Trial / Period End</TableHead>
-              <TableHead className="text-right">Members</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.map((tenant) => (
-              <TableRow key={tenant.organizationId}>
-                <TableCell className="font-medium">{tenant.organizationName}</TableCell>
-                <TableCell className="text-sm text-slate-500">{tenant.verticalProfile}</TableCell>
-                <TableCell>
-                  <StatusBadge status={tenant.subscriptionStatus} />
-                </TableCell>
-                <TableCell>
-                  <MethodBadge method={tenant.billingMethod} />
-                </TableCell>
-                <TableCell className="text-sm">
-                  {tenant.trialEndsAt
-                    ? formatDate(tenant.trialEndsAt, "\u2014")
-                    : formatDate(tenant.currentPeriodEnd, "\u2014")}
-                </TableCell>
-                <TableCell className="text-right">{tenant.memberCount}</TableCell>
-                <TableCell className="text-sm">{formatDate(tenant.createdAt, "\u2014")}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => handleOpenDetail(tenant)}>
-                    Open
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <DataTable
+        columns={columns}
+        data={sorted}
+        getRowId={(tenant) => tenant.organizationId}
+        columnVisibility={false}
+        stickyHeader={false}
+        empty={
+          <EmptyState
+            variant="inline"
+            icon={CreditCard}
+            title="No tenants found"
+            description="No tenants match the current filters."
+          />
+        }
+      />
 
       <BillingDetailSheet
         key={selectedTenant?.organizationId ?? "none"}

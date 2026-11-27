@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Set auth mode to keycloak so PendingInvitations renders KeycloakBffPendingInvitations
@@ -15,8 +15,18 @@ vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
   revokeInvitation: (id: string) => mockRevokeInvitation(id),
 }));
 
-vi.mock("@/lib/format", () => ({
-  formatDate: (d: string | Date) => (typeof d === "string" ? d : new Date(d).toISOString()),
+// DataTable calls useRouter() unconditionally (Next 16 throws without the App Router context).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/org/acme/team",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Must import after mocks and env stubs are set up
@@ -40,6 +50,68 @@ describe("PendingInvitations (keycloak mode)", () => {
     await waitFor(() => {
       expect(screen.getByText("No pending invitations")).toBeInTheDocument();
     });
+    // The page-level tab panel's empty state (669B): default variant, no table.
+    expect(
+      screen.getByText("No pending invitations").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "default");
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("renders a DataTable with today's headers, a pending-invite-row per invitation and SA dates (669B)", async () => {
+    mockListInvitations.mockResolvedValue([
+      {
+        id: "inv-1",
+        emailAddress: "alice@example.com",
+        role: "org:admin",
+        status: "PENDING",
+        createdAt: "2026-01-15T10:00:00Z",
+      },
+      {
+        id: "inv-2",
+        emailAddress: "bob@example.com",
+        role: "org:member",
+        status: "PENDING",
+        createdAt: "",
+      },
+    ]);
+
+    render(<PendingInvitations isAdmin={true} />);
+    await screen.findByText("alice@example.com");
+
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Email",
+      "Role",
+      "Invited",
+      "Actions",
+    ]);
+    const rows = screen.getAllByTestId("pending-invite-row");
+    expect(rows).toHaveLength(2);
+    expect(rows.every((row) => row.tagName === "TR")).toBe(true);
+    // formatDateInSA (kit DateCell); a missing date reads "—".
+    expect(within(rows[0]).getByText("15 Jan 2026")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("\u2014")).toBeInTheDocument();
+    expect(within(rows[0]).getByRole("button", { name: "Revoke" })).toBeEnabled();
+  });
+
+  it("has no Actions column for non-admins (669B)", async () => {
+    mockListInvitations.mockResolvedValue([
+      {
+        id: "inv-1",
+        emailAddress: "alice@example.com",
+        role: "org:admin",
+        status: "PENDING",
+        createdAt: "2026-01-15T10:00:00Z",
+      },
+    ]);
+
+    render(<PendingInvitations isAdmin={false} />);
+    await screen.findByText("alice@example.com");
+
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Email",
+      "Role",
+      "Invited",
+    ]);
   });
 
   it("renders invitation rows", async () => {

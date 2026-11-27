@@ -38,6 +38,7 @@ describe("Empty State Page Integrations", () => {
 
     render(
       <EmptyState
+        variant="default"
         icon={TrendingUp}
         title={t("profitability.page.heading")}
         description={t("profitability.page.description")}
@@ -61,6 +62,7 @@ describe("Empty State Page Integrations", () => {
 
     render(
       <EmptyState
+        variant="default"
         icon={Bell}
         title={t("notifications.page.heading")}
         description={t("notifications.page.description")}
@@ -76,6 +78,7 @@ describe("Empty State Page Integrations", () => {
 
     render(
       <EmptyState
+        variant="default"
         icon={DollarSign}
         title={t("rates.settings.heading")}
         description={t("rates.settings.description")}
@@ -89,6 +92,7 @@ describe("Empty State Page Integrations", () => {
   it("dashboard ProjectHealthWidget renders EmptyState when no matters", () => {
     render(
       <EmptyState
+        variant="default"
         icon={HeartPulse}
         title="No matters yet"
         description="Create a matter to start tracking health status."

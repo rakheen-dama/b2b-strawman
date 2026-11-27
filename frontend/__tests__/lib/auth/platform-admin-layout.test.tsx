@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // Mock next/navigation
 const mockNotFound = vi.fn();
@@ -8,6 +8,7 @@ vi.mock("next/navigation", () => ({
     mockNotFound();
     throw new Error("NEXT_NOT_FOUND");
   },
+  usePathname: () => "/platform-admin/billing",
 }));
 
 // Mock @/lib/auth
@@ -23,6 +24,8 @@ describe("PlatformAdminLayout", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => cleanup());
+
   it("renders children when user has platform-admins group", async () => {
     mockGetSessionIdentity.mockResolvedValue({
       userId: "user_1",
@@ -36,6 +39,45 @@ describe("PlatformAdminLayout", () => {
     render(Layout);
     expect(screen.getByTestId("child")).toBeInTheDocument();
     expect(mockNotFound).not.toHaveBeenCalled();
+  });
+
+  it("renders the children inside the one main#main-content landmark (K-98)", async () => {
+    mockGetSessionIdentity.mockResolvedValue({ userId: "user_1", groups: ["platform-admins"] });
+
+    render(await PlatformAdminLayout({ children: <div>Admin Content</div> }));
+
+    const mains = screen.getAllByRole("main");
+    expect(mains).toHaveLength(1);
+    const [main] = mains;
+    expect(main).toHaveAttribute("id", "main-content");
+    expect(within(main).getByText("Admin Content")).toBeInTheDocument();
+    // The nav sits outside <main>, above it.
+    expect(within(main).queryByRole("navigation")).toBeNull();
+  });
+
+  it("marks the current page's nav link with aria-current (K-98)", async () => {
+    mockGetSessionIdentity.mockResolvedValue({ userId: "user_1", groups: ["platform-admins"] });
+
+    render(await PlatformAdminLayout({ children: <div>Admin Content</div> }));
+
+    const nav = screen.getByRole("navigation");
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((l) => l.textContent)
+    ).toEqual(["Access Requests", "Billing", "Demo"]);
+    expect(within(nav).getByRole("link", { name: "Billing" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(within(nav).getByRole("link", { name: "Billing" })).toHaveAttribute(
+      "href",
+      "/platform-admin/billing"
+    );
+    expect(within(nav).getByRole("link", { name: "Access Requests" })).not.toHaveAttribute(
+      "aria-current"
+    );
+    expect(within(nav).getByRole("link", { name: "Demo" })).not.toHaveAttribute("aria-current");
   });
 
   it("calls notFound when user lacks platform-admins group", async () => {

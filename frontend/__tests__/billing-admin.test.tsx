@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StatusBadge } from "@/components/billing/status-badge";
 import { MethodBadge } from "@/components/billing/method-badge";
 import { BillingDetailSheet } from "@/components/billing/billing-detail-sheet";
+import { BillingTenantsTable } from "@/components/billing/billing-tenants-table";
+import { DemoTenantsTable } from "@/components/billing/demo-tenants-table";
 import type { AdminTenantBilling } from "@/app/(app)/platform-admin/billing/actions";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 const mockOverrideBilling = vi.fn();
 const mockExtendTrial = vi.fn();
@@ -18,6 +21,16 @@ vi.mock("@/app/(app)/platform-admin/billing/actions", () => ({
   getBillingTenant: vi.fn(),
 }));
 
+const mockReseedDemoTenant = vi.fn();
+const mockDeleteDemoTenant = vi.fn();
+
+vi.mock("@/app/(app)/platform-admin/demo/actions", () => ({
+  reseedDemoTenant: (...args: unknown[]) => mockReseedDemoTenant(...args),
+  deleteDemoTenant: (...args: unknown[]) => mockDeleteDemoTenant(...args),
+}));
+
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -28,6 +41,12 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
   }),
 }));
+
+// components/billing/utils formatDate passes no `timeZone`, so the calendar day of these
+// midnight-UTC fixtures follows the host zone. Pin it so the date assertions are host-stable
+// (a midday fixture is not enough: Pacific/Kiritimati is UTC+14).
+beforeEach(() => inZone("UTC"));
+afterEach(() => vi.unstubAllEnvs());
 
 const sampleTenant: AdminTenantBilling = {
   organizationId: "org-123",
@@ -165,5 +184,132 @@ describe("BillingDetailSheet", () => {
 
     // Sheet should not render any content
     expect(container.querySelector('[data-testid="sheet-org-name"]')).toBeNull();
+  });
+});
+
+describe("BillingTenantsTable (669B: DataTable)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => cleanup());
+
+  const olderTenant: AdminTenantBilling = {
+    ...sampleTenant,
+    organizationId: "org-456",
+    organizationName: "Beta Legal",
+    createdAt: "2026-01-01T00:00:00Z",
+    trialEndsAt: null,
+    currentPeriodEnd: "2026-06-30T00:00:00Z",
+  };
+
+  it("renders today's headers and rows newest first, with the billing dates", () => {
+    render(<BillingTenantsTable tenants={[olderTenant, sampleTenant]} />);
+
+    expect(screen.getByTestId("billing-tenants-page")).toBeInTheDocument();
+    const table = screen.getByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent)
+    ).toEqual([
+      "Org Name",
+      "Profile",
+      "Status",
+      "Billing Method",
+      "Trial / Period End",
+      "Members",
+      "Created",
+      "Actions",
+    ]);
+    const bodyRows = within(table).getAllByRole("row").slice(1);
+    expect(bodyRows).toHaveLength(2);
+    expect(within(bodyRows[0]).getByText("Acme Corp")).toBeInTheDocument();
+    // Kept verbatim (D-95): components/billing/utils formatDate.
+    expect(within(bodyRows[0]).getByText("01 May 2026")).toBeInTheDocument();
+    expect(within(bodyRows[0]).getByText("01 Mar 2026")).toBeInTheDocument();
+    expect(within(bodyRows[1]).getByText("Beta Legal")).toBeInTheDocument();
+    expect(within(bodyRows[1]).getByText("30 Jun 2026")).toBeInTheDocument();
+    // Profile cell classes verbatim (D-95 / DA-9).
+    expect(within(bodyRows[0]).getByText("ACCOUNTING")).toHaveClass("text-sm", "text-slate-500");
+  });
+
+  it("opens the detail sheet from the row's Open button", async () => {
+    const user = userEvent.setup();
+    render(<BillingTenantsTable tenants={[sampleTenant]} />);
+
+    await user.click(screen.getByRole("button", { name: "Open" }));
+
+    expect(await screen.findByTestId("sheet-org-name")).toHaveTextContent("Acme Corp");
+  });
+
+  it("shows the inline empty state (a <p>, not a heading) when the search matches nothing", async () => {
+    const user = userEvent.setup();
+    render(<BillingTenantsTable tenants={[sampleTenant]} />);
+
+    await user.type(screen.getByPlaceholderText("Search by org name..."), "zzz");
+
+    const title = screen.getByText("No tenants found");
+    expect(title.tagName).toBe("P");
+    expect(title.closest('[data-slot="empty-state"]')).toHaveAttribute("data-variant", "inline");
+    expect(screen.getByText("No tenants match the current filters.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading")).toBeNull();
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+});
+
+describe("DemoTenantsTable (669B: DataTable)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => cleanup());
+
+  it("renders today's headers on the demo-tenants-table and a row testid per tenant", () => {
+    render(<DemoTenantsTable tenants={[sampleTenant]} />);
+
+    const table = screen.getByTestId("demo-tenants-table");
+    expect(table.tagName).toBe("TABLE");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent)
+    ).toEqual(["Org Name", "Profile", "Status", "Billing Method", "Created", "Members", "Actions"]);
+    const row = screen.getByTestId("demo-tenant-row-Acme Corp");
+    expect(row.tagName).toBe("TR");
+    expect(within(row).getByText("01 Mar 2026")).toBeInTheDocument();
+    expect(within(row).getByRole("button", { name: "Reseed Data" })).toBeEnabled();
+    expect(within(row).getByRole("button", { name: "Delete Tenant" })).toBeInTheDocument();
+  });
+
+  it("shows the compact empty state and no table when there are no demo tenants", () => {
+    render(<DemoTenantsTable tenants={[]} />);
+
+    expect(
+      screen.getByText("No demo tenants").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "compact");
+    expect(screen.getByText("No demo tenants have been provisioned yet.")).toBeInTheDocument();
+    expect(screen.queryByTestId("demo-tenants-table")).toBeNull();
+  });
+
+  it("reseeds a tenant: the button shows the pending state until the action settles", async () => {
+    let settle: (v: unknown) => void = () => {};
+    mockReseedDemoTenant.mockReturnValue(new Promise((r) => (settle = r)));
+    const user = userEvent.setup();
+    render(<DemoTenantsTable tenants={[sampleTenant]} />);
+
+    await user.click(screen.getByRole("button", { name: "Reseed Data" }));
+
+    expect(mockReseedDemoTenant).toHaveBeenCalledWith("org-123");
+    expect(screen.getByRole("button", { name: "Reseeding..." })).toBeDisabled();
+    settle({ success: true });
+    expect(await screen.findByRole("button", { name: "Reseed Data" })).toBeEnabled();
+  });
+
+  it("opens the delete dialog from Delete Tenant", async () => {
+    const user = userEvent.setup();
+    render(<DemoTenantsTable tenants={[sampleTenant]} />);
+
+    await user.click(screen.getByRole("button", { name: "Delete Tenant" }));
+
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
   });
 });

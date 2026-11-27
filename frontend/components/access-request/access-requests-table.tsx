@@ -1,18 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { ClipboardList } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -41,103 +35,136 @@ interface AccessRequestsTableProps {
   requests: AccessRequest[];
 }
 
-function RequestTable({
-  requests,
-  onApprove,
-  onReject,
-}: {
-  requests: AccessRequest[];
-  onApprove: (r: AccessRequest) => void;
-  onReject: (r: AccessRequest) => void;
-}) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Org Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead>Industry</TableHead>
-          <TableHead>Submitted</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {requests.map((request) => (
-          <TableRow key={request.id} data-testid={`request-row-${request.organizationName}`}>
-            <TableCell className="font-medium">{request.organizationName}</TableCell>
-            <TableCell>{request.email}</TableCell>
-            <TableCell>{request.fullName}</TableCell>
-            <TableCell>{request.country}</TableCell>
-            <TableCell>{request.industry}</TableCell>
-            <TableCell>
-              <RelativeDate iso={request.createdAt} />
-            </TableCell>
-            <TableCell>
-              <Badge variant={statusBadgeVariant[request.status] ?? "neutral"}>
-                {request.status}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              {request.status === "PENDING" && (
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="accent"
-                    size="sm"
-                    data-testid="approve-btn"
-                    onClick={() => onApprove(request)}
-                  >
-                    Approve
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => onReject(request)}>
-                    Reject
-                  </Button>
-                </div>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
 export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
   const [activeTab, setActiveTab] = useState<TabId>("PENDING");
   const [approveTarget, setApproveTarget] = useState<AccessRequest | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AccessRequest | null>(null);
   const router = useRouter();
 
-  function filterAndSort(status: TabId) {
-    const filtered = status === "ALL" ? requests : requests.filter((r) => r.status === status);
-    return [...filtered].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-  }
+  // One sorted (oldest first) row array per tab, rebuilt only when the requests change: a new
+  // `data` identity reads as navigation to the DataTable.
+  const rowsByTab = useMemo(() => {
+    const sortOldestFirst = (list: AccessRequest[]) =>
+      [...list].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    return Object.fromEntries(
+      tabs.map((tab) => [
+        tab.id,
+        sortOldestFirst(tab.id === "ALL" ? requests : requests.filter((r) => r.status === tab.id)),
+      ])
+    ) as Record<TabId, AccessRequest[]>;
+  }, [requests]);
+
+  // F-669B-B-8: the old nowrap table measured 1 188-1 195px in a 976px scroller at 1024 (Actions
+  // out of view; 84-91px hidden at 1440). The prose columns wrap instead (the email anywhere,
+  // above a 12rem floor), so no column has to hide: with the OBS rows the table fills its 974px
+  // frame at 1024 on two-line rows, Approve and Reject in view, and fits the 1 230px frame at 1440
+  // on one line. Submitted, Status and Actions never wrap.
+  const columns = useMemo(
+    () =>
+      defineColumns<AccessRequest>([
+        {
+          id: "organizationName",
+          enableHiding: false,
+          meta: {
+            label: "Org Name",
+            cellClassName: "font-medium whitespace-normal",
+            minWidth: "8rem",
+          },
+          cell: ({ row }) => row.original.organizationName,
+        },
+        {
+          id: "email",
+          meta: {
+            label: "Email",
+            cellClassName: "whitespace-normal wrap-anywhere",
+            minWidth: "12rem",
+          },
+          cell: ({ row }) => row.original.email,
+        },
+        {
+          id: "fullName",
+          meta: { label: "Name", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => row.original.fullName,
+        },
+        {
+          id: "country",
+          meta: { label: "Country", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => row.original.country,
+        },
+        {
+          id: "industry",
+          meta: { label: "Industry", cellClassName: "whitespace-normal" },
+          cell: ({ row }) => row.original.industry,
+        },
+        {
+          id: "submitted",
+          meta: { label: "Submitted" },
+          cell: ({ row }) => <RelativeDate iso={row.original.createdAt} />,
+        },
+        {
+          id: "status",
+          meta: { label: "Status" },
+          cell: ({ row }) => (
+            <Badge variant={statusBadgeVariant[row.original.status] ?? "neutral"}>
+              {row.original.status}
+            </Badge>
+          ),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) =>
+            row.original.status === "PENDING" ? (
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="accent"
+                  size="sm"
+                  data-testid="approve-btn"
+                  onClick={() => setApproveTarget(row.original)}
+                >
+                  Approve
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setRejectTarget(row.original)}
+                >
+                  Reject
+                </Button>
+              </div>
+            ) : null,
+        },
+      ]),
+    []
+  );
 
   function handleSuccess() {
     router.refresh();
   }
 
   function renderContent(status: TabId) {
-    const sorted = filterAndSort(status);
-    if (sorted.length === 0) {
-      return (
-        <EmptyState
-          icon={ClipboardList}
-          title="No access requests"
-          description={
-            status === "ALL"
-              ? "No access requests have been submitted yet."
-              : `No ${status.toLowerCase()} access requests.`
-          }
-        />
-      );
-    }
     return (
-      <RequestTable requests={sorted} onApprove={setApproveTarget} onReject={setRejectTarget} />
+      <DataTable
+        columns={columns}
+        data={rowsByTab[status]}
+        getRowId={(request) => request.id}
+        rowTestId={(request) => `request-row-${request.organizationName}`}
+        columnVisibility={false}
+        stickyHeader={false}
+        empty={
+          <EmptyState
+            variant="default"
+            icon={ClipboardList}
+            title="No access requests"
+            description={
+              status === "ALL"
+                ? "No access requests have been submitted yet."
+                : `No ${status.toLowerCase()} access requests.`
+            }
+          />
+        }
+      />
     );
   }
 

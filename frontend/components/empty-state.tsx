@@ -16,16 +16,19 @@ interface EmptyStateProps {
   actionHref?: string;
   onAction?: () => void;
   secondaryLink?: { label: string; href: string };
-  /** Required at every call site by `__tests__/emptystate-variant-guard.test.ts` (ADR-393); see the rule on `EmptyState`. */
-  variant?: EmptyStateVariant;
+  /**
+   * Required (Phase 91 669B, ADR-393); see the rule on `EmptyState`.
+   * `__tests__/emptystate-variant-guard.test.ts` also checks it is written at the call site.
+   */
+  variant: EmptyStateVariant;
 }
 
 // No "use client": RSC importers pass `icon` as a component reference, which only works while
 // this module renders in whichever environment imports it.
 /**
- * Sizing rule (Phase 91, ADR-393). Every call site passes `variant` explicitly — enforced by
- * `__tests__/emptystate-variant-guard.test.ts`; the `"default"` fallback stays only until 669B
- * makes the prop required.
+ * Sizing rule (Phase 91, ADR-393). Every call site passes `variant` explicitly — the prop is
+ * required in the type (669B) and `__tests__/emptystate-variant-guard.test.ts` rejects a spread
+ * without it.
  *
  * | variant   | use when | markup |
  * | --------- | -------- | ------ |
@@ -46,7 +49,7 @@ export function EmptyState({
   actionHref,
   onAction,
   secondaryLink,
-  variant = "default",
+  variant,
 }: EmptyStateProps) {
   const inline = variant === "inline";
   const compact = variant === "compact";

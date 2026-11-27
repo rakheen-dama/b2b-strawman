@@ -463,6 +463,8 @@ describe("Review r1 M1: Add task during an in-flight Copy cannot duplicate a row
 
     release(WEEK_2);
     await waitFor(() => expect(cell("Consult with counsel", 2).value).toBe("2"));
-    expect(cell("Consult with counsel", 2)).not.toBeDisabled();
+    // The lock clears when the week-load transition settles, which can land a tick after the
+    // new values render (CI run 46055098219); wait for it rather than asserting immediately.
+    await waitFor(() => expect(cell("Consult with counsel", 2)).not.toBeDisabled());
   });
 });

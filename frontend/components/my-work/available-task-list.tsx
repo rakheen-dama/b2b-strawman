@@ -21,8 +21,11 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
   // The page lives here, so collapsing and expanding the section keeps it.
   const [pageIndex, setPageIndex] = useState(0);
   const pageCount = Math.ceil(tasks.length / AVAILABLE_TASKS_PAGE_SIZE);
-  // A refresh can shrink the list (a task gets assigned): never point past the last page.
+  // A refresh can shrink the list (a task gets assigned): never point past the last page. The
+  // stored page is clamped too (adjusting state while rendering, as the kit does), so a later
+  // refresh that grows the list again does not jump back to the old page.
   const safeIndex = Math.min(pageIndex, Math.max(pageCount - 1, 0));
+  if (pageIndex > safeIndex) setPageIndex(safeIndex);
   const pageRows = useMemo(
     () =>
       tasks.slice(
@@ -57,7 +60,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
             <MyWorkTaskTable
               tasks={pageRows}
               slug={slug}
-              columns="available"
+              columnSet="available"
               overdueTone="per-task"
               onTaskClick={onTaskClick}
               pagination={{ pageIndex: safeIndex, pageCount, onPageChange: setPageIndex }}

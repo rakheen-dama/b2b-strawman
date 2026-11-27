@@ -189,6 +189,25 @@ describe("UrgencyTaskList grouping", () => {
     expect(groups.noDueDate[0].id).toBe("t5");
   });
 
+  it("groupByUrgency groups against the given SA date", () => {
+    const tasks: MyWorkTaskItem[] = [
+      makeTask({ id: "a", dueDate: "2026-11-27" }),
+      makeTask({ id: "b", dueDate: "2026-11-29" }),
+      makeTask({ id: "c", dueDate: "2026-11-30" }),
+    ];
+
+    // Friday 27 Nov 2026: the week ends Sunday 29 Nov.
+    const friday = groupByUrgency(tasks, "2026-11-27");
+    expect(friday.overdue).toHaveLength(0);
+    expect(friday.dueThisWeek.map((t) => t.id)).toEqual(["a", "b"]);
+    expect(friday.upcoming.map((t) => t.id)).toEqual(["c"]);
+
+    // Monday 30 Nov 2026: a and b are overdue, c is due this week.
+    const monday = groupByUrgency(tasks, "2026-11-30");
+    expect(monday.overdue.map((t) => t.id)).toEqual(["a", "b"]);
+    expect(monday.dueThisWeek.map((t) => t.id)).toEqual(["c"]);
+  });
+
   it("does not show date range changes affecting task list", () => {
     // This test verifies task list renders the same regardless
     // Tasks are always current assignments, not filtered by date

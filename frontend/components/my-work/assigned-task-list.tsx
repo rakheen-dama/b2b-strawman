@@ -38,7 +38,7 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
         <Badge variant="neutral">{tasks.length}</Badge>
       </div>
 
-      <MyWorkTaskTable tasks={tasks} slug={slug} columns="full" overdueTone="per-task" />
+      <MyWorkTaskTable tasks={tasks} slug={slug} columnSet="full" overdueTone="per-task" />
     </div>
   );
 }

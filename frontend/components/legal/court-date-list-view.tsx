@@ -128,7 +128,7 @@ export function CourtDateListView({
             <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Client
             </th>
-            <th className="px-4 py-3 text-left">
+            <th className="px-2 py-3 text-left">
               <Button
                 variant="ghost"
                 size="sm"
@@ -175,7 +175,7 @@ export function CourtDateListView({
                 <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                   {cd.clientName}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-2 py-3">
                   <CourtDateStatusBadge status={cd.status} />
                 </td>
                 <td className="px-4 py-3 text-right">

@@ -22,9 +22,8 @@ import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
  * kit `priority` (which starts at 67rem and would hide them at every width, D-73/D-85). Matter,
  * Title and Due Date always show.
  */
-const FROM_34REM = "hidden @min-[34rem]:table-cell"; // Priority: frame ≥ 544 px
-const FROM_40REM = "hidden @min-[40rem]:table-cell"; // Status: frame ≥ 640 px (shown at 1440)
-const FROM_46REM = "hidden @min-[46rem]:table-cell"; // Logged: frame ≥ 736 px
+const FROM_34REM = "hidden @min-[34rem]:table-cell"; // Priority + Status: frame ≥ 544 px
+const FROM_38REM = "hidden @min-[38rem]:table-cell"; // Logged: frame ≥ 608 px
 
 /** The matter badge truncates, with its full name on hover (the no-wrap badge set 1 019 px). */
 const MATTER_BADGE_CLASS = "block max-w-28 truncate @min-[40rem]:max-w-40";
@@ -67,7 +66,7 @@ export type TaskColumnSet = "full" | "available";
  */
 export type TaskOverdueTone = "per-task" | "group" | "never";
 
-/** The title button's data attribute (`data-task-open`): the delegated row click reads the id. */
+/** The title button's data attribute (`data-task-open`): the one delegated click handler reads it. */
 const OPEN_ATTR = "data-task-open";
 
 /** Clicks on these (or inside them) keep their own behaviour (the kit's `INTERACTIVE_SELECTOR`). */
@@ -79,7 +78,7 @@ const getTaskId = (task: MyWorkTaskItem) => task.id;
 function buildColumns(
   set: TaskColumnSet,
   tone: TaskOverdueTone,
-  onTaskClick: ((taskId: string) => void) | undefined
+  openable: boolean
 ): DataTableColumn<MyWorkTaskItem>[] {
   const matter: DataTableColumn<MyWorkTaskItem> = {
     id: "matter",
@@ -105,11 +104,11 @@ function buildColumns(
       const titleClass = "text-foreground min-w-0 truncate text-sm font-medium";
       return (
         <div className="flex min-w-0 items-center gap-2">
-          {onTaskClick ? (
+          {openable ? (
+            // No onClick: the wrapper's delegated handler opens it (Enter/Space click bubbles).
             <button
               type="button"
               data-task-open={task.id}
-              onClick={() => onTaskClick(task.id)}
               title={task.title}
               className={cn(
                 titleClass,
@@ -144,7 +143,7 @@ function buildColumns(
 
   const status: DataTableColumn<MyWorkTaskItem> = {
     id: "status",
-    meta: { label: "Status", headerClassName: FROM_40REM, cellClassName: FROM_40REM },
+    meta: { label: "Status", headerClassName: FROM_34REM, cellClassName: FROM_34REM },
     cell: ({ row }) => {
       const badge = STATUS_BADGE[row.original.status as TaskStatus] ?? STATUS_BADGE.OPEN;
       return <Badge variant={badge.variant}>{badge.label}</Badge>;
@@ -174,7 +173,7 @@ function buildColumns(
 
   const logged: DataTableColumn<MyWorkTaskItem> = {
     id: "logged",
-    meta: { label: "Logged", headerClassName: FROM_46REM, cellClassName: FROM_46REM },
+    meta: { label: "Logged", headerClassName: FROM_38REM, cellClassName: FROM_38REM },
     cell: ({ row }) => (
       <span className="text-muted-foreground text-sm">
         {row.original.totalTimeMinutes > 0 ? formatDuration(row.original.totalTimeMinutes) : "—"}
@@ -191,7 +190,7 @@ interface MyWorkTaskTableProps {
   /** Pass a stable (memoised) array: a new identity resets the kit's table state. */
   tasks: MyWorkTaskItem[];
   slug: string;
-  columns: TaskColumnSet;
+  columnSet: TaskColumnSet;
   overdueTone: TaskOverdueTone;
   /** Opens the task Sheet; absent → a row click opens the task's matter (kit `rowHref`). */
   onTaskClick?: (taskId: string) => void;
@@ -203,13 +202,14 @@ interface MyWorkTaskTableProps {
 /**
  * One task table. Row activation: without `onTaskClick` the kit's `rowHref` opens the matter. With
  * it, the kit has no callback twin of `rowHref` (found.md, kit follow-up), so the title is a real
- * `<button>` (keyboard path) and a click anywhere else on the row is delegated to it here, with the
- * kit's own guards: left button, inside a body row, not on an interactive element, no text selected.
+ * `<button>` (keyboard path) with no handler of its own, and one delegated click handler here opens
+ * the row's task — from the title button or anywhere else on the row — with the kit's own guards:
+ * left button, inside a body row, not on another interactive element, no text selected.
  */
 export function MyWorkTaskTable({
   tasks,
   slug,
-  columns: set,
+  columnSet,
   overdueTone,
   onTaskClick,
   pagination,
@@ -217,17 +217,19 @@ export function MyWorkTaskTable({
 }: MyWorkTaskTableProps) {
   const openable = onTaskClick !== undefined;
   const columns = useMemo(
-    () => buildColumns(set, overdueTone, onTaskClick),
-    [set, overdueTone, onTaskClick]
+    () => buildColumns(columnSet, overdueTone, openable),
+    [columnSet, overdueTone, openable]
   );
 
   function handleClick(event: MouseEvent<HTMLDivElement>) {
     if (!onTaskClick || event.defaultPrevented || event.button !== 0) return;
     const target = event.target;
     if (!(target instanceof Element) || !event.currentTarget.contains(target)) return;
-    if (target.closest(INTERACTIVE_SELECTOR)) return;
-    if (window.getSelection()?.toString()) return;
-    const opener = target.closest("tbody tr")?.querySelector(`[${OPEN_ATTR}]`);
+    // The title button itself opens its task; any other interactive element keeps its own behaviour.
+    const titleButton = target.closest(`[${OPEN_ATTR}]`);
+    if (!titleButton && target.closest(INTERACTIVE_SELECTOR)) return;
+    if (!titleButton && window.getSelection()?.toString()) return;
+    const opener = titleButton ?? target.closest("tbody tr")?.querySelector(`[${OPEN_ATTR}]`);
     const taskId = opener?.getAttribute(OPEN_ATTR);
     if (taskId) onTaskClick(taskId);
   }

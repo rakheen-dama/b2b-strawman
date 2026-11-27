@@ -84,7 +84,7 @@ describe("AvailableTaskList — client pager (K-97)", () => {
     expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
   });
 
-  it("clamps the page when a refresh shrinks the list", async () => {
+  it("clamps the page when a refresh shrinks the list, and keeps it clamped when it grows", async () => {
     const { rerender } = render(<AvailableTaskList tasks={makeTasks(11)} slug="acme" />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Next" }));
@@ -92,6 +92,12 @@ describe("AvailableTaskList — client pager (K-97)", () => {
     expect(screen.getByText("Available 1")).toBeInTheDocument();
     expect(screen.getByText("Available 5")).toBeInTheDocument();
     expect(screen.queryByText(/Page \d+ of/)).toBeNull();
+
+    // The stored page was clamped too: growing the list again stays on page 1.
+    rerender(<AvailableTaskList tasks={makeTasks(11)} slug="acme" />);
+    expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+    expect(screen.getByText("Available 1")).toBeInTheDocument();
+    expect(screen.queryByText("Available 11")).toBeNull();
   });
 });
 
@@ -163,6 +169,26 @@ describe("Task tables — row activation without a kit onRowClick (DA-9)", () =>
 });
 
 describe("UrgencyTaskList — Overdue group on the kit table", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("regroups the same task list after SA midnight (the memo is keyed on the SA date)", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    // Friday 27 Nov 2026, 14:00 SAST: a task due Saturday 28 Nov is due this week.
+    vi.setSystemTime(new Date("2026-11-27T12:00:00Z"));
+    const tasks = [makeTask({ id: "w1", title: "Weekend filing", dueDate: "2026-11-28" })];
+    const { rerender } = render(<UrgencyTaskList tasks={tasks} slug="acme" />);
+    expect(screen.getByText("Due This Week")).toBeInTheDocument();
+    expect(screen.queryByText("Overdue")).toBeNull();
+
+    // Sunday 29 Nov 2026, 00:30 SAST: the same array (same identity) is now overdue.
+    vi.setSystemTime(new Date("2026-11-28T22:30:00Z"));
+    rerender(<UrgencyTaskList tasks={tasks} slug="acme" />);
+    expect(screen.getByText("Overdue")).toBeInTheDocument();
+    expect(screen.queryByText("Due This Week")).toBeNull();
+  });
+
   it("tints the Overdue group's rows through its wrapper and shows the overdue date", () => {
     const tasks = [
       makeTask({ id: "o1", title: "Late filing", dueDate: "2020-01-01" }),

@@ -131,11 +131,11 @@ describe("AssignedTaskList", () => {
     );
     expect(screen.getByRole("columnheader", { name: "Status" })).toHaveClass(
       "hidden",
-      "@min-[40rem]:table-cell"
+      "@min-[34rem]:table-cell"
     );
     expect(screen.getByRole("columnheader", { name: "Logged" })).toHaveClass(
       "hidden",
-      "@min-[46rem]:table-cell"
+      "@min-[38rem]:table-cell"
     );
     // Matter, Title and Due Date always show.
     for (const name of ["Matter", "Title", "Due Date"]) {

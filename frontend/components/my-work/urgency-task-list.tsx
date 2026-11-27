@@ -19,10 +19,12 @@ interface UrgencyGroups {
   noDueDate: MyWorkTaskItem[];
 }
 
-export function groupByUrgency(tasks: MyWorkTaskItem[]): UrgencyGroups {
-  // South African today, so the SSR render (UTC) and the browser group identically (G88-F49).
-  // yyyy-MM-dd strings compare lexically.
-  const today = todayInSA();
+export function groupByUrgency(
+  tasks: MyWorkTaskItem[],
+  today: string = todayInSA()
+): UrgencyGroups {
+  // `today` is South African today (yyyy-MM-dd), so the SSR render (UTC) and the browser group
+  // identically (G88-F49). yyyy-MM-dd strings compare lexically.
 
   // End of the current week (Sunday)
   const day = parseIsoDate(today).getDay();
@@ -95,8 +97,10 @@ interface UrgencyTaskListProps {
 }
 
 export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListProps) {
-  // Memoised: each group array is a DataTable `data` prop (a new identity resets the table).
-  const groups = useMemo(() => groupByUrgency(tasks), [tasks]);
+  // Memoised: each group array is a DataTable `data` prop (a new identity resets the table). Keyed
+  // on the SA date too, so a render after midnight regroups rather than keeping yesterday's groups.
+  const today = todayInSA();
+  const groups = useMemo(() => groupByUrgency(tasks, today), [tasks, today]);
 
   if (tasks.length === 0) {
     return (
@@ -138,7 +142,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
             <MyWorkTaskTable
               tasks={groups.overdue}
               slug={slug}
-              columns="full"
+              columnSet="full"
               overdueTone="group"
               onTaskClick={onTaskClick}
               className={OVERDUE_ROW_TINT}
@@ -157,7 +161,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
             <MyWorkTaskTable
               tasks={groups.dueThisWeek}
               slug={slug}
-              columns="full"
+              columnSet="full"
               overdueTone="never"
               onTaskClick={onTaskClick}
             />
@@ -175,7 +179,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
             <MyWorkTaskTable
               tasks={groups.upcoming}
               slug={slug}
-              columns="full"
+              columnSet="full"
               overdueTone="never"
               onTaskClick={onTaskClick}
             />
@@ -193,7 +197,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
             <MyWorkTaskTable
               tasks={groups.noDueDate}
               slug={slug}
-              columns="full"
+              columnSet="full"
               overdueTone="never"
               onTaskClick={onTaskClick}
             />

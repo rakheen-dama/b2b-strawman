@@ -1,0 +1,7 @@
+668A OBS scripts (Node Playwright library, not the MCP). Node 20 (nvm); Playwright resolves from the worktree's frontend/node_modules or the sibling main checkout's. lib.cjs re-uses ../../../661B/walk/scripts/common.cjs (theme, sidebar cookie, console watch, sheet()).
+  00-seed.cjs     RUN ONCE (done for before; idempotent — a re-run only appends an all-"already" entry to seed.json runs[]). As Alice: 1 task assigned to Alice + 24 unassigned tasks (REST, the createMatterTask call), 4 court dates scheduled through the matter's Court Dates tab UI, then cancel / record outcome / postpone through the row menus. Writes ../seed.json (ids read by 01/02).
+  01-capture.cjs  read-only capture: 16 targets × alice/carol × 1024/1440 × light/dark (64 page loads) + interactions (Alice 1440 light, Alice 1024 dark, Carol 1440 light). Menus/dialogs opened and Escaped; timesheet cells typed but never saved; notification items never clicked. Raw → /tmp/668A-$PHASE-raw/.
+  02-assemble.cjs JSON (measurements / sel-compat / console / discover) + 14 contact sheets + 7 crops → ../../$PHASE/.
+  probe.cjs       the in-page probe (structure-agnostic: raw tables and DataTable / PageHeader alike).
+OBS-after (same data, frontend rebuilt from the slice head; do NOT re-seed), from this directory, unedited:
+  PHASE=after node 01-capture.cjs && PHASE=after STACK="<frontend image + SHA>" node 02-assemble.cjs

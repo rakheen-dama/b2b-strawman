@@ -112,6 +112,58 @@ describe("DataRequestsSection", () => {
   });
 });
 
+describe("DataRequestsSection countdown on the South African calendar (F-669A-A-4)", () => {
+  // Today in South Africa is Fri 27 Nov 2026 at each of these instants.
+  const instants = [
+    ["00:30 SAST", "2026-11-26T22:30:00Z"],
+    ["11:40 SAST", "2026-11-27T09:40:00Z"],
+    ["23:30 SAST", "2026-11-27T21:30:00Z"],
+  ] as const;
+  // The server renders in UTC; a browser may run in any zone. The count must not depend on it.
+  const zones = ["UTC", "Africa/Johannesburg", "America/New_York", "Pacific/Kiritimati"];
+  const originalTz = process.env.TZ;
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    process.env.TZ = originalTz;
+  });
+
+  describe.each(zones)("runtime zone %s", (zone) => {
+    it.each(instants)(
+      "at %s, yesterday is 1d overdue, today is due today, tomorrow is 1d remaining",
+      (_label, instant) => {
+        process.env.TZ = zone;
+        vi.useFakeTimers({ toFake: ["Date"] });
+        vi.setSystemTime(new Date(instant));
+        render(
+          <DataRequestsSection
+            openCount={3}
+            urgentRequests={[
+              request("y", "Yesterday Client", "2026-11-26"),
+              request("t", "Today Client", "2026-11-27"),
+              request("m", "Tomorrow Client", "2026-11-28"),
+            ]}
+            orgSlug="test-org"
+          />
+        );
+        const countdowns = within(screen.getByRole("table"))
+          .getAllByRole("row")
+          .slice(1)
+          .map((r) => [
+            within(r).getAllByRole("cell")[0].textContent,
+            within(r).getByText(/overdue|Due today|remaining/).textContent,
+          ]);
+        expect(countdowns).toEqual([
+          ["Yesterday Client", "1d overdue"],
+          ["Today Client", "Due today"],
+          ["Tomorrow Client", "1d remaining"],
+        ]);
+      }
+    );
+  });
+});
+
 describe("UrgentDataRequestsTable", () => {
   afterEach(() => cleanup());
 

@@ -1,7 +1,7 @@
 {
-  "commit": "d62c5dc19",
-  "command": "cd portal && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20, clean worktree wt-661b-gate, PR #1863)",
+  "commit": "d61e5dd4e",
+  "command": "cd portal && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, worktree-epic-669A, PR #1881 — packages/shared/src/format.ts K-68)",
   "exit": 0,
-  "ts": "2026-11-25T21:12:55Z",
-  "summary": "PR #1863 @d62c5dc19 — lint 0, typecheck 0, format:check 0, vitest 51 files / 293 passed, build 0"
+  "ts": "2026-11-27T09:48:55Z",
+  "summary": "PR #1881 @d61e5dd4e — lint 0 errors (4 warnings), typecheck 0, format:check 0, vitest 51 files / 293 passed, build 0; orchestrator run"
 }

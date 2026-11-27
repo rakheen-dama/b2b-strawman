@@ -2,7 +2,7 @@ import { PageHeader } from "@b2mash/ui/page-header";
 import { api } from "@/lib/api";
 import type { MyWorkTasksResponse, MyWorkTimeEntryItem } from "@/lib/types";
 import { WeeklyTimeGrid } from "@/components/time-tracking/weekly-time-grid";
-import type { GridTaskRow } from "@/components/time-tracking/weekly-time-grid";
+import { rowsForWeek, type GridTaskRow } from "@/components/time-tracking/timesheet-rows";
 import { todayInSA } from "@b2mash/shared/date";
 import { mondayOf } from "@/app/(app)/org/[slug]/diary/diary-types";
 
@@ -50,7 +50,6 @@ export default async function TimesheetPage({
     console.error("Failed to fetch time entries for timesheet:", error);
   }
 
-  // Build GridTaskRow[] from assigned tasks
   const assignedTasks: GridTaskRow[] = tasksData.assigned.map((t) => ({
     id: t.id,
     projectId: t.matterId,
@@ -58,25 +57,15 @@ export default async function TimesheetPage({
     title: t.title,
   }));
 
-  // De-duplicate: tasks with existing entries first, then remaining assigned tasks
-  const entryTaskIds = new Set((existingEntries ?? []).map((e) => e.taskId));
-  const prePopulatedRows = [
-    ...assignedTasks.filter((t) => entryTaskIds.has(t.id)),
-    ...assignedTasks.filter((t) => !entryTaskIds.has(t.id)).slice(0, 5),
-  ];
-  // De-duplicate by id
-  const seen = new Set<string>();
-  const uniqueRows = prePopulatedRows.filter((t) => {
-    if (seen.has(t.id)) return false;
-    seen.add(t.id);
-    return true;
-  });
+  // Every task with the user's time this week gets a row, assigned or not (K-88); the grid
+  // rebuilds the rows the same way on each week it loads.
+  const rows = rowsForWeek(assignedTasks, existingEntries ?? []);
 
   return (
     <div className="space-y-6">
       <PageHeader title="Timesheet" description="Log your weekly hours across all tasks." />
       <WeeklyTimeGrid
-        tasks={uniqueRows}
+        tasks={rows}
         existingEntries={existingEntries}
         weekStart={weekStart}
         allTasks={assignedTasks}

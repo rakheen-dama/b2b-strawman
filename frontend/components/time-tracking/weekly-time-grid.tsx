@@ -15,6 +15,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { TimeCell } from "./time-cell";
 import { planWeekSave, isEmptyPlan, type PlanCell } from "./timesheet-save-plan";
+import { mergeRows, rowsForWeek, type GridTaskRow } from "./timesheet-rows";
 import {
   saveWeeklyEntries,
   fetchWeekEntries,
@@ -96,18 +97,15 @@ function buildCellValuesFromEntries(
 
 // --- Types ---
 
-export interface GridTaskRow {
-  id: string;
-  projectId: string;
-  projectName: string;
-  title: string;
-}
+export type { GridTaskRow };
 
 interface WeeklyTimeGridProps {
+  /** The first week's rows (`rowsForWeek`); each later week load rebuilds them from `allTasks`. */
   tasks: GridTaskRow[];
   /** The week's entries, or `null` when the page could not load them (the baseline is unknown). */
   existingEntries: MyWorkTimeEntryItem[] | null;
   weekStart: string; // "YYYY-MM-DD" Monday
+  /** The tasks assigned to the user. */
   allTasks: GridTaskRow[];
   slug: string;
 }
@@ -138,12 +136,14 @@ export function WeeklyTimeGrid({
   const [dirty, setDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isNavigating, startNavTransition] = useTransition();
+  const [isCopying, setIsCopying] = useState(false);
   const [addTaskQuery, setAddTaskQuery] = useState("");
   // The week on screen. A load only applies if its week is still the one displayed, so a reload
   // that finishes after the user changed week can never put one week's entries under another.
   const displayedWeek = useRef(initialWeekStart);
-  // While a Save is in flight nothing may change the week or the cells.
-  const locked = isSaving || isNavigating;
+  // While a Save, a week load or a Copy is in flight nothing may change the week; a Copy also
+  // blocks Save, whose reload would otherwise drop the copied values.
+  const locked = isSaving || isNavigating || isCopying;
 
   function handleCellChange(taskId: string, dayIndex: number, hours: number) {
     const key = cellKey(taskId, dayIndex);
@@ -167,10 +167,12 @@ export function WeeklyTimeGrid({
   const grandTotal = DAYS.reduce<number>((sum, d) => sum + columnTotal(d), 0);
 
   /**
-   * Loads a week's entries as the new baseline and resets the cells to them. On failure the
-   * baseline is unknown, so Save stays disabled until the page is reloaded.
+   * Loads a week's entries as the new baseline and resets the cells to them. The rows become that
+   * week's rows (K-88): replaced on a week change, merged into the current rows on the reload after
+   * a Save, so a row the user added keeps its place and its error. On failure the baseline is
+   * unknown, so Save stays disabled until the page is reloaded.
    */
-  async function loadWeek(monday: Date): Promise<void> {
+  async function loadWeek(monday: Date, rows: "replace" | "merge"): Promise<void> {
     const week = toIsoDate(monday);
     let entries: MyWorkTimeEntryItem[] | null = null;
     try {
@@ -183,13 +185,15 @@ export function WeeklyTimeGrid({
       setBaselineError(true);
       return;
     }
+    const weekRows = rowsForWeek(allTasks, entries);
+    setTaskRows((prev) => (rows === "merge" ? mergeRows(prev, weekRows) : weekRows));
     setBaseline(entries);
     setCellValues(buildCellValuesFromEntries(entries, monday));
     setBaselineError(false);
   }
 
   function switchWeek(monday: Date) {
-    if (isSaving) return;
+    if (isSaving || isCopying) return;
     if (dirty && !confirm("You have unsaved changes. Discard?")) return;
     displayedWeek.current = toIsoDate(monday);
     setWeekStart(monday);
@@ -198,7 +202,7 @@ export function WeeklyTimeGrid({
     setCellErrors({});
     setSaveProblems([]);
     setDirty(false);
-    startNavTransition(() => loadWeek(monday));
+    startNavTransition(() => loadWeek(monday, "replace"));
   }
 
   function navigateWeek(direction: -1 | 1) {
@@ -298,7 +302,7 @@ export function WeeklyTimeGrid({
       problems.push({ message: "Save failed part-way. The grid now shows what was saved." });
     } finally {
       // The server is the source of truth: reload the week so the next Save diffs against it.
-      await loadWeek(weekStart);
+      await loadWeek(weekStart, "merge");
       setDirty(false);
       setIsSaving(false);
     }
@@ -338,8 +342,6 @@ export function WeeklyTimeGrid({
   }
 
   // --- Copy Previous Week ---
-  const [isCopying, setIsCopying] = useState(false);
-
   async function handleCopyPreviousWeek() {
     // Check if grid has data — confirm before overwriting
     const hasData = Object.values(cellValues).some((v) => v > 0);
@@ -353,9 +355,12 @@ export function WeeklyTimeGrid({
       }
     }
 
+    const week = toIsoDate(weekStart);
     setIsCopying(true);
     try {
-      const entries = await fetchPreviousWeekEntries(toIsoDate(weekStart));
+      const entries = await fetchPreviousWeekEntries(week);
+      // The copy belongs to the week it was made for; never apply it to another one.
+      if (displayedWeek.current !== week) return;
       if (entries.length === 0) {
         toast.error("No entries found in the previous week");
         return;
@@ -523,12 +528,7 @@ export function WeeklyTimeGrid({
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyPreviousWeek}
-            disabled={isCopying || locked}
-          >
+          <Button variant="outline" size="sm" onClick={handleCopyPreviousWeek} disabled={locked}>
             <Copy className="mr-1.5 size-3.5" />
             {isCopying ? "Copying..." : "Copy Previous Week"}
           </Button>
@@ -540,7 +540,7 @@ export function WeeklyTimeGrid({
           </CsvImportDialog>
           <Button
             onClick={handleSave}
-            disabled={!dirty || isSaving || isNavigating || baselineError}
+            disabled={!dirty || isSaving || isNavigating || isCopying || baselineError}
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>

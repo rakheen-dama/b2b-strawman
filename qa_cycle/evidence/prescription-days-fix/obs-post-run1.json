@@ -1,0 +1,721 @@
+{
+  "startedAt": "2026-11-27T22:08:28.355Z",
+  "todaySA": "2026-11-28",
+  "steps": [],
+  "console": [],
+  "checks": [
+    {
+      "name": "Africa/Johannesburg: 2026-11-26 (offset -1) shows \"—\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": -1,
+        "prescriptionDate": "2026-11-26",
+        "cause": "2023-11-26",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2026-11-27 (offset 0) shows \"—\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 0,
+        "prescriptionDate": "2026-11-27",
+        "cause": "2023-11-27",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2026-11-28 (offset 1) shows \"Today\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 1,
+        "prescriptionDate": "2026-11-28",
+        "cause": "2023-11-28",
+        "todaySA": "2026-11-28",
+        "expected": "Today",
+        "expectedColour": "text-red-600",
+        "observed": "Today",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "1",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2026-11-29 (offset 2) shows \"1\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 2,
+        "prescriptionDate": "2026-11-29",
+        "cause": "2023-11-29",
+        "todaySA": "2026-11-28",
+        "expected": "1",
+        "expectedColour": "text-red-600",
+        "observed": "1",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "2",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2026-12-27 (offset 30) shows \"29\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 30,
+        "prescriptionDate": "2026-12-27",
+        "cause": "2023-12-27",
+        "todaySA": "2026-11-28",
+        "expected": "29",
+        "expectedColour": "text-red-600",
+        "observed": "29",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "30",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2026-12-28 (offset 31) shows \"30\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 31,
+        "prescriptionDate": "2026-12-28",
+        "cause": "2023-12-28",
+        "todaySA": "2026-11-28",
+        "expected": "30",
+        "expectedColour": "text-red-600",
+        "observed": "30",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "31",
+        "mainColour": "text-amber-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2027-02-25 (offset 90) shows \"89\" text-amber-600",
+      "ok": true,
+      "detail": {
+        "offset": 90,
+        "prescriptionDate": "2027-02-25",
+        "cause": "2024-02-25",
+        "todaySA": "2026-11-28",
+        "expected": "89",
+        "expectedColour": "text-amber-600",
+        "observed": "89",
+        "observedColour": "text-amber-600",
+        "status": "Warned",
+        "mainWouldShow": "90",
+        "mainColour": "text-amber-600"
+      }
+    },
+    {
+      "name": "Africa/Johannesburg: 2027-02-26 (offset 91) shows \"90\" text-amber-600",
+      "ok": true,
+      "detail": {
+        "offset": 91,
+        "prescriptionDate": "2027-02-26",
+        "cause": "2024-02-26",
+        "todaySA": "2026-11-28",
+        "expected": "90",
+        "expectedColour": "text-amber-600",
+        "observed": "90",
+        "observedColour": "text-amber-600",
+        "status": "Running",
+        "mainWouldShow": "91",
+        "mainColour": "text-slate-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-11-26 (offset -1) shows \"—\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": -1,
+        "prescriptionDate": "2026-11-26",
+        "cause": "2023-11-26",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-11-27 (offset 0) shows \"—\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 0,
+        "prescriptionDate": "2026-11-27",
+        "cause": "2023-11-27",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-11-28 (offset 1) shows \"Today\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 1,
+        "prescriptionDate": "2026-11-28",
+        "cause": "2023-11-28",
+        "todaySA": "2026-11-28",
+        "expected": "Today",
+        "expectedColour": "text-red-600",
+        "observed": "Today",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "1",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-11-29 (offset 2) shows \"1\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 2,
+        "prescriptionDate": "2026-11-29",
+        "cause": "2023-11-29",
+        "todaySA": "2026-11-28",
+        "expected": "1",
+        "expectedColour": "text-red-600",
+        "observed": "1",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "2",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-12-27 (offset 30) shows \"29\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 30,
+        "prescriptionDate": "2026-12-27",
+        "cause": "2023-12-27",
+        "todaySA": "2026-11-28",
+        "expected": "29",
+        "expectedColour": "text-red-600",
+        "observed": "29",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "30",
+        "mainColour": "text-red-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2026-12-28 (offset 31) shows \"30\" text-red-600",
+      "ok": true,
+      "detail": {
+        "offset": 31,
+        "prescriptionDate": "2026-12-28",
+        "cause": "2023-12-28",
+        "todaySA": "2026-11-28",
+        "expected": "30",
+        "expectedColour": "text-red-600",
+        "observed": "30",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "31",
+        "mainColour": "text-amber-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2027-02-25 (offset 90) shows \"89\" text-amber-600",
+      "ok": true,
+      "detail": {
+        "offset": 90,
+        "prescriptionDate": "2027-02-25",
+        "cause": "2024-02-25",
+        "todaySA": "2026-11-28",
+        "expected": "89",
+        "expectedColour": "text-amber-600",
+        "observed": "89",
+        "observedColour": "text-amber-600",
+        "status": "Warned",
+        "mainWouldShow": "90",
+        "mainColour": "text-amber-600"
+      }
+    },
+    {
+      "name": "America/New_York: 2027-02-26 (offset 91) shows \"90\" text-amber-600",
+      "ok": true,
+      "detail": {
+        "offset": 91,
+        "prescriptionDate": "2027-02-26",
+        "cause": "2024-02-26",
+        "todaySA": "2026-11-28",
+        "expected": "90",
+        "expectedColour": "text-amber-600",
+        "observed": "90",
+        "observedColour": "text-amber-600",
+        "status": "Running",
+        "mainWouldShow": "91",
+        "mainColour": "text-slate-600"
+      }
+    }
+  ],
+  "matter": {
+    "id": "8fad251c-b9aa-4532-9503-0e2c220af686",
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwzho4f44475",
+    "status": "ACTIVE"
+  },
+  "rowsBefore": [
+    {
+      "cause": "2023-11-26",
+      "prescriptionDate": "2026-11-26",
+      "status": "Expired",
+      "daysLeft": "—",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2023-11-27",
+      "prescriptionDate": "2026-11-27",
+      "status": "Expired",
+      "daysLeft": "—",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2023-11-28",
+      "prescriptionDate": "2026-11-28",
+      "status": "Warned",
+      "daysLeft": "Today",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2023-11-29",
+      "prescriptionDate": "2026-11-29",
+      "status": "Warned",
+      "daysLeft": "1",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2023-12-27",
+      "prescriptionDate": "2026-12-27",
+      "status": "Warned",
+      "daysLeft": "29",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2023-12-28",
+      "prescriptionDate": "2026-12-28",
+      "status": "Warned",
+      "daysLeft": "30",
+      "colour": "text-red-600"
+    },
+    {
+      "cause": "2024-02-25",
+      "prescriptionDate": "2027-02-25",
+      "status": "Warned",
+      "daysLeft": "89",
+      "colour": "text-amber-600"
+    },
+    {
+      "cause": "2024-02-26",
+      "prescriptionDate": "2027-02-26",
+      "status": "Running",
+      "daysLeft": "90",
+      "colour": "text-amber-600"
+    }
+  ],
+  "wanted": [
+    {
+      "offset": -1,
+      "prescriptionDate": "2026-11-26",
+      "cause": "2023-11-26"
+    },
+    {
+      "offset": 0,
+      "prescriptionDate": "2026-11-27",
+      "cause": "2023-11-27"
+    },
+    {
+      "offset": 1,
+      "prescriptionDate": "2026-11-28",
+      "cause": "2023-11-28"
+    },
+    {
+      "offset": 2,
+      "prescriptionDate": "2026-11-29",
+      "cause": "2023-11-29"
+    },
+    {
+      "offset": 30,
+      "prescriptionDate": "2026-12-27",
+      "cause": "2023-12-27"
+    },
+    {
+      "offset": 31,
+      "prescriptionDate": "2026-12-28",
+      "cause": "2023-12-28"
+    },
+    {
+      "offset": 90,
+      "prescriptionDate": "2027-02-25",
+      "cause": "2024-02-25"
+    },
+    {
+      "offset": 91,
+      "prescriptionDate": "2027-02-26",
+      "cause": "2024-02-26"
+    }
+  ],
+  "observed_johannesburg": {
+    "at": "2026-11-27T22:08:32.263Z",
+    "rows": [
+      {
+        "offset": -1,
+        "prescriptionDate": "2026-11-26",
+        "cause": "2023-11-26",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 0,
+        "prescriptionDate": "2026-11-27",
+        "cause": "2023-11-27",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 1,
+        "prescriptionDate": "2026-11-28",
+        "cause": "2023-11-28",
+        "todaySA": "2026-11-28",
+        "expected": "Today",
+        "expectedColour": "text-red-600",
+        "observed": "Today",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "1",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 2,
+        "prescriptionDate": "2026-11-29",
+        "cause": "2023-11-29",
+        "todaySA": "2026-11-28",
+        "expected": "1",
+        "expectedColour": "text-red-600",
+        "observed": "1",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "2",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 30,
+        "prescriptionDate": "2026-12-27",
+        "cause": "2023-12-27",
+        "todaySA": "2026-11-28",
+        "expected": "29",
+        "expectedColour": "text-red-600",
+        "observed": "29",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "30",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 31,
+        "prescriptionDate": "2026-12-28",
+        "cause": "2023-12-28",
+        "todaySA": "2026-11-28",
+        "expected": "30",
+        "expectedColour": "text-red-600",
+        "observed": "30",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "31",
+        "mainColour": "text-amber-600"
+      },
+      {
+        "offset": 90,
+        "prescriptionDate": "2027-02-25",
+        "cause": "2024-02-25",
+        "todaySA": "2026-11-28",
+        "expected": "89",
+        "expectedColour": "text-amber-600",
+        "observed": "89",
+        "observedColour": "text-amber-600",
+        "status": "Warned",
+        "mainWouldShow": "90",
+        "mainColour": "text-amber-600"
+      },
+      {
+        "offset": 91,
+        "prescriptionDate": "2027-02-26",
+        "cause": "2024-02-26",
+        "todaySA": "2026-11-28",
+        "expected": "90",
+        "expectedColour": "text-amber-600",
+        "observed": "90",
+        "observedColour": "text-amber-600",
+        "status": "Running",
+        "mainWouldShow": "91",
+        "mainColour": "text-slate-600"
+      }
+    ],
+    "allRows": [
+      {
+        "cause": "2023-11-26",
+        "prescriptionDate": "2026-11-26",
+        "status": "Expired",
+        "daysLeft": "—",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-27",
+        "prescriptionDate": "2026-11-27",
+        "status": "Expired",
+        "daysLeft": "—",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-28",
+        "prescriptionDate": "2026-11-28",
+        "status": "Warned",
+        "daysLeft": "Today",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-29",
+        "prescriptionDate": "2026-11-29",
+        "status": "Warned",
+        "daysLeft": "1",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-12-27",
+        "prescriptionDate": "2026-12-27",
+        "status": "Warned",
+        "daysLeft": "29",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-12-28",
+        "prescriptionDate": "2026-12-28",
+        "status": "Warned",
+        "daysLeft": "30",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2024-02-25",
+        "prescriptionDate": "2027-02-25",
+        "status": "Warned",
+        "daysLeft": "89",
+        "colour": "text-amber-600"
+      },
+      {
+        "cause": "2024-02-26",
+        "prescriptionDate": "2027-02-26",
+        "status": "Running",
+        "daysLeft": "90",
+        "colour": "text-amber-600"
+      }
+    ]
+  },
+  "observed_new_york": {
+    "at": "2026-11-27T22:08:33.696Z",
+    "rows": [
+      {
+        "offset": -1,
+        "prescriptionDate": "2026-11-26",
+        "cause": "2023-11-26",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 0,
+        "prescriptionDate": "2026-11-27",
+        "cause": "2023-11-27",
+        "todaySA": "2026-11-28",
+        "expected": "—",
+        "expectedColour": "text-red-600",
+        "observed": "—",
+        "observedColour": "text-red-600",
+        "status": "Expired",
+        "mainWouldShow": "—",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 1,
+        "prescriptionDate": "2026-11-28",
+        "cause": "2023-11-28",
+        "todaySA": "2026-11-28",
+        "expected": "Today",
+        "expectedColour": "text-red-600",
+        "observed": "Today",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "1",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 2,
+        "prescriptionDate": "2026-11-29",
+        "cause": "2023-11-29",
+        "todaySA": "2026-11-28",
+        "expected": "1",
+        "expectedColour": "text-red-600",
+        "observed": "1",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "2",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 30,
+        "prescriptionDate": "2026-12-27",
+        "cause": "2023-12-27",
+        "todaySA": "2026-11-28",
+        "expected": "29",
+        "expectedColour": "text-red-600",
+        "observed": "29",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "30",
+        "mainColour": "text-red-600"
+      },
+      {
+        "offset": 31,
+        "prescriptionDate": "2026-12-28",
+        "cause": "2023-12-28",
+        "todaySA": "2026-11-28",
+        "expected": "30",
+        "expectedColour": "text-red-600",
+        "observed": "30",
+        "observedColour": "text-red-600",
+        "status": "Warned",
+        "mainWouldShow": "31",
+        "mainColour": "text-amber-600"
+      },
+      {
+        "offset": 90,
+        "prescriptionDate": "2027-02-25",
+        "cause": "2024-02-25",
+        "todaySA": "2026-11-28",
+        "expected": "89",
+        "expectedColour": "text-amber-600",
+        "observed": "89",
+        "observedColour": "text-amber-600",
+        "status": "Warned",
+        "mainWouldShow": "90",
+        "mainColour": "text-amber-600"
+      },
+      {
+        "offset": 91,
+        "prescriptionDate": "2027-02-26",
+        "cause": "2024-02-26",
+        "todaySA": "2026-11-28",
+        "expected": "90",
+        "expectedColour": "text-amber-600",
+        "observed": "90",
+        "observedColour": "text-amber-600",
+        "status": "Running",
+        "mainWouldShow": "91",
+        "mainColour": "text-slate-600"
+      }
+    ],
+    "allRows": [
+      {
+        "cause": "2023-11-26",
+        "prescriptionDate": "2026-11-26",
+        "status": "Expired",
+        "daysLeft": "—",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-27",
+        "prescriptionDate": "2026-11-27",
+        "status": "Expired",
+        "daysLeft": "—",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-28",
+        "prescriptionDate": "2026-11-28",
+        "status": "Warned",
+        "daysLeft": "Today",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-11-29",
+        "prescriptionDate": "2026-11-29",
+        "status": "Warned",
+        "daysLeft": "1",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-12-27",
+        "prescriptionDate": "2026-12-27",
+        "status": "Warned",
+        "daysLeft": "29",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2023-12-28",
+        "prescriptionDate": "2026-12-28",
+        "status": "Warned",
+        "daysLeft": "30",
+        "colour": "text-red-600"
+      },
+      {
+        "cause": "2024-02-25",
+        "prescriptionDate": "2027-02-25",
+        "status": "Warned",
+        "daysLeft": "89",
+        "colour": "text-amber-600"
+      },
+      {
+        "cause": "2024-02-26",
+        "prescriptionDate": "2027-02-26",
+        "status": "Running",
+        "daysLeft": "90",
+        "colour": "text-amber-600"
+      }
+    ]
+  },
+  "finishedAt": "2026-11-27T22:08:33.696Z",
+  "allChecksPass": true
+}

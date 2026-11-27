@@ -1,0 +1,140 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-prescription-days/frontend
+
+ ❯ __tests__/legal/court-dates.test.tsx (25 tests | 10 failed | 15 skipped) 215ms
+       × at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 55ms
+       × at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 19ms
+       × at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 16ms
+       × at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 17ms
+       × at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 15ms
+       × at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 17ms
+       × at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 20ms
+       × at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 19ms
+       × at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2 18ms
+     × colours the count from the SA-calendar value at the 30- and 90-day thresholds 18ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 01:00 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+AssertionError: expected [ [ '2026-11-26', '—', true ], …(3) ] to deeply equal [ [ '2026-11-26', '—', true ], …(3) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+      "—",
+      true,
+    ],
+    [
+      "2026-11-27",
+-     "Today",
++     "1",
+      true,
+    ],
+    [
+      "2026-11-28",
+-     "1",
++     "2",
+      true,
+    ],
+    [
+      "2026-11-29",
+-     "2",
++     "3",
+      true,
+    ],
+  ]
+
+ ❯ __tests__/legal/court-dates.test.tsx:286:26
+    284|           return [prescriptionDate, span.textContent, span.classList.c…
+    285|         });
+    286|         expect(daysLeft).toEqual([
+       |                          ^
+    287|           ["2026-11-26", "—", true],
+    288|           ["2026-11-27", "Today", true],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 11:40 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 23:30 SAST, yesterday is past (—), today reads Today, tomorrow is 1, +2 is 2
+AssertionError: expected [ [ '2026-11-26', '—', true ], …(3) ] to deeply equal [ [ '2026-11-26', '—', true ], …(3) ]
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+      "—",
+      true,
+    ],
+    [
+      "2026-11-27",
+-     "Today",
++     "—",
+      true,
+    ],
+    [
+      "2026-11-28",
+      "1",
+
+ ❯ __tests__/legal/court-dates.test.tsx:286:26
+    284|           return [prescriptionDate, span.textContent, span.classList.c…
+    285|         });
+    286|         expect(daysLeft).toEqual([
+       |                          ^
+    287|           ["2026-11-26", "—", true],
+    288|           ["2026-11-27", "Today", true],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > colours the count from the SA-calendar value at the 30- and 90-day thresholds
+AssertionError: expected [ [ '31', 'text-amber-600' ], …(3) ] to deeply equal [ [ '30', 'text-red-600' ], …(3) ]
+
+- Expected
++ Received
+
+  [
+    [
+-     "30",
+-     "text-red-600",
+-   ],
+-   [
+      "31",
+      "text-amber-600",
+    ],
+    [
+-     "90",
++     "32",
+      "text-amber-600",
+    ],
+    [
+      "91",
++     "text-slate-600",
++   ],
++   [
++     "92",
+      "text-slate-600",
+    ],
+  ]
+
+ ❯ __tests__/legal/court-dates.test.tsx:324:19
+    322|       return [span.textContent, colour];
+    323|     });
+    324|     expect(shown).toEqual([
+       |                   ^
+    325|       ["30", "text-red-600"],
+    326|       ["31", "text-amber-600"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 15 skipped (25)
+   Start at  22:52:35
+   Duration  1.22s (transform 200ms, setup 89ms, import 599ms, tests 215ms, environment 180ms)
+

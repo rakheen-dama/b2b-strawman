@@ -172,6 +172,20 @@ describe("BillingRunsTable", () => {
     expect(cells[5].textContent).toBe("—");
   });
 
+  // F-666A-A1: fits a 710px frame at 1024 with the Name on two lines.
+  it("floors the Name column at 11rem and hides only Period below a 67rem frame", () => {
+    render(<BillingRunsTable slug="acme" runs={[run()]} empty={<p>none</p>} />);
+    const headers = screen.getAllByRole("columnheader");
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    expect(headers[0].style.minWidth).toBe("11rem");
+    expect(cells[0].style.minWidth).toBe("11rem");
+    expect(headers[2]).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    expect(cells[2]).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    for (const index of [0, 1, 3, 4, 5, 6]) {
+      expect(cells[index]).not.toHaveClass("hidden");
+    }
+  });
+
   it("renders the empty slot instead of the table", () => {
     render(<BillingRunsTable slug="acme" runs={[]} empty={<p>No fixture runs.</p>} />);
     expect(screen.getByText("No fixture runs.")).toBeInTheDocument();

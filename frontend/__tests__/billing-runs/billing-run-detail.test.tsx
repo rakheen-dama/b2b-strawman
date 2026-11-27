@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { formatCurrency } from "@/lib/format";
 
 // Mock server-only
@@ -132,6 +132,30 @@ describe("BillingRunItemsTable", () => {
 
     expect(screen.getByText("No items in this fee run.")).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  // F-666A-A2: fits a 710px frame at 1024; the Time/Disbursement breakdown hides, Total stays.
+  it("hides only the Time/Disbursement breakdown below a 67rem frame and floors the prose columns", () => {
+    render(<BillingRunItemsTable items={mockItems} currency="ZAR" slug="test-org" />);
+    const labels = screen.getAllByRole("columnheader").map((h) => h.textContent);
+    expect(labels).toEqual([
+      "Client",
+      "Status",
+      "Time Amount",
+      "Disbursement Amount",
+      "Total",
+      "Fee note",
+      "Failure Reason",
+    ]);
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    expect(cells[2]).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    expect(cells[3]).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    for (const index of [0, 1, 4, 5, 6]) {
+      expect(cells[index]).not.toHaveClass("hidden");
+    }
+    expect(cells[0].style.minWidth).toBe("12rem");
+    expect(cells[6].style.minWidth).toBe("10rem");
+    expect(cells[6]).toHaveClass("whitespace-normal");
   });
 
   // K-34: the item link uses the accent token, not the hard-coded teal-600.

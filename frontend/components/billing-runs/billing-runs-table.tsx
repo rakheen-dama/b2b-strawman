@@ -22,6 +22,11 @@ const getRunId = (run: BillingRun) => run.id;
 /**
  * Fee runs list on `DataTable` (Phase 91 666A, client mode). Every run renders (no pager, as
  * before); the Name link opens the detail (no row click, as before). Labels are the old headers.
+ *
+ * Fit at 1024 (F-666A-A1): Name is the only wrapping column, so it gets an `11rem` floor (two lines
+ * of the K-65 title) instead of collapsing to one word per line; Period is `low` (hidden below a
+ * 67rem frame) because an app-made run's Name already is its period (K-65), and the detail page
+ * shows it for a named run.
  */
 export function BillingRunsTable({ slug, runs, empty }: BillingRunsTableProps) {
   const columns = useMemo(
@@ -30,7 +35,7 @@ export function BillingRunsTable({ slug, runs, empty }: BillingRunsTableProps) {
         {
           id: "name",
           enableHiding: false,
-          meta: { label: "Name", cellClassName: "whitespace-normal" },
+          meta: { label: "Name", cellClassName: "whitespace-normal", minWidth: "11rem" },
           cell: ({ row }) => (
             <Link
               href={`/org/${slug}/invoices/billing-runs/${row.original.id}`}
@@ -47,7 +52,7 @@ export function BillingRunsTable({ slug, runs, empty }: BillingRunsTableProps) {
         },
         {
           id: "period",
-          meta: { label: "Period", cellClassName: "text-muted-foreground" },
+          meta: { label: "Period", priority: "low", cellClassName: "text-muted-foreground" },
           cell: ({ row }) => (
             <>
               {formatLocalDate(row.original.periodFrom)} &ndash;{" "}

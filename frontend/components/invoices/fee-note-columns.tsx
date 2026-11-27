@@ -7,6 +7,9 @@
  *
  * Labels are the old table's headers. Dates are LocalDates rendered in a client component, so they
  * go through `formatDateInSA` (`DateCell`), which prints the same day the server's `formatDate` did.
+ *
+ * Issue/Due Date have no priority (shown at every width, as before at 1024: the table still fits a
+ * 710px frame with Client ~197px); Currency is `lowest` (shown from an 80rem frame).
  */
 import Link from "next/link";
 import { CreditCard } from "lucide-react";
@@ -44,6 +47,8 @@ export function buildFeeNoteColumns(slug: string): DataTableColumn<InvoiceRespon
       meta: {
         label: "Client",
         cellClassName: "text-muted-foreground whitespace-normal",
+        // A floor for the only wrapping column: with both dates shown it is ~197px at 1024.
+        minWidth: "8rem",
         csv: (row) => row.clientName,
       },
       cell: ({ row }) => row.original.clientName,
@@ -67,7 +72,6 @@ export function buildFeeNoteColumns(slug: string): DataTableColumn<InvoiceRespon
       id: "issueDate",
       meta: {
         label: "Issue Date",
-        priority: "low",
         cellClassName: "text-muted-foreground",
         csv: (row) => csvDate(row.issueDate),
       },
@@ -77,7 +81,6 @@ export function buildFeeNoteColumns(slug: string): DataTableColumn<InvoiceRespon
       id: "dueDate",
       meta: {
         label: "Due Date",
-        priority: "low",
         cellClassName: "text-muted-foreground",
         csv: (row) => csvDate(row.dueDate),
       },

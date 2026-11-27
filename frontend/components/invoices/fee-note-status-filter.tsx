@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { invoiceStatusLabel } from "@/components/invoices/status-badge";
+import { cn } from "@/lib/utils";
 import type { InvoiceStatus } from "@/lib/types";
 
 const PILL_CLASS = "rounded-full px-3 py-1 text-sm transition-colors";
@@ -29,7 +30,7 @@ export function FeeNoteStatusFilter({
       <span className="text-muted-foreground text-sm font-medium">Filter:</span>
       <Link
         href={`/org/${slug}/invoices`}
-        className={`${PILL_CLASS} ${!activeStatus ? PILL_ACTIVE : PILL_IDLE}`}
+        className={cn(PILL_CLASS, !activeStatus ? PILL_ACTIVE : PILL_IDLE)}
       >
         All
       </Link>
@@ -37,7 +38,7 @@ export function FeeNoteStatusFilter({
         <Link
           key={status}
           href={`/org/${slug}/invoices?status=${status}`}
-          className={`${PILL_CLASS} ${activeStatus === status ? PILL_ACTIVE : PILL_IDLE}`}
+          className={cn(PILL_CLASS, activeStatus === status ? PILL_ACTIVE : PILL_IDLE)}
         >
           {invoiceStatusLabel(status)}
         </Link>

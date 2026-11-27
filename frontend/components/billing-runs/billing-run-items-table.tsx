@@ -18,7 +18,13 @@ interface BillingRunItemsTableProps {
 
 const getItemId = (item: BillingRunItem) => item.id;
 
-/** A fee run's items on `DataTable` (Phase 91 666A, client mode; every item, no row click). */
+/**
+ * A fee run's items on `DataTable` (Phase 91 666A, client mode; every item, no row click).
+ *
+ * Fit at 1024 (F-666A-A2): the Time / Disbursement breakdown is `low` (hidden below a 67rem frame;
+ * Total, their sum, stays), Client gets a `12rem` floor and the Failure Reason prose a `10rem` floor,
+ * so no column is pushed past the frame and neither prose column collapses.
+ */
 export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsTableProps) {
   const columns = useMemo(
     () =>
@@ -26,7 +32,11 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
         {
           id: "client",
           enableHiding: false,
-          meta: { label: "Client", cellClassName: "font-medium whitespace-normal" },
+          meta: {
+            label: "Client",
+            cellClassName: "font-medium whitespace-normal",
+            minWidth: "12rem",
+          },
           cell: ({ row }) => row.original.clientName,
         },
         {
@@ -36,14 +46,14 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
         },
         {
           id: "timeAmount",
-          meta: { label: "Time Amount", align: "end" },
+          meta: { label: "Time Amount", align: "end", priority: "low" },
           cell: ({ row }) => (
             <MoneyCell amount={row.original.unbilledTimeAmount} currency={currency} />
           ),
         },
         {
           id: "disbursementAmount",
-          meta: { label: "Disbursement Amount", align: "end" },
+          meta: { label: "Disbursement Amount", align: "end", priority: "low" },
           cell: ({ row }) => (
             <MoneyCell amount={row.original.unbilledExpenseAmount} currency={currency} />
           ),
@@ -80,6 +90,7 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
           meta: {
             label: "Failure Reason",
             cellClassName: "text-muted-foreground whitespace-normal",
+            minWidth: "10rem",
           },
           cell: ({ row }) => row.original.failureReason ?? <EmptyCell />,
         },

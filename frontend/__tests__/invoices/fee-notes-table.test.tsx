@@ -134,13 +134,18 @@ describe("FeeNotesTable", () => {
     expect(cellUnder("Due Date").textContent).toBe("—");
   });
 
-  it("hides Issue/Due Date below a 67rem frame and Currency below 80rem (column priority)", () => {
+  it("always shows Issue/Due Date and hides only Currency below an 80rem frame (column priority)", () => {
     renderTable([invoice()]);
-    expect(cellUnder("Issue Date")).toHaveClass("hidden", "@min-[67rem]:table-cell");
-    expect(cellUnder("Due Date")).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    for (const label of ["Fee note", "Client", "Status", "Issue Date", "Due Date", "Total"]) {
+      expect(cellUnder(label)).not.toHaveClass("hidden");
+    }
     expect(cellUnder("Currency")).toHaveClass("hidden", "@7xl:table-cell");
-    expect(cellUnder("Fee note")).not.toHaveClass("hidden");
-    expect(cellUnder("Total")).not.toHaveClass("hidden");
+  });
+
+  it("gives the wrapping Client column an 8rem floor (header and cells)", () => {
+    renderTable([invoice()]);
+    expect(cellUnder("Client").style.minWidth).toBe("8rem");
+    expect(screen.getByRole("columnheader", { name: "Client" }).style.minWidth).toBe("8rem");
   });
 
   it("renders the empty slot instead of the table", () => {
@@ -162,7 +167,8 @@ describe("FeeNotesTable", () => {
       expect(stub.captured.downloads).toEqual(["fee-notes.csv"]);
 
       const [header, first, second, end] = await csvRecords(stub.captured.blobs[0]);
-      // happy-dom applies no container queries, so every column is visible and exported.
+      // `buildCsv` exports TanStack's visible leaf columns; column priority only hides cells with
+      // CSS (container queries), so all 7 columns are exported at every width.
       expect(header).toBe(HEADERS.join(","));
       expect(first).toBe("INV-0001,Sipho Ndlovu,Sent,1 Oct 2026,31 Oct 2026,9999,ZAR");
       expect(second).toBe("Draft,Sipho Ndlovu,Draft,,31 Oct 2026,0,ZAR");

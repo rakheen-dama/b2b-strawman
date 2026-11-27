@@ -1,0 +1,42 @@
+[2026-11-27T11:57:01Z] start head c4595f9246d41988a109105aa714edbfb0a6f491 node v20.11.1 pnpm 10.26.1
+[2026-11-27T11:57:03Z] B e2e-down rc=0
+[2026-11-27T11:57:04Z] B prune rc=0 :: Total:	36.24MB
+[2026-11-27T11:58:39Z] B e2e-up rc=0 wall=95s build-head=c4595f9246d41988a109105aa714edbfb0a6f491
+[2026-11-27T11:58:39Z] B seed exit=0
+[2026-11-27T11:58:39Z] B health http://localhost:8081/actuator/health ok
+[2026-11-27T11:58:39Z] B health http://localhost:3001/ ok
+[2026-11-27T11:58:39Z] B health http://localhost:8090/.well-known/jwks.json ok
+[2026-11-27T11:58:39Z] B health http://localhost:8026/ ok
+[2026-11-27T11:58:45Z] B portal :3002 pid=59619 ready=yes after 2x5s
+[2026-11-27T11:59:59Z] B-exit-month rc=0 wall=74s ::  16 passed (1.2m) :: flaky/retry lines=0
+[2026-11-27T12:00:02Z] B portal stopped; :3002 listeners now: 0
+[2026-11-27T12:00:02Z] B tree restored; clean removed 0 paths; status lines 1
+[2026-11-27T12:00:05Z] A e2e-down rc=0
+[2026-11-27T12:00:06Z] A prune rc=0 :: Total:	2.203GB
+[2026-11-27T12:00:44Z] A e2e-up rc=0 wall=38s build-head=c4595f9246d41988a109105aa714edbfb0a6f491
+[2026-11-27T12:00:44Z] A seed exit=0
+[2026-11-27T12:00:44Z] A health http://localhost:8081/actuator/health ok
+[2026-11-27T12:00:44Z] A health http://localhost:3001/ ok
+[2026-11-27T12:00:44Z] A health http://localhost:8090/.well-known/jwks.json ok
+[2026-11-27T12:00:44Z] A health http://localhost:8026/ ok
+[2026-11-27T12:03:37Z] A-legal-lifecycle rc=0 wall=173s ::  105 passed (2.9m) :: flaky/retry lines=0
+[2026-11-27T12:05:27Z] A-legal-depth-ii rc=0 wall=110s ::  4 skipped; 40 passed (1.8m) :: flaky/retry lines=0
+[2026-11-27T12:06:28Z] A-default rc=0 wall=61s ::  13 skipped; 167 passed (1.0m) :: flaky/retry lines=0
+[2026-11-27T12:06:28Z] A tree restored; clean removed 25 paths; status lines 1
+[2026-11-27T12:06:28Z] frontend node v20.11.1
+[2026-11-27T12:06:59Z] frontend lint rc=0
+[2026-11-27T12:07:18Z] frontend typecheck rc=0
+[2026-11-27T12:07:34Z] frontend format:check rc=0
+[2026-11-27T12:08:52Z] frontend test rc=0
+[2026-11-27T12:09:22Z] frontend build rc=0
+[2026-11-27T12:09:22Z] frontend vitest ::  Test Files 549 passed (549); Tests 5622 passed | 2 skipped (5624)
+[2026-11-27T12:09:22Z] frontend lint :: ✖ 75 problems (0 errors, 75 warnings)
+[2026-11-27T12:09:22Z] portal node v20.11.1
+[2026-11-27T12:09:26Z] portal lint rc=0
+[2026-11-27T12:09:30Z] portal typecheck rc=0
+[2026-11-27T12:09:32Z] portal format:check rc=0
+[2026-11-27T12:09:38Z] portal test rc=0
+[2026-11-27T12:09:45Z] portal build rc=0
+[2026-11-27T12:09:45Z] portal vitest ::  Test Files 51 passed (51); Tests 293 passed (293)
+[2026-11-27T12:09:45Z] portal lint :: ✖ 4 problems (0 errors, 4 warnings)
+[2026-11-27T12:09:46Z] end BAD=0

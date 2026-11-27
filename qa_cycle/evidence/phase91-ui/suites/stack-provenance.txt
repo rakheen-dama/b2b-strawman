@@ -1,0 +1,28 @@
+# stack B (exit-month, torn down by stack A's e2e-down)
+e2e-seed docteams-e2e-seed 2026-11-27 13:58:06 +0200 SAST Exited (0) 2 seconds ago
+e2e-frontend docteams-e2e-frontend 2026-11-27 13:58:06 +0200 SAST Up 12 seconds (healthy)
+e2e-backend docteams-e2e-backend 2026-11-27 13:58:06 +0200 SAST Up 27 seconds (healthy)
+e2e-localstack localstack/localstack:3 2026-11-27 13:58:06 +0200 SAST Up 33 seconds (healthy)
+e2e-postgres postgres:16-alpine 2026-11-27 13:58:06 +0200 SAST Up 33 seconds (healthy)
+e2e-mailpit axllent/mailpit:latest 2026-11-27 13:58:06 +0200 SAST Up 33 seconds (healthy)
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-27 13:58:06 +0200 SAST Up 33 seconds (healthy)
+e2e-frontend sha256:df65a3425a53a4e49302a674fd3d7c024da094edd3fd613311117e0cc90af738 2026-11-27T11:58:06.417250922Z /Users/rakheendama/Projects/2026/worktree-epic-670A/compose
+e2e-backend sha256:e7fd89e47741f1b954de2456961800f0023839ff69de10f0f5f6ccff14b1a007 2026-11-27T11:58:06.38830163Z /Users/rakheendama/Projects/2026/worktree-epic-670A/compose
+
+# stack A (LEFT RUNNING for Stage M)
+e2e-seed docteams-e2e-seed 2026-11-27 14:00:11 +0200 SAST Exited (0) 2 seconds ago
+e2e-frontend docteams-e2e-frontend 2026-11-27 14:00:10 +0200 SAST Up 12 seconds (healthy)
+e2e-backend docteams-e2e-backend 2026-11-27 14:00:10 +0200 SAST Up 27 seconds (healthy)
+e2e-localstack localstack/localstack:3 2026-11-27 14:00:10 +0200 SAST Up 33 seconds (healthy)
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-27 14:00:10 +0200 SAST Up 33 seconds (healthy)
+e2e-postgres postgres:16-alpine 2026-11-27 14:00:10 +0200 SAST Up 33 seconds (healthy)
+e2e-mailpit axllent/mailpit:latest 2026-11-27 14:00:10 +0200 SAST Up 33 seconds (healthy)
+e2e-frontend sha256:df65a3425a53a4e49302a674fd3d7c024da094edd3fd613311117e0cc90af738 2026-11-27T12:00:10.997859716Z /Users/rakheendama/Projects/2026/worktree-epic-670A/compose
+e2e-backend sha256:e7fd89e47741f1b954de2456961800f0023839ff69de10f0f5f6ccff14b1a007 2026-11-27T12:00:10.972561841Z /Users/rakheendama/Projects/2026/worktree-epic-670A/compose
+
+# build head: c4595f9246d41988a109105aa714edbfb0a6f491
+# image ids now:
+docteams-e2e-frontend df65a3425a53 2026-11-27 13:58:05 +0200 SAST
+docteams-e2e-backend e7fd89e47741 2026-11-25 18:31:26 +0200 SAST
+docteams-e2e-seed f71c398cff13 2026-11-23 00:18:31 +0200 SAST
+docteams-e2e-mock-idp 43583952b3ce 2026-11-12 04:45:16 +0200 SAST

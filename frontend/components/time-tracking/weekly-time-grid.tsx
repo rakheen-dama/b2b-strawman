@@ -141,8 +141,8 @@ export function WeeklyTimeGrid({
   // The week on screen. A load only applies if its week is still the one displayed, so a reload
   // that finishes after the user changed week can never put one week's entries under another.
   const displayedWeek = useRef(initialWeekStart);
-  // While a Save, a week load or a Copy is in flight nothing may change the week; a Copy also
-  // blocks Save, whose reload would otherwise drop the copied values.
+  // While a Save, a week load or a Copy is in flight nothing may change the week, the rows or the
+  // cells; a Copy also blocks Save, whose reload would otherwise drop the copied values.
   const locked = isSaving || isNavigating || isCopying;
 
   function handleCellChange(taskId: string, dayIndex: number, hours: number) {
@@ -337,7 +337,7 @@ export function WeeklyTimeGrid({
   );
 
   function addTask(task: GridTaskRow) {
-    setTaskRows((prev) => [...prev, task]);
+    setTaskRows((prev) => mergeRows(prev, [task]));
     setAddTaskQuery("");
   }
 
@@ -396,8 +396,10 @@ export function WeeklyTimeGrid({
         }
       }
 
+      // Merge against the rows as they are now, not as they were when the copy started: a row added
+      // meanwhile must not be appended twice (two rows would post the same create twice).
       if (newTaskRows.length > 0) {
-        setTaskRows((prev) => [...prev, ...newTaskRows]);
+        setTaskRows((prev) => mergeRows(prev, newTaskRows));
       }
 
       // Overwrite only the cells the previous week had time in. Replacing the whole grid would turn
@@ -456,7 +458,7 @@ export function WeeklyTimeGrid({
     }
 
     if (newTaskRows.length > 0) {
-      setTaskRows((prev) => [...prev, ...newTaskRows]);
+      setTaskRows((prev) => mergeRows(prev, newTaskRows));
     }
 
     // Convert imported rows to MyWorkTimeEntryItem format for buildCellValuesFromEntries
@@ -612,7 +614,7 @@ export function WeeklyTimeGrid({
                         dayIndex={d}
                         value={val}
                         error={cellErrors[key]}
-                        disabled={isSaving}
+                        disabled={locked}
                         onChange={handleCellChange}
                       />
                     </TableCell>
@@ -652,12 +654,13 @@ export function WeeklyTimeGrid({
           placeholder="Add task..."
           value={addTaskQuery}
           onChange={(e) => setAddTaskQuery(e.target.value)}
+          disabled={locked}
           className={cn(
             "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm",
             "focus:ring-2 focus:ring-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950"
           )}
         />
-        {addTaskQuery.length > 0 && availableToAdd.length > 0 && (
+        {!locked && addTaskQuery.length > 0 && availableToAdd.length > 0 && (
           <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
             {availableToAdd.slice(0, 10).map((task) => (
               <button

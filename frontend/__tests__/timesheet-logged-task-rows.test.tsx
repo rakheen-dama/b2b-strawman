@@ -54,6 +54,7 @@ vi.mock("sonner", () => ({
 }));
 
 import TimesheetPage from "@/app/(app)/org/[slug]/my-work/timesheet/page";
+import { WeeklyTimeGrid } from "@/components/time-tracking/weekly-time-grid";
 
 // --- Fixtures ---
 
@@ -389,5 +390,79 @@ describe("Copy Previous Week cannot race Save or a week change", () => {
     expect(screen.getByText("Mar 9 – Mar 15, 2026")).toBeInTheDocument();
     expect(mockFetchWeekEntries).not.toHaveBeenCalled();
     expect(totals()[4]).toBe("1h"); // Fri 13
+  });
+});
+
+describe("Review r1 M1: Add task during an in-flight Copy cannot duplicate a row or a create", () => {
+  const assignedRow = {
+    id: "a1",
+    projectId: "m1",
+    projectName: "Khumalo",
+    title: "Heads of argument",
+  };
+  // Assigned to the user but without a row: the page lists at most five empty assigned tasks.
+  const hidden = {
+    id: "y1",
+    projectId: "m3",
+    projectName: "Pillay Trust",
+    title: "Consult with counsel",
+  };
+
+  it("Add task is disabled while copying; the copied task gets one row and Save posts once", async () => {
+    const user = userEvent.setup();
+    render(
+      <WeeklyTimeGrid
+        tasks={[assignedRow]}
+        existingEntries={[]}
+        weekStart="2026-03-09"
+        allTasks={[assignedRow, hidden]}
+        slug="acme"
+      />
+    );
+    let release: (entries: MyWorkTimeEntryItem[]) => void = () => {};
+    mockFetchPreviousWeekEntries.mockImplementationOnce(
+      () => new Promise<MyWorkTimeEntryItem[]>((resolve) => (release = resolve))
+    );
+    mockSaveWeeklyEntries.mockResolvedValue(okBatch(1));
+
+    const addInput = screen.getByPlaceholderText("Add task...");
+    await user.type(addInput, "Consult"); // the option is offered before the copy starts
+    expect(screen.getByRole("button", { name: /Consult with counsel/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Copy Previous Week/ }));
+    await waitFor(() => expect(mockFetchPreviousWeekEntries).toHaveBeenCalledTimes(1));
+
+    // While the copy is in flight the task can't be added and the cells can't be edited.
+    expect(addInput).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /Consult with counsel/ })).toBeNull();
+    expect(cell("Heads of argument", 1)).toBeDisabled();
+
+    release([entry("p1", "y1", "2026-03-03", 60)]); // previous Tue 3 → Tue 10
+    await waitFor(() => expect(cell("Consult with counsel", 2).value).toBe("1"));
+    expect(screen.getAllByText("Consult with counsel")).toHaveLength(1);
+
+    await clickSave(user);
+    await waitFor(() => expect(mockSaveWeeklyEntries).toHaveBeenCalledTimes(1));
+    expect(mockSaveWeeklyEntries.mock.calls[0][1]).toEqual([
+      { taskId: "y1", date: "2026-03-10", durationMinutes: 60, billable: true },
+    ]);
+  });
+
+  it("cells are disabled while a week loads", async () => {
+    const user = userEvent.setup();
+    await renderPage("2026-03-09", WEEK_1);
+    let release: (entries: MyWorkTimeEntryItem[]) => void = () => {};
+    mockFetchWeekEntries.mockImplementationOnce(
+      () => new Promise<MyWorkTimeEntryItem[]>((resolve) => (release = resolve))
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next week" }));
+    await waitFor(() => expect(screen.getByText("Loading...")).toBeInTheDocument());
+    expect(cell("Heads of argument", 1)).toBeDisabled();
+    expect(screen.getByPlaceholderText("Add task...")).toBeDisabled();
+
+    release(WEEK_2);
+    await waitFor(() => expect(cell("Consult with counsel", 2).value).toBe("2"));
+    expect(cell("Consult with counsel", 2)).not.toBeDisabled();
   });
 });

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks (before component imports) ---
@@ -125,6 +125,31 @@ describe("AdversePartyRegistryClient", () => {
     // "Person" only appears as badge text (dropdown uses "Natural Person")
     expect(screen.getByText("Person")).toBeInTheDocument();
     expect(screen.getByText("8501015800087")).toBeInTheDocument();
+  });
+
+  it("puts adverse-party-table on the <table>, one body row per party", () => {
+    const parties: AdverseParty[] = [
+      makeAdverseParty({ id: "ap-1", name: "Alpha Party" }),
+      makeAdverseParty({ id: "ap-2", name: "Beta Party" }),
+    ];
+    render(<AdversePartyRegistryClient initialParties={parties} initialTotal={2} slug="acme" />);
+    const table = screen.getByTestId("adverse-party-table");
+    expect(table.tagName).toBe("TABLE");
+    // header + 2 parties
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((h) => h.textContent)
+    ).toEqual(["Name", "ID Number", "Reg. Number", "Type", "Links", "Actions"]);
+    expect(screen.getByText("2 parties")).toBeInTheDocument();
+  });
+
+  it("shows an inline empty line and no adverse-party-table when there are no parties", () => {
+    render(<AdversePartyRegistryClient initialParties={[]} initialTotal={0} slug="acme" />);
+    expect(screen.getByText("No adverse parties found.").tagName).toBe("P");
+    expect(screen.queryByTestId("adverse-party-table")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 });
 

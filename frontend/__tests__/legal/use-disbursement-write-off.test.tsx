@@ -15,6 +15,8 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
   restoreDisbursementAction: (...args: unknown[]) => mockRestore(...args),
 }));
 vi.mock("sonner", () => ({ toast: { success: mockToastSuccess, error: mockToastError } }));
+// DisbursementListView renders the kit DataTable, which calls useRouter().
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { CapabilityProvider } from "@/lib/capabilities";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";

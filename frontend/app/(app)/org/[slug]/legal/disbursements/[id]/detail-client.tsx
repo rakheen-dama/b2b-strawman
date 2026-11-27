@@ -26,7 +26,7 @@ import {
   canOfferWriteOff,
 } from "@/components/legal/disbursement-write-off-dialog";
 import { useUnbilledDisbursementsSummaryCache } from "@/components/legal/unbilled-disbursements-summary";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { SERVER_ACTION_FILE_MAX_LABEL, fileTooLargeError } from "@/lib/server-action-upload";
 import {
   restoreDisbursementAction,
@@ -170,7 +170,7 @@ export function DisbursementDetailClient({
       <div>
         <Link
           href={`/org/${slug}/legal/disbursements`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm transition-colors"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Disbursements
@@ -180,7 +180,8 @@ export function DisbursementDetailClient({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
+            {/* DA-1 exception: badges sit beside the h1, which PageHeader cannot hold; same title recipe. */}
+            <h1 className="font-display text-foreground text-2xl font-semibold tracking-tight">
               {categoryLabel(disbursement.category)}
             </h1>
             {approvalStatusBadge(disbursement.approvalStatus)}
@@ -198,8 +199,8 @@ export function DisbursementDetailClient({
               </>
             )}
           </p>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Incurred {disbursement.incurredDate}
+          <p className="text-muted-foreground mt-1 text-sm">
+            Incurred {formatLocalDate(disbursement.incurredDate)}
           </p>
         </div>
 
@@ -267,10 +268,22 @@ export function DisbursementDetailClient({
             <CardTitle className="text-sm font-medium">Financial summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Row label="Amount (excl VAT)" value={formatCurrency(disbursement.amount, "ZAR")} />
+            <Row
+              label="Amount (excl VAT)"
+              value={formatCurrency(disbursement.amount, "ZAR")}
+              mono
+            />
+            {/* K-80(c): mono on the money only, not on the treatment label. */}
             <Row
               label="VAT"
-              value={`${formatCurrency(disbursement.vatAmount, "ZAR")} — ${VAT_TREATMENT_LABEL[disbursement.vatTreatment]}`}
+              value={
+                <>
+                  <span className="font-mono tabular-nums">
+                    {formatCurrency(disbursement.vatAmount, "ZAR")}
+                  </span>{" "}
+                  — {VAT_TREATMENT_LABEL[disbursement.vatTreatment]}
+                </>
+              }
             />
             <Row label="Total (incl VAT)" value={formatCurrency(inclVat, "ZAR")} emphasize />
             <Row label="Payment Source" value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]} />
@@ -283,7 +296,7 @@ export function DisbursementDetailClient({
                 value={
                   <Link
                     href={`/org/${slug}/trust-accounting/transactions?highlight=${encodeURIComponent(disbursement.trustTransactionId)}`}
-                    className="font-mono text-xs text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+                    className="font-mono text-xs text-(--button-accent) hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
                     data-testid="trust-tx-link"
                   >
                     {disbursement.trustTransactionId}
@@ -402,23 +415,28 @@ export function DisbursementDetailClient({
   );
 }
 
+/** A Financial-summary line; `mono` / `emphasize` are for money values only (K-80(c)). */
 function Row({
   label,
   value,
   emphasize,
+  mono,
 }: {
   label: string;
   value: React.ReactNode;
   emphasize?: boolean;
+  mono?: boolean;
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
+      <span className="text-muted-foreground">{label}</span>
       <span
         className={
           emphasize
             ? "font-mono font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-            : "text-right font-mono text-slate-700 tabular-nums dark:text-slate-300"
+            : mono
+              ? "text-right font-mono text-slate-700 tabular-nums dark:text-slate-300"
+              : "text-right text-slate-700 dark:text-slate-300"
         }
       >
         {value}

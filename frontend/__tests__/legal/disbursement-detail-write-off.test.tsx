@@ -26,7 +26,7 @@ import {
   UnbilledDisbursementsSummary,
   unbilledDisbursementsSummaryKey,
 } from "@/components/legal/unbilled-disbursements-summary";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   DisbursementResponse,
   UnbilledDisbursementsResponse,
@@ -78,6 +78,55 @@ function renderDetail(disbursement: DisbursementResponse, canWriteOff = true) {
   );
   return screen.getByTestId("disbursement-detail");
 }
+
+describe("DisbursementDetailClient frame (669A)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  /** A Financial-summary row's value span, found by its label. */
+  function valueOf(label: string): HTMLElement {
+    const labelEl = screen.getAllByText(label).find((el) => el.nextElementSibling !== null);
+    if (!(labelEl?.nextElementSibling instanceof HTMLElement)) throw new Error(`No ${label} row`);
+    return labelEl.nextElementSibling;
+  }
+
+  it("keeps one h1 (the category, K-80(a) backlog) on the PageHeader title recipe (DA-1)", () => {
+    renderDetail(makeDisbursement());
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Sheriff Fees");
+    expect(headings[0]).toHaveClass("text-2xl", "font-semibold", "tracking-tight");
+    expect(headings[0]).not.toHaveClass("font-bold");
+  });
+
+  it("prints the incurred date day-first (K-79)", () => {
+    const detail = renderDetail(makeDisbursement());
+    expect(detail).toHaveTextContent(`Incurred ${formatLocalDate("2026-10-01")}`);
+    expect(detail).not.toHaveTextContent("Incurred 2026-10-01");
+  });
+
+  it("sets money in mono and text values in the body face (K-80(c))", () => {
+    renderDetail(makeDisbursement());
+    expect(valueOf("Amount (excl VAT)")).toHaveClass("font-mono");
+    expect(valueOf("Total (incl VAT)")).toHaveClass("font-mono");
+    expect(valueOf("Payment Source")).toHaveTextContent("Office Account");
+    expect(valueOf("Payment Source")).not.toHaveClass("font-mono");
+    const vat = valueOf("VAT");
+    expect(vat).not.toHaveClass("font-mono");
+    const vatMoney = vat.querySelector("span");
+    expect(vatMoney?.textContent).toBe(formatCurrency(0, "ZAR"));
+    expect(vatMoney).toHaveClass("font-mono");
+  });
+
+  it("draws the trust-transaction link in the accent token, text unchanged (K-37)", () => {
+    renderDetail(makeDisbursement({ paymentSource: "TRUST_ACCOUNT", trustTransactionId: "tx-1" }));
+    const link = screen.getByTestId("trust-tx-link");
+    expect(link).toHaveTextContent("tx-1");
+    expect(link).toHaveClass("text-(--button-accent)", "font-mono");
+    expect(link).not.toHaveClass("text-teal-600");
+  });
+});
 
 describe("DisbursementDetailClient write-off / undo", () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatComplianceDateWithTime } from "@/lib/format";
+import { formatComplianceDate, formatComplianceDateWithTime } from "@/lib/format";
 
 // C3 (Phase 89 631B, ADR-358): compliance/requests/[id] is server-rendered on a UTC Node runtime.
 // A zone-less formatter printed the UTC wall clock there. The helper must print South African time
@@ -54,3 +54,19 @@ describe("formatComplianceDateWithTime (input handling)", () => {
     expect(formatComplianceDateWithTime("not-a-date")).toBe("");
   });
 });
+
+// K-68: 2026-11-25T22:25Z is 26 Nov 00:25 SAST — the requests list and the timeline must say 26 Nov
+// (the header's "Requested:" line already does, through formatComplianceDateWithTime).
+const K68_INSTANT = "2026-11-25T22:25:00Z";
+
+describe.each(["UTC", "Pacific/Kiritimati", "America/New_York"])(
+  "formatComplianceDate under TZ=%s",
+  (zone) => {
+    it("renders the South African calendar day", () => {
+      const sast = inZone("Africa/Johannesburg", () => formatComplianceDate(K68_INSTANT));
+      const actual = inZone(zone, () => formatComplianceDate(K68_INSTANT));
+      expect(actual).toBe(sast);
+      expect(actual).toContain("26 Nov 2026");
+    });
+  }
+);

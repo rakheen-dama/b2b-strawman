@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { Download, FileText } from "lucide-react";
 import { ModuleGate } from "@/components/module-gate";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@b2mash/ui/button";
 import {
   Table,
@@ -119,11 +120,13 @@ function ProjectStatementsTabInner({ projectId, slug, projectName }: ProjectStat
           Failed to load statements. {error instanceof Error && error.message ? error.message : ""}
         </div>
       ) : isEmpty ? (
-        <div
-          data-testid="statements-empty"
-          className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900"
-        >
-          No statements have been generated for this matter yet.
+        <div data-testid="statements-empty">
+          <EmptyState
+            variant="inline"
+            icon={FileText}
+            title="No statements have been generated for this matter yet."
+            description={null}
+          />
         </div>
       ) : (
         <Table>

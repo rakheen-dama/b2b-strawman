@@ -3,9 +3,11 @@
 import { useState, useTransition, useCallback } from "react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Copy, ChevronRight, ChevronDown } from "lucide-react";
+import { BookOpen, Copy, ChevronRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatLocalDate } from "@/lib/format";
+import { EmptyState } from "@/components/empty-state";
 import { TariffItemBrowser } from "@/components/legal/tariff-item-browser";
 import { fetchTariffSchedules, cloneSchedule } from "./actions";
 import type { TariffSchedule } from "@/lib/types";
@@ -55,16 +57,19 @@ export function TariffBrowserClient({
   return (
     <div data-testid="tariff-browser" className="space-y-4">
       {/* Count */}
-      <div className="text-sm text-slate-500 dark:text-slate-400">
+      <div className="text-muted-foreground text-sm">
         {total} schedule{total !== 1 ? "s" : ""}
       </div>
 
       {/* Schedule list */}
       <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
         {schedules.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">No tariff schedules found.</p>
-          </div>
+          <EmptyState
+            variant="inline"
+            icon={BookOpen}
+            title="No tariff schedules found."
+            description={null}
+          />
         ) : (
           <div className="space-y-2">
             {schedules.map((schedule) => (
@@ -91,18 +96,20 @@ export function TariffBrowserClient({
                       <span className="font-medium text-slate-900 dark:text-slate-100">
                         {schedule.name}
                       </span>
-                      <Badge variant="neutral" className="text-xs">
-                        {schedule.code}
-                      </Badge>
+                      {schedule.code && (
+                        <Badge variant="neutral" className="text-xs">
+                          {schedule.code}
+                        </Badge>
+                      )}
                       {schedule.active && (
                         <Badge className="bg-teal-100 text-xs text-teal-700 dark:bg-teal-900 dark:text-teal-300">
                           Active
                         </Badge>
                       )}
                     </div>
-                    <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                      Effective from {schedule.effectiveFrom}
-                      {schedule.effectiveTo && ` to ${schedule.effectiveTo}`}
+                    <div className="text-muted-foreground mt-0.5 text-xs">
+                      Effective from {formatLocalDate(schedule.effectiveFrom)}
+                      {schedule.effectiveTo && ` to ${formatLocalDate(schedule.effectiveTo)}`}
                       {" \u00b7 "}
                       {schedule.itemCount} item{schedule.itemCount !== 1 ? "s" : ""}
                     </div>

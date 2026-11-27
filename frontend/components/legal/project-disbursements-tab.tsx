@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { ModuleGate } from "@/components/module-gate";
@@ -28,7 +27,6 @@ export function ProjectDisbursementsTab({
   slug,
   canManage: _canManage,
 }: ProjectDisbursementsTabProps) {
-  const router = useRouter();
   const [editTarget, setEditTarget] = useState<DisbursementResponse | null>(null);
 
   const { data, isLoading, mutate } = useSWR(
@@ -81,7 +79,7 @@ export function ProjectDisbursementsTab({
         ) : (
           <DisbursementListView
             disbursements={disbursements}
-            onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
+            rowHref={(d) => `/org/${slug}/legal/disbursements/${d.id}`}
             onEdit={setEditTarget}
             onWriteOff={writeOff.onWriteOff}
             onRestore={writeOff.onRestore}

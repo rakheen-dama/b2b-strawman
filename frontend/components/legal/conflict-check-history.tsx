@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect, useRef } from "react";
+import { useState, useTransition, useCallback, useEffect, useMemo, useRef } from "react";
+import { History } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
+import { DateCell } from "@/components/data-table/cells";
+import { EmptyState } from "@/components/empty-state";
 import { ResolveConflictDialog } from "@/components/legal/resolve-conflict-dialog";
 import {
   fetchConflictChecks,
@@ -89,6 +94,58 @@ export function ConflictCheckHistory({
     refetch();
   }, [resultFilter, typeFilter, refetch]);
 
+  const columns = useMemo(
+    () =>
+      defineColumns<ConflictCheck>([
+        {
+          id: "date",
+          meta: { label: "Date", cellClassName: "text-muted-foreground" },
+          // DA-8: client-rendered dates on the South African calendar (formatDateInSA).
+          cell: ({ row }) => <DateCell value={row.original.checkedAt} />,
+        },
+        {
+          id: "checkedName",
+          enableHiding: false,
+          meta: {
+            label: "Checked Name",
+            cellClassName: "text-foreground font-medium whitespace-normal",
+          },
+          cell: ({ row }) => row.original.checkedName,
+        },
+        {
+          id: "type",
+          meta: { label: "Type", cellClassName: "text-muted-foreground" },
+          cell: ({ row }) => row.original.checkType.replace(/_/g, " "),
+        },
+        {
+          id: "result",
+          meta: { label: "Result" },
+          cell: ({ row }) => resultBadge(row.original.result),
+        },
+        {
+          id: "resolution",
+          meta: { label: "Resolution", cellClassName: "text-muted-foreground whitespace-normal" },
+          cell: ({ row }) => resolutionLabel(row.original.resolution),
+        },
+        {
+          id: "actions",
+          enableHiding: false,
+          meta: { label: "Actions", align: "end" },
+          cell: ({ row }) =>
+            row.original.result !== "NO_CONFLICT" && !row.original.resolution ? (
+              <button
+                type="button"
+                className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+                onClick={() => setResolveTarget(row.original)}
+              >
+                Resolve
+              </button>
+            ) : null,
+        },
+      ]),
+    []
+  );
+
   return (
     <div data-testid="conflict-check-history" className="space-y-4">
       {/* Filters */}
@@ -115,75 +172,28 @@ export function ConflictCheckHistory({
           <option value="PERIODIC_REVIEW">Periodic Review</option>
         </select>
 
-        <span className="ml-auto text-sm text-slate-500 dark:text-slate-400">
+        <span className="text-muted-foreground ml-auto text-sm">
           {total} check{total !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* Table */}
-      <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
-        {checks.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">No conflict checks found.</p>
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Checked Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Result
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Resolution
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {checks.map((check) => (
-                <tr
-                  key={check.id}
-                  className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
-                >
-                  <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
-                    {new Date(check.checkedAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                    {check.checkedName}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {check.checkType.replace(/_/g, " ")}
-                  </td>
-                  <td className="px-4 py-3">{resultBadge(check.result)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {resolutionLabel(check.resolution)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {check.result !== "NO_CONFLICT" && !check.resolution && (
-                      <button
-                        className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-                        onClick={() => setResolveTarget(check)}
-                      >
-                        Resolve
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className={cn(isPending && "opacity-50 transition-opacity")}>
+        <DataTable
+          columns={columns}
+          data={checks}
+          getRowId={(check) => check.id}
+          columnVisibility={false}
+          stickyHeader={false}
+          empty={
+            <EmptyState
+              variant="inline"
+              icon={History}
+              title="No conflict checks found."
+              description={null}
+            />
+          }
+        />
       </div>
 
       {resolveTarget && (

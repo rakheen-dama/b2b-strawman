@@ -111,8 +111,9 @@ export function formatLocalDate(yyyyMmDd: string): string {
 }
 
 /**
- * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026").
- * (Staff-app helper, retained.)
+ * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026") on the South African
+ * calendar, whatever the runtime zone (K-68: a request logged 00:00–01:59 SAST printed the previous
+ * day on the UTC SSR server). (Staff-app helper, retained.)
  */
 export function formatComplianceDate(isoString: string): string {
   const d = new Date(isoString);
@@ -121,6 +122,7 @@ export function formatComplianceDate(isoString: string): string {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: KAZI_TIME_ZONE,
   });
 }
 

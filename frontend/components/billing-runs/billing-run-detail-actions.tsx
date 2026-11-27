@@ -43,7 +43,7 @@ export function BillingRunDetailActions({
     try {
       const result = await cancelBillingRunAction(slug, billingRunId);
       if (!result.success) {
-        setError(result.error ?? "Failed to cancel billing run.");
+        setError(result.error ?? "Failed to cancel fee run.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -101,7 +101,7 @@ export function BillingRunDetailActions({
                   <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <AlertDialogTitle className="text-center">Cancel Billing Run</AlertDialogTitle>
+              <AlertDialogTitle className="text-center">Cancel fee run</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
                 Are you sure you want to cancel this billing run? This action cannot be undone. Any
                 generated fee notes will remain but the run will be marked as cancelled.

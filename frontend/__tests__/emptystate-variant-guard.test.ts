@@ -15,10 +15,6 @@ const SHARED_MODULE = "components/empty-state";
 
 /** File (relative to `frontend/`) → the Phase 91 slice that sets its variants and deletes the line. */
 const ALLOWLIST: Record<string, string> = {
-  // 666A — Fee notes
-  "app/(app)/org/[slug]/invoices/page.tsx": "666A",
-  "app/(app)/org/[slug]/invoices/billing-runs/page.tsx": "666A",
-  "app/(app)/org/[slug]/invoices/unbilled/page.tsx": "666A",
   // 668A — Diary, notifications
   "app/(app)/org/[slug]/diary/diary-page-client.tsx": "668A",
   "components/notifications/notifications-page-client.tsx": "668A",

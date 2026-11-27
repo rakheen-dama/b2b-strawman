@@ -79,7 +79,7 @@ export async function getBillingRunAction(billingRunId: string): Promise<GetBill
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to load billing run." };
+    return { success: false, error: "Failed to load fee run." };
   }
 }
 

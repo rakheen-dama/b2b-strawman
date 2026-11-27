@@ -52,7 +52,7 @@ export async function createBillingRunAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to create billing run." };
+    return { success: false, error: "Failed to create fee run." };
   }
 }
 

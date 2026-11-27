@@ -1,7 +1,17 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { BillingRunStatusBadge } from "@/components/billing-runs/billing-run-status-badge";
 import { BillingRunItemStatusBadge } from "@/components/billing-runs/billing-run-item-status-badge";
+import { BillingRunsTable } from "@/components/billing-runs/billing-runs-table";
+import { formatCurrency } from "@/lib/format";
+import type { BillingRun } from "@/lib/api/billing-runs";
+
+// BillingRunsTable is a DataTable, which calls useRouter().
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  usePathname: () => "/org/acme/invoices/billing-runs",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 afterEach(() => {
   cleanup();
@@ -98,5 +108,73 @@ describe("BillingRunItemStatusBadge", () => {
     });
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveAttribute("data-variant", "neutral");
+  });
+});
+
+// Phase 91 666A: the Fee runs list on DataTable (client mode, no row click, no CSV).
+describe("BillingRunsTable", () => {
+  const run = (overrides: Partial<BillingRun> = {}): BillingRun => ({
+    id: "run-1",
+    name: "March run",
+    status: "COMPLETED",
+    periodFrom: "2026-03-01",
+    periodTo: "2026-03-31",
+    currency: "ZAR",
+    includeExpenses: true,
+    totalClients: 2,
+    totalInvoices: 2,
+    totalAmount: 6468.75,
+    totalSent: 0,
+    totalFailed: 0,
+    createdBy: "m-1",
+    // 23:30 UTC on 31 March is 1 April on the South African calendar.
+    createdAt: "2026-03-31T23:30:00Z",
+    updatedAt: "2026-03-31T23:40:00Z",
+    completedAt: null,
+    ...overrides,
+  });
+
+  it("renders the old headers and each run's cells", () => {
+    render(<BillingRunsTable slug="acme" runs={[run()]} empty={<p>none</p>} />);
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual([
+      "Name",
+      "Status",
+      "Period",
+      "Clients",
+      "Fee notes",
+      "Total",
+      "Created",
+    ]);
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    expect(screen.getByRole("link", { name: "March run" })).toHaveAttribute(
+      "href",
+      "/org/acme/invoices/billing-runs/run-1"
+    );
+    expect(cells[2].textContent).toBe("01 Mar 2026 – 31 Mar 2026");
+    expect(cells[5].textContent).toBe(formatCurrency(6468.75, "ZAR"));
+    expect(cells[6].textContent).toBe("1 Apr 2026");
+    expect(screen.queryByRole("button", { name: "Export CSV" })).not.toBeInTheDocument();
+  });
+
+  it("titles an unnamed run by its period (K-65) and dashes missing totals", () => {
+    render(
+      <BillingRunsTable
+        slug="acme"
+        runs={[run({ name: null as unknown as string, totalClients: null, totalAmount: null })]}
+        empty={<p>none</p>}
+      />
+    );
+    expect(
+      screen.getByRole("link", { name: "Fee run · 01 Mar 2026 – 31 Mar 2026" })
+    ).toBeInTheDocument();
+    const cells = within(screen.getAllByRole("row")[1]).getAllByRole("cell");
+    expect(cells[3].textContent).toBe("—");
+    expect(cells[5].textContent).toBe("—");
+  });
+
+  it("renders the empty slot instead of the table", () => {
+    render(<BillingRunsTable slug="acme" runs={[]} empty={<p>No fixture runs.</p>} />);
+    expect(screen.getByText("No fixture runs.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 });

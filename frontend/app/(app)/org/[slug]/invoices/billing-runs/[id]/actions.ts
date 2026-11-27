@@ -34,7 +34,7 @@ export async function cancelBillingRunAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to cancel billing run." };
+    return { success: false, error: "Failed to cancel fee run." };
   }
 }
 

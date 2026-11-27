@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import { formatCurrency } from "@/lib/format";
 
 // Mock server-only
 vi.mock("server-only", () => ({}));
@@ -94,6 +95,21 @@ describe("BillingRunSummaryCards", () => {
     expect(screen.getByText("Failed")).toBeInTheDocument();
     expect(screen.getByText("Total Amount")).toBeInTheDocument();
   });
+
+  // Phase 91 666A: five kit StatCards in a container-query grid (no 5-up at a 712px column).
+  it("renders five kit StatCards labelled as before, in a container-query grid", () => {
+    render(<BillingRunSummaryCards billingRun={mockBillingRun} />);
+    const cards = screen.getAllByRole("group");
+    expect(cards).toHaveLength(5);
+    const total = screen.getByRole("group", { name: "Total Amount" });
+    expect(total.querySelector('[data-slot="stat-card-value"]')?.textContent).toBe(
+      formatCurrency(125000, "ZAR")
+    );
+    const grid = cards[0].parentElement;
+    expect(grid).toHaveClass("@5xl:grid-cols-5");
+    expect(grid).not.toHaveClass("lg:grid-cols-5");
+    expect(grid?.parentElement).toHaveClass("@container");
+  });
 });
 
 describe("BillingRunItemsTable", () => {
@@ -114,7 +130,17 @@ describe("BillingRunItemsTable", () => {
   it("shows empty state when no items", () => {
     render(<BillingRunItemsTable items={[]} currency="ZAR" slug="test-org" />);
 
-    expect(screen.getByText("No items in this billing run.")).toBeInTheDocument();
+    expect(screen.getByText("No items in this fee run.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  // K-34: the item link uses the accent token, not the hard-coded teal-600.
+  it("links a generated item's fee note with the accent token", () => {
+    render(<BillingRunItemsTable items={mockItems} currency="ZAR" slug="test-org" />);
+    const link = screen.getByRole("link", { name: "View fee note" });
+    expect(link).toHaveAttribute("href", "/org/test-org/invoices/inv-1");
+    expect(link).toHaveClass("text-(--button-accent)");
+    expect(link).not.toHaveClass("text-teal-600");
   });
 });
 

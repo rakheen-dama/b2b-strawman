@@ -1,3 +1,4 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { isModuleEnabledServer } from "@/lib/api/settings";
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
@@ -15,7 +16,12 @@ export default async function NewBillingRunPage({
 
   // Server-side module gate — short-circuit before any further work.
   if (!(await isModuleEnabledServer("bulk_billing"))) {
-    return <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />;
+    return (
+      <div className="space-y-8">
+        <PageHeader title="New fee run" />
+        <ModuleDisabledFallback moduleName="Bulk fee runs" slug={slug} />
+      </div>
+    );
   }
 
   const caps = await fetchMyCapabilities();
@@ -24,9 +30,9 @@ export default async function NewBillingRunPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New fee run</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to create billing runs. Only admins and owners can access this
+        <PageHeader title="New fee run" />
+        <p className="text-muted-foreground">
+          You do not have permission to create fee runs. Only admins and owners can access this
           page.
         </p>
       </div>
@@ -35,7 +41,7 @@ export default async function NewBillingRunPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New fee run</h1>
+      <PageHeader title="New fee run" />
       <BillingRunWizard slug={slug} billingRunId={search.billingRunId} />
     </div>
   );

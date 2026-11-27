@@ -1,10 +1,12 @@
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listBillingRuns } from "@/lib/api/billing-runs";
 import type { BillingRun } from "@/lib/api/billing-runs";
 import { isModuleEnabledServer } from "@/lib/api/settings";
-import { BillingRunStatusBadge } from "@/components/billing-runs/billing-run-status-badge";
+import { BillingRunsTable } from "@/components/billing-runs/billing-runs-table";
+import { billingRunTitle } from "@/components/billing-runs/billing-run-title";
+import { FeeNotesSubNav } from "@/components/invoices/fee-notes-sub-nav";
 import { EmptyState } from "@/components/empty-state";
-import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { Layers, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@b2mash/ui/button";
@@ -15,7 +17,12 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
 
   // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
   if (!(await isModuleEnabledServer("bulk_billing"))) {
-    return <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />;
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Fee runs" />
+        <ModuleDisabledFallback moduleName="Bulk fee runs" slug={slug} />
+      </div>
+    );
   }
 
   const caps = await fetchMyCapabilities();
@@ -24,10 +31,9 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee runs</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view billing runs. Only admins and owners can access this
-          page.
+        <PageHeader title="Fee runs" />
+        <p className="text-muted-foreground">
+          You do not have permission to view fee runs. Only admins and owners can access this page.
         </p>
       </div>
     );
@@ -50,32 +56,19 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee runs</h1>
-        <Button asChild size="sm">
-          <Link href={`/org/${slug}/invoices/billing-runs/new`}>
-            <Plus className="mr-1.5 size-4" />
-            New Billing Run
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Fee runs"
+        actions={
+          <Button asChild size="sm">
+            <Link href={`/org/${slug}/invoices/billing-runs/new`}>
+              <Plus className="mr-1.5 size-4" />
+              New fee run
+            </Link>
+          </Button>
+        }
+      />
 
-      {/* Tab Navigation */}
-      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800">
-        <Link
-          href={`/org/${slug}/invoices`}
-          className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-        >
-          Fee notes
-        </Link>
-        <Link
-          href={`/org/${slug}/invoices/billing-runs`}
-          className="border-b-2 border-slate-900 px-4 py-2 text-sm font-medium text-slate-900 dark:border-slate-100 dark:text-slate-100"
-        >
-          Fee runs
-        </Link>
-      </div>
+      <FeeNotesSubNav slug={slug} current="fee-runs" />
 
       {/* Active Run Banner */}
       {activeRun && (
@@ -83,10 +76,10 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
           <AlertCircle className="size-5 text-amber-600 dark:text-amber-400" />
           <div className="flex-1">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-              Active billing run in progress
+              Active fee run in progress
             </p>
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              &ldquo;{activeRun.name}&rdquo; is currently{" "}
+              &ldquo;{billingRunTitle(activeRun)}&rdquo; is currently{" "}
               {activeRun.status === "PREVIEW" ? "in preview" : "in progress"}.
             </p>
           </div>
@@ -96,83 +89,20 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
         </div>
       )}
 
-      {/* Billing Runs Table or Empty State */}
-      {billingRuns.length === 0 ? (
-        <EmptyState
-          icon={Layers}
-          title="No fee runs yet"
-          description="Start a fee run to generate fee notes for multiple clients at once."
-          actionLabel="New Billing Run"
-          actionHref={`/org/${slug}/invoices/billing-runs/new`}
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Status
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Period
-                </th>
-                <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
-                  Clients
-                </th>
-                <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
-                  Fee notes
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Total
-                </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {billingRuns.map((run) => (
-                <tr
-                  key={run.id}
-                  className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/org/${slug}/invoices/billing-runs/${run.id}`}
-                      className="font-medium text-slate-950 hover:underline dark:text-slate-50"
-                    >
-                      {run.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <BillingRunStatusBadge status={run.status} />
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                    {formatLocalDate(run.periodFrom)} &ndash; {formatLocalDate(run.periodTo)}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right text-sm text-slate-600 md:table-cell dark:text-slate-400">
-                    {run.totalClients ?? "\u2014"}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right text-sm text-slate-600 md:table-cell dark:text-slate-400">
-                    {run.totalInvoices ?? "\u2014"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {run.totalAmount != null
-                      ? formatCurrency(run.totalAmount, run.currency)
-                      : "\u2014"}
-                  </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 lg:table-cell dark:text-slate-400">
-                    {formatLocalDate(run.createdAt.substring(0, 10))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <BillingRunsTable
+        slug={slug}
+        runs={billingRuns}
+        empty={
+          <EmptyState
+            variant="default"
+            icon={Layers}
+            title="No fee runs yet"
+            description="Start a fee run to generate fee notes for multiple clients at once."
+            actionLabel="New fee run"
+            actionHref={`/org/${slug}/invoices/billing-runs/new`}
+          />
+        }
+      />
     </div>
   );
 }

@@ -152,3 +152,75 @@ describe("LedgerTotalsBreakdown — brought forward at take-on (657A)", () => {
     expect(sign("deposits")).toBe("");
   });
 });
+
+// Phase 91 667A: the client ledger page shows the same figures as a compact kit StatCard row. Each
+// tile keeps its testid and holds only its amount in a `dd` (e2e reads `ledger-total-*` → `dd`).
+describe("LedgerTotalsBreakdown — tiles layout (667A)", () => {
+  const tile = (key: string) => screen.getByTestId(`ledger-total-${key}`);
+  const amount = (key: string) => tile(key).querySelector("dd")!.textContent;
+  const label = (key: string) =>
+    tile(key).querySelector("[data-slot='stat-card-label']")!.textContent;
+
+  it("renders every visible figure as a compact tile with the list's labels and a dd", () => {
+    render(<LedgerTotalsBreakdown ledger={LEDGER} layout="tiles" />);
+
+    const root = screen.getByTestId("ledger-totals-breakdown");
+    expect(root.tagName).toBe("DL");
+    const tiles = root.querySelectorAll("[data-slot='stat-card']");
+    expect(Array.from(tiles).map((t) => t.getAttribute("data-testid"))).toEqual([
+      "ledger-total-deposits",
+      "ledger-total-payments",
+      "ledger-total-fee-transfers",
+      "ledger-total-refunds",
+      "ledger-total-balance",
+    ]);
+    for (const t of Array.from(tiles)) expect(t).toHaveAttribute("data-variant", "compact");
+    expect(label("deposits")).toBe("Deposits");
+    expect(label("payments")).toBe("Payments");
+    expect(label("fee-transfers")).toBe("Fee transfers");
+    expect(label("balance")).toBe("Balance");
+    expect(amount("deposits")).toBe(formatCurrency(5000, "ZAR"));
+    expect(amount("payments")).toBe(formatCurrency(1250, "ZAR"));
+    expect(amount("balance")).toBe(formatCurrency(3750, "ZAR"));
+    // No list markup in the tiles layout
+    expect(root.querySelector("dt")).toBeNull();
+    expect(screen.queryByTestId("ledger-total-invested")).toBeNull();
+    expect(screen.queryByTestId("ledger-total-held")).toBeNull();
+  });
+
+  it("shows the general balance, the invested figure and the total held while invested", () => {
+    render(
+      <LedgerTotalsBreakdown
+        ledger={{
+          ...LEDGER,
+          balance: 20000,
+          totalDeposits: 50000,
+          totalPayments: 0,
+          totalInvestmentPlacements: 30000,
+          investedBalance: 30000,
+        }}
+        layout="tiles"
+      />
+    );
+
+    expect(label("investment-placements")).toBe("Placed in section 86(4) investments");
+    expect(amount("investment-placements")).toBe(formatCurrency(30000, "ZAR"));
+    expect(label("balance")).toBe("General balance");
+    expect(amount("balance")).toBe(formatCurrency(20000, "ZAR"));
+    expect(label("invested")).toBe("Invested (section 86(4))");
+    expect(amount("invested")).toBe(formatCurrency(30000, "ZAR"));
+    expect(label("held")).toBe("Total held in trust");
+    expect(amount("held")).toBe(formatCurrency(50000, "ZAR"));
+    // Each testid exactly once (Playwright strict mode)
+    for (const key of ["balance", "invested", "held"]) {
+      expect(screen.getAllByTestId(`ledger-total-${key}`)).toHaveLength(1);
+    }
+  });
+
+  it("keeps the list layout by default (TrustBalanceCard)", () => {
+    render(<LedgerTotalsBreakdown ledger={LEDGER} />);
+
+    expect(term("balance")).not.toBeNull();
+    expect(screen.queryByTestId("ledger-total-balance")!.getAttribute("data-slot")).toBeNull();
+  });
+});

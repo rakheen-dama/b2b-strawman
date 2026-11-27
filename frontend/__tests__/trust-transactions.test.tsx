@@ -191,6 +191,21 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// OQ #19 (667A): capture the props the server page hands TransactionsDataTable (a client wrapper)
+// while still rendering the real table, so the RSC-boundary guard inspects what the page passes.
+const wrapperProps = vi.hoisted(() => [] as Record<string, unknown>[]);
+vi.mock("@/components/trust/transactions-data-table", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/components/trust/transactions-data-table")>();
+  return {
+    ...actual,
+    TransactionsDataTable: (props: React.ComponentProps<typeof actual.TransactionsDataTable>) => {
+      wrapperProps.push(props as unknown as Record<string, unknown>);
+      return <actual.TransactionsDataTable {...props} />;
+    },
+  };
+});
+
 // ── Imports after mocks ──────────────────────────────────────────
 import TransactionsPage from "@/app/(app)/org/[slug]/trust-accounting/transactions/page";
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
@@ -201,6 +216,8 @@ import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDia
 import { todayInSA } from "@b2mash/shared/date";
 import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { unserializableProps } from "./helpers/rsc-props";
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -242,10 +259,10 @@ function makeTx(overrides: Record<string, unknown> = {}) {
   };
 }
 
-async function renderTransactionsPage() {
+async function renderTransactionsPage(searchParams: Record<string, string> = {}) {
   const result = await TransactionsPage({
     params: Promise.resolve({ slug: "acme" }),
-    searchParams: Promise.resolve({}),
+    searchParams: Promise.resolve(searchParams),
   });
   render(result);
 }
@@ -485,14 +502,16 @@ describe("Trust Transactions", () => {
     const refundAmount = within(screen.getByTestId("transaction-row-tx-ref"))
       .getAllByRole("cell")[3]
       .querySelector("span") as HTMLElement;
-    expect(refundAmount.className).not.toContain("text-green-600");
+    expect(refundAmount.className).not.toContain("text-success-foreground");
+    expect(refundAmount).toHaveAttribute("data-direction", "out");
     expect(refundAmount.querySelector(".lucide-arrow-up-right")).not.toBeNull();
     expect(refundAmount.querySelector(".lucide-arrow-down-left")).toBeNull();
 
     const depositAmount = within(screen.getByTestId("transaction-row-tx-dep"))
       .getAllByRole("cell")[3]
       .querySelector("span") as HTMLElement;
-    expect(depositAmount.className).toContain("text-green-600");
+    expect(depositAmount.className).toContain("text-success-foreground");
+    expect(depositAmount).toHaveAttribute("data-direction", "in");
   });
 
   // 646E F8: in/out styling comes from the row's `direction` — a REVERSAL of a PAYMENT puts money
@@ -529,14 +548,16 @@ describe("Trust Transactions", () => {
     const reversalAmount = within(screen.getByTestId("transaction-row-tx-rev-pay"))
       .getAllByRole("cell")[3]
       .querySelector("span") as HTMLElement;
-    expect(reversalAmount.className).toContain("text-green-600");
+    expect(reversalAmount.className).toContain("text-success-foreground");
+    expect(reversalAmount).toHaveAttribute("data-direction", "in");
     expect(reversalAmount.querySelector(".lucide-arrow-down-left")).not.toBeNull();
     expect(reversalAmount.querySelector(".lucide-arrow-up-right")).toBeNull();
 
     const neutralAmount = within(screen.getByTestId("transaction-row-tx-orphan"))
       .getAllByRole("cell")[3]
       .querySelector("span") as HTMLElement;
-    expect(neutralAmount.className).not.toContain("text-green-600");
+    expect(neutralAmount.className).not.toContain("text-success-foreground");
+    expect(neutralAmount).toHaveAttribute("data-direction", "neutral");
     expect(neutralAmount.querySelector("svg")).toBeNull();
   });
 
@@ -1403,5 +1424,154 @@ describe("Trust Transactions", () => {
     expect(screen.getByTestId("locked-month-warning")).toHaveTextContent(LOCKED);
     expect(mockRecordDeposit).not.toHaveBeenCalled();
     expect(mockRecordTransfer).not.toHaveBeenCalled();
+  });
+});
+
+// Phase 91 667A: PageHeader, the filters in the DataTable toolbar, server paging, shared empties.
+describe("Trust Transactions — page on PageHeader + server-paged DataTable (667A)", () => {
+  const BASE = "/org/acme/trust-accounting/transactions";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    wrapperProps.length = 0;
+    mockFetchTrustTransactionTypes.mockResolvedValue(REGISTRY_TYPES);
+    mockFetchTrustAccounts.mockResolvedValue([MAIN_TRUST_ACCOUNT]);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  function page(content: unknown[], pageNumber = 0, totalPages = 1, totalElements = 1) {
+    return { content, totalElements, totalPages, pageSize: 20, pageNumber };
+  }
+
+  it("renders exactly one h1 'Transactions' with the record menu in the header actions", async () => {
+    mockFetchTransactions.mockResolvedValue(page([makeTx()]));
+
+    await renderTransactionsPage();
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Transactions");
+    const header = screen.getByTestId("page-header");
+    expect(within(header).getByTestId("record-transaction-button")).toHaveTextContent(
+      "Record Transaction"
+    );
+  });
+
+  it("passes the wrapper only serializable props (RSC boundary, OQ #19)", async () => {
+    mockFetchTransactions.mockResolvedValue(page([makeTx()]));
+
+    await renderTransactionsPage({ status: "APPROVED" });
+
+    expect(wrapperProps).toHaveLength(1);
+    expect(wrapperProps[0]).toEqual(
+      expect.objectContaining({
+        rows: expect.any(Array),
+        currency: "ZAR",
+        pageIndex: 0,
+        pageCount: 1,
+        basePath: BASE,
+        query: { status: "APPROVED" },
+        canApproveTrust: true,
+        canManageTrust: true,
+      })
+    );
+    // The full registry (take-on types too) reaches the reversal rules.
+    expect(wrapperProps[0].types).toEqual(REGISTRY_TYPES);
+    expect(unserializableProps(wrapperProps[0], new Set(["toolbar", "empty"]))).toEqual([]);
+  });
+
+  it("deep-links page 2: the pager keeps every param, the filter pills drop page", async () => {
+    mockFetchTransactions.mockResolvedValue(page([makeTx()], 1, 3, 45));
+
+    await renderTransactionsPage({
+      status: "APPROVED",
+      type: "DEPOSIT",
+      dateFrom: "2026-01-01",
+      page: "1",
+    });
+
+    expect(mockFetchTransactions).toHaveBeenCalledWith(
+      "acc-1",
+      expect.objectContaining({ page: 1, size: 20, status: "APPROVED", type: "DEPOSIT" })
+    );
+    expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+      "href",
+      `${BASE}?status=APPROVED&type=DEPOSIT&dateFrom=2026-01-01&page=0`
+    );
+    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute(
+      "href",
+      `${BASE}?status=APPROVED&type=DEPOSIT&dateFrom=2026-01-01&page=2`
+    );
+    const pills = [
+      ...within(screen.getByTestId("status-filters")).getAllByRole("link"),
+      ...within(screen.getByTestId("type-filters")).getAllByRole("link"),
+    ];
+    for (const pill of pills) expect(pill.getAttribute("href")).not.toContain("page=");
+    expect(
+      within(screen.getByTestId("status-filters")).getByText("Awaiting Approval")
+    ).toHaveAttribute("href", `${BASE}?status=AWAITING_APPROVAL&type=DEPOSIT&dateFrom=2026-01-01`);
+  });
+
+  it("shows a member with view-only access no approval, reversal or record actions", async () => {
+    vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
+      capabilities: ["VIEW_TRUST"],
+      role: "MEMBER",
+      isAdmin: false,
+      isOwner: false,
+    } as Awaited<ReturnType<typeof fetchMyCapabilities>>);
+    mockFetchTransactions.mockResolvedValue(
+      page([
+        makeTx({ id: "tx-await", status: "AWAITING_APPROVAL", transactionType: "PAYMENT" }),
+        makeTx({ id: "tx-pay", status: "APPROVED", transactionType: "PAYMENT" }),
+      ])
+    );
+
+    await renderTransactionsPage();
+
+    expect(screen.getByTestId("transaction-row-tx-await")).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-testid^="approval-actions-"]')).toHaveLength(0);
+    expect(document.querySelectorAll('[data-testid^="reversal-action-"]')).toHaveLength(0);
+    expect(screen.queryByTestId("record-transaction-button")).not.toBeInTheDocument();
+  });
+
+  it("shows the filters with the shared empty state when nothing matches", async () => {
+    mockFetchTransactions.mockResolvedValue(page([], 0, 0, 0));
+
+    await renderTransactionsPage({ status: "REJECTED" });
+
+    expect(screen.queryByTestId("transactions-table")).not.toBeInTheDocument();
+    expect(screen.getByText("No transactions match the current filters")).toBeInTheDocument();
+    expect(screen.getByText("0 transactions found")).toBeInTheDocument();
+    expect(screen.getByTestId("status-filters")).toBeInTheDocument();
+    expect(screen.getByTestId("advanced-filters")).toBeInTheDocument();
+  });
+
+  it("keeps the filters usable when the read fails (a bad filter stays fixable)", async () => {
+    mockFetchTransactions.mockRejectedValue(new Error("400"));
+
+    await renderTransactionsPage({ customerId: "not-a-uuid" });
+
+    expect(
+      screen.getByRole("heading", { name: "Unable to load transactions. Please try again later." })
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("status-filters")).toBeInTheDocument();
+    expect(screen.getByTestId("advanced-filters")).toBeInTheDocument();
+    expect(screen.queryByTestId("transactions-table")).not.toBeInTheDocument();
+  });
+
+  it("shows the no-account state without filters", async () => {
+    mockFetchTrustAccounts.mockResolvedValue([]);
+
+    await renderTransactionsPage();
+
+    expect(
+      screen.getByRole("heading", { name: "No trust accounts have been set up yet." })
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("status-filters")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("record-transaction-button")).not.toBeInTheDocument();
   });
 });

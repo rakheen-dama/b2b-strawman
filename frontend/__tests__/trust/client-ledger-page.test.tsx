@@ -325,12 +325,14 @@ describe("Client ledger card — server running balance (630C)", () => {
     await renderDetailPage();
 
     const refund = amountSpan("tx-ref");
-    expect(refund.className).not.toContain("text-green-600");
+    expect(refund.className).not.toContain("text-success-foreground");
+    expect(refund).toHaveAttribute("data-direction", "out");
     expect(refund.querySelector(".lucide-arrow-up-right")).not.toBeNull();
     expect(refund.querySelector(".lucide-arrow-down-left")).toBeNull();
 
     const deposit = amountSpan("tx-dep");
-    expect(deposit.className).toContain("text-green-600");
+    expect(deposit.className).toContain("text-success-foreground");
+    expect(deposit).toHaveAttribute("data-direction", "in");
     expect(deposit.querySelector(".lucide-arrow-down-left")).not.toBeNull();
   });
 
@@ -357,7 +359,8 @@ describe("Client ledger card — server running balance (630C)", () => {
     await renderDetailPage();
 
     const reversal = amountSpan("tx-rev");
-    expect(reversal.className).toContain("text-green-600");
+    expect(reversal.className).toContain("text-success-foreground");
+    expect(reversal).toHaveAttribute("data-direction", "in");
     expect(reversal.querySelector(".lucide-arrow-down-left")).not.toBeNull();
     expect(within(screen.getByTestId("history-row-tx-rev")).getByText("Reversal")).toBeVisible();
   });

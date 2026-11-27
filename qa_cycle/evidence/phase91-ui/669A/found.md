@@ -24,3 +24,10 @@ Nothing below is fixed in 669A unless it says so. Each item has a routing target
 ## Routed follow-ups named "669A" or "669A/670A" in earlier slices — not taken (orchestrator ruling)
 
 D-24 (my-work 232 px compact empty, founder list), F-668A-B-2 / F-668A-B-3 (court-date list overflow and raw date/time), F-668A-T1 (`upcoming-diary-list.tsx` K-39 lines), F-668A-K1 / K-2, F-667B-R1/R2/R3, D-44 / D-52 / D-54 / D-55 / D-59 / D-63 / D-69 / D-74 / D-76 / D-82 / D-84 / D-86 items. All of them are outside 669A's files or kit-level → **670A follow-up list**, unchanged.
+
+## Pre-existing findings from OBS-after (`after/README.md`), routed (2026-11-27, @76c16e169)
+
+| Id | What | Routing |
+|---|---|---|
+| **F-669A-A-1** | Information-request item line **"Waiting for client"** is `text-slate-500` on the slate-50 item panel: **#6b7482 on #f8f9fb = 4.48** in light at 1024 and 1440 (dark 7.15). The before measurement was the same 4.48 (`before/README.md` §8). It is not in the K-85 row (that row lists the labels, the e-mail and "0/1 accepted", which now measure 7.25). Location: `frontend/components/information-requests/request-detail-client.tsx:391`. | 670A contrast list (`text-muted-foreground`, the same swap as K-85). |
+| **F-669A-A-2** | **Kit: a sortable DataTable header renders in sentence case, while the other headers are uppercase.** `TableHead` sets `uppercase` on the `<th>` (`components/ui/table.tsx:71`). The kit sort control is a `<button>` (local sort), and Tailwind preflight resets `text-transform: none` on buttons, so the label does not inherit the uppercase. Its class list (`components/data-table/data-table-column-header.tsx:62-65`) does not add it back. The URL variant is a `<Link>` and does inherit. **Pre-existing** on `/reports/profitability`: Name / Total Hours / Billable / … are `text-transform:none`, while Currency is uppercase (`after/header-case.json`). 669A's disbursement table now shows the same mix; see `after/README.md` › Defects D-1. | 670A kit fix: add `uppercase` (and `tracking-wider`) to the kit sort button/link class. One line; it fixes every local-sort table. |

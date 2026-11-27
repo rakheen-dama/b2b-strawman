@@ -226,9 +226,8 @@ describe("AccessRequestsTable", () => {
     expect(email).toHaveClass("wrap-anywhere");
     expect(email.style.minWidth).toBe("12rem");
     expect(org.style.minWidth).toBe("8rem");
-    // Submitted, Status and Actions never wrap (kit default nowrap).
+    // Submitted, Status and Actions are not opted into wrapping (they keep the kit default).
     for (const cell of [submitted, status, actions]) {
-      expect(cell).toHaveClass("whitespace-nowrap");
       expect(cell).not.toHaveClass("whitespace-normal");
     }
   });

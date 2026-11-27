@@ -44,16 +44,15 @@ describe("PlatformAdminLayout", () => {
   it("renders the children inside the one main#main-content landmark (K-98)", async () => {
     mockGetSessionIdentity.mockResolvedValue({ userId: "user_1", groups: ["platform-admins"] });
 
-    const { container } = render(
-      await PlatformAdminLayout({ children: <div data-testid="child">Admin Content</div> })
-    );
+    render(await PlatformAdminLayout({ children: <div>Admin Content</div> }));
 
-    const mains = container.querySelectorAll("main");
+    const mains = screen.getAllByRole("main");
     expect(mains).toHaveLength(1);
-    expect(mains[0]).toHaveAttribute("id", "main-content");
-    expect(within(mains[0]).getByTestId("child")).toBeInTheDocument();
+    const [main] = mains;
+    expect(main).toHaveAttribute("id", "main-content");
+    expect(within(main).getByText("Admin Content")).toBeInTheDocument();
     // The nav sits outside <main>, above it.
-    expect(within(mains[0]).queryByRole("navigation")).toBeNull();
+    expect(within(main).queryByRole("navigation")).toBeNull();
   });
 
   it("marks the current page's nav link with aria-current (K-98)", async () => {

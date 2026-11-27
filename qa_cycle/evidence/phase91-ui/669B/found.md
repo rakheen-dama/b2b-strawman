@@ -18,3 +18,5 @@ Nothing below is fixed in 669B unless the orchestrator rules otherwise. "Measure
 In-slice defects measured in OBS-before that the slice's DataTable conversion is expected to remove (verify in OBS-after, not routed):
 - **Admin member-row hover is unreadable in dark mode.** The class concatenation at `member-list.tsx:239` (`…dark:hover:bg-slate-900/30cursor-pointer`) breaks the dark hover class. Bob's name measures 1.07 : 1 and the email 2.53 : 1 on hover at 1024 dark (`before/crop-team-admin-row-hover-1024-dark.png`).
 - The same bug leaves the admin rows with cursor `auto`.
+
+- **F-669B-R-1** (LOW, architecture review of PR #1882, docs only): `frontend/components/team/member-list.tsx` (`INTERACTIVE_SELECTOR` ~180-184, delegated row-click `handleClick` ~267-278) is now a **third copy** of the kit's `INTERACTIVE_SELECTOR` + delegated row-click guards, after `frontend/components/data-table/data-table.tsx:180` and `frontend/components/my-work/task-table.tsx:73`. → 670A kit `onRowClick` follow-up (F-668A-K1): it must move the team member list onto `onRowClick` too and delete this copy.

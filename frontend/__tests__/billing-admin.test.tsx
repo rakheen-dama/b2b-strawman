@@ -7,6 +7,7 @@ import { BillingDetailSheet } from "@/components/billing/billing-detail-sheet";
 import { BillingTenantsTable } from "@/components/billing/billing-tenants-table";
 import { DemoTenantsTable } from "@/components/billing/demo-tenants-table";
 import type { AdminTenantBilling } from "@/app/(app)/platform-admin/billing/actions";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 const mockOverrideBilling = vi.fn();
 const mockExtendTrial = vi.fn();
@@ -40,6 +41,12 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
   }),
 }));
+
+// components/billing/utils formatDate passes no `timeZone`, so the calendar day of these
+// midnight-UTC fixtures follows the host zone. Pin it so the date assertions are host-stable
+// (a midday fixture is not enough: Pacific/Kiritimati is UTC+14).
+beforeEach(() => inZone("UTC"));
+afterEach(() => vi.unstubAllEnvs());
 
 const sampleTenant: AdminTenantBilling = {
   organizationId: "org-123",

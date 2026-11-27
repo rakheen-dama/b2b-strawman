@@ -163,11 +163,12 @@ describe("/ai/reviews", () => {
 describe("/platform-admin (K-98, K-99)", () => {
   async function renderInLayout(page: React.ReactNode, pathname: string) {
     mockPathname.mockReturnValue(pathname);
-    const { container } = render(await PlatformAdminLayout({ children: page }));
-    const main = container.querySelector<HTMLElement>("main#main-content");
-    expect(main).not.toBeNull();
-    expect(container.querySelectorAll("main")).toHaveLength(1);
-    return main!;
+    render(await PlatformAdminLayout({ children: page }));
+    const mains = screen.getAllByRole("main");
+    expect(mains).toHaveLength(1);
+    const [main] = mains;
+    expect(main).toHaveAttribute("id", "main-content");
+    return main;
   }
 
   it.each([

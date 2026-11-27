@@ -26,6 +26,8 @@
 
 > **Phase 91 row added 2026-11-25 (661B):** ADR-392 (Active, Frontend design system cluster). Its status line was written in the ADR file at acceptance, as the ADR itself authorised (orchestrator-authorised, P-13), so the row agrees with the file and needs no carve-out. It supersedes an architecture paragraph (§15.2.5), not an ADR, so the Superseded section is unchanged. ADR-385..391 and 393..396 are not indexed yet; **the counts above were not re-tallied**.
 
+> **Phase 91 rows completed 2026-11-27 (670A):** ADR-393..396 added (Active, Frontend design system cluster) after ADR-392; ADR-369 and ADR-373 rows note their Phase 91 refinement / deviation. P-7 (an ADR-395 "Related" erratum) was checked and needs no index erratum: the committed ADR already reads E5B / E5F. Nothing moved to Superseded (ADR-394/395 refine, ADR-396 deviates for one page). **ADR-385..391 (Phase 93) are still not indexed** — follow-up FU-36 in `tasks/phase91-ui-modernization-ii.md` § Closure report; **the counts above were not re-tallied**.
+
 ADR numbering starts at 010; the 001–009 range is intentionally unused.
 
 ---
@@ -267,11 +269,15 @@ Canonical: **ADR-367** (layering + "new page" rule). Chart kit: ADR-370 and the 
 |---|---|---|
 | ADR-367 | design-system-layering | `@b2mash/ui` primitives vs app-coupled frontend components; new pages use PageHeader/DataTable/kit. The lint rule is deferred (ADR text) |
 | ADR-368 | admincn-template-adoption | admincn adapted from Base UI to Radix; credit and licence |
-| ADR-369 | datatable-tanstack-client-mode | Refined in `tasks/phase90-ui-modernization.md` (`adr/` is append-only): 642A sticky header only from a 42rem `@container` frame; 643C `DataTableSort` URL/client variants + expandable rows |
+| ADR-369 | datatable-tanstack-client-mode | Refined in `tasks/phase90-ui-modernization.md` (`adr/` is append-only): 642A sticky header only from a 42rem `@container` frame; 643C `DataTableSort` URL/client variants + expandable rows. Refined by ADR-395 (server-paged mode, Phase 91) |
 | ADR-371 | dark-mode-light-default | `next-themes`, light default, opt-in toggle; tokens over `dark:` pairs; long-tail debt list (Phase 90 closure C.5). Refined by ADR-374 (first paint of the stored theme) |
-| ADR-373 | detail-hero-kpi-strip | Supersedes ADR-286 for the matter and client detail pages; any future entity page follows ADR-373 (`ADR-373:75`) |
+| ADR-373 | detail-hero-kpi-strip | Supersedes ADR-286 for the matter and client detail pages; any future entity page follows ADR-373 (`ADR-373:75`). Deviation for the fee-note detail only: ADR-396 (client-derived tiles, Phase 91) |
 | ADR-374 | theme-first-paint-head-script | Refines ADR-371 (blocking `<head>` script for the stored theme's first paint) |
 | ADR-392 | firm-app-light-mode-colour-scheme | Phase 91. Status line: "Accepted" (FD-1 2026-11-25: A1, dark inset option (c); K-21 backlog). Firm light tokens in one scoped `:root:not(.dark):has([data-app-shell="firm"])` block in `frontend/app/globals.css`; inset canvas as light-only CSS; additive shared `--button-accent` tokens (portal, marketing and dark unchanged). Supersedes architecture §15.2.5's light-rail paragraph ("Light keeps the slate-950 sidebar deliberately…", `phase90-ui-modernization.md:234`) and closes §15.12 OQ #3 |
+| ADR-393 | emptystate-sizing-rule-and-enforcement | Phase 91. Status line: "Accepted". `default` = whole page or page-level tab panel, `compact` = section/card/widget/dialog/Sheet (one-line description + one action, 212 px budget), `inline` = table body or one-line slot; explicit `variant` at every call site, enforced by `frontend/__tests__/emptystate-variant-guard.test.ts` (allowlist emptied by 669B, `variant` required in the type). Open: F-663A-2 (`/my-work` compact box 232 px > 212, closure FU-20) |
+| ADR-394 | settings-shell-section-cards-and-mobile-nav | Phase 91. Status line: "Accepted (refines the presentation of ADR-341 …)". `SettingsSection` cards, one `PageHeader` h1 per tab (no family h1), a below-`md` "Settings navigation" family bar; ADR-341's taxonomy, `?tab=`, loaders and route count unchanged |
+| ADR-395 | datatable-server-paged-mode | Phase 91. Status line: "Accepted (refines ADR-369 Rationale point 3 …)". Additive `pagination` prop (URL links or callback), exclusive with local paging, CSV and selection, rendered from a per-page `"use client"` wrapper. **P-7 checked by 670A:** the committed file (`f73eea861`, its only commit) already names the consumers as E5B (audit trail) and E5F (connection logs) at `ADR-395:43` and `:60`, so no erratum is needed; the task file's P-7 described a pre-commit draft |
+| ADR-396 | fee-note-detail-hero-client-derived-tiles | Phase 91. Status line: "Accepted (deviates from ADR-373's server-only tile loaders for the fee-note detail page only …)". Pure `feeNoteHeroTiles(invoice, todayIso)` over `useInvoiceDetail`'s client state; `DetailHero.title` widened to `ReactNode`; no new read |
 
 ### Custom field, tag, view
 

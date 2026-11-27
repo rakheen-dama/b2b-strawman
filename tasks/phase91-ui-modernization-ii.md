@@ -81,19 +81,19 @@ Status is one of **RULED** (with who and when), **DEFAULT-ACCEPTED** (a proposed
 | FD-5 | Fee-note hero: (a) tile labels "Total", "Amount paid", "Balance due", "Due" + "{n}d overdue" / "Due today" / "{n}d until due" (strip repeats the totals block's labels); (b) drop the identifier chip | §18.10 FD-5, ADR-396 | Approve both | 666B | **RULED** — founder 2026-11-22, as recommended |
 | FD-6 | May E3C group three cross-cutting kinks (density, palette focus return, sensitive-events error) in one PR? | §18.10 FD-6 | Yes; one commit and one test each | 663C | **RULED** — founder 2026-11-22, as recommended (see Bundled slices) |
 | FD-7 | Custom-fields one-liner keeps the existing description? | §18.10 FD-7 | Keep it (copy freeze); wraps to a second line only in the task Sheet | 663A | **RULED** — founder 2026-11-22, as recommended |
-| FD-8 | Is dark mode offered to design partners after Phase 91? | §18.10 FD-8 | Yes, after 670A's dark walk passes for every in-scope surface; until then available but unadvertised | 670A (statement in the closure report) | **RULED** — founder 2026-11-22, as recommended |
+| FD-8 | Is dark mode offered to design partners after Phase 91? | §18.10 FD-8 | Yes, after 670A's dark walk passes for every in-scope surface; until then available but unadvertised | 670A (statement in the closure report) | **RULED** — founder 2026-11-22, as recommended. **Outcome (670A): not passed** — the dark walk fails all 99 in-scope pages on the K-21 header badge (3.16:1) and 23 page bodies, so dark mode stays available but unadvertised (closure C.5, `$EV/exit/darkmode.md`) |
 | FD-9 | Sidebar density K-05: row height and spacing only, or IA change? | §18.10 FD-9 | Row height and group spacing only, existing collapsed defaults; `$FL/nav-items.ts` not touched (ADR-339) | 663C | **RULED** — founder 2026-11-22, as recommended |
-| FD-10 | "Paid This Month" sums every currency under the last row's currency — fix it? | §18.10 FD-10, §18.0 row 26 | Not in Phase 91 (behaviour change); its own PR later (filter to the default currency, test first); 666A keeps today's behaviour; carried to the closure report | 666A (keeps), 670A (carries) | **RULED** — founder 2026-11-22, as recommended |
+| FD-10 | "Paid This Month" sums every currency under the last row's currency — fix it? | §18.10 FD-10, §18.0 row 26 | Not in Phase 91 (behaviour change); its own PR later (filter to the default currency, test first); 666A keeps today's behaviour; carried to the closure report | 666A (keeps), 670A (carries) | **RULED** — founder 2026-11-22, as recommended. **Carried (670A):** follow-up FU-5, own PR, test first (closure C.6 (b)) |
 | FD-11 | K-11 (F-642A-1, MEDIUM): saved view with explicit columns collapses the Client column at 1024 — fix in the kit during E4B? | §18.10 FD-11 | Yes, **if** 662A's walk (and 664B's observe-first) reproduces it on HEAD | 664B | **RULED** — founder 2026-11-22, as recommended (scope conditional on reproduction) |
 | FD-12 | Move Sections 8–9 out per the ">20 slices" rule? | §18.10 FD-12, §18.0 row 32 | Rule waived; Sections 8–9 stay (668A, 669A, 669B) | — | **RULED** — founder 2026-11-22, **against** the recommendation: rule waived |
 | X1–X5 | Cross-cutting rulings: authorization (X1), read consistency (X2), wording (X3), retired code (X4), concurrency (X5) | §18.10 | All RULED in the architecture. Carried conditionals: X2 — a client-ledger totals vs running-balance disagreement observed in 667A's OBS becomes a register row (never a tile that mixes the reads); X5 — tab switching with unsaved edits stays unguarded, a register row if 662A's walk flags it; X5 — palette focus returns only when the trigger `isConnected` (663C); X4 — every retirement greps repo-wide first | 662A, 663C, 667A, every retiring slice | **RULED** (architecture) |
 | P-1 | **Phase 93 is not built at breakdown time.** Surfaces Phase 91 restyles but cannot see yet: the Matters › Take-on tab + in-place wizard frame (665C), the 3 FICA review-interval inputs in `ComplianceSettingsForm` (665A), the Home sign-off widget + sheet (663A, only if it renders an EmptyState), the "Brought forward — take-on" fee-note badge (666A/666B), settings tab count 31 → 32 in tests (664A), and any new `<EmptyState` call (663A guard) | §18.0 row 14, R7, inventory §5.5 | Sequencing 92 → 93 → 91 guarantees Phase 93 is on `main` first. The first task of each named slice re-scouts Phase 93's shipped code (files, testids, gates, EmptyState sites) and records it in the PR; restyle is **frame-only** (R7). If the re-scout finds a Phase 93 surface that cannot be framed without touching its behaviour, or Phase 93 has not shipped the take-on tab, the slice stops and reports (re-spec; the non-take-on tabs may land without it only by orchestrator ruling) | 663A, 664A, 665A, 665C, 666A | **DEFAULT-ACCEPTED** |
 | P-2 | **Where the baseline is measured.** Requirements: "first slice on then-HEAD"; §18.1: E1A records it. 661A merges no product code and FD-1 may take days | §18.1 | 661A snapshots the metric commands (for the founder pack only); **661B records the authoritative baseline** (metrics + gate totals + suite counts on a fresh stack) on its own post-93 HEAD before its first edit; 670A compares against 661B's record | 661A, 661B, 670A | **DEFAULT-ACCEPTED** |
 | P-3 | **The hands-off runner does not know about founder gates.** `scripts/run-phase.sh` runs the `run-order` line straight through; 661A and 662A must stop for FD-1 and FD-3 | — | 661A and 662A are run by the orchestrator alone; the runner is (re)started at 661B only after FD-1 is recorded and at 663A only after FD-3 is recorded. Defence in depth: 661B's and 663A's first tasks refuse to start unless the ruling is written in `$EV/scheme/README.md` § Decision / in every register row's "Founder disposition" cell | orchestrator, 661B, 663A | **DEFAULT-ACCEPTED** |
-| P-4 | **Evidence volume vs the ~300-file PR limit.** 662A walks ≈ 101 surfaces × 8 combinations; 670A's matrix covers all 32 tabs × owner/member × 4; a settings slice's before/after set can pass 200 PNGs | lesson 8, §18.3.10 | EVIDENCE-BUDGET (contact sheets); 662A commits only register-referenced screenshots + per-route contact sheets + the walk index; 670A commits contact sheets per surface × persona. If 670A's evidence still exceeds ≈ 250 files, it ships as two evidence commits in one PR only if under 300, else the orchestrator rules a 670A evidence split | 662A, 670A, every surface slice | **DEFAULT-ACCEPTED** |
+| P-4 | **Evidence volume vs the ~300-file PR limit.** 662A walks ≈ 101 surfaces × 8 combinations; 670A's matrix covers all 32 tabs × owner/member × 4; a settings slice's before/after set can pass 200 PNGs | lesson 8, §18.3.10 | EVIDENCE-BUDGET (contact sheets); 662A commits only register-referenced screenshots + per-route contact sheets + the walk index; 670A commits contact sheets per surface × persona. If 670A's evidence still exceeds ≈ 250 files, it ships as two evidence commits in one PR only if under 300, else the orchestrator rules a 670A evidence split | 662A, 670A, every surface slice | **DEFAULT-ACCEPTED** — **outcome (670A):** contact sheets kept the exit PR under 250 files; no evidence split (D-101) |
 | P-5 | **Three dependencies §18.11 omits** (build order already satisfies each): (a) 666A restyles the Fee notes \| Fee runs links with `TAB_UNDERLINE_CURRENT` from `$FC/shared/tab-underline.ts`, created in **664A**; (b) 669A's `disbursement-list-view` table keeps the `disbursement-row-<id>` prefix, which needs DataTable's function `rowTestId` from **664B**; (c) 669B makes `variant` required in the type, so **every** slice owning allowlist entries (663B, 665C, 665D, 665E, 665F, 666A, 668A, 669A) must have merged first | §18.11 table, §18.3.3 | Recorded in the Dependency Graph and each slice's "Depends on"; no scope change | 666A, 669A, 669B | **DEFAULT-ACCEPTED** |
 | P-6 | §18.11's E6A row says "last allowlist entries of Phase 91 removed", contradicting §18.3.3 / ADR-393 (E9B removes the last entries) | §18.11 E6A | 666A removes **its own** three entries (`invoices/page.tsx`, `billing-runs/page.tsx`, `unbilled/page.tsx`); 669B removes the last | 666A, 669B | **DEFAULT-ACCEPTED** |
-| P-7 | ADR-395's "Related" line names slices E5A and E5D as consumers; §18.11 makes them **E5B** (audit trail) and **E5F** (connection logs). `adr/` is append-only | ADR-395:60 | §18.11 governs; ADR-395 is not edited; 670A notes the erratum in the ADR-index row | 670A | **DEFAULT-ACCEPTED** |
+| P-7 | ADR-395's "Related" line names slices E5A and E5D as consumers; §18.11 makes them **E5B** (audit trail) and **E5F** (connection logs). `adr/` is append-only | ADR-395:60 | §18.11 governs; ADR-395 is not edited; 670A notes the erratum in the ADR-index row | 670A | **DEFAULT-ACCEPTED** — **checked (670A): no erratum needed.** ADR-395's only commit (`f73eea861`) already reads E5B / E5F at `:43` and `:60`; recorded in the ADR-395 row of `kazi-architecture/90-adr-index.md` |
 | P-8 | `TAB_UNDERLINE_CURRENT` keys on `aria-current="page"`, but today's Fee notes \| Fee runs links (`invoices/page.tsx:178-191`, `billing-runs/page.tsx`) carry none — the active state is a hard-coded class | §18.2.6, §18.3.6 | Add `aria-current="page"` to the active link (an a11y attribute: no copy, role or accessible-name change; `billing-runs.spec.ts:28-29` exact names unaffected), stated in the PR | 666A | **DEFAULT-ACCEPTED** (orchestrator may rule a class-only restyle instead) |
 | P-9 | Making `variant` required breaks typecheck in two test files that render the shared EmptyState without it: `$FT/empty-state.test.tsx` (10 calls) and `$FT/empty-state-pages.test.tsx` (4). (`$FT/components/setup-empty-state.test.tsx` uses the different `@/components/setup/empty-state` and is unaffected) | grep at `7c358b024` | 669B edits both: explicit `variant` on each call; the "falls back to default" case becomes a `@ts-expect-error` type test or is deleted with a note | 669B | **DEFAULT-ACCEPTED** |
 | P-10 | The portal renders `variant="accent"` 5 times in 4 files (`/login`, `/auth/exchange`, `/accept/[token]`, `not-found`), and the firm app 45 times in 29 production files (+ `client-header-card.tsx`'s computed `variant: "accent"`). The recipe change reaches all of them | grep at `7c358b024` | 661B's pixel-identity evidence adds portal `/login` (an accent button) beside portal `/home` and marketing `/`, and samples three firm accent sites in light (fee-note header Approve/Send, `create-invoice-button`, a statement dialog) | 661B | **DEFAULT-ACCEPTED** |
@@ -774,3 +774,311 @@ Serial order removes these; a rebase re-greps. PR rules restated: one PR per sli
 ---
 
 ## Closure report
+
+**Date:** 2026-11-27.
+
+**Measured on:** branch `phase91/70A-exit-gate`, created at `origin/main` **`c4595f924`** (the 669B bookkeeping commit; every Phase 91 slice #1862–#1882 merged).
+- Its product code is `main`: `git log --oneline c4595f924..HEAD -- backend frontend portal packages gateway compose` prints nothing. The 670A commits touch only `qa_cycle/`, `tasks/`, `architecture/`, `kazi-architecture/` and `TASKS.md`.
+- Both fresh e2e stacks (B for exit-month, A for legal + default + the matrix) were built from this worktree at `c4595f924` (frontend image `df65a3425a53`, backend `e7fd89e47741`; provenance in `$EV/suites/stack-provenance.txt` and `$EV/exit/README.md` § Run and environment).
+- The baseline is 661B's record on `main` @ `551778100` (`$EV/baseline/README.md`), never §18.1's provisional table (P-2).
+
+**Status vocabulary (root `CLAUDE.md` §3):**
+- **VERIFIED** = observed in a real browser or by a command run in 670A, with the artefact path given.
+- **MERGED-AWAITING-VERIFY** = merged and covered by unit tests, but the behaviour was not observable on the exit stack's data.
+- **DEFERRED** = not done; the reason is given.
+- There is no PASS-with-note.
+
+Evidence paths use the shorthands at the top of this file (`$EV` = `qa_cycle/evidence/phase91-ui`).
+
+### C.1 Verdict
+
+| Part | Status | Evidence |
+|---|---|---|
+| FE-GATE on `main` (lint, typecheck, format, full vitest, build) | **VERIFIED** — all rc 0; vitest 549 files, 5622 passed + 2 skipped; lint 0 errors / 75 warnings | `$EV/suites/README.md` § Results, `$EV/suites/fe-test-tail.txt`, `summary.txt` |
+| PORTAL-GATE on `main` (+ `/login`, `/home` at 1024 light) | **VERIFIED** — all rc 0; vitest 51 files / 293; both pages observed through Playwright MCP | `$EV/suites/portal-test-tail.txt`, `$EV/suites/portal/portal-{login,home}-1024-light.png` |
+| E2E suites on fresh stacks (exit-month, legal-lifecycle, legal-depth-ii, default) | **VERIFIED** — 16/16, 105/105, 40 + 4 skipped, 167 + 13 skipped / 0 failed; pass/skip sets match the baseline except the expected re-enabled test | `$EV/suites/README.md`, `$EV/suites/{B-exit-month,A-legal-lifecycle,A-legal-depth-ii,A-default}-tail.txt` |
+| Verify markers over #1862–#1882 | **VERIFIED** — 21 / 21 exit 0; no backend area | `$EV/suites/markers.md` |
+| Shell and scheme (rail expanded, collapsed, Ctrl+B), owner + member, 1024/1440 × light/dark | **VERIFIED** | `$EV/exit/shell/dashboard-{expanded,collapsed}.png`, `$EV/exit/measurements.json` |
+| 390 shell mobile nav + settings family bar, keyboard pass; 1024 DataTable scroller | **VERIFIED** — family bar PASS (every stop focus-visible, never under a fade); mobile nav: new F-670A-2 (pre-existing); scroller: F-666A-6 confirmed | `$EV/exit/shell/390-mobile-nav.png`, `$EV/exit/settings/390-family-bar-kbd.png`, `$EV/exit/settings/1024-datatable-scroller-kbd.png`, `$EV/exit/kbd.json` |
+| Settings: all 32 tabs + 11 sub-pages + the custom-checklist edit form, owner + member, 1024/1440 × light/dark | **VERIFIED**; the **editable** branch of `templates/<id>/edit` **DEFERRED** (no org-custom template listed on stack A; F-665E-1 already records that branch has no page h1) | `$EV/exit/settings/*.png` (45 sheets), `$EV/exit/README.md` § Index |
+| Fee notes: list, fee runs list / detail / new, collections, unbilled; a detail per status (DRAFT, APPROVED, SENT, SENT overdue, PARTIALLY_PAID, PAID, VOID), owner + member | **VERIFIED** (the SENT-overdue note INV-0010 and the fee run were created through the UI) | `$EV/exit/fees/*.png`, `$EV/exit/feenote/*.png` |
+| Trust sub-pages (9), owner + member | **VERIFIED**; `reconciliation/lists/<id>` **DEFERRED** (no reconciliation on stack A; creating one needs a full month-end through the UI) | `$EV/exit/trust/*.png` |
+| 663A / 663B sites (matter + client Fields, fee-note custom fields, task Sheet, My Tasks widget, matter tabs, client Rates) | **VERIFIED**; `/my-work` with no tasks at all and the task Sheet's empty custom-fields state are **MERGED-AWAITING-VERIFY** (not reachable on stack A; vitest-covered in 663A) | `$EV/exit/sites/*.png` |
+| Section 8: diary, My Work, timesheet (opened, never saved), notifications, owner + member | **VERIFIED** | `$EV/exit/sec8/*.png` |
+| Section 9 light pass: compliance, requests + detail, conflict check, adverse parties, disbursements + detail, tariffs, information request, team, AI reviews, owner + member | **VERIFIED** | `$EV/exit/sec9/*.png` |
+| Platform admin (light only), Alice + Carol | **VERIFIED** — 12/12 OK for Alice; Carol gets Next's 404 (designed) | `$EV/exit/platform-admin/*.png` |
+| Marketing `/` with a stored dark preference | **VERIFIED still light** (ADR-371) | `$EV/exit/marketing/marketing-root.png` |
+| Console over every load | **VERIFIED** — 0 product errors, 0 page errors, 0 hydration messages over 811 loads (+ 102 dark-walk loads); 18 warnings, all K-17 (Tiptap) | `$EV/exit/console.json`, `$EV/exit/README.md` § Console summary |
+| Metrics vs the 661B baseline | **VERIFIED** — every §18.1 command re-run; targets met | `$EV/metrics.md`, `$EV/metrics-raw.txt` |
+| Dark walk (670.6) + FD-8 | **VERIFIED** (the walk ran: 99 pages + 3 re-verification pages); **FD-8: not passed** (C.5) | `$EV/exit/darkmode.md`, `darkwalk.json`, `darkmode-crops.png` |
+| Docs and marketing images (F-7, K-46) | **listed stale, not re-shot** (D-102); re-shoot **DEFERRED** → FU-33 | `$EV/pngs/README.md` |
+| ARCHITECTURE.md note line, ADR-393..396 index rows, TASKS.md Phase 91 header row | done in this PR | `architecture/ARCHITECTURE.md` (Phase 91 line), `kazi-architecture/90-adr-index.md`, `TASKS.md` |
+| Register final outcomes (670.7) | done in this PR — all 125 rows | `$EV/kinks-register.md` § Final outcomes (670A) |
+| Review audit trail (670.9) | see PR audit trail | the 670A PR body (orchestrator) |
+
+**No phase regression** in any suite, gate or observed surface (811 matrix loads: theme correct, one `main#main-content`, one h1 in it except the known F-665E-B4 / K-43 and F-665C-6 branches, no document overflow, no console error). The new findings F-670A-1…4 are all pre-existing or, for F-670A-4, a dark-only contrast worsening that was ruled non-blocking (D-104); they are listed in C.6 (d), not fixed.
+
+**Phase 91 exit: criteria met** (D-107).
+- The mechanical gates are green on the merged head: FE-GATE, PORTAL-GATE, the four e2e suites at or above the 661B baseline, and 21/21 verify markers.
+- The §18.3.10 matrix is observed in a real browser at 1024 and 1440, light and dark, owner and member, with 390 and keyboard passes; every in-scope surface is observed, or DEFERRED / MERGED-AWAITING-VERIFY with its reason above.
+- Every §18.1 metric moved the right way, and the two hard targets are met: EmptyState calls without `variant` = 0 with the guard allowlist empty, and `PageHeader` on 43 of 58 pages with the other 15 documented (C.4).
+
+**FD-8: not passed — dark mode stays available but unadvertised.** This is the stated outcome of the 670.6 dark walk under FD-8's own ruling, not an exit failure: every one of the 99 in-scope pages fails the strict rule on the shell's notification badge (K-21, 3.16:1), and 23 page bodies fail (1 illegible focused menu item at 2.25:1, 22 degraded). Details and the minimum fix set are in C.5.
+
+**Light scheme:** [ADR-392](../adr/ADR-392-firm-app-light-mode-colour-scheme.md), Accepted — the founder's FD-1 pick **A1** (light rail, inset canvas, slate-900 primary buttons, `--button-accent` teal-700 in the scoped light block) with dark inset option **(c)** (light-only CSS inset; dark pixel-identical). K-21 (the dark accent) stays backlog and is now FU-7.
+
+### C.2 Suites (670.1, 670.2)
+
+Head under test: `main` @ `c4595f924`, 2026-11-27 11:57–12:09 UTC, one job at a time (runner `$EV/suites/run-exit.sh`, committed as executed). Exit-month ran first on its own fresh stack B with the portal on :3002; legal + default ran on fresh stack A (D-98). Source: `$EV/suites/README.md`.
+
+| Gate | 661B @`551778100` | 670A exit @`c4595f924` | Δ |
+|---|---|---|---|
+| E2E-EXIT-MONTH (own fresh stack + portal :3002) | 16/16 (stack C) | **16 passed / 0 failed / 0 skipped** | = |
+| E2E-LEGAL `legal-lifecycle` | 105 passed | **105 passed** | = |
+| E2E-LEGAL `legal-depth-ii` | 40 passed + 4 skipped | **40 passed + 4 skipped** | = (same 4 skips) |
+| E2E-DEFAULT (180 tests) | 166 passed + 14 skipped | **167 passed + 13 skipped / 0 failed** | +1 / −1: `settings/roles-capabilities.spec.ts:53` re-enabled by 665A (#1870), now passes |
+| FE-GATE | 508 files, 4980 passed + 2 skipped; lint 0 / 76 warnings | **549 files, 5622 passed + 2 skipped; lint 0 / 75 warnings** | +41 files, +642 tests; −1 warning |
+| PORTAL-GATE | 51 files, 293; lint 0 / 4 | **51 files, 293; lint 0 / 4** + `/login`, `/home` observed | = |
+| BE-VERIFY | not owed (no Java) | not owed: `git diff --name-only 551778100..c4595f924 -- backend gateway` is empty | n/a |
+
+- Flaky or retried tests: 0 (`grep -ciE "flaky|retry #"` = 0 on all four suite logs; retries are 0 locally).
+- The skip sets match the baseline by title; the 13 default skips are Keycloak-only, the admin-audit capstone, two customer-lifecycle tests and the two `KGOSI_EMAIL`-gated portal tests (not run with KGOSI, D-99; a skip is not a pass).
+- **Specs amended by phase slices** (`git diff --stat 551778100..c4595f924 -- frontend/e2e`: 8 files, +20 / −26, no new spec): `auth/rbac-capabilities.spec.ts` (663C, K-62), `settings/roles-capabilities.spec.ts` (665A, re-enabled), `legal-lifecycle/day-00-firm-setup.spec.ts`, `legal-lifecycle/day-90-review.spec.ts`, `settings/rate-cards.spec.ts`, `settings/tax-settings.spec.ts` (665D, K-124 h1 = tab label), `notifications/notification-preferences.spec.ts` (665F, K-115), `invoices/billing-runs.spec.ts` (666A, K-77). 670.1's guess "locator scoping in 666B only" was wrong; 666B edited no spec.
+- **670.3 (triage) was not triggered.** Nothing failed and nothing is below the baseline.
+
+### C.3 Markers
+
+- **21 / 21 PASS** (`$EV/suites/markers.md`, `scripts/check-verify-markers.sh --committed-only` over #1862–#1882): 661A (#1862) and 662A (#1864) docs-only; a frontend marker for every UI slice (661B, 663A–669B); **portal markers for 661B (#1863) and 669A (#1881)** — 669A touched `packages/shared/src/format.ts` (K-68), which 670.2's text did not anticipate; **no backend marker anywhere**.
+- For 8 PRs the marker's verified commit is not the PR head, and in each case the commits after it touch no product file (table in `markers.md`).
+- **This PR is docs/evidence-only**: it touches no `frontend/`, `portal/`, `packages/` or `backend/` path, so `check-verify-markers.sh` classifies it as docs/tooling-only and the merge hook requires only the review audit trail and green checks.
+
+### C.4 Metrics (before → after, 670.5)
+
+**`$EV/metrics.md` is canonical for every number** (commands, like-with-like rows on the baseline tree, the `dark:` reconciliation, the remaining raw-hex sites); the table below copies its numbers, and so does the PR body. Raw output: `$EV/metrics-raw.txt`; wrapper `$EV/metrics-run.sh` (committed as executed). Measured on `c897562a8` (product code = `main` @ `c4595f924`).
+
+| Metric (§18.1 command, verbatim) | 661B @`551778100` | Exit | Δ / note |
+|---|---|---|---|
+| Pages under `org/[slug]` | 58 | **58** | = |
+| `PageHeader` adoption (`find … -exec grep -l "PageHeader"`) | 7 | **44** | +37; one hit is a comment (`settings/documents/templates/[id]/edit/page.tsx`), so **43 of 58** pages render a `<PageHeader` tag. The other 15 are documented below |
+| Files with `<h1` under `org/[slug]` | 71 | **5** | −66 (`not-found.tsx` + the four DA-1 / non-scope pages below) |
+| Display h1 (`font-display text-3xl`) | 92 | **3** | −89; left: `reports/[reportSlug]` (B-4), `auth-page.tsx` (not `/org/`), `marketing/cta-section.tsx` (an h2, pattern false positive) |
+| Direct `<Table` / `<table` files by area | 22: settings 10, trust-accounting 6, invoices 4, legal 1, documents 1 | **4: settings 2, invoices 1, documents 1** | −18. Listed separately (§18.0 row 5): the orphan picker `invoices/[id]/edit/(components)/add-disbursements-picker.tsx` and `documents/loading.tsx`. Of the settings 2, `templates-table.tsx:24` is a code comment; the one real direct table left is the static `settings/firm/_tabs/capability-reference.tsx` |
+| EmptyState calls without `variant` (interim perl scan) | 53 shared (55 all) | **0 (0 all)**; 117 tags / 91 files, all with `variant` | **target met** |
+| EmptyState guard allowlist | (guard added in 663A) | **`const ALLOWLIST: Record<string, string> = {};`** | **empty** (669B) |
+| `variant` in the type | optional | **required** (`variant: EmptyStateVariant;`, `empty-state.tsx:23`) | 669B, P-9 |
+| Raw hex (PCRE, `*.tsx`) | 33 | **33** | =; same files and per-file counts, 3 lines reworded; none is a themable surface colour (dispositions in `metrics.md`) |
+| `dark:` lines, whole frontend | 3842 | **2521** | **−1321** (−34 %) |
+| `dark:` occurrences | 4666 | **3154** | −1512 |
+| `page.tsx` with `<h1` / `frontend/components` non-test files with `<h1` | 37 / 6 | **2 / 5** | −35 / −1 |
+
+**`PageHeader` exceptions (15 `page.tsx` without a `<PageHeader` tag, each verified by grep):** `settings/page.tsx` (redirect); the five family hosts `settings/{firm,matters,documents,fees,connections}/page.tsx` (each tab renders its own `PageHeader`, ADR-394); `dashboard/page.tsx` (`dashboard-header.tsx`) and `my-work/page.tsx` (`my-work-header.tsx`), client header components; `matters/[id]` and `clients/[id]` (DetailHero, ADR-373) and `invoices/[id]` (DetailHero via `invoice-header-actions.tsx`, ADR-396); `legal/disbursements/[id]` (h1 hand-rolled on the PageHeader recipe in `detail-client.tsx`, DA-1, F-669A-D1); `matters/new` (`new-matter-page-client.tsx`, 669 Non-scope); `reports/[reportSlug]` (B-4); `settings/documents/templates/[id]/edit` (the editor owns the h1 in `TemplateEditorClient.tsx:207`, **read-only branch only**; the editable branch has none, F-665E-1). Also documented although they render a `<PageHeader` on the member-denied branch: `compliance/requests/[id]` (admin h1 hand-rolled with badges, DA-1) and `information-requests/[id]` (h1 in `request-detail-client.tsx`).
+
+**`dark:` reconciliation.** The git count telescopes exactly over the 21 squashes (per-PR parent → commit deltas sum to −1321; no other commit in the range touches `frontend/`). The per-slice DARK-AUDIT figures in the PR bodies sum to −1334; the 13-line gap is fully attributed: +3 (664A), +5 (666A), +1 (667A), +1 (667B), +1 (665D test file) in new or out-of-table files, and 2 from 665C's PR-body arithmetic (git per file: 154). The 663C intermediate 3836 matches its PR. Table in `metrics.md`.
+
+**Migrations and dependencies:** none. `git diff --name-only 551778100..c4595f924 -- backend gateway` is empty, and `git diff --stat 551778100..c4595f924 -- frontend/package.json portal/package.json packages/*/package.json pnpm-lock.yaml` is empty.
+
+### C.5 Dark-mode debt list (§15.6.5 table) and FD-8 (670.6)
+
+**This section is the canonical debt list.** `$EV/exit/darkmode.md` keeps the method (alpha-composited 1×1 canvas ratios, rubric, what is not counted), the walk index of all 102 loads, the carried-item re-verification and the raw data (`darkwalk.json`); crops in `$EV/exit/darkmode-crops.png`.
+
+**Result (Alice, 1440×900, dark, 99 in-scope `/org/` pages + 3 re-verification pages, stack A @ `c4595f924`):**
+- **Strict rule** (anything below AA, a light slab, a faint field or a lost-colour control fails the page): **0 PASS / 99 FAIL** — 98 degraded, 1 illegible. The cause on every page is one shell element, the header notification badge (DD-1, white on dark teal-600, 3.16:1).
+- **Page bodies** (badge set aside): **76 PASS / 23 FAIL** — 1 illegible (`/legal/adverse-parties`, a focused row-menu item at 2.25:1, DD-2; the same token applies to every row menu), 22 degraded.
+- No white slab, no black-on-black text, no text below 3:1 on any loaded page. Phase 90's D-1…D-4 stay fixed; D-5's fix is in code (button state not rendered on stack A, MERGED-AWAITING-VERIFY).
+- Console over the 102 loads: 0 errors, 0 hydration; 2 Tiptap warnings (K-17).
+
+| # | Page (route) | Symptom | Element / file:line | Severity | Proposed token fix | Screenshot |
+|---|---|---|---|---|---|---|
+| **DD-1** (= **K-21** accent fill, + K-31 dark / F-668A-T3, F-666A-9) | **Every `/org/` page** (header badge, 99/99). Accent controls on 11 pages: `/invoices` "New fee note"; fee-note DRAFT "Approve", "Save Changes"; APPROVED "Send fee note"; SENT / SENT-overdue / PARTIALLY_PAID "Record Payment"; `/settings/matters?tab=take-on` "Start" ×4; `/settings/fees?tab=trust-accounting` "Add Account"; `/invoices/billing-runs/new` and `/trust-accounting/reconciliation/new` active step "1" | White on the dark `--button-accent` teal-600 `#00a38f`, **3.16:1** (badge 10 px text, buttons 14 px). Measured identically in the walk and the crops | Badge `frontend/components/notifications/notification-bell.tsx:69` (`bg-(--button-accent) text-(--button-accent-foreground)`); token: dark `--button-accent` (`frontend/app/globals.css`, F-668A-T3) / `packages/ui/styles/globals.css:232-233` (K-21) | **degraded** | Dark `--button-accent` → a shade that gives ≥ 4.5:1 with white (e.g. teal-700 `#00776a`, which the light scheme already uses at 5.46:1), or keep teal-500/600 and switch `--button-accent-foreground` to near-black in dark | [`darkmode-crops.png`](../qa_cycle/evidence/phase91-ui/exit/darkmode-crops.png) DD-1a, DD-1b, DD-1c; every Alice 1440-D tile |
+| **DD-2** (= **K-21** focused item) | Every row / overflow menu. Measured on `/legal/adverse-parties` row "Actions" → ArrowDown | Focused (highlighted) menu item white on the dark `--accent` teal-500 `#00c2b1`, **2.25:1** | `packages/ui/styles/globals.css:232-233` (dark `--accent`); item classes `focus:bg-accent focus:text-accent-foreground` (`packages/ui` dropdown-menu) | **illegible** | Dark `--accent` → a dark-surface tint (e.g. teal-950 / `bg-muted`) with `--accent-foreground` light, ≥ 4.5:1 | DD-2 |
+| **DD-3** (= **K-57**, incl. **F-668A-A-2**) | 14 matrix pages: `/my-work` (agenda labels "Today's diary", "Time Today", "Next Deadline", "Upcoming · next 14 days", "Open diary"); all 7 fee-note details + the custom-fields tile ("No documents generated yet" 4.24:1, audit "1 hour ago" 4.10/4.24:1); `/settings/firm?tab=audit-trail` ("766 total", entity short ids); `/settings/connections?tab=ai` (currency prefix "R"); `/settings/matters/templates/<id>` "(optional)"; task Sheet Time entries + Comments tiles "No sub-items yet" 4.24:1. Re-verification: matter Overview struck-through setup steps; `/matters/new` "(optional)" | `text-slate-500` with no dark pair (or `dark:text-slate-500`): `#6b7482` on `#14171c` **3.80:1**, on `#0c0e11` 4.10:1, on `#07080b` 4.24:1 | `components/dashboard/todays-agenda.tsx` (labels), `components/templates/GeneratedDocumentsList.tsx:275`, `components/audit/audit-timeline.tsx:233`, `app/(app)/org/[slug]/settings/firm/_tabs/audit-log-client.tsx:944`, `components/tasks/task-sub-items.tsx:147`, `components/projects/kpi-dashboard.tsx:310`, `app/(app)/org/[slug]/matters/new/new-matter-page-client.tsx:211,224` (all pre-existing; `git blame` 2026-02 … 2026-10) | **degraded** | `text-slate-500` → `text-muted-foreground` (as K-57 proposes) | DD-3a, DD-3b, DD-3c |
+| **DD-4** (= **K-58**) | `/matters/<id>?tab=team` (re-verification page) | Member avatars keep light pastel discs in dark: `#dbfce7` and `#ffe4e6` 32 px on `#07080b`. Initials "AO" `#008236` on `#dbfce7` **4.50:1** at two decimals, just under 4.5 unrounded (flagged by the audit; register value 4.496) | `components/projects/project-members-panel.tsx:39-45` (`AVATAR_COLORS`) | **degraded** | Dark pairs in `AVATAR_COLORS` (e.g. `dark:bg-green-950 dark:text-green-300`) or reuse the `/team` avatar | DD-4 |
+| **DD-5** (= **F-665C-14 / F-665D-12**) | `/settings/firm?tab=data-protection` (processing register, 7 rows), `/settings/firm?tab=compliance` (retention table, 5 rows). Roles `role-card.tsx:52`: **not observable** (no custom role on stack A) | Ghost destructive Delete icons render **grey** `#989faa` on `#14171c` (6.74:1, legible, hue sat 0.10). The destructive colour cue is lost in dark: the ghost variant's `dark:text-slate-400` outranks `text-destructive`. The consumer workaround copies (Matter templates, Tags, Tax `DESTRUCTIVE_GHOST`) render red `#ff6467` 6.22:1 (DD-5c, for comparison) | `components/data-protection/processing-register-table.tsx:384`, `components/compliance/RetentionPolicyTable.tsx:301`, `components/roles/role-card.tsx:52`; kit `packages/ui/src/button.tsx:22` (ghost dark override) | **degraded** (semantic colour lost, not contrast) | A kit `ghost-destructive` variant (or `dark:text-destructive` honoured by the ghost variant); then remove the three workaround copies (D-55) | DD-5a, DD-5b, DD-5c |
+| **DD-6** (= **K-13**) | Every page with a kit `Card` (shared `@b2mash/ui`) | Kit Card border `#1b1e24` on the page `#07080b` **1.20:1** (card fill vs page 1.11:1). My Work's own card 1.25:1. Badge status pairs: **no badge text below AA** on any of the 102 dark loads. Skeleton: not observable (pages measured after load). The `border-input` 1.25:1 field baseline (Method) belongs here too | `packages/ui/src/card.tsx:10`, `badge.tsx:13-29`, `skeleton.tsx:7` (unchanged in Phase 91) | **degraded** (LOW; decorative border) | Token pairs for Card border / Badge / Skeleton in `packages/ui` (PORTAL-GATE), as K-13 proposes | DD-6 |
+| **DD-7** (= **F-670A-4**, new) | `/settings/fees?tab=tariffs` (Default Currency selector), `/settings/firm?tab=audit-trail` (Event type filter) | Hand-rolled combobox triggers `border-slate-200 bg-white … dark:border-slate-800 dark:bg-slate-950` inside a `SettingsSection` card: border `#20242b` **1.15:1** and fill **1.11:1** against the `#14171c` card. Below the Phase 90 1.25 baseline; the label text itself is 7.51:1 | `components/rates/currency-selector.tsx:80`; `app/(app)/org/[slug]/settings/firm/_tabs/audit-log-client.tsx:354` | **degraded** | Kit field tokens: `border-input bg-transparent dark:bg-input/30` (as `SelectTrigger`) | DD-7, DD-7b |
+| **DD-8** (= **F-670A-3**, new) | `/legal/adverse-parties` row menu | Unfocused "Delete" item `#e7000b` on the dark popover `#1b1e24`, **3.50:1**. Its `className="text-red-600 focus:text-red-600"` has no dark pair; the client / matter overflow menus have `dark:text-red-400` | `app/(app)/org/[slug]/legal/adverse-parties/adverse-party-registry-client.tsx:107` (moved verbatim by 669A; pre-existing) | **degraded** | `DropdownMenuItem variant="destructive"` (the K-25 fix pattern from 665C) | DD-2 crop (the "Delete" row) |
+
+Screenshot cells name crops inside `$EV/exit/darkmode-crops.png` (DD-1a…DD-7b) and the Alice 1440-D tiles of the matrix sheets.
+
+**Carried items:** **K-13** (kit Card / Badge / Skeleton) → DD-6, not fixed (`packages/ui` untouched), FU-11. **K-21** (dark accent) → DD-1 + DD-2, not fixed, FU-7. Also still open and folded in: K-31 dark / F-668A-T3 and F-666A-9 (→ DD-1), K-57 and F-668A-A-2 (→ DD-3), K-58 (→ DD-4), F-665C-14 / F-665D-12 (→ DD-5). New in 670A: DD-7 = F-670A-4 (ruled non-blocking, D-104, FU-8) and DD-8 = F-670A-3 (FU-10).
+
+**FD-8 statement.**
+
+> **FD-8: not passed — dark mode stays available but unadvertised.**
+>
+> The 670.6 dark walk (Alice, 1440×900, dark, 99 in-scope `/org/` surfaces, 2026-11-27, stack A at `c4595f924`) did not pass for every in-scope surface. All 99 pages fail on the shell header notification badge (white on the dark accent teal `#00a38f`, 3.16:1; DD-1 = K-21 / K-31), which is on every page. On the page bodies, 23 of 99 fail: `/legal/adverse-parties` is illegible (focused menu item white on `#00c2b1`, 2.25:1; DD-2 = K-21, every row menu), and 22 are degraded (DD-1 accent buttons and wizard steps on 11 pages, DD-3 `text-slate-500` 3.80–4.24:1 on 14, DD-5 grey ghost-destructive icons on 2, DD-7 faint combobox fields on 2). No page has a white slab, black-on-black text or text below 3:1 in its loaded state, and Phase 90's D-1…D-5 remain fixed. Evidence: `$EV/exit/darkmode.md`, `$EV/exit/darkwalk.json`, `$EV/exit/darkmode-crops.png` and the Alice 1440-D tiles of the matrix sheets.
+>
+> The minimum fix set that would flip the walk: DD-1 + DD-2 (the two K-21 dark accent tokens, one change in the dark token block, FU-7, PORTAL-GATE), DD-3 (K-57 `text-slate-500` → `text-muted-foreground` at the listed sites, FU-9), DD-5 + DD-8 (kit ghost-destructive and the adverse-parties Delete item, FU-10) and DD-7 (kit field tokens, FU-8). DD-4 (K-58) and DD-6 (K-13) are on non-matrix or decorative elements. FD-8 can be re-asked after those land and a dark walk is re-run.
+
+### C.6 Register outcomes, follow-ups and Open-question states (670.7)
+
+**Owners.** Every open item below has an **FU-n** id in (b), which is its tracked owner. Nothing found by 670A was fixed in this PR (670 Non-scope); regressions would have gone to their own `phase91/fix-<slug>` PR (none was needed).
+
+#### (a) Register final outcomes
+
+Source: `$EV/kinks-register.md` § Final outcomes (670A) — one row per register id with its PR(s) and reason (mechanics D-103; the generated counts block is unchanged: in-phase 72 · backlog 49 · won't-fix 2 · closed 1 · fixed 1).
+
+| Final outcome | Rows | Ids |
+|---|---|---|
+| **fixed** (in-phase scope shipped; PRs in the register) | 58 | 57 in-phase rows + K-16 (fixed in Phase 90, #1782/#1783/#1785). Includes **K-20** (fixed in-phase by 664A #1868 — 670.7 names it as a carry; it is not one) and **K-11** (reproduced and fixed in the kit by 664B #1869, so 670.7's "K-11 if not reproduced" carry does not apply) |
+| **fixed (approved part); rest backlog** | 5 | K-37, K-40, K-80, K-114, K-121 — the founder approved only part of each row in-phase; that part shipped, the rest is backlog by disposition |
+| **partially fixed** (remainder carried) | 6 | K-06 (→ FU-22), K-39 (→ FU-18), K-75 (→ FU-25), K-89 (→ FU-32), K-90 (→ FU-19), K-115 (→ FU-32) |
+| **follow-up** (approved for the 670A list, not fixed in-phase) | 3 | K-28 (docs, FU-34), K-46 (screenshots, FU-33), K-94 (trust landing wording, FU-31) — each approved after or outside any owning slice (FD-3 rule) |
+| **follow-up (held)** | 1 | K-88 (timesheet), held behind F-668A-R1 (D-89) → FU-2 then FU-6 |
+| **backlog** | 49 | by founder disposition (2026-11-26); the ones with a named follow-up: K-13 (FU-11), K-14 (FU-5), K-17 (FU-26), K-18 (FU-27), K-19 (FU-15), K-21 (FU-7), K-43 (FU-16), K-57 + K-58 (FU-9) |
+| **won't-fix** | 2 | K-29 (shadcn default, no visible effect); K-62 (server unchanged: every member may read every client — its screen part was fixed in #1867) |
+| **closed** | 1 | K-04 (label text, #1863; residue K-24, fixed #1867) |
+| **Total** | **125** | |
+
+Rows whose "fixed" is light-only, with the dark half carried by K-21 (FU-7): K-24, K-76 (and K-31's dark badge). K-01 is fixed across the phase: at exit every EmptyState call passes `variant` and the allowlist is empty; the separate budget question F-663A-2 is FU-20.
+
+#### (b) Follow-up list (FU-n; listed, not fixed)
+
+Order (D-2 of the exit brief): own-PR bugs, then K-88, then kit / layout / a11y, then the 670.7 named carries, then copy / IA for the founder, then docs. "Gate" is the minimum gate the follow-up PR needs.
+
+| FU | Item(s) | Class / severity | Source | Gate |
+|---|---|---|---|---|
+| **FU-1** | **F-666B-B1** — saving the draft fee-note details form zeroes per-line VAT in the header totals (`use-invoice-detail.ts:140` sends `taxAmount: undefined` → `Invoice.java:201-202`). **Re-observed by 670A M2** creating INV-0010: tax R 45,00 → R 0,00, total R 345,00 → R 300,00 while the line keeps its VAT | **HIGH, money**, pre-existing; top of the founder list (D-78) | `$EV/666B/found.md`; `$EV/exit/README.md` § Data | own PR, test first; BE-VERIFY if the fix is server-side, else FE-GATE |
+| **FU-2** | **F-668A-R1** — timesheet Save re-posts pre-filled cells to a create-only batch → duplicate billable entries | **HIGH, money**, reproduced | `$EV/668A/found.md`, D-89 | own PR, test first |
+| **FU-3** | **F-667A-10** — client-ledgers pager derived from `content.length`: > 20 ledgers never reach page 2 (move filters server-side) | MAJOR, pre-existing | `$EV/667A/found.md` (CR-1) | own PR (BE + FE) |
+| **FU-4** | **F-669A-A-4** — `DataRequestsSection.getDaysUntilDeadline` shows a deadline of today as "1d overdue" | own PR | `$EV/669A/found.md` | own PR, test first |
+| **FU-5** | **FD-10 / K-14** — "Paid This Month" sums every currency under the last row's currency (filter to the default currency) | MEDIUM; founder: not in Phase 91, own PR | FD-10, K-14 | own PR, test first |
+| **FU-6** | **K-88** timesheet rows (approved, held) + **F-668A-B-5** timesheet grid 996 px in a 710 px scroller at 1024 | behaviour + layout | K-88, `$EV/668A/found.md` | after FU-2; FE-GATE + OBS |
+| **FU-7** | **K-21** dark accent tokens: dark `--button-accent` (white on teal-600 3.16:1) and dark `--accent` (focused item 2.25:1) — DD-1, DD-2; also clears K-24 dark, K-31 dark / F-668A-T3, K-76 dark, F-666A-9, F-669B-B-5 | dark, degraded/illegible; **the single change that clears the strict FD-8 failure on all 99 pages** | C.5 | `packages/ui` → PORTAL-GATE + FE-GATE + dark re-walk |
+| **FU-8** | **F-670A-4 / DD-7** — hand-rolled combobox triggers in settings cards 1.15:1 border in dark (`rates/currency-selector.tsx:80`, `audit-log-client.tsx:354`) → kit field tokens | dark, degraded; ruled non-blocking (D-104) | `$EV/exit/darkmode.md` DD-7 | own PR, FE-GATE + OBS dark |
+| **FU-9** | **K-57** `text-slate-500` 3.80:1 in dark (DD-3, incl. **F-668A-A-2** agenda labels) and **K-58** pastel avatars (DD-4) | dark, degraded | C.5 | FE-GATE + OBS dark |
+| **FU-10** | Kit **ghost-destructive** variant (F-665C-14, F-665D-12, D-55; DD-5) and removal of the three consumer workaround copies; **F-670A-3 / DD-8** adverse-parties row "Delete" `text-red-600` 3.50:1 in dark → `variant="destructive"` | dark, degraded | C.5 | `packages/ui` → PORTAL-GATE + FE-GATE |
+| **FU-11** | **K-13** kit Card / Badge / Skeleton dark pairs (DD-6) and the `border-input` 1.25:1 field baseline | dark, LOW | C.5 | PORTAL-GATE + FE-GATE |
+| **FU-12** | **Settings / trust tables wider than their frame at 1024** (D-44 class): F-665A-8, F-665D-1 (Rates), F-665E-B1 + K-117 residual (template tables), F-665E-A3, F-665F-B2 / B3 / A5 / B4, F-666A-B20, F-667B-10, O-ledgers-1024; plus the kit tier **F-667B-R1** (`priority:"low"` hides only below ≈ 1386 px; add a 56rem tier / `wrapLabels`) | layout, LOW–MEDIUM | slice `found.md` files; D-44, D-85 | kit PR, FE-GATE + OBS 1024 |
+| **FU-13** | **F-666A-6** — DataTable scroll containers are not keyboard-focusable and have no edge fades (confirmed in the 670A KBD pass on Rates) | a11y, LOW | `$EV/exit/README.md` § 390 and keyboard (C) | kit PR + KBD |
+| **FU-14** | Kit pager out of range: "Page 10 of 3" with Previous → `?page=8` (F-667A-A2, F-667B-A4, F-667B-7) | LOW | `$EV/667A`, `$EV/667B` `found.md` | kit PR |
+| **FU-15** | Focus return and keyboard: **F-670A-2** (390 mobile nav Sheet: Escape twice from an item, focus → `<body>`), F-669B-B-7 (member panel), F-665F-A2 (execution sheet), F-665F-A1 (rule Switch drops focus, MEDIUM), **K-19** (`aria-labelledby` ids) | a11y | `$EV/exit/kbd.json`; slice `found.md`; K-19 | FE-GATE + KBD |
+| **FU-16** | h1 invariant gaps and a `PageHeader` beside-title slot: F-669A-D1 (DA-1: three hand-rolled detail h1s), F-665E-1 (editable template editor has no h1), F-665E-2 (load-failure branch), F-665C-6 (request-templates member branch 0 h1, re-observed), F-668A-B-4 (member on a matter she's not on: no h1), **K-43** / F-665E-B4 (template body `<h1>` → 2 h1s, re-observed) | a11y / structure | slice `found.md`; `$EV/exit/README.md` § Findings | kit PR + SEL-COMPAT |
+| **FU-17** | Kit and code hygiene: three row-handler patterns + a third `INTERACTIVE_SELECTOR` (F-669A-R1 / F-669B-R-1), `STICKY_ACTIONS_CLASS` / `moneyColumn` dedupe (F-667B-R3), F-669A-K1 (column array remounts cells), F-668A-K1 / K2, F-667B-B3 (row-class hook), F-667A-11, F-669A-A-2 (sort buttons not `uppercase`), F-667B-R2 (EmptyState error tone), dead code F-668A-D1 (`AssignedTaskList`) and F-664B-1 (`EditViewDialog`), F-668A-CR2-1 | LOW | slice `found.md` files | FE-GATE |
+| **FU-18** | Light contrast / token remainders: K-39 rest (F-665E-8 editor "No content available", F-668A-T1 `upcoming-diary-list.tsx`), K-37 rest (`request-list.tsx:60`, backlog), F-668A-T2, F-669A-T1, F-665E-11, F-665E-B9 (`text-teal-600` save messages 3.16:1), F-665F-B8 (`success` badge 4.50:1), F-666A-B19 | LOW | slice `found.md` files | FE-GATE (+ PORTAL-GATE for kit tokens) |
+| **FU-19** | Trust layout residues: K-90 landing Recent Transactions (F-667A-K90-landing), the D-81 sticky-column cover (K-90 / K-91 residual, F-667B-A2), F-667B-6 (reconciliation wizard steps +14 px at 1024) | LOW | `$EV/667A`, `$EV/667B` `found.md` | FE-GATE + OBS 1024 |
+| **FU-20** | **F-663A-2 / D-21 / D-24** — `/my-work` page-level `compact` box 232 px > ADR-393's 212 px budget: close by a copy ruling, a variant re-assignment or an explicit ADR-393 amendment note | needs a ruling | `$EV/663A/found.md` | ruling first |
+| **FU-21** | **F-663C-2** — sidebar and palette still hide "Clients" for members after K-62 (re-observed in the 390 Carol nav) | IA, needs founder | `$EV/663C/found.md` | founder |
+| **FU-22** | **K-06** remainder (fixed Matter / Client widths, D-39) and **D-30** (768–900 px five-crumb breadcrumb never captured) | LOW | K-06, D-30, D-39 | FE-GATE + OBS |
+| **FU-23** | Accessible names and destructive affordances: F-665E-B12, F-665F-B11 (44 unnamed switches, unlabeled filters), F-665E-B6a / F-665E-3 (unnamed logo-remove button, no confirm), F-665F-A4 (revoke button not destructive), F-665F-A3, F-665F-A6 | a11y, LOW | slice `found.md` files | FE-GATE |
+| **FU-24** | Zone-less or mixed dates: F-669B-B-1 (platform-admin), F-666B-5 (fee-note hero subtitle), F-666A-8 (two formats on the fee-runs list) | LOW | slice `found.md` files | FE-GATE |
+| **FU-25** | Empty-state residues: F-666B-1 (K-75 residue, `GeneratedDocumentsList` bare line), F-666B-2 / F-669B-B-2 (closure-history `AuditTimeline` keeps the page-level `default`; the residue of F-663B-1, whose other sites were closed by 666A/666B), F-667B-B1, F-667B-B2, F-666B-A3 (one stretched DRAFT tile) | LOW | slice `found.md` files | FE-GATE |
+| **FU-26** | **K-17** — `[tiptap warn]: Duplicate extension names ['link', 'underline']` on the template editors (re-observed: 18 warnings in the 670A console) | LOW (670.7 carry) | K-17; `$EV/exit/console.json` | FE-GATE |
+| **FU-27** | **K-18** — `kazi-theme` crash | 670.7 carry | K-18 | FE-GATE |
+| **FU-28** | **F-4** — backend `ProjectUpcomingDeadlinesService` status filter (668A observed the diary feed returns only SCHEDULED + POSTPONED court dates), with **F-668A-B-1** (a POSTPONED court date shows as overdue next to its rescheduled copy) | backend, 670.7 carry | task 668 Non-scope, §18.3.8; `$EV/668A/found.md` | BE-VERIFY + FE-GATE |
+| **FU-29** | **B-4** — `reports/[reportSlug]` (display h1, no `PageHeader`; out of Phase 91 scope) | 670.7 carry | §18.0, C.4 | FE-GATE |
+| **FU-30** | Founder-backlog bugs: F-665A-1 (blank brand colour saved as `#000000`), F-665A-2 (dormancy 365 vs 90), **F-665C-1** (a digit-first checklist name is refused with the raw backend message — **re-hit by 670A M1**), F-665C-3 / 4 / 5 / 13, F-666A-7, F-666A-B12 (fee-run wizard shows `INV-` + uuid), F-667B-8 / 9 | LOW–MEDIUM | slice `found.md` files | per item |
+| **FU-31** | **K-94** — trust landing "cashbook" wording (approved; labels e2e-frozen) | copy, approved, no owner | K-94 | FE-GATE + SEL-COMPAT + E2E-LEGAL |
+| **FU-32** | Founder copy / IA list — see (c) | copy / IA | (c) | founder, then FE-GATE |
+| **FU-33** | **K-46 / F-7** — re-shoot the 5 code-referenced marketing screenshots on the A1 shell; delete or keep the 7 unreferenced (`$EV/pngs/README.md`) | docs/marketing | D-102 | FE-GATE + marker + Frontend CI |
+| **FU-34** | **K-28** — stale `frontend/CLAUDE.md` lines (accent recipe, `--sidebar`, `--primary`, `--accent`), the `packages/ui/styles/globals.css:11-12` and `frontend/app/globals.css:48` comments, and the spec's `--button-accent-foreground` value (`architecture/phase91-ui-modernization-ii.md:678`; shipped `var(--color-white)`, D-10 — record as an erratum, Section 18 is not edited) | docs | K-28 | PORTAL-GATE + FE-GATE (one small PR) |
+| **FU-35** | QA / documentation sweeps that name old headings or controls: F-665D-11 ("Rates & Currency"), F-665F-13, F-666A-2, F-665A-6 (demo scenario "Billing") — **a product decision** under root `CLAUDE.md` §6, so listed only | docs | slice `found.md` files | authorised scenario edit |
+| **FU-36** | `architecture/ARCHITECTURE.md` has **no Phase 93 note line**; **ADR-385..391** are not in `kazi-architecture/90-adr-index.md` | docs | D-105 | docs PR |
+| **FU-37** | **F-670A-1** — portal `/auth/exchange` re-runs on a `next dev` first-compile remount: the second call 401s and the page shows "Login Failed" although the session was created. Reproduce on a production build first | LOW, unconfirmed outside `next dev` | `$EV/suites/README.md` § Portal observation | portal PR if it reproduces |
+| **FU-38** | **F-669B-CR-1** — evidence tooling (`02-assemble.cjs` level-1 count) | LOW, tooling | `$EV/669B/found.md` | none (scripts) |
+
+#### (c) Founder copy / IA list (FU-32)
+
+COPY-FREEZE kept every one of these out of the slices (root `CLAUDE.md` §6–§7). Each needs a founder wording or IA ruling before a PR.
+
+| Id | Item | Source |
+|---|---|---|
+| F-665A-3 | Subscription still tells a locked-out owner to "Contact your administrator" next to K-106's "managed by b2mash" copy | `$EV/665A/found.md` |
+| F-665D-8 | K-124's "Process in the background above (fee notes)" reads oddly | `$EV/665D/found.md` |
+| F-665D-10 | No approved word for a `CLOSED` trust account badge (only "Active") | `$EV/665D/found.md` |
+| F-665E-7 | h1 "Clause Library" vs tab "Clauses" | `$EV/665E/found.md` |
+| F-665F-1 (K-115 rest) | Notification labels: sentence case; "Billing Run …" → "Fee run …" | `$EV/665F/found.md` |
+| F-665F-12 / F-665F-B15 | AI tab h1 "AI Configuration" / "Set Up AI" vs tab "AI"; the history back link | `$EV/665F/found.md` |
+| F-665F-2 (K-114 rest) | Drop the duplicate "View Execution Log →" link (IA) | `$EV/665F/found.md` |
+| F-665F-B6 | Automation packs titled with the raw packId, no description | `$EV/665F/found.md` |
+| F-666A-1 | "Cancel fee run" dialog body still says "billing run" | `$EV/666A/found.md` |
+| F-667A-A3 (K-89 rest) | Columns for investment returns / transfers so a ledger row adds up (new copy) | `$EV/667A/found.md` |
+| F-669A-B-2 | Compliance Overview data-request row prints raw enums "ACCESS" / "RECEIVED" | `$EV/669A/found.md` |
+| F-669B-B-9 | Access-request badges print raw "PENDING" / "REJECTED" | `$EV/669B/found.md` |
+| K-80 (a), (b) | Disbursement detail h1 = category; raw trust-transaction UUID | K-80 |
+| K-83 | Approved wording, but the label is server-side (own PR) | K-83 |
+| K-121 rest | Pack and field-pack names (server) | K-121 |
+| K-124 rest | h1 ≠ tab label on tabs outside the approved list ("Audit log", "DSAR Requests", "Matter Templates", "Matter Naming", …; re-observed in the 670A matrix) | `$EV/exit/README.md` § Findings |
+
+#### (d) New findings from the 670A gate and matrix (listed, not fixed)
+
+| Id | Finding | Severity | Evidence | Disposition |
+|---|---|---|---|---|
+| F-670A-1 | Portal `/auth/exchange` re-runs on a `next dev` first-compile remount: the second exchange 401s and the page shows "Login Failed" although the JWT was stored (`/home` then loads). `portal/` is unchanged in Phase 91 | LOW; not reproduced on a production build | `$EV/suites/README.md` § Portal observation | FU-37 |
+| F-670A-2 | 390 mobile nav Sheet: with focus on a nav item, Escape must be pressed twice (a `hidden` Radix tooltip is still a dismissable layer); after close, focus lands on `<body>`, not "Toggle menu". Owner + member, light + dark, 4/4. `sidebar.tsx` / `sheet.tsx` unchanged in Phase 91 | LOW–MEDIUM (WCAG 2.1.1 / 2.4.3), pre-existing | `$EV/exit/kbd.json`, `$EV/exit/shell/390-mobile-nav.png` | FU-15 |
+| F-670A-3 | Adverse-parties row-menu "Delete" `text-red-600` with no dark pair: 3.50:1 on the dark popover (DD-8). The class was moved verbatim by 669A | LOW (dark, degraded), pre-existing | `$EV/exit/darkmode.md` DD-8, `darkmode-crops.png` | FU-10 |
+| F-670A-4 | Hand-rolled combobox triggers inside settings cards: 1.15:1 border / 1.11:1 fill in dark (DD-7). The Rates selector went 1.29 → 1.15:1 when 665D framed it in a card; the audit-trail one was 1.15 already | LOW (dark, non-text); **partly caused by Phase 91**; ruled non-blocking (D-104) | `$EV/exit/darkmode.md` DD-7, `darkwalk.json` | FU-8 (own PR) |
+
+Known items re-observed with no status change: F-666B-B1 (FU-1), F-665C-1 (FU-30), F-665E-B4 / K-43 and F-665C-6 (FU-16), F-666A-6 (FU-13), K-17 (FU-26), K-22, F-663C-2 (FU-21), K-124 rest (FU-32).
+
+#### (e) Follow-up PRs already named (each its own PR, outside Phase 91)
+
+| FU | Follow-up | Gate |
+|---|---|---|
+| FU-1 | F-666B-B1 draft save zeroes VAT (HIGH, money) — first | test first; BE-VERIFY and/or FE-GATE; E2E-LEGAL |
+| FU-2 | F-668A-R1 timesheet duplicates (HIGH, money), then FU-6 (K-88) | test first; FE-GATE (+ BE-VERIFY if server-side) |
+| FU-3 | F-667A-10 client-ledgers pager | BE-VERIFY + FE-GATE |
+| FU-4 | F-669A-A-4 DSAR "today = 1d overdue" | FE-GATE, test first |
+| FU-5 | FD-10 "Paid This Month" mixed currency | test first |
+| FU-7 | K-21 dark accent tokens (unblocks FD-8 together with FU-8, FU-9, FU-10) | PORTAL-GATE + FE-GATE + dark re-walk |
+| FU-8 | F-670A-4 combobox dark border (D-104) | FE-GATE + OBS dark |
+| FU-33 | Marketing screenshots on the A1 shell (K-46, D-102) | FE-GATE + marker |
+| FU-36 | Phase 93 note line + ADR-385..391 index rows (D-105) | docs |
+
+#### (f) Open Questions: final states
+
+| # | Final state |
+|---|---|
+| FD-1 | **RULED** 2026-11-25 (A1 + dark inset (c)); shipped in 661B (#1863); ADR-392 Accepted |
+| FD-2 | **RULED**; held — `portal/` unchanged in the phase (PORTAL-GATE green, `/login` and `/home` observed light); marketing `/` stays light with a stored dark preference |
+| FD-3 | **RULED** 2026-11-26; every row has a final outcome ((a)) |
+| FD-4 | **RULED**; shipped in 663C (#1867, K-08) |
+| FD-5 | **RULED**; shipped in 666B (#1877); hero observed on all 7 statuses |
+| FD-6 | **RULED**; 663C shipped as one PR |
+| FD-7 | **RULED**; shipped in 663A |
+| FD-8 | **RULED**; **outcome: not passed** (C.5) — dark mode stays available but unadvertised |
+| FD-9 | **RULED**; shipped in 663C (K-05, `nav-items.ts` untouched) |
+| FD-10 | **RULED**; **carried** → FU-5 |
+| FD-11 | **RULED**; condition met (reproduced) and fixed in 664B (#1869) |
+| FD-12 | **RULED** (rule waived); Sections 8–9 shipped (668A, 669A, 669B) |
+| X1–X5 | **RULED** (architecture). X2: 667A observed the ledger card and the history agree for all three clients, so no register row was needed. X5: 662A flagged tab switching with unsaved edits → K-110 (backlog). X5 palette focus return shipped in 663C. X4: retirements grepped repo-wide in each PR |
+| P-1 | **DEFAULT-ACCEPTED**; Phase 93 shipped first; the take-on tab was restyled frame-only (665C) and observed in the 670A matrix |
+| P-2 | **DEFAULT-ACCEPTED**; the 661B baseline is what C.2 and C.4 compare against |
+| P-3 | **DEFAULT-ACCEPTED**; the runner stopped for FD-1 and FD-3 |
+| P-4 | **DEFAULT-ACCEPTED**; **outcome:** contact sheets kept the 670A PR under 250 files, no evidence split (D-101) |
+| P-5, P-6, P-9 | **DEFAULT-ACCEPTED**; the build order satisfied each; 669B removed the last allowlist entries and made `variant` required |
+| P-7 | **DEFAULT-ACCEPTED**; **checked — no erratum needed**: ADR-395's only commit already names E5B / E5F (`:43`, `:60`); recorded in the index row |
+| P-8 | **DEFAULT-ACCEPTED**; shipped in 666A (`fee-notes-sub-nav.tsx`, `aria-current="page"` drives `TAB_UNDERLINE_CURRENT`) |
+| P-10, P-11, P-12, P-13 | **DEFAULT-ACCEPTED**; done in 661B / 667A / 668A as stated (ADR-392 Accepted by 661B) |
+| P-14 | **DEFAULT-ACCEPTED** (no merge); 22 slices shipped (21 PRs + this exit) |
+| P-15 | **DEFAULT-ACCEPTED** (per-slice E2E-LEGAL) |
+| P-16 | **RULED** (architecture); each decision recorded in its slice PR |
+
+#### (g) Deviations from the 670 task text (each authorised or recorded)
+
+| Deviation | Authorised / recorded |
+|---|---|
+| Suite order: exit-month first on its own stack, then legal + default on a second fresh stack kept for the matrix (670.1 lists legal + default first) | D-98 (orchestrator ruling) |
+| No take-on suite and no `KGOSI_EMAIL` run (neither in 670.1) | D-99 |
+| Observation matrix via the Playwright **library** (real Chromium), MCP for one cross-check page and the portal (670.4 says "Playwright MCP") | D-100 |
+| Matrix split across two builders inside one PR; evidence under 250 files | D-101 |
+| Screenshots **listed stale, not re-shot** (670.8 allows "or list each as stale") | D-102 → FU-33 |
+| **One read-only SQL `SELECT`** in Stage M1 (`tenant_7d218705360b.checklist_templates`) to learn that no org-custom checklist existed before creating one through the UI. It wrote nothing, but the QA rule is "no SQL shortcuts"; id discovery should use the UI or a read-only API GET | D-106 (disclosed in `$EV/exit/README.md` § Run and environment) |
+| "Merge Section 18 into ARCHITECTURE.md" done as a **note line** linking the unchanged phase doc (the Phases 86–92 pattern) | phase doc line 1; brief D-4 |
+| Phase 93 note line and ADR-385..391 index rows **not added** | D-105 → FU-36 |
+| P-7 erratum not written: the ADR already reads E5B / E5F | (f) P-7 |
+| Bookkeeping split: header Status, the TASKS.md Epic 670 cell, the 670A slice row and the "merged as" row are written after merge | D-108 |
+| 670.1's "locator scoping in 666B only" and 670.2's "portal marker for 661B" were corrected by observation (5 slices edited 8 specs; 669A also carries a portal marker) | C.2, C.3 |
+
+### C.7 Lessons
+
+- **OBS catches what reviews pass, again.** Phase 91's real-browser observations found what approving reviews missed: inactive sort chevrons widening tables (D-38), ghost-destructive icons going grey in dark (D-55), a `whitespace-normal` column collapse (D-73), a `min-w` overflow (D-77), a sticky column covering Status (D-81) and `priority:"low"` hiding columns until ≈ 1386 px (D-85). The exit matrix found two more keyboard / dark items (F-670A-2, F-670A-4). Keep OBS as the merge gate for layout.
+- **Measure framing changes in dark too.** 665D's card nesting moved a field border from 1.29 to 1.15:1; the slice's OBS did not measure it (F-670A-4). A slice that wraps existing controls in a new surface should probe their borders on that surface in dark.
+- **`key={page}` remounts drop focus** (D-49), and a **string copy of a twMerge class is not `cn()`** (665F): both broke behaviour silently.
+- **exit-month needs its own fresh stack** (D-6); running it first and keeping the legal stack for the matrix saves a rebuild (D-98).
+- **`e2e-rebuild.sh` from another worktree path recreates `e2e-localstack`** and wipes S3 (668A); rebuild only the frontend service with `--no-deps`.
+- **The merge hook matches the literal merge command anywhere in a Bash call** (664B); write notes that mention it with the editor, not a heredoc.
+- **Evidence stays off the PR head until review** (665D / 666B / 667B pattern), and every evidence script is committed as executed.
+- **Generated blocks parse loosely.** The register's counts script reads every line starting `| K-nn |`, so a second table keyed by the same ids broke it; 670A bolded the ids (D-103). Check a generator's parser before adding a table beside it.
+- **Grep metrics need a false-positive pass.** `PageHeader` adoption counted a comment (44 vs 43 real), the direct-table metric counted a comment, and the display-h1 metric counted an h2. Read the listing, not only the count.
+- **Id discovery through the UI or a read-only GET only** — never SQL, even read-only (D-106).

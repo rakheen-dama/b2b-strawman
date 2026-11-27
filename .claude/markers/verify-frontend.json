@@ -1,7 +1,7 @@
 {
-  "commit": "089a05400",
-  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, worktree-epic-669B, PR #1882)",
+  "commit": "6f29c04cc",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build (nvm node 20.11.1, wt-fix-timesheet-dup, PR #1884 review round 1)",
   "exit": 0,
-  "ts": "2026-11-27T11:29:52Z",
-  "summary": "PR #1882 @089a05400 (final head) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 549 files / 5622 passed / 2 skipped, build 0; orchestrator run. E2E fresh stack (frontend image from 810b8708f, product-identical to head): legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, navigation 17/17, rbac-capabilities 8/8"
+  "ts": "2026-11-27T16:08:03Z",
+  "summary": "PR #1884 @6f29c04cc (final head; gate ran on product commit d19cb2418, head adds OBS evidence only) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 550 files / 5635 passed / 2 skipped, build 0. E2E fresh stack from the worktree @d19cb2418: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped. OBS r1 21/21 PASS."
 }

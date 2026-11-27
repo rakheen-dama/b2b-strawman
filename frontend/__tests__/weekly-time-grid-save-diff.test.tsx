@@ -6,7 +6,7 @@
  * 1. Cell increased → ONE new entry for the difference (batch, billable: true).
  * 2. Cell decreased/cleared, exactly one editable entry → PUT its duration / DELETE it.
  * 3. Cell decreased with several entries, or a billed entry the server refuses → not saved; an
- *    error names the day and task and points at the matter's Time tab. Other cells still save.
+ *    error names the day and task and points at the matter's Tasks tab. Other cells still save.
  * 4. Unchanged cells → nothing sent.
  * 5. After a save the week is re-fetched as the new baseline; a second Save sends nothing.
  * 6. Week navigation resets the baseline to the loaded week.
@@ -33,6 +33,25 @@ vi.mock("@/app/(app)/org/[slug]/my-work/timesheet/actions", () => ({
 vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   updateTimeEntry: (...args: unknown[]) => mockUpdateTimeEntry(...args),
   deleteTimeEntry: (...args: unknown[]) => mockDeleteTimeEntry(...args),
+}));
+
+// CSV import: the dialog is replaced by a button that hands `csv.rows` to the grid's onImport.
+const csv = vi.hoisted(() => ({ rows: [] as unknown[] }));
+vi.mock("@/components/time-tracking/csv-import-dialog", () => ({
+  CsvImportDialog: ({
+    onImport,
+    children,
+  }: {
+    onImport: (rows: unknown[]) => void;
+    children: React.ReactNode;
+  }) => (
+    <>
+      {children}
+      <button type="button" onClick={() => onImport(csv.rows)}>
+        Run fake import
+      </button>
+    </>
+  ),
 }));
 
 vi.mock("sonner", () => ({
@@ -75,7 +94,7 @@ function okBatch(created: number) {
   };
 }
 
-function renderGrid(existingEntries: MyWorkTimeEntryItem[]) {
+function renderGrid(existingEntries: MyWorkTimeEntryItem[] | null) {
   return render(
     <WeeklyTimeGrid
       tasks={[task]}
@@ -212,12 +231,12 @@ describe("WeeklyTimeGrid save — only changes are persisted (F-668A-R1)", () =>
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Mon 9");
     expect(alert.textContent).toContain("Design wireframes");
-    expect(alert.textContent).toContain("Time tab");
+    expect(alert.textContent).toContain("Open the task from the matter\u2019s Tasks tab");
     expect(allToastText()).toContain("Mon 9");
     expect(screen.getByLabelText("Hours for day 1").className).toContain("border-red-500");
   });
 
-  it("rule 3: a billed entry the server refuses is reported with day, task and the Time tab", async () => {
+  it("rule 3: a billed entry the server refuses is reported with day, task and the Tasks tab", async () => {
     const user = userEvent.setup();
     mockUpdateTimeEntry.mockResolvedValue({
       success: false,
@@ -233,7 +252,7 @@ describe("WeeklyTimeGrid save — only changes are persisted (F-668A-R1)", () =>
     expect(alert.textContent).toContain("Mon 9");
     expect(alert.textContent).toContain("Design wireframes");
     expect(alert.textContent).toContain("fee note");
-    expect(alert.textContent).toContain("Time tab");
+    expect(alert.textContent).toContain("Open the task from the matter\u2019s Tasks tab");
     expect(mockSaveWeeklyEntries).not.toHaveBeenCalled();
   });
 
@@ -318,5 +337,117 @@ describe("WeeklyTimeGrid save — only changes are persisted (F-668A-R1)", () =>
     expect(mockSaveWeeklyEntries.mock.calls[0][1]).toEqual([
       { taskId: "t1", date: "2026-03-17", durationMinutes: 120, billable: true },
     ]);
+  });
+
+  it("M1: a Save in flight blocks week changes; label, cells and the next save agree", async () => {
+    const user = userEvent.setup();
+    let release: (value: unknown) => void = () => {};
+    mockSaveWeeklyEntries.mockImplementationOnce(
+      () => new Promise((resolve) => (release = resolve))
+    );
+    mockFetchWeekEntries.mockResolvedValue([
+      entry("e1", "2026-03-09", 60),
+      entry("e2", "2026-03-10", 30),
+    ]);
+    renderGrid([entry("e1", "2026-03-09", 60)]);
+
+    await setCell(user, 2, "0.5");
+    await clickSave(user);
+    await waitFor(() => expect(mockSaveWeeklyEntries).toHaveBeenCalledTimes(1));
+
+    // While the save is pending, nothing can change the week or the cells.
+    const next = screen.getByRole("button", { name: "Next week" });
+    expect(next).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous week" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "This Week" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Copy Previous Week/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Import CSV/ })).toBeDisabled();
+    expect(screen.getByLabelText("Hours for day 3")).toBeDisabled();
+    await user.click(next);
+
+    release(okBatch(1));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save" })).toBeDisabled());
+    await waitFor(() => expect(screen.getByLabelText("Hours for day 3")).not.toBeDisabled());
+
+    expect(screen.getByText("Mar 9 \u2013 Mar 15, 2026")).toBeDefined();
+    expect(mockFetchWeekEntries).toHaveBeenCalledTimes(1);
+    expect(mockFetchWeekEntries).toHaveBeenCalledWith("2026-03-09", "2026-03-15");
+    expect((screen.getByLabelText("Hours for day 1") as HTMLInputElement).value).toBe("1");
+    expect((screen.getByLabelText("Hours for day 2") as HTMLInputElement).value).toBe("0.5");
+
+    mockSaveWeeklyEntries.mockResolvedValue(okBatch(1));
+    await setCell(user, 3, "1");
+    await clickSave(user);
+    await waitFor(() => expect(mockSaveWeeklyEntries).toHaveBeenCalledTimes(2));
+    expect(mockSaveWeeklyEntries.mock.calls[1][1]).toEqual([
+      { taskId: "t1", date: "2026-03-11", durationMinutes: 60, billable: true },
+    ]);
+  });
+
+  it("M2: a failed first load starts in the load-error state until a week loads", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true)
+    ); // "unsaved changes" prompt on Next
+    renderGrid(null);
+
+    expect(screen.getByRole("alert").textContent).toMatch(/load this week/);
+    await setCell(user, 1, "1");
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+
+    mockFetchWeekEntries.mockResolvedValue([]);
+    await user.click(screen.getByRole("button", { name: "Next week" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+
+    mockSaveWeeklyEntries.mockResolvedValue(okBatch(1));
+    await setCell(user, 1, "1");
+    expect(screen.getByRole("button", { name: "Save" })).not.toBeDisabled();
+    await clickSave(user);
+    await waitFor(() => expect(mockSaveWeeklyEntries).toHaveBeenCalledTimes(1));
+    expect(mockSaveWeeklyEntries.mock.calls[0][1]).toEqual([
+      { taskId: "t1", date: "2026-03-16", durationMinutes: 60, billable: true },
+    ]);
+  });
+
+  it("M2: a failed in-page week load (fetchWeekEntries → null) disables Save", async () => {
+    const user = userEvent.setup();
+    mockFetchWeekEntries.mockResolvedValue(null);
+    renderGrid([entry("e1", "2026-03-09", 60)]);
+
+    await user.click(screen.getByRole("button", { name: "Next week" }));
+    await waitFor(() =>
+      expect(mockFetchWeekEntries).toHaveBeenCalledWith("2026-03-16", "2026-03-22")
+    );
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toMatch(/load this week/);
+
+    await setCell(user, 2, "1");
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    expect(mockSaveWeeklyEntries).not.toHaveBeenCalled();
+  });
+
+  it("M3: a CSV import adds to a cell, so a smaller import never lowers logged time", async () => {
+    const user = userEvent.setup();
+    mockSaveWeeklyEntries.mockResolvedValue(okBatch(1));
+    mockFetchWeekEntries.mockResolvedValue([
+      entry("e1", "2026-03-09", 120),
+      entry("e6", "2026-03-09", 30),
+    ]);
+    renderGrid([entry("e1", "2026-03-09", 120)]); // Mon 2h
+    csv.rows = [
+      { taskId: "t1", task, date: "2026-03-09", hours: 0.5, description: "", billable: true },
+    ];
+
+    await user.click(screen.getByRole("button", { name: "Run fake import" }));
+    expect((screen.getByLabelText("Hours for day 1") as HTMLInputElement).value).toBe("2.5");
+    await clickSave(user);
+
+    await waitFor(() => expect(mockSaveWeeklyEntries).toHaveBeenCalledTimes(1));
+    expect(mockSaveWeeklyEntries.mock.calls[0][1]).toEqual([
+      { taskId: "t1", date: "2026-03-09", durationMinutes: 30, billable: true },
+    ]);
+    expect(mockUpdateTimeEntry).not.toHaveBeenCalled();
+    expect(mockDeleteTimeEntry).not.toHaveBeenCalled();
   });
 });

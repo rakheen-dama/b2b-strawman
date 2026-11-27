@@ -105,7 +105,8 @@ export interface GridTaskRow {
 
 interface WeeklyTimeGridProps {
   tasks: GridTaskRow[];
-  existingEntries: MyWorkTimeEntryItem[];
+  /** The week's entries, or `null` when the page could not load them (the baseline is unknown). */
+  existingEntries: MyWorkTimeEntryItem[] | null;
   weekStart: string; // "YYYY-MM-DD" Monday
   allTasks: GridTaskRow[];
   slug: string;
@@ -126,10 +127,11 @@ export function WeeklyTimeGrid({
   const [weekStart, setWeekStart] = useState(() => parseIsoDate(initialWeekStart));
   // The week's entries as last loaded from the server. Save sends only the difference between the
   // cells and this baseline, so it never re-creates existing time (F-668A-R1).
-  const [baseline, setBaseline] = useState<MyWorkTimeEntryItem[]>(existingEntries);
-  const [baselineError, setBaselineError] = useState(false);
+  const [baseline, setBaseline] = useState<MyWorkTimeEntryItem[]>(existingEntries ?? []);
+  // True while the displayed week's entries are unknown (a failed load): Save stays disabled.
+  const [baselineError, setBaselineError] = useState(existingEntries === null);
   const [cellValues, setCellValues] = useState<Record<CellKey, number>>(() =>
-    buildCellValuesFromEntries(existingEntries, parseIsoDate(initialWeekStart))
+    buildCellValuesFromEntries(existingEntries ?? [], parseIsoDate(initialWeekStart))
   );
   const [cellErrors, setCellErrors] = useState<Record<CellKey, string>>({});
   const [saveProblems, setSaveProblems] = useState<string[]>([]);
@@ -137,8 +139,11 @@ export function WeeklyTimeGrid({
   const [isSaving, setIsSaving] = useState(false);
   const [isNavigating, startNavTransition] = useTransition();
   const [addTaskQuery, setAddTaskQuery] = useState("");
-  // Only the latest week load may set the baseline (fast Previous/Next clicks).
-  const loadSeq = useRef(0);
+  // The week on screen. A load only applies if its week is still the one displayed, so a reload
+  // that finishes after the user changed week can never put one week's entries under another.
+  const displayedWeek = useRef(initialWeekStart);
+  // While a Save is in flight nothing may change the week or the cells.
+  const locked = isSaving || isNavigating;
 
   function handleCellChange(taskId: string, dayIndex: number, hours: number) {
     const key = cellKey(taskId, dayIndex);
@@ -166,14 +171,14 @@ export function WeeklyTimeGrid({
    * baseline is unknown, so Save stays disabled until the page is reloaded.
    */
   async function loadWeek(monday: Date): Promise<void> {
-    const seq = ++loadSeq.current;
+    const week = toIsoDate(monday);
     let entries: MyWorkTimeEntryItem[] | null = null;
     try {
       entries = await fetchWeekEntries(toIsoDate(monday), toIsoDate(addDays(monday, 6)));
     } catch {
       entries = null;
     }
-    if (seq !== loadSeq.current) return;
+    if (displayedWeek.current !== week) return;
     if (!Array.isArray(entries)) {
       setBaselineError(true);
       return;
@@ -184,7 +189,9 @@ export function WeeklyTimeGrid({
   }
 
   function switchWeek(monday: Date) {
+    if (isSaving) return;
     if (dirty && !confirm("You have unsaved changes. Discard?")) return;
+    displayedWeek.current = toIsoDate(monday);
     setWeekStart(monday);
     setBaseline([]);
     setCellValues({});
@@ -227,7 +234,8 @@ export function WeeklyTimeGrid({
 
     // `cell` is absent only for a failure that can't be tied to one cell.
     const problems: Array<{ cell?: PlanCell; message: string }> = [];
-    const editElsewhere = "Change it from the matter\u2019s Time tab.";
+    const editElsewhere =
+      "Open the task from the matter\u2019s Tasks tab to edit its time entries.";
     let saved = 0;
 
     for (const a of plan.ambiguous) {
@@ -461,8 +469,15 @@ export function WeeklyTimeGrid({
 
     const importedCellValues = buildCellValuesFromEntries(importedEntries, weekStart);
 
-    // Merge with existing cell values (imported values overwrite)
-    setCellValues((prev) => ({ ...prev, ...importedCellValues }));
+    // An import adds new time: each imported value is added onto the cell's current value. Replacing
+    // it would make a smaller import read as a reduction (PUT/DELETE of logged time) on Save.
+    setCellValues((prev) => {
+      const next = { ...prev };
+      for (const [key, hours] of Object.entries(importedCellValues)) {
+        next[key] = (prev[key] ?? 0) + hours;
+      }
+      return next;
+    });
     setCellErrors({});
     setDirty(true);
 
@@ -485,7 +500,7 @@ export function WeeklyTimeGrid({
             size="icon"
             className="size-8"
             onClick={() => navigateWeek(-1)}
-            disabled={isNavigating}
+            disabled={locked}
             aria-label="Previous week"
           >
             <ChevronLeft className="size-4" />
@@ -498,12 +513,12 @@ export function WeeklyTimeGrid({
             size="icon"
             className="size-8"
             onClick={() => navigateWeek(1)}
-            disabled={isNavigating}
+            disabled={locked}
             aria-label="Next week"
           >
             <ChevronRight className="size-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={goToThisWeek} disabled={isNavigating}>
+          <Button variant="ghost" size="sm" onClick={goToThisWeek} disabled={locked}>
             This Week
           </Button>
         </div>
@@ -512,13 +527,13 @@ export function WeeklyTimeGrid({
             variant="outline"
             size="sm"
             onClick={handleCopyPreviousWeek}
-            disabled={isCopying || isNavigating}
+            disabled={isCopying || locked}
           >
             <Copy className="mr-1.5 size-3.5" />
             {isCopying ? "Copying..." : "Copy Previous Week"}
           </Button>
           <CsvImportDialog availableTasks={allTasks} onImport={handleCsvImport}>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled={locked}>
               <Upload className="mr-1.5 size-3.5" />
               Import CSV
             </Button>
@@ -597,6 +612,7 @@ export function WeeklyTimeGrid({
                         dayIndex={d}
                         value={val}
                         error={cellErrors[key]}
+                        disabled={isSaving}
                         onChange={handleCellChange}
                       />
                     </TableCell>

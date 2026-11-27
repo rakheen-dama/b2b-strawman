@@ -39,7 +39,9 @@ export default async function TimesheetPage({
     console.error("Failed to fetch tasks for timesheet:", error);
   }
 
-  let existingEntries: MyWorkTimeEntryItem[] = [];
+  // `null` on failure, never `[]`: the grid saves only the difference against these entries, so an
+  // empty list it cannot trust would let re-typed time be created again (F-668A-R1).
+  let existingEntries: MyWorkTimeEntryItem[] | null = null;
   try {
     existingEntries = await api.get<MyWorkTimeEntryItem[]>(
       `/api/my-work/time-entries?from=${weekStart}&to=${weekEnd}`
@@ -57,7 +59,7 @@ export default async function TimesheetPage({
   }));
 
   // De-duplicate: tasks with existing entries first, then remaining assigned tasks
-  const entryTaskIds = new Set(existingEntries.map((e) => e.taskId));
+  const entryTaskIds = new Set((existingEntries ?? []).map((e) => e.taskId));
   const prePopulatedRows = [
     ...assignedTasks.filter((t) => entryTaskIds.has(t.id)),
     ...assignedTasks.filter((t) => !entryTaskIds.has(t.id)).slice(0, 5),

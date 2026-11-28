@@ -1,0 +1,89 @@
+{
+  "allChecksPass": true,
+  "gitHead": "d430812cc5540d87a4096fdf6cb6f6442165ad93",
+  "error": null,
+  "failed": [],
+  "checks": "19/19",
+  "notes": [
+    "pre: default flag of VAT — Standard switched off (restored in finally)",
+    "step 2: tariff line 1(a) - Instructions to sue or defend amount 780 taxRate null",
+    "post: default flag of VAT — Standard restored to on"
+  ],
+  "steps": [
+    {
+      "name": "0-fixture: one VAT line + one None line",
+      "sub": 300,
+      "tax": 30,
+      "total": 330,
+      "dom": {
+        "subtotal": 300,
+        "tax": 30,
+        "total": 330,
+        "taxRows": [
+          "VAT — Standard (15%)"
+        ]
+      },
+      "headerTaxField": null
+    },
+    {
+      "name": "1-vat-line-deleted (no reload)",
+      "sub": 100,
+      "tax": 0,
+      "total": 100,
+      "dom": {
+        "subtotal": 100,
+        "tax": 0,
+        "total": 100,
+        "taxRows": [
+          "Tax"
+        ]
+      },
+      "headerTaxField": "0"
+    },
+    {
+      "name": "2-tariff-line-added (no reload)",
+      "sub": 880,
+      "tax": 0,
+      "total": 880,
+      "dom": {
+        "subtotal": 880,
+        "tax": 0,
+        "total": 880,
+        "taxRows": [
+          "Tax"
+        ]
+      },
+      "headerTaxField": "0"
+    },
+    {
+      "name": "3-save-changes (no reload)",
+      "sub": 880,
+      "tax": 0,
+      "total": 880,
+      "dom": {
+        "subtotal": 880,
+        "tax": 0,
+        "total": 880,
+        "taxRows": [
+          "Tax"
+        ]
+      },
+      "headerTaxField": "0"
+    },
+    {
+      "name": "3-reloaded",
+      "sub": 880,
+      "tax": 0,
+      "total": 880,
+      "dom": {
+        "subtotal": 880,
+        "tax": 0,
+        "total": 880,
+        "taxRows": [
+          "Tax"
+        ]
+      },
+      "headerTaxField": "0"
+    }
+  ]
+}

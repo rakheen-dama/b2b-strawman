@@ -1,0 +1,138 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-delete-refresh-vat/frontend
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts (6 tests | 5 failed) 28ms
+       × shows the server's totals and VAT once the taxed line is deleted, without a reload 15ms
+       × shows the reload error when the line is deleted but the fee note cannot be re-read 3ms
+       × does not bring the deleted line's VAT back into the header Tax Amount, nor save it 4ms
+       × resets the header Tax Amount to the server's tax when the note leaves per-line mode 2ms
+       × counts as pending work while the fee note is being re-read 2ms
+ ❯ __tests__/components/invoices/invoice-detail-header-tax-sync.test.tsx (2 tests | 2 failed) 579ms
+     × delete the taxed line, add a disbursement: the field shows 0 and Save Changes stores no VAT 188ms
+     × locks the header Tax Amount while a line save is pending, so the save cannot overwrite a typed value 390ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/components/invoices/invoice-detail-header-tax-sync.test.tsx > InvoiceDetailClient — the header Tax Amount stays on the server's VAT > delete the taxed line, add a disbursement: the field shows 0 and Save Changes stores no VAT
+AssertionError: expected 'TotalR 65,00' to be 'TotalR 50,00' // Object.is equality
+
+Expected: "TotalR 50,00"
+Received: "TotalR 65,00"
+
+ ❯ __tests__/components/invoices/invoice-detail-header-tax-sync.test.tsx:226:24
+    224|     // The deleted line's R15 VAT leaves the total straight away (not …
+    225|     expect(screen.queryByRole("button", { name: "Delete Consultation" …
+    226|     expect(totalRow()).toBe(`Total${formatCurrency(50, "ZAR")}`);
+       |                        ^
+    227|
+    228|     server = makeInvoice({ ...UNTAXED, lines: [NONE_LINE, DISBURSEMENT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  __tests__/components/invoices/invoice-detail-header-tax-sync.test.tsx > InvoiceDetailClient — the header Tax Amount stays on the server's VAT > locks the header Tax Amount while a line save is pending, so the save cannot overwrite a typed value
+AssertionError: expected '0' to be '1512' // Object.is equality
+
+Expected: "1512"
+Received: "0"
+
+ ❯ __tests__/components/invoices/invoice-detail-header-tax-sync.test.tsx:271:36
+    269|
+    270|     // Whatever the field showed while the save was in flight is what …
+    271|     expect(headerTaxInput().value).toBe(seenByUser);
+       |                                    ^
+    272|     expect(fieldLocked).toBe(true);
+    273|     expect(saveLocked).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts > useInvoiceDetail — delete and refresh take the fee note from the server > deleting a line > shows the server's totals and VAT once the taxed line is deleted, without a reload
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'inv-1' ]
+
+Number of calls: 0
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts:180:28
+    178|       await act(async () => result.current.handleDeleteLine(VAT_LINE.i…
+    179|
+    180|       expect(fetchInvoice).toHaveBeenCalledWith("inv-1");
+       |                            ^
+    181|       expect(result.current.invoice.lines.map((l) => l.id)).toEqual([N…
+    182|       expect(result.current.invoice.hasPerLineTax).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts > useInvoiceDetail — delete and refresh take the fee note from the server > deleting a line > shows the reload error when the line is deleted but the fee note cannot be re-read
+AssertionError: expected null to be 'Reload failed' // Object.is equality
+
+- Expected:
+"Reload failed"
+
++ Received:
+null
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts:195:36
+    193|       await act(async () => result.current.handleDeleteLine(VAT_LINE.i…
+    194|
+    195|       expect(result.current.error).toBe("Reload failed");
+       |                                    ^
+    196|     });
+    197|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts > useInvoiceDetail — delete and refresh take the fee note from the server > delete, then a tariff or disbursement refresh > does not bring the deleted line's VAT back into the header Tax Amount, nor save it
+AssertionError: expected '15' to be '0' // Object.is equality
+
+Expected: "0"
+Received: "15"
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts:209:40
+    207|
+    208|       expect(result.current.invoice.hasPerLineTax).toBe(false);
+    209|       expect(result.current.taxAmount).toBe("0");
+       |                                        ^
+    210|
+    211|       await act(async () => result.current.handleSaveDraft());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts > useInvoiceDetail — delete and refresh take the fee note from the server > refreshing > resets the header Tax Amount to the server's tax when the note leaves per-line mode
+AssertionError: expected '15' to be '0' // Object.is equality
+
+Expected: "0"
+Received: "15"
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts:224:40
+    222|
+    223|       expect(result.current.invoice.hasPerLineTax).toBe(false);
+    224|       expect(result.current.taxAmount).toBe("0");
+       |                                        ^
+    225|     });
+    226|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts > useInvoiceDetail — delete and refresh take the fee note from the server > refreshing > counts as pending work while the fee note is being re-read
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ __tests__/components/invoices/use-invoice-detail-delete-refresh.test.ts:252:40
+    250|         void result.current.handleRefresh();
+    251|       });
+    252|       expect(result.current.isPending).toBe(true);
+       |                                        ^
+    253|
+    254|       await act(async () => release());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 1 passed (8)
+   Start at  04:21:06
+   Duration  2.03s (transform 451ms, setup 235ms, import 1.18s, tests 607ms, environment 475ms)
+

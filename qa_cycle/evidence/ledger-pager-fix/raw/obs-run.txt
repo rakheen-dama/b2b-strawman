@@ -1,0 +1,48 @@
+2026-11-28T02:49:02Z
+seeded 1/23 OBS Pager Client 01 (6517 ms)
+seeded 2/23 OBS Pager Client 02 (6256 ms)
+seeded 3/23 OBS Pager Client 03 (5771 ms)
+seeded 4/23 OBS Pager Client 04 (6181 ms)
+seeded 5/23 OBS Pager Client 05 (6281 ms)
+seeded 6/23 OBS Pager Client 06 (5599 ms)
+seeded 7/23 OBS Pager Client 07 (5849 ms)
+seeded 8/23 OBS Pager Client 08 (5940 ms)
+seeded 9/23 OBS Pager Client 09 (5969 ms)
+seeded 10/23 OBS Pager Client 10 (5670 ms)
+seeded 11/23 OBS Pager Client 11 (5959 ms)
+seeded 12/23 OBS Pager Client 12 (5852 ms)
+seeded 13/23 OBS Pager Client 13 (5804 ms)
+seeded 14/23 OBS Pager Client 14 (5125 ms)
+seeded 15/23 OBS Pager Client 15 (5358 ms)
+seeded 16/23 OBS Pager Client 16 (5601 ms)
+seeded 17/23 OBS Pager Client 17 (5804 ms)
+seeded 18/23 OBS Pager Client 18 (5484 ms)
+seeded 19/23 OBS Pager Client 19 (5804 ms)
+seeded 20/23 OBS Pager Client 20 (6543 ms)
+seeded 21/23 OBS Zebra Holdings (5690 ms)
+seeded 22/23 OBS Pager Settled 01 (8536 ms)
+seeded 23/23 OBS Pager Settled 02 (8876 ms)
+PASS pre-state: the list's account had no ledgers before the seed — {"preCount":0}
+PASS 1. count is every ledger — "23 clients found"
+PASS 1. pager reads Page 1 of 2 — "Page 1 of 2"
+PASS 1. 20 rows on page 1 — 20
+PASS 2. pager reads Page 2 of 2 — "Page 2 of 2"
+PASS 2. the remaining 3 ledgers are on page 2 — ["OBS Zebra Holdings","OBS Pager Settled 02","OBS Pager Settled 01"]
+PASS 2. Zebra and both settled clients are on page 2
+PASS 2. pages 1+2 = the seeded set, no duplicate — {"union":23,"distinct":23}
+PASS 2. Σ Trust Balance over both pages == total-balance == seeded deposits less payments — {"uiSum":22105,"apiTotal":22105,"seedTotal":22105}
+PASS 3. non-zero count excludes the 2 settled clients — "21 clients found"
+PASS 3. non-zero pager Page 1 of 2 — "Page 1 of 2"
+PASS 3. non-zero page 2 holds Zebra only — ["OBS Zebra Holdings"]
+PASS 3. no zero row on either non-zero page
+PASS 3. Σ non-zero balances == total-balance
+PASS 3. UI count == API totalElements (nonZeroOnly) — {"size":20,"number":0,"totalElements":21,"totalPages":2}
+PASS 4. search finds Zebra (page 2 unfiltered) on page 1 — ["OBS Zebra Holdings"]
+PASS 4. '1 client found', no pager — {"desc":"1 client found","pager":null}
+PASS 5. search 'settled' → the 2 settled clients, both R 0,00 — [{"id":"48e5e4ce-bd1f-43fb-b1c4-f43d3768b753","name":"OBS Pager Settled 02","balance":0},{"id":"d75588be-3a6e-45c9-b51b-2e4a0bd1e0e3","name":"OBS Pager Settled 01","balance":0}]
+PASS 5. 'settled' + non-zero → 0 found, empty state — {"desc":"0 clients found","empty":true}
+PASS 6. search 'pager' → 22 found, Page 1 of 2 — {"desc":"22 clients found","pager":"Page 1 of 2"}
+PASS 6. UI count == API totalElements (search) — {"size":20,"number":0,"totalElements":22,"totalPages":2}
+PASS console: no errors — []
+OBS PASS
+2026-11-28T02:51:28Z

@@ -162,7 +162,7 @@ public class PrescriptionTrackerService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("PrescriptionTracker", id));
 
-    requireMutableState(tracker);
+    requireNotIn(tracker, TERMINAL_STATES);
     validatePrescriptionType(request.prescriptionType());
 
     var prescriptionDate =
@@ -204,7 +204,11 @@ public class PrescriptionTrackerService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("PrescriptionTracker", id));
 
-    requireMutableState(tracker);
+    // Interrupt records a past event (service of process, s15(1)), so it stays available once the
+    // tracker is EXPIRED and is judged by the date entered, not by today (founder ruling
+    // 2026-11-28, tasks/legal/prescription-computation-2026-11-28.md).
+    requireNotIn(tracker, INTERRUPT_BLOCKING_STATES);
+    requireInterruptionInTime(tracker, request.interruptionDate());
 
     tracker.setStatus("INTERRUPTED");
     tracker.setInterruptionDate(request.interruptionDate());
@@ -287,18 +291,22 @@ public class PrescriptionTrackerService {
 
   private static final Set<String> TERMINAL_STATES = Set.of("INTERRUPTED", "EXPIRED");
 
+  /** Interrupt is still allowed once EXPIRED; only an earlier interruption blocks it. */
+  private static final Set<String> INTERRUPT_BLOCKING_STATES = Set.of("INTERRUPTED");
+
   /**
    * Computes the effective prescription status dynamically at query time. Terminal states
    * (INTERRUPTED, EXPIRED) are returned as-is. For RUNNING/WARNED trackers, the prescription date
    * is compared against today to determine if the tracker has expired or entered the warning
-   * window.
+   * window. The prescription date is the last day to serve, so it is still live on that day and
+   * EXPIRED only from the day after.
    */
   private String computeEffectiveStatus(PrescriptionTracker entity) {
     if (TERMINAL_STATES.contains(entity.getStatus())) {
       return entity.getStatus();
     }
     LocalDate today = LocalDate.now(clock);
-    if (!entity.getPrescriptionDate().isAfter(today)) {
+    if (entity.getPrescriptionDate().isBefore(today)) {
       return "EXPIRED";
     }
     long daysRemaining = ChronoUnit.DAYS.between(today, entity.getPrescriptionDate());
@@ -308,11 +316,34 @@ public class PrescriptionTrackerService {
     return entity.getStatus();
   }
 
-  private void requireMutableState(PrescriptionTracker tracker) {
-    if (TERMINAL_STATES.contains(tracker.getStatus())) {
+  private void requireNotIn(PrescriptionTracker tracker, Set<String> blockingStates) {
+    if (blockingStates.contains(tracker.getStatus())) {
       throw new InvalidStateException(
           "Prescription tracker is in a terminal state",
           "Cannot modify a prescription tracker with status " + tracker.getStatus());
+    }
+  }
+
+  /**
+   * An interruption must have happened (not in the future) and on or before the last day to serve;
+   * after it the claim had already prescribed.
+   */
+  private void requireInterruptionInTime(PrescriptionTracker tracker, LocalDate interruptionDate) {
+    if (interruptionDate.isAfter(LocalDate.now(clock))) {
+      throw new InvalidStateException(
+          "Interruption date is in the future",
+          "The interruption date ("
+              + interruptionDate
+              + ") is in the future. Record the interruption once it has happened.");
+    }
+    if (interruptionDate.isAfter(tracker.getPrescriptionDate())) {
+      throw new InvalidStateException(
+          "Interruption date is after the last day to serve",
+          "The interruption date ("
+              + interruptionDate
+              + ") is after the last day to serve ("
+              + tracker.getPrescriptionDate()
+              + "). The claim had already prescribed, so it cannot be interrupted.");
     }
   }
 

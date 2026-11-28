@@ -440,6 +440,54 @@ class CourtCalendarControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  // Founder ruling 2026-11-28: Interrupt stays available after Expired and is validated against
+  // the date entered. Cause 2020-01-15 (GENERAL_3Y) -> last day to serve 2023-01-14.
+  @Test
+  void postInterrupt_expiredTracker_serviceAfterTheLastDay_returns400ProblemDetail()
+      throws Exception {
+    String id = createPrescriptionTracker(projectId, "2020-01-15");
+
+    mockMvc
+        .perform(
+            get("/api/prescription-trackers/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.prescriptionDate").value("2023-01-14"))
+        .andExpect(jsonPath("$.status").value("EXPIRED"));
+
+    mockMvc
+        .perform(
+            post("/api/prescription-trackers/" + id + "/interrupt")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"interruptionDate": "2023-01-15", "interruptionReason": "Served late"}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Interruption date is after the last day to serve"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "The interruption date (2023-01-15) is after the last day to serve"
+                        + " (2023-01-14). The claim had already prescribed, so it cannot be"
+                        + " interrupted."));
+
+    mockMvc
+        .perform(
+            post("/api/prescription-trackers/" + id + "/interrupt")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"interruptionDate": "2023-01-14", "interruptionReason": "Served in time"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("INTERRUPTED"))
+        .andExpect(jsonPath("$.interruptionDate").value("2023-01-14"));
+  }
+
   // --- List filters: ?matterId= / ?clientId= must bind (a stale param name is silently ignored
   // by Spring and returns the unfiltered list, so each assertion checks the other row is absent)
   // ---
@@ -492,6 +540,11 @@ class CourtCalendarControllerTest {
   }
 
   private String createPrescriptionTracker(UUID matterId) throws Exception {
+    return createPrescriptionTracker(matterId, "2026-01-15");
+  }
+
+  private String createPrescriptionTracker(UUID matterId, String causeOfActionDate)
+      throws Exception {
     var result =
         mockMvc
             .perform(
@@ -502,11 +555,11 @@ class CourtCalendarControllerTest {
                         """
                         {
                           "matterId": "%s",
-                          "causeOfActionDate": "2026-01-15",
+                          "causeOfActionDate": "%s",
                           "prescriptionType": "GENERAL_3Y"
                         }
                         """
-                            .formatted(matterId)))
+                            .formatted(matterId, causeOfActionDate)))
             .andExpect(status().isCreated())
             .andReturn();
     return com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");

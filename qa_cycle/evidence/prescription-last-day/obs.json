@@ -1,0 +1,284 @@
+{
+  "startedAt": "2026-11-28T05:26:41.929Z",
+  "todaySA": "2026-11-28",
+  "steps": [
+    {
+      "at": "2026-11-28T05:26:44.151Z",
+      "step": "original tracker list on Website Redesign: 0 rows"
+    },
+    {
+      "at": "2026-11-28T05:26:46.596Z",
+      "step": "1. created GENERAL_3Y tracker 0657a970-dc2e-4b4c-a802-5198ae23258c, cause 2023-11-29"
+    },
+    {
+      "at": "2026-11-28T05:26:49.934Z",
+      "step": "2. created GENERAL_3Y tracker 65db3d71-060d-41a8-9779-f2a45a12ffcb, cause 2023-11-28"
+    }
+  ],
+  "console": [
+    "[firm] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch",
+    "[portal] Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "checks": [
+    {
+      "name": "1. date column header reads 'Last day to serve' (no 'Prescription date')",
+      "ok": true,
+      "detail": [
+        "TYPE",
+        "CAUSE OF ACTION",
+        "LAST DAY TO SERVE",
+        "STATUS",
+        "DAYS LEFT",
+        "ACTIONS"
+      ]
+    },
+    {
+      "name": "1. row shows last day to serve 2026-11-28",
+      "ok": true,
+      "detail": {
+        "id": "0657a970-dc2e-4b4c-a802-5198ae23258c",
+        "cause": "2023-11-29",
+        "lastDayToServe": "2026-11-28",
+        "status": "Warned",
+        "daysLeft": "Today",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "1. Days left reads 'Today'",
+      "ok": true,
+      "detail": {
+        "id": "0657a970-dc2e-4b4c-a802-5198ae23258c",
+        "cause": "2023-11-29",
+        "lastDayToServe": "2026-11-28",
+        "status": "Warned",
+        "daysLeft": "Today",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "1. status is not Expired (Warned)",
+      "ok": true,
+      "detail": {
+        "id": "0657a970-dc2e-4b4c-a802-5198ae23258c",
+        "cause": "2023-11-29",
+        "lastDayToServe": "2026-11-28",
+        "status": "Warned",
+        "daysLeft": "Today",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "2. row shows last day to serve 2026-11-27",
+      "ok": true,
+      "detail": {
+        "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+        "cause": "2023-11-28",
+        "lastDayToServe": "2026-11-27",
+        "status": "Expired",
+        "daysLeft": "—",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "2. status is Expired",
+      "ok": true,
+      "detail": {
+        "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+        "cause": "2023-11-28",
+        "lastDayToServe": "2026-11-27",
+        "status": "Expired",
+        "daysLeft": "—",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "2. Interrupt is offered on the Expired tracker",
+      "ok": true,
+      "detail": {
+        "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+        "cause": "2023-11-28",
+        "lastDayToServe": "2026-11-27",
+        "status": "Expired",
+        "daysLeft": "—",
+        "interruptOffered": true
+      }
+    },
+    {
+      "name": "4. a date after the last day shows the inline message",
+      "ok": true,
+      "detail": {
+        "enteredDate": "2026-11-28",
+        "messageShown": true,
+        "expectedMsg": "The interruption date is after the last day to serve (2026-11-27). The claim had already prescribed, so it cannot be interrupted.",
+        "dialogStayedOpen": true,
+        "rowAfter": {
+          "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+          "cause": "2023-11-28",
+          "lastDayToServe": "2026-11-27",
+          "status": "Expired",
+          "daysLeft": "—",
+          "interruptOffered": true
+        }
+      }
+    },
+    {
+      "name": "4. rejected: dialog stayed open and the tracker is still Expired",
+      "ok": true,
+      "detail": {
+        "enteredDate": "2026-11-28",
+        "messageShown": true,
+        "expectedMsg": "The interruption date is after the last day to serve (2026-11-27). The claim had already prescribed, so it cannot be interrupted.",
+        "dialogStayedOpen": true,
+        "rowAfter": {
+          "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+          "cause": "2023-11-28",
+          "lastDayToServe": "2026-11-27",
+          "status": "Expired",
+          "daysLeft": "—",
+          "interruptOffered": true
+        }
+      }
+    },
+    {
+      "name": "3. interruption dated the last day to serve is accepted (Interrupted, no Interrupt button)",
+      "ok": true,
+      "detail": {
+        "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+        "cause": "2023-11-28",
+        "lastDayToServe": "2026-11-27",
+        "status": "Interrupted",
+        "daysLeft": "—",
+        "interruptOffered": false
+      }
+    },
+    {
+      "name": "5. the org Diary day view for today lists tracker 1's prescription entry",
+      "ok": true,
+      "detail": {
+        "url": "http://localhost:3001/org/e2e-test-org/diary?view=day&from=2026-11-28",
+        "entry": "Prescription Prescription — General (3 years) Website Redesign Alice Owner"
+      }
+    },
+    {
+      "name": "5. the portal /deadlines lists tracker 1 (Prescription deadline)",
+      "ok": true,
+      "detail": {
+        "entry": "Prescription deadline Prescription Due soon 28 Nov 2026",
+        "interruptedTrackerRows": 0
+      }
+    },
+    {
+      "name": "5. the interrupted tracker has no portal row",
+      "ok": true,
+      "detail": {
+        "entry": "Prescription deadline Prescription Due soon 28 Nov 2026",
+        "interruptedTrackerRows": 0
+      }
+    },
+    {
+      "name": "restore: no OBS tracker is left open on the matter",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "matter": {
+    "id": "cc4ec9f6-3ab4-4626-a113-95ef9b8249fa",
+    "name": "Website Redesign"
+  },
+  "original": {
+    "headers": [],
+    "rows": []
+  },
+  "step1": {
+    "headers": [
+      "TYPE",
+      "CAUSE OF ACTION",
+      "LAST DAY TO SERVE",
+      "STATUS",
+      "DAYS LEFT",
+      "ACTIONS"
+    ],
+    "row": {
+      "id": "0657a970-dc2e-4b4c-a802-5198ae23258c",
+      "cause": "2023-11-29",
+      "lastDayToServe": "2026-11-28",
+      "status": "Warned",
+      "daysLeft": "Today",
+      "interruptOffered": true
+    }
+  },
+  "step2": {
+    "row": {
+      "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+      "cause": "2023-11-28",
+      "lastDayToServe": "2026-11-27",
+      "status": "Expired",
+      "daysLeft": "—",
+      "interruptOffered": true
+    }
+  },
+  "step4": {
+    "enteredDate": "2026-11-28",
+    "messageShown": true,
+    "expectedMsg": "The interruption date is after the last day to serve (2026-11-27). The claim had already prescribed, so it cannot be interrupted.",
+    "dialogStayedOpen": true,
+    "rowAfter": {
+      "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+      "cause": "2023-11-28",
+      "lastDayToServe": "2026-11-27",
+      "status": "Expired",
+      "daysLeft": "—",
+      "interruptOffered": true
+    }
+  },
+  "step3": {
+    "enteredDate": "2026-11-27",
+    "rowAfter": {
+      "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+      "cause": "2023-11-28",
+      "lastDayToServe": "2026-11-27",
+      "status": "Interrupted",
+      "daysLeft": "—",
+      "interruptOffered": false
+    }
+  },
+  "step5diary": {
+    "url": "http://localhost:3001/org/e2e-test-org/diary?view=day&from=2026-11-28",
+    "entry": "Prescription Prescription — General (3 years) Website Redesign Alice Owner"
+  },
+  "step5portal": {
+    "entry": "Prescription deadline Prescription Due soon 28 Nov 2026",
+    "interruptedTrackerRows": 0
+  },
+  "restored": {
+    "headers": [
+      "TYPE",
+      "CAUSE OF ACTION",
+      "LAST DAY TO SERVE",
+      "STATUS",
+      "DAYS LEFT",
+      "ACTIONS"
+    ],
+    "rows": [
+      {
+        "id": "65db3d71-060d-41a8-9779-f2a45a12ffcb",
+        "cause": "2023-11-28",
+        "lastDayToServe": "2026-11-27",
+        "status": "Interrupted",
+        "daysLeft": "—",
+        "interruptOffered": false
+      },
+      {
+        "id": "0657a970-dc2e-4b4c-a802-5198ae23258c",
+        "cause": "2023-11-29",
+        "lastDayToServe": "2026-11-28",
+        "status": "Interrupted",
+        "daysLeft": "—",
+        "interruptOffered": false
+      }
+    ]
+  },
+  "finishedAt": "2026-11-28T05:26:58.455Z",
+  "allChecksPass": true
+}

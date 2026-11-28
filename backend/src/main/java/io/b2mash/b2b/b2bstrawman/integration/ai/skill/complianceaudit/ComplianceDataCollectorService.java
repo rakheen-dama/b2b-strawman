@@ -300,16 +300,17 @@ public class ComplianceDataCollectorService {
   private PrescriptionSummary aggregatePrescriptionData(int flaggedItemsCap, StringBuilder notes) {
     LocalDate now = LocalDate.now(clock);
 
-    // Approaching: prescriptions expiring within 90 days (starting tomorrow to avoid overlap with
-    // expired)
+    // The prescription date is the last day to serve: still live on that day, expired from the
+    // day after (tasks/legal/prescription-computation-2026-11-28.md).
+    // Approaching: last day to serve today or within 90 days.
     List<PrescriptionTracker> approaching =
         prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
-            List.of("RUNNING", "WARNED"), now.plusDays(1), now.plusDays(90));
+            List.of("RUNNING", "WARNED"), now, now.plusDays(90));
 
-    // Expired: prescriptions already past their date
+    // Expired: the last day to serve has passed (yesterday or earlier).
     List<PrescriptionTracker> expired =
         prescriptionTrackerRepository.findByStatusInAndPrescriptionDateLessThanEqual(
-            List.of("RUNNING", "WARNED"), now);
+            List.of("RUNNING", "WARNED"), now.minusDays(1));
 
     List<FlaggedMatter> flagged = new ArrayList<>();
     for (PrescriptionTracker tracker : expired) {

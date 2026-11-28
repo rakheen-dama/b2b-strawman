@@ -1,0 +1,491 @@
+02:52:21.036 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-prescription-last-day/backend/target/test-classes/archunit.properties
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 7, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.955 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest
+[ERROR] io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest.collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired -- Time elapsed: 0.838 s <<< ERROR!
+org.mockito.exceptions.misusing.PotentialStubbingProblem: 
+
+Strict stubbing argument mismatch. Please check:
+ - this invocation of 'findByStatusInAndPrescriptionDateBetween' method:
+    prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+    [RUNNING, WARNED],
+    2026-11-29,
+    2027-02-26
+);
+    -> at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorService.aggregatePrescriptionData(ComplianceDataCollectorService.java:306)
+ - has following stubbing(s) with different arguments:
+    1. prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+    [RUNNING, WARNED],
+    2026-11-28,
+    2027-02-26
+);
+      -> at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest.collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired(ComplianceDataCollectorServiceTest.java:267)
+Typically, stubbing argument mismatch indicates user mistake when writing tests.
+Mockito fails early so that you can debug potential problem easily.
+However, there are legit scenarios when this exception generates false negative signal:
+  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
+    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
+  - stubbed method is intentionally invoked with different arguments by code under test
+    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
+For more information see javadoc for PotentialStubbingProblem class.
+	at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorService.aggregatePrescriptionData(ComplianceDataCollectorService.java:306)
+	at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorService.collectComplianceSnapshot(ComplianceDataCollectorService.java:147)
+	at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest.collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired(ComplianceDataCollectorServiceTest.java:274)
+
+02:52:22.139 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusStalenessIntegrationTest]: PortalDeadlineStatusStalenessIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:52:22.319 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusStalenessIntegrationTest
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"206", Idempotency-Key:"16f38323-c385-4ac1-87a3-87399d5cef19"]
+             Body = {"clerkOrgId":"org_portal_deadline_staleness_f71","clerkUserId":"user_deadline_staleness_f71","email":"deadline_staleness_f71@test.com","name":"Deadline Staleness Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/2bb46296-6633-4c1e-abad-e7838e8043ac", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"2bb46296-6633-4c1e-abad-e7838e8043ac","clerkUserId":"user_deadline_staleness_f71","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/2bb46296-6633-4c1e-abad-e7838e8043ac
+          Cookies = []
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 22.95 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusStalenessIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusStalenessIntegrationTest.statusFollowsTheCalendarWithoutAnySourceChange -- Time elapsed: 0.059 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2026-12-07 (java.time.LocalDate)
+ but was: 2026-12-08 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusStalenessIntegrationTest.statusFollowsTheCalendarWithoutAnySourceChange(PortalDeadlineStatusStalenessIntegrationTest.java:162)
+
+[ERROR] Tests run: 14, Failures: 7, Errors: 1, Skipped: 0, Time elapsed: 0.850 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.list_filtersByStatus -- Time elapsed: 0.024 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting all elements of:
+  [PrescriptionTrackerResponse[id=8f50d639-025f-47b1-82c5-eef19f08fc42, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2023-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2026-11-27, interruptionDate=null, interruptionReason=null, status=EXPIRED, notes=null, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.702901Z, updatedAt=2026-11-28T02:52:45.702902Z],
+    PrescriptionTrackerResponse[id=19503840-50cb-4f18-a750-2a4da0b69ead, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2025-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2028-11-28, interruptionDate=null, interruptionReason=null, status=RUNNING, notes=Running tracker, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.737769Z, updatedAt=2026-11-28T02:52:45.737769Z]]
+to satisfy given requirements, but these elements did not:
+
+PrescriptionTrackerResponse[id=8f50d639-025f-47b1-82c5-eef19f08fc42, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2023-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2026-11-27, interruptionDate=null, interruptionReason=null, status=EXPIRED, notes=null, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.702901Z, updatedAt=2026-11-28T02:52:45.702902Z]
+error: org.opentest4j.AssertionFailedError: 
+expected: "RUNNING"
+ but was: "EXPIRED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$2(PrescriptionTrackerServiceTest.java:252)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$1(PrescriptionTrackerServiceTest.java:252)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	...(89 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$1(PrescriptionTrackerServiceTest.java:252)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$0(PrescriptionTrackerServiceTest.java:233)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.list_filtersByStatus(PrescriptionTrackerServiceTest.java:231)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_rejectsServiceAfterTheLastDayToServe -- Time elapsed: 0.013 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$interrupt_rejectsServiceAfterTheLastDayToServe$0(PrescriptionTrackerServiceTest.java:408)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_rejectsServiceAfterTheLastDayToServe(PrescriptionTrackerServiceTest.java:406)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.create_customType_calculatesWithCustomYears -- Time elapsed: 0.009 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2032-08-19 (java.time.LocalDate)
+ but was: 2032-08-20 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$create_customType_calculatesWithCustomYears$1(PrescriptionTrackerServiceTest.java:274)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$create_customType_calculatesWithCustomYears$0(PrescriptionTrackerServiceTest.java:260)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.create_customType_calculatesWithCustomYears(PrescriptionTrackerServiceTest.java:258)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.getById_lastDayToServeIsToday_isStillLive -- Time elapsed: 0.010 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "WARNED"
+ but was: "EXPIRED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$getById_lastDayToServeIsToday_isStillLive$0(PrescriptionTrackerServiceTest.java:369)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.getById_lastDayToServeIsToday_isStillLive(PrescriptionTrackerServiceTest.java:365)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.create_calculatesDateAndSavesWithRunningStatus -- Time elapsed: 0.010 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2027-11-27 (java.time.LocalDate)
+ but was: 2027-11-28 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$create_calculatesDateAndSavesWithRunningStatus$1(PrescriptionTrackerServiceTest.java:127)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$create_calculatesDateAndSavesWithRunningStatus$0(PrescriptionTrackerServiceTest.java:116)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.create_calculatesDateAndSavesWithRunningStatus(PrescriptionTrackerServiceTest.java:114)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_rejectsAServiceDateInTheFuture -- Time elapsed: 0.013 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$interrupt_rejectsAServiceDateInTheFuture$0(PrescriptionTrackerServiceTest.java:445)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_rejectsAServiceDateInTheFuture(PrescriptionTrackerServiceTest.java:443)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe -- Time elapsed: 0.008 s <<< ERROR!
+io.b2mash.b2b.b2bstrawman.exception.InvalidStateException: 400 BAD_REQUEST, ProblemDetail[type='null', title='Prescription tracker is in a terminal state', status=400, detail='Cannot modify a prescription tracker with status EXPIRED', instance='null', properties='null']
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService.requireMutableState(PrescriptionTrackerService.java:315)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService.interrupt(PrescriptionTrackerService.java:207)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService$$SpringCGLIB$$0.interrupt(<generated>)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe$1(PrescriptionTrackerServiceTest.java:393)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe$0(PrescriptionTrackerServiceTest.java:390)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe(PrescriptionTrackerServiceTest.java:388)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.update_recalculatesPrescriptionDate -- Time elapsed: 0.009 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2027-11-27 (java.time.LocalDate)
+ but was: 2027-11-28 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$update_recalculatesPrescriptionDate$1(PrescriptionTrackerServiceTest.java:152)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:137)
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$update_recalculatesPrescriptionDate$0(PrescriptionTrackerServiceTest.java:145)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.runInTenant(PrescriptionTrackerServiceTest.java:493)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.update_recalculatesPrescriptionDate(PrescriptionTrackerServiceTest.java:143)
+
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"166", Idempotency-Key:"fee30bc3-29d2-4410-8648-80638822d3ad"]
+             Body = {"clerkOrgId":"org_court_ctrl_test","clerkUserId":"user_court_ctrl_owner","email":"court_ctrl@test.com","name":"Court Ctrl Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/916d8149-bc3d-4b2f-b6a3-0ab28412e714", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"916d8149-bc3d-4b2f-b6a3-0ab28412e714","clerkUserId":"user_court_ctrl_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/916d8149-bc3d-4b2f-b6a3-0ab28412e714
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"176", Idempotency-Key:"efc41dc5-dbb7-4d3f-a8d3-9bab7db38ceb"]
+             Body = {"clerkOrgId":"org_court_ctrl_test","clerkUserId":"user_court_ctrl_member","email":"court_ctrl_member@test.com","name":"Court Ctrl Member","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/0136700b-e5bd-4d0f-bded-5814328c4015", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"0136700b-e5bd-4d0f-bded-5814328c4015","clerkUserId":"user_court_ctrl_member","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/0136700b-e5bd-4d0f-bded-5814328c4015
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/prescription-trackers
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"130", Idempotency-Key:"06f3b0fd-43e1-47bc-a9f8-ee9160e1f636"]
+             Body = {
+  "matterId": "e94c597b-f0b3-4aba-8bca-a5c0cb4623e7",
+  "causeOfActionDate": "2020-01-15",
+  "prescriptionType": "GENERAL_3Y"
+}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerController
+           Method = io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerController#create(CreatePrescriptionTrackerRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"32dd4c4f-4d00-4c74-937e-33fd53b92387","matterId":"e94c597b-f0b3-4aba-8bca-a5c0cb4623e7","matterName":"Ctrl Test Matter","clientId":"349309d1-fad4-4d8b-ae18-6fd04edd53bb","clientName":"Ctrl Test Corp","causeOfActionDate":"2020-01-15","prescriptionType":"GENERAL_3Y","customYears":null,"prescriptionDate":"2023-01-15","interruptionDate":null,"interruptionReason":null,"status":"EXPIRED","notes":null,"createdBy":"916d8149-bc3d-4b2f-b6a3-0ab28412e714","createdAt":"2026-11-28T02:52:46.549192Z","updatedAt":"2026-11-28T02:52:46.549192Z"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/prescription-trackers/32dd4c4f-4d00-4c74-937e-33fd53b92387
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerController
+           Method = io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerController#getById(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"32dd4c4f-4d00-4c74-937e-33fd53b92387","matterId":"e94c597b-f0b3-4aba-8bca-a5c0cb4623e7","matterName":"Ctrl Test Matter","clientId":"349309d1-fad4-4d8b-ae18-6fd04edd53bb","clientName":"Ctrl Test Corp","causeOfActionDate":"2020-01-15","prescriptionType":"GENERAL_3Y","customYears":null,"prescriptionDate":"2023-01-15","interruptionDate":null,"interruptionReason":null,"status":"EXPIRED","notes":null,"createdBy":"916d8149-bc3d-4b2f-b6a3-0ab28412e714","createdAt":"2026-11-28T02:52:46.549192Z","updatedAt":"2026-11-28T02:52:46.549192Z"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 11, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.963 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarControllerTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarControllerTest.postInterrupt_expiredTracker_serviceAfterTheLastDay_returns400ProblemDetail -- Time elapsed: 0.049 s <<< FAILURE!
+java.lang.AssertionError: JSON path "$.prescriptionDate" expected:<2023-01-14> but was:<2023-01-15>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.util.JsonPathExpectationsHelper.assertValue(JsonPathExpectationsHelper.java:172)
+	at org.springframework.test.web.servlet.result.JsonPathResultMatchers.lambda$value$2(JsonPathResultMatchers.java:111)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarControllerTest.postInterrupt_expiredTracker_serviceAfterTheLastDay_returns400ProblemDetail(CourtCalendarControllerTest.java:455)
+
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 0.005 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_returnsLastDayToServe_theDayBeforeTheAnniversary -- Time elapsed: 0.001 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2026-06-14 (java.time.LocalDate)
+ but was: 2026-06-15 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_returnsLastDayToServe_theDayBeforeTheAnniversary(PrescriptionRuleRegistryTest.java:36)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_causeOn29Feb_isConservativeInACommonYear -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2027-02-27 (java.time.LocalDate)
+ but was: 2027-02-28 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_causeOn29Feb_isConservativeInACommonYear(PrescriptionRuleRegistryTest.java:79)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_crossesMonthAndLeapDayBoundaries -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 2025-12-31 (java.time.LocalDate)
+ but was: 2026-01-01 (java.time.LocalDate)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionRuleRegistryTest.calculatePrescriptionDate_crossesMonthAndLeapDayBoundaries(PrescriptionRuleRegistryTest.java:54)
+
+[ERROR] Failures: 
+[ERROR]   PortalDeadlineStatusStalenessIntegrationTest.statusFollowsTheCalendarWithoutAnySourceChange:162 
+expected: 2026-12-07 (java.time.LocalDate)
+ but was: 2026-12-08 (java.time.LocalDate)
+[ERROR]   CourtCalendarControllerTest.postInterrupt_expiredTracker_serviceAfterTheLastDay_returns400ProblemDetail:455 JSON path "$.prescriptionDate" expected:<2023-01-14> but was:<2023-01-15>
+[ERROR]   PrescriptionRuleRegistryTest.calculatePrescriptionDate_causeOn29Feb_isConservativeInACommonYear:79 
+expected: 2027-02-27 (java.time.LocalDate)
+ but was: 2027-02-28 (java.time.LocalDate)
+[ERROR]   PrescriptionRuleRegistryTest.calculatePrescriptionDate_crossesMonthAndLeapDayBoundaries:54 
+expected: 2025-12-31 (java.time.LocalDate)
+ but was: 2026-01-01 (java.time.LocalDate)
+[ERROR]   PrescriptionRuleRegistryTest.calculatePrescriptionDate_returnsLastDayToServe_theDayBeforeTheAnniversary:36 
+expected: 2026-06-14 (java.time.LocalDate)
+ but was: 2026-06-15 (java.time.LocalDate)
+[ERROR]   PrescriptionTrackerServiceTest.create_calculatesDateAndSavesWithRunningStatus:114->runInTenant:493->lambda$create_calculatesDateAndSavesWithRunningStatus$0:116->lambda$create_calculatesDateAndSavesWithRunningStatus$1:127 
+expected: 2027-11-27 (java.time.LocalDate)
+ but was: 2027-11-28 (java.time.LocalDate)
+[ERROR]   PrescriptionTrackerServiceTest.create_customType_calculatesWithCustomYears:258->runInTenant:493->lambda$create_customType_calculatesWithCustomYears$0:260->lambda$create_customType_calculatesWithCustomYears$1:274 
+expected: 2032-08-19 (java.time.LocalDate)
+ but was: 2032-08-20 (java.time.LocalDate)
+[ERROR]   PrescriptionTrackerServiceTest.getById_lastDayToServeIsToday_isStillLive:365->runInTenant:493->lambda$getById_lastDayToServeIsToday_isStillLive$0:369 
+expected: "WARNED"
+ but was: "EXPIRED"
+[ERROR]   PrescriptionTrackerServiceTest.interrupt_rejectsAServiceDateInTheFuture:443->runInTenant:493->lambda$interrupt_rejectsAServiceDateInTheFuture$0:445 
+Expecting code to raise a throwable.
+[ERROR]   PrescriptionTrackerServiceTest.interrupt_rejectsServiceAfterTheLastDayToServe:406->runInTenant:493->lambda$interrupt_rejectsServiceAfterTheLastDayToServe$0:408 
+Expecting code to raise a throwable.
+[ERROR]   PrescriptionTrackerServiceTest.list_filtersByStatus:231->runInTenant:493->lambda$list_filtersByStatus$0:233->lambda$list_filtersByStatus$1:252 
+Expecting all elements of:
+  [PrescriptionTrackerResponse[id=8f50d639-025f-47b1-82c5-eef19f08fc42, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2023-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2026-11-27, interruptionDate=null, interruptionReason=null, status=EXPIRED, notes=null, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.702901Z, updatedAt=2026-11-28T02:52:45.702902Z],
+    PrescriptionTrackerResponse[id=19503840-50cb-4f18-a750-2a4da0b69ead, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2025-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2028-11-28, interruptionDate=null, interruptionReason=null, status=RUNNING, notes=Running tracker, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.737769Z, updatedAt=2026-11-28T02:52:45.737769Z]]
+to satisfy given requirements, but these elements did not:
+
+PrescriptionTrackerResponse[id=8f50d639-025f-47b1-82c5-eef19f08fc42, matterId=f311f979-9fda-4997-8333-c01c0cb35c88, matterName=MVA Claim - Smith, clientId=7396a692-ec61-423b-bc5a-8bd9124c46ab, clientName=Prescription Test Corp, causeOfActionDate=2023-11-28, prescriptionType=GENERAL_3Y, customYears=null, prescriptionDate=2026-11-27, interruptionDate=null, interruptionReason=null, status=EXPIRED, notes=null, createdBy=7c827242-e77d-47bb-959f-6ec9532ea56d, createdAt=2026-11-28T02:52:45.702901Z, updatedAt=2026-11-28T02:52:45.702902Z]
+error: org.opentest4j.AssertionFailedError: 
+expected: "RUNNING"
+ but was: "EXPIRED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$2(PrescriptionTrackerServiceTest.java:252)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerServiceTest.lambda$list_filtersByStatus$1(PrescriptionTrackerServiceTest.java:252)
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	...(89 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+[ERROR]   PrescriptionTrackerServiceTest.update_recalculatesPrescriptionDate:143->runInTenant:493->lambda$update_recalculatesPrescriptionDate$0:145->lambda$update_recalculatesPrescriptionDate$1:152 
+expected: 2027-11-27 (java.time.LocalDate)
+ but was: 2027-11-28 (java.time.LocalDate)
+[ERROR] Errors: 
+[ERROR]   ComplianceDataCollectorServiceTest.collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired:274 » PotentialStubbingProblem 
+Strict stubbing argument mismatch. Please check:
+ - this invocation of 'findByStatusInAndPrescriptionDateBetween' method:
+    prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+    [RUNNING, WARNED],
+    2026-11-29,
+    2027-02-26
+);
+    -> at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorService.aggregatePrescriptionData(ComplianceDataCollectorService.java:306)
+ - has following stubbing(s) with different arguments:
+    1. prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+    [RUNNING, WARNED],
+    2026-11-28,
+    2027-02-26
+);
+      -> at io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest.collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired(ComplianceDataCollectorServiceTest.java:267)
+Typically, stubbing argument mismatch indicates user mistake when writing tests.
+Mockito fails early so that you can debug potential problem easily.
+However, there are legit scenarios when this exception generates false negative signal:
+  - stubbing the same method multiple times using 'given().will()' or 'when().then()' API
+    Please use 'will().given()' or 'doReturn().when()' API for stubbing.
+  - stubbed method is intentionally invoked with different arguments by code under test
+    Please use default or 'silent' JUnit Rule (equivalent of Strictness.LENIENT).
+For more information see javadoc for PotentialStubbingProblem class.
+[ERROR]   PrescriptionTrackerServiceTest.interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe:388->runInTenant:493->lambda$interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe$0:390->lambda$interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe$1:393 » InvalidState 400 BAD_REQUEST, ProblemDetail[type='null', title='Prescription tracker is in a terminal state', status=400, detail='Cannot modify a prescription tracker with status EXPIRED', instance='null', properties='null']
+[ERROR] Tests run: 39, Failures: 12, Errors: 2, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-prescription-last-day/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

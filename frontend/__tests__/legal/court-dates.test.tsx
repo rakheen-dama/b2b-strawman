@@ -63,7 +63,11 @@ import { PrescriptionTrackerList } from "@/components/legal/prescription-tracker
 import { CreateCourtDateDialog } from "@/components/legal/create-court-date-dialog";
 import { CreatePrescriptionDialog } from "@/components/legal/create-prescription-dialog";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
-import { createPrescriptionTracker, fetchProjects } from "@/lib/actions/court-dates";
+import {
+  createPrescriptionTracker,
+  fetchProjects,
+  interruptPrescription,
+} from "@/lib/actions/court-dates";
 import type { CourtDate, PrescriptionTracker } from "@/lib/types";
 import { inZone } from "@/__tests__/helpers/time-zone";
 
@@ -248,7 +252,8 @@ describe("PrescriptionTrackerList days left on the South African calendar", () =
   // The server renders in UTC; a browser may run in any zone. The count must not depend on it.
   const zones = ["UTC", "Africa/Johannesburg", "America/New_York"];
   // Statuses as the backend sends them (PrescriptionTrackerService.computeEffectiveStatus): the
-  // prescription date itself and earlier are EXPIRED; within 90 days WARNED; otherwise RUNNING.
+  // stored date is the last day to serve, so it is still live (WARNED within 90 days, otherwise
+  // RUNNING) on the day itself, and EXPIRED only from the day after.
 
   afterEach(() => {
     vi.useRealTimers();
@@ -257,14 +262,14 @@ describe("PrescriptionTrackerList days left on the South African calendar", () =
 
   describe.each(zones)("runtime zone %s", (zone) => {
     it.each(instants)(
-      "at %s, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2",
+      "at %s, yesterday (EXPIRED) reads —, today (the last day to serve) reads Today, tomorrow is 1, +2 is 2",
       (_label, instant) => {
         inZone(zone);
         vi.useFakeTimers({ toFake: ["Date"] });
         vi.setSystemTime(new Date(instant));
         const dates = [
           ["pt-y", "2026-11-26", "EXPIRED"],
-          ["pt-t", "2026-11-27", "EXPIRED"],
+          ["pt-t", "2026-11-27", "WARNED"],
           ["pt-1", "2026-11-28", "WARNED"],
           ["pt-2", "2026-11-29", "WARNED"],
         ] as const;
@@ -287,7 +292,7 @@ describe("PrescriptionTrackerList days left on the South African calendar", () =
         });
         expect(daysLeft).toEqual([
           ["2026-11-26", "—", true],
-          ["2026-11-27", "—", true],
+          ["2026-11-27", "Today", true],
           ["2026-11-28", "1", true],
           ["2026-11-29", "2", true],
         ]);
@@ -332,8 +337,9 @@ describe("PrescriptionTrackerList days left on the South African calendar", () =
       ["91", "text-slate-600"],
     ]);
   });
-  // "Today" follows the backend status: if the backend still treats a day-0 tracker as live (e.g. a
-  // future change to its expiry rule), the cell says Today; once it is EXPIRED or INTERRUPTED, "—".
+  // "Today" follows the backend status: a day-0 tracker is live (its last day to serve), so it says
+  // Today; one the backend reports EXPIRED (a historic tracker storing the anniversary) or
+  // INTERRUPTED reads "—".
   it.each([
     ["WARNED", "Today"],
     ["RUNNING", "Today"],
@@ -355,6 +361,124 @@ describe("PrescriptionTrackerList days left on the South African calendar", () =
       .getAllByRole("cell")[4]
       .querySelector("span")!;
     expect([span.textContent, span.classList.contains("text-red-600")]).toEqual([label, true]);
+  });
+});
+
+// Founder ruling 2026-11-28 (tasks/legal/prescription-computation-2026-11-28.md): the stored date
+// is the last day to serve, and Interrupt stays available once Expired, judged by the date entered.
+describe("PrescriptionTrackerList last day to serve and Interrupt", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  function renderList(trackers: PrescriptionTracker[]) {
+    return render(
+      <PrescriptionTrackerList
+        trackers={trackers}
+        slug="acme"
+        matterId="m-1"
+        onRefresh={vi.fn()}
+        canManageLegal
+      />
+    );
+  }
+
+  it("labels the date column Last day to serve", () => {
+    renderList([makeTracker({ id: "pt-1", prescriptionDate: "2027-03-14" })]);
+
+    const headers = screen.getAllByRole("columnheader").map((h) => h.textContent);
+    expect(headers).toContain("Last day to serve");
+    expect(headers).not.toContain("Prescription date");
+    expect(
+      within(screen.getByTestId("prescription-tracker-row-pt-1")).getByText("2027-03-14")
+    ).toBeInTheDocument();
+    // The calculated-aid disclaimer sits beside the heading.
+    expect(screen.getByRole("button", { name: "Help: Last day to serve" })).toBeInTheDocument();
+  });
+
+  it("offers Interrupt on RUNNING, WARNED and EXPIRED trackers, not on INTERRUPTED ones", () => {
+    renderList([
+      makeTracker({ id: "pt-r", status: "RUNNING" }),
+      makeTracker({ id: "pt-w", status: "WARNED" }),
+      makeTracker({ id: "pt-e", status: "EXPIRED", prescriptionDate: "2026-11-01" }),
+      makeTracker({ id: "pt-i", status: "INTERRUPTED" }),
+    ]);
+
+    const interruptIn = (id: string) =>
+      within(screen.getByTestId(`prescription-tracker-row-${id}`)).queryByRole("button", {
+        name: "Interrupt",
+      });
+    expect(interruptIn("pt-r")).toBeInTheDocument();
+    expect(interruptIn("pt-w")).toBeInTheDocument();
+    expect(interruptIn("pt-e")).toBeInTheDocument();
+    expect(interruptIn("pt-i")).not.toBeInTheDocument();
+  });
+
+  describe("Interrupt dialog date validation (today in SA: Fri 27 Nov 2026)", () => {
+    beforeEach(() => {
+      inZone("UTC");
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-11-27T09:40:00Z")); // 11:40 SAST
+    });
+
+    async function openDialogFor(prescriptionDate: string) {
+      const user = userEvent.setup();
+      renderList([makeTracker({ id: "pt-e", status: "EXPIRED", prescriptionDate })]);
+      await user.click(
+        within(screen.getByTestId("prescription-tracker-row-pt-e")).getByRole("button", {
+          name: "Interrupt",
+        })
+      );
+      const dialog = screen.getByTestId("interrupt-dialog");
+      fireEvent.change(within(dialog).getByLabelText("Reason"), {
+        target: { value: "Summons served" },
+      });
+      const submitWith = async (date: string) => {
+        fireEvent.change(within(dialog).getByLabelText("Interruption Date"), {
+          target: { value: date },
+        });
+        await user.click(within(dialog).getByRole("button", { name: "Record Interruption" }));
+      };
+      return { dialog, submitWith };
+    }
+
+    it("rejects a date after the last day to serve, inline, without calling the backend", async () => {
+      const { dialog, submitWith } = await openDialogFor("2026-11-20");
+
+      await submitWith("2026-11-21");
+
+      expect(
+        await within(dialog).findByText(
+          "The interruption date is after the last day to serve (2026-11-20). The claim had already prescribed, so it cannot be interrupted."
+        )
+      ).toBeInTheDocument();
+      expect(interruptPrescription).not.toHaveBeenCalled();
+    });
+
+    it("rejects a date in the future, inline", async () => {
+      const { dialog, submitWith } = await openDialogFor("2027-03-14");
+
+      await submitWith("2026-11-28");
+
+      expect(
+        await within(dialog).findByText("The interruption date cannot be in the future.")
+      ).toBeInTheDocument();
+      expect(interruptPrescription).not.toHaveBeenCalled();
+    });
+
+    it("records an interruption served on the last day to serve of an EXPIRED tracker", async () => {
+      const { submitWith } = await openDialogFor("2026-11-20");
+
+      await submitWith("2026-11-20");
+
+      await vi.waitFor(() =>
+        expect(interruptPrescription).toHaveBeenCalledWith("acme", "pt-e", {
+          interruptionDate: "2026-11-20",
+          interruptionReason: "Summons served",
+        })
+      );
+    });
   });
 });
 

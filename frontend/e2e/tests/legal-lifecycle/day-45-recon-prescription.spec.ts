@@ -112,7 +112,7 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
     // Opened from the matter, so the Matter is fixed to Sipho's
     await expect(dialog.getByLabel("Matter")).toBeDisabled();
     await expect(dialog.getByLabel("Matter").locator("option:checked")).toHaveText(siphoMatter());
-    // Accident date: 60 days ago → prescribes three years later
+    // Accident date: 60 days ago → the last day to serve is the day before the third anniversary
     const causeOfAction = isoDate(-60);
     await dialog.getByLabel("Cause of Action Date").fill(causeOfAction);
     await dialog.getByLabel("Prescription Type").selectOption("DELICT_3Y");
@@ -124,8 +124,13 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
     await expect(row).toContainText("Delict (3yr)");
     await expect(row).toContainText("Running");
     await expect(row).toContainText(causeOfAction);
-    const [y, m, d] = causeOfAction.split("-");
-    await expect(row).toContainText(`${Number(y) + 3}-${m}-${d}`);
+    // Anniversary minus one day (backend plusYears clamps a 29 Feb cause to 28 Feb, then − 1).
+    const [y, m, d] = causeOfAction.split("-").map(Number);
+    const anniversaryDay = m === 2 && d === 29 ? 28 : d;
+    const lastDayToServe = new Date(Date.UTC(y + 3, m - 1, anniversaryDay - 1))
+      .toISOString()
+      .slice(0, 10);
+    await expect(row).toContainText(lastDayToServe);
     await expect(row.getByRole("button", { name: "Interrupt" })).toBeVisible();
 
     await captureScreenshot(page, "day-45-prescription-tracker-active");

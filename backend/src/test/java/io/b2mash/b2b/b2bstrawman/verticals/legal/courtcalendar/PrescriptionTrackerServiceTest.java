@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrack
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService.InterruptRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService.PrescriptionTrackerFilters;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerService.UpdatePrescriptionTrackerRequest;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +51,7 @@ class PrescriptionTrackerServiceTest {
   @Autowired private PrescriptionTrackerRepository prescriptionTrackerRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private Clock clock;
 
   private String tenantSchema;
   private UUID memberId;
@@ -106,7 +108,8 @@ class PrescriptionTrackerServiceTest {
   void create_calculatesDateAndSavesWithRunningStatus() {
     // Use a cause-of-action date that puts prescription date > 90 days in the future
     var causeDate = LocalDate.now().minusYears(2);
-    var expectedPrescriptionDate = causeDate.plusYears(3);
+    // The stored date is the last day to serve: the anniversary minus one day.
+    var expectedPrescriptionDate = causeDate.plusYears(3).minusDays(1);
 
     runInTenant(
         () ->
@@ -134,8 +137,8 @@ class PrescriptionTrackerServiceTest {
   void update_recalculatesPrescriptionDate() {
     // Use dates that keep prescription > 90 days in the future
     var causeDate = LocalDate.now().minusYears(2);
-    var expectedInitialDate = causeDate.plusYears(3);
-    var expectedUpdatedDate = causeDate.plusYears(6);
+    var expectedInitialDate = causeDate.plusYears(3).minusDays(1);
+    var expectedUpdatedDate = causeDate.plusYears(6).minusDays(1);
 
     runInTenant(
         () ->
@@ -268,7 +271,7 @@ class PrescriptionTrackerServiceTest {
 
                   assertThat(response.prescriptionType()).isEqualTo("CUSTOM");
                   assertThat(response.customYears()).isEqualTo(10);
-                  assertThat(response.prescriptionDate()).isEqualTo(LocalDate.of(2032, 8, 20));
+                  assertThat(response.prescriptionDate()).isEqualTo(LocalDate.of(2032, 8, 19));
                 }));
   }
 
@@ -337,9 +340,10 @@ class PrescriptionTrackerServiceTest {
                       new CreatePrescriptionTrackerRequest(
                           projectId, causeDate, "GENERAL_3Y", null, "Interrupted tracker");
                   var created = prescriptionTrackerService.create(request, memberId);
+                  // Served a year before the last day to serve (causeDate + 3y - 1d).
                   prescriptionTrackerService.interrupt(
                       created.id(),
-                      new InterruptRequest(LocalDate.now().minusMonths(6), "Service of summons"));
+                      new InterruptRequest(causeDate.plusYears(2), "Service of summons"));
                   trackerId[0] = created.id();
                 }));
 
@@ -349,6 +353,138 @@ class PrescriptionTrackerServiceTest {
           // INTERRUPTED is terminal — should NOT be overridden to EXPIRED
           assertThat(fetched.status()).isEqualTo("INTERRUPTED");
         });
+  }
+
+  // --- Last day to serve (founder ruling 2026-11-28, tasks/legal/prescription-computation) ---
+
+  @Test
+  void getById_lastDayToServeIsToday_isStillLive() {
+    LocalDate today = LocalDate.now(clock);
+    UUID id = saveTracker(today, "WARNED");
+
+    runInTenant(
+        () -> {
+          var fetched = prescriptionTrackerService.getById(id);
+          // Day 0 is the last day to serve: still live (inside the warning window), not EXPIRED.
+          assertThat(fetched.status()).isEqualTo("WARNED");
+          assertThat(fetched.prescriptionDate()).isEqualTo(today);
+        });
+  }
+
+  @Test
+  void getById_lastDayToServeWasYesterday_isExpired() {
+    UUID id = saveTracker(LocalDate.now(clock).minusDays(1), "WARNED");
+
+    runInTenant(
+        () -> assertThat(prescriptionTrackerService.getById(id).status()).isEqualTo("EXPIRED"));
+  }
+
+  @Test
+  void interrupt_expiredTracker_acceptsServiceOnTheLastDayToServe() {
+    LocalDate lastDay = LocalDate.now(clock).minusDays(1);
+    // Persisted EXPIRED, as CourtDateReminderJob leaves it once the last day has passed.
+    UUID id = saveTracker(lastDay, "EXPIRED");
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var interrupted =
+                      prescriptionTrackerService.interrupt(
+                          id, new InterruptRequest(lastDay, "Summons served on the last day"));
+                  assertThat(interrupted.status()).isEqualTo("INTERRUPTED");
+                  assertThat(interrupted.interruptionDate()).isEqualTo(lastDay);
+                }));
+  }
+
+  @Test
+  void interrupt_rejectsServiceAfterTheLastDayToServe() {
+    LocalDate lastDay = LocalDate.now(clock).minusDays(1);
+    LocalDate today = LocalDate.now(clock);
+    UUID id = saveTracker(lastDay, "WARNED");
+
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        prescriptionTrackerService.interrupt(
+                            id, new InterruptRequest(today, "Summons served one day late")))
+                .isInstanceOf(InvalidStateException.class)
+                .satisfies(
+                    e -> {
+                      var body = ((InvalidStateException) e).getBody();
+                      assertThat(body.getStatus()).isEqualTo(400);
+                      assertThat(body.getTitle())
+                          .isEqualTo("Interruption date is after the last day to serve");
+                      assertThat(body.getDetail())
+                          .isEqualTo(
+                              "The interruption date ("
+                                  + today
+                                  + ") is after the last day to serve ("
+                                  + lastDay
+                                  + "). The claim had already prescribed, so it cannot be"
+                                  + " interrupted.");
+                    }));
+
+    // Rejected: nothing changed.
+    runInTenant(
+        () -> {
+          var after = prescriptionTrackerRepository.findById(id).orElseThrow();
+          assertThat(after.getStatus()).isEqualTo("WARNED");
+          assertThat(after.getInterruptionDate()).isNull();
+        });
+  }
+
+  @Test
+  void interrupt_rejectsAServiceDateInTheFuture() {
+    LocalDate tomorrow = LocalDate.now(clock).plusDays(1);
+    UUID id = saveTracker(LocalDate.now(clock).plusYears(1), "RUNNING");
+
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        prescriptionTrackerService.interrupt(
+                            id, new InterruptRequest(tomorrow, "Summons not yet served")))
+                .isInstanceOf(InvalidStateException.class)
+                .satisfies(
+                    e -> {
+                      var body = ((InvalidStateException) e).getBody();
+                      assertThat(body.getTitle()).isEqualTo("Interruption date is in the future");
+                      assertThat(body.getDetail())
+                          .isEqualTo(
+                              "The interruption date ("
+                                  + tomorrow
+                                  + ") is in the future. Record the interruption once it has"
+                                  + " happened.");
+                    }));
+  }
+
+  /**
+   * A tracker whose stored last day to serve is {@code lastDayToServe}, persisted in {@code status}
+   * (WARNED for a near or past date, as CourtDateReminderJob leaves it, so it never shows up in
+   * {@link #list_filtersByStatus}'s RUNNING filter).
+   */
+  private UUID saveTracker(LocalDate lastDayToServe, String status) {
+    final UUID[] id = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var tracker =
+                      new PrescriptionTracker(
+                          projectId,
+                          customerId,
+                          lastDayToServe.plusDays(1).minusYears(3),
+                          "GENERAL_3Y",
+                          null,
+                          lastDayToServe,
+                          null,
+                          memberId);
+                  tracker.setStatus(status);
+                  id[0] = prescriptionTrackerRepository.saveAndFlush(tracker).getId();
+                }));
+    return id[0];
   }
 
   // --- Helpers ---

@@ -1,7 +1,7 @@
 {
-  "commit": "1bac55d63",
-  "command": "bash backend/scripts/verify.sh (wt-fix-ledger-pager, fix/client-ledgers-server-paging)",
+  "commit": "e28e82837c85e3bfc156f45cabb24b309bbce9da",
+  "command": "bash backend/scripts/verify.sh (wt-prescription-last-day, fix/prescription-last-day-to-serve)",
   "exit": 0,
-  "ts": "2026-11-28T02:28:30Z",
-  "summary": "F-667A-10 client-ledgers server paging @1bac55d63 (last backend commit; b0af4d5e5 head adds a frontend test + evidence only) — 8228 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 29:36)"
+  "ts": "2026-11-28T03:23:52Z",
+  "summary": "Prescription last day to serve + Interrupt by service date @e28e82837 — 8232 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 02:59:39Z-03:23:52Z)"
 }

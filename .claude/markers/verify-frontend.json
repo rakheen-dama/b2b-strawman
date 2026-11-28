@@ -1,7 +1,7 @@
 {
-  "commit": "e06dffc5829f103a69a58a75f4265b0b6612c1ae",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm build && pnpm test",
+  "commit": "e28e82837c85e3bfc156f45cabb24b309bbce9da",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1)",
   "exit": 0,
-  "ts": "2026-11-28T06:05:51Z",
-  "summary": "lint 0 errors (75 pre-existing warnings, 0 in changed file), typecheck 0, format:check clean, build ok, vitest 557 files / 5701 passed + 2 skipped (full suite at e06dffc5829f103a69a58a75f4265b0b6612c1ae). Test-only change; no e2e."
+  "ts": "2026-11-28T05:19:15Z",
+  "summary": "Prescription last day to serve @e28e82837 — lint 0 errors, typecheck/format/build green, vitest 553 files / 5684 passed / 2 skipped"
 }

@@ -1,0 +1,23 @@
+
+> frontend@0.1.0 test:e2e:legal-lifecycle /Users/rakheendama/Projects/2026/wt-fix-delete-refresh-vat/frontend
+> playwright test --config e2e/playwright.legal-lifecycle.config.ts --project chromium
+
+
+Running 105 tests using 1 worker
+
+  ✓    1 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:91:7 › Day 0 — Firm Setup › Alice: Home loads after login (1.0s)
+  ✓    2 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:101:7 › Day 0 — Firm Setup › Alice: Legal-za profile active — sidebar shows legal terms (442ms)
+  ✓    3 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:118:7 › Day 0 — Firm Setup › Alice: Settings — currency is ZAR (551ms)
+  ✓    4 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:126:7 › Day 0 — Firm Setup › Alice: Settings — set brand colour #1B3A4B (1.5s)
+  ✓    5 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:142:7 › Day 0 — Firm Setup › Alice: Settings — rate cards page loads (399ms)
+  ✓    6 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:149:7 › Day 0 — Firm Setup › Alice: Settings — create billing rates Alice R2,500, Bob R1,200, Carol R550 (2.2s)
+  ✓    7 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:158:7 › Day 0 — Firm Setup › Alice: Settings — create cost rates for Alice R1000, Bob R500, Carol R200 (2.7s)
+  ✓    8 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:170:7 › Day 0 — Firm Setup › Alice: Settings — tax rates page loads (342ms)
+  ✓    9 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:177:7 › Day 0 — Firm Setup › Alice: Settings — VAT 15% is seeded as the default tax rate (365ms)
+[31mTimed out waiting 600s for the test suite to run[39m
+[31mTimed out waiting 600s for the teardown for test suite to run[39m
+
+  96 did not run
+  9 passed (15.6m)
+  2 errors were not a part of any test, see above for details
+ ELIFECYCLE  Command failed with exit code 1.

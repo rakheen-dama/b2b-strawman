@@ -18,27 +18,6 @@ import {
 
 const DEADLINES_MODULE = "deadlines";
 
-function toIsoDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-
-/**
- * Default window: today..today+60d. The backend defaults to the same range
- * when no query params are sent, but we set them explicitly so the UI can
- * show the window to the user if we ever add a date selector.
- */
-function defaultWindow(): { from: string; to: string } {
-  const now = new Date();
-  const from = toIsoDate(now);
-  const plus60 = new Date(now);
-  plus60.setDate(plus60.getDate() + 60);
-  const to = toIsoDate(plus60);
-  return { from, to };
-}
-
 export default function DeadlinesPage() {
   const ctx = usePortalContext();
   const isSettled = usePortalContextIsSettled();
@@ -58,8 +37,6 @@ export default function DeadlinesPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const dateWindow = useMemo(() => defaultWindow(), []);
-
   // Module gate: redirect once the portal context has loaded and the
   // `deadlines` module is not enabled. Backend also 404s (source of truth).
   useEffect(() => {
@@ -77,9 +54,11 @@ export default function DeadlinesPage() {
       setError(null);
       if (cancelled) return;
       try {
+        // No from/to: the backend defaults the window to today..today+60 on the
+        // South African calendar, evaluated per request. A window built from the
+        // browser's local date started on SA-tomorrow east of SA late in the
+        // evening (Dubai from 22:00 SAST), dropping today's deadlines.
         const data = await listDeadlines({
-          from: dateWindow.from,
-          to: dateWindow.to,
           // Never send "ALL" — omit the param so the backend returns all statuses.
           status: statusFilter === "ALL" ? undefined : statusFilter,
         });
@@ -98,7 +77,7 @@ export default function DeadlinesPage() {
     return () => {
       cancelled = true;
     };
-  }, [ctx, statusFilter, dateWindow]);
+  }, [ctx, statusFilter]);
 
   const selectedDeadline = useMemo(() => {
     if (!selectedKey || !deadlines) return null;

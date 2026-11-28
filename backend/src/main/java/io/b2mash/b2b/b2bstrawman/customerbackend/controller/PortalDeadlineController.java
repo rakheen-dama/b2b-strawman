@@ -34,7 +34,9 @@ public class PortalDeadlineController {
 
   /**
    * Lists deadlines visible to the authenticated portal contact's customer. Defaults to {@code
-   * today..today+60d} when {@code from}/{@code to} are omitted (computed by the service).
+   * today..today+60d} when {@code from}/{@code to} are omitted, except that the {@code OVERDUE},
+   * {@code COMPLETED} and {@code CANCELLED} filters have no lower bound when {@code from} is
+   * omitted (D-127; computed by the service).
    */
   @GetMapping
   public ResponseEntity<List<PortalDeadlineResponse>> list(

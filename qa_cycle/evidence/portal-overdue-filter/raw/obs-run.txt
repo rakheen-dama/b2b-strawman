@@ -1,0 +1,13 @@
+2026-11-28T08:16:08Z
+{
+  "allChecksPass": true,
+  "checks": 24,
+  "failed": [],
+  "deferred": [
+    {
+      "item": "CANCELLED filter listing a past cancelled row",
+      "reason": "no firm UI action produces a CANCELLED portal row: a cancelled court date (and the original row of a postpone) DELETES its portal row (DeadlinePortalSyncService.onCourtDateCancelled, B4), prescription interrupt deletes too, and filing-schedule sync is dormant. The rule is covered by PortalDeadlineStatusFilterLookbackIntegrationTest [B3]/[D3] on seeded rows."
+    }
+  ]
+}
+rc=0

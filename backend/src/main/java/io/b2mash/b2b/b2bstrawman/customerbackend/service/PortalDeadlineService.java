@@ -17,8 +17,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service backing the portal deadline endpoints (Epic 497A). Owns the module gate, default
- * date-range computation (today..today+60d), read-model queries, and response-record mapping so the
- * controller stays thin per CLAUDE.md controller discipline.
+ * date-range computation (today..today+60d; no lower bound for the past-looking status filters,
+ * D-127), read-model queries, and response-record mapping so the controller stays thin per
+ * CLAUDE.md controller discipline.
  *
  * <p>Status is derived at read time (G89-F71): every response carries {@link
  * PortalDeadlineStatus#effective} on {@code LocalDate.now(clock)}, and the {@code status} filter
@@ -42,6 +43,17 @@ public class PortalDeadlineService {
   /** Default list window when {@code to} is not supplied by the caller. */
   private static final int DEFAULT_LOOKAHEAD_DAYS = 60;
 
+  /**
+   * Status filters that look into the past (D-127): an overdue deadline is due before today, and a
+   * completed or cancelled one usually is, so a default window starting at today would hide them.
+   * With no {@code from} these filters have no lower date bound.
+   */
+  private static final Set<String> OPEN_LOWER_BOUND_STATUS_FILTERS =
+      Set.of(
+          PortalDeadlineStatus.OVERDUE,
+          PortalDeadlineStatus.COMPLETED,
+          PortalDeadlineStatus.CANCELLED);
+
   private static final Set<String> VALID_STATUS_FILTERS =
       Set.of(
           PortalDeadlineStatus.UPCOMING,
@@ -62,19 +74,24 @@ public class PortalDeadlineService {
   }
 
   /**
-   * Lists deadlines visible to the authenticated portal contact's customer. Null {@code from} /
-   * {@code to} default to {@code today} / {@code today+60d}. Null {@code status} returns every
-   * status. A non-null {@code status} that is not one of the constrained values is rejected with
-   * 400 to avoid silently returning an empty list.
+   * Lists deadlines visible to the authenticated portal contact's customer, ordered by due date.
+   *
+   * <ul>
+   *   <li>Null {@code to} defaults to {@code today+60d}.
+   *   <li>Null {@code from} defaults to {@code today} for "all statuses", {@code UPCOMING} and
+   *       {@code DUE_SOON}. For {@code OVERDUE}, {@code COMPLETED} and {@code CANCELLED} it means
+   *       no lower bound (D-127): those rows are mostly due before today, so a window starting at
+   *       today would leave the Overdue filter always empty and hide every past completed or
+   *       cancelled item.
+   *   <li>An explicit {@code from} is always honoured; {@code from} after {@code to} is a 400.
+   *   <li>Null {@code status} returns every status. A non-null {@code status} that is not one of
+   *       the constrained values (case-insensitive) is rejected with 400 to avoid silently
+   *       returning an empty list.
+   * </ul>
    */
   public List<PortalDeadlineResponse> listForContact(LocalDate from, LocalDate to, String status) {
     requireDeadlinesEnabled();
     LocalDate today = LocalDate.now(clock);
-    LocalDate effectiveFrom = from != null ? from : today;
-    LocalDate effectiveTo = to != null ? to : today.plusDays(DEFAULT_LOOKAHEAD_DAYS);
-    if (effectiveFrom.isAfter(effectiveTo)) {
-      throw new InvalidStateException("Invalid date range", "from must be on or before to");
-    }
     String normalisedStatus = null;
     if (status != null && !status.isBlank()) {
       String upper = status.toUpperCase();
@@ -84,6 +101,19 @@ public class PortalDeadlineService {
             "status must be one of UPCOMING, DUE_SOON, OVERDUE, COMPLETED, CANCELLED");
       }
       normalisedStatus = upper;
+    }
+    LocalDate effectiveFrom;
+    if (from != null) {
+      effectiveFrom = from;
+    } else if (normalisedStatus != null
+        && OPEN_LOWER_BOUND_STATUS_FILTERS.contains(normalisedStatus)) {
+      effectiveFrom = null; // open-ended: the repository treats a null bound as unbounded
+    } else {
+      effectiveFrom = today;
+    }
+    LocalDate effectiveTo = to != null ? to : today.plusDays(DEFAULT_LOOKAHEAD_DAYS);
+    if (effectiveFrom != null && effectiveFrom.isAfter(effectiveTo)) {
+      throw new InvalidStateException("Invalid date range", "from must be on or before to");
     }
     UUID customerId = RequestScopes.requireCustomerId();
     return deadlineRepo

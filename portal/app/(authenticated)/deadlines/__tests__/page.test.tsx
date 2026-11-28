@@ -4,7 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { inZone } from "@/__tests__/helpers/time-zone";
 
 // The deadlines window is "today..today+60" on the South African calendar — the backend's default
-// (PortalDeadlineService.listForContact, Clock.system(KaziTime.ZONE)). Building `from`/`to` from
+// (PortalDeadlineService.listForContact, Clock.system(KaziTime.ZONE); no lower bound for the
+// Overdue, Completed and Cancelled filters, D-127). Building `from`/`to` from
 // the browser's local date started the window on SA-tomorrow east of SA late in the evening
 // (Dubai from 22:00 SAST, Nairobi from 23:00), so today's deadline dropped off the list.
 

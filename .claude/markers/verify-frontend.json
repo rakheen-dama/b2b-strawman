@@ -1,7 +1,7 @@
 {
-  "commit": "b0af4d5e5",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-ledger-pager, F-667A-10)",
+  "commit": "a25ccc25c9a746b62daae6b0e4d77f0406d3875c",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm build && pnpm test",
   "exit": 0,
-  "ts": "2026-11-28T02:53:28Z",
-  "summary": "F-667A-10 @b0af4d5e5 (final head; code head 7741f31df, head adds evidence only) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 554 files / 5671 passed / 2 skipped, build 0. E2E fresh stacks from the worktree @7741f31df: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (stack 1); exit-month 16/16 with portal :3002 (stack 2). OBS stack 3: 22/22 PASS."
+  "ts": "2026-11-28T05:17:51Z",
+  "summary": "lint 0 errors (75 pre-existing warnings), typecheck 0, format:check clean, build ok, vitest 556 files / 5695 passed + 2 skipped. Run at d430812cc; a25ccc25c9a746b62daae6b0e4d77f0406d3875c adds only qa_cycle/evidence (no frontend change). e2e legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped; OBS 19/19."
 }

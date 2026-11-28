@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-11-28T05:50:35.175Z",
+  "gitHead": "c92489bd0700d875b24f433ade4927e4b3b9cf78",
+  "run": "mwzzqpsf",
+  "steps": [
+    "2026-11-28T05:50:36.161Z portal sign-in via /login + Mailpit message UqFVjRoHLUmkTJUpWemTVG → /matters",
+    "2026-11-28T05:50:37.142Z cleanup: \"OBS-PDL mwzzqpsf +0\" already cancelled (no actions)",
+    "2026-11-28T05:50:37.944Z firm UI: cancelled \"OBS-PDL mwzzqpsf +1\"",
+    "2026-11-28T05:50:38.721Z firm UI: cancelled \"OBS-PDL mwzzqpsf +7\"",
+    "2026-11-28T05:50:39.487Z firm UI: cancelled \"OBS-PDL mwzzqpsf +8\"",
+    "2026-11-28T05:50:40.268Z firm UI: cancelled \"OBS-PDL mwzzqpsf +14\"",
+    "2026-11-28T05:50:41.056Z firm UI: cancelled \"OBS-PDL mwzzqpsf +15\"",
+    "2026-11-28T05:50:41.753Z firm UI: interrupted tracker (cause 2023-12-19)"
+  ],
+  "console": [
+    "[firm] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+  ],
+  "checks": [
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "796da60d-62df-48e3-a59d-26db58560bcf",
+    "name": "Website Redesign"
+  },
+  "mode": "cleanup of run mwzzqpsf",
+  "finishedAt": "2026-11-28T05:50:41.762Z",
+  "allChecksPass": true
+}

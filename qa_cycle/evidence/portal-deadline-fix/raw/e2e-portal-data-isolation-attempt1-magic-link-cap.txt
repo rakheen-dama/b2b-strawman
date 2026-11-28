@@ -1,0 +1,37 @@
+Sat Nov 28 05:41:23 UTC 2026
+c92489bd0700d875b24f433ade4927e4b3b9cf78
+cmd: KGOSI_EMAIL=contact@acme.example.com BACKEND_URL=http://localhost:8081 PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e e2e/tests/portal/ --reporter=list
+
+> frontend@0.1.0 test:e2e /Users/rakheendama/Projects/2026/wt-fix-portal-deadlines/frontend
+> playwright test --config e2e/playwright.config.ts e2e/tests/portal/ --reporter=list
+
+
+Running 2 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API (37ms)
+  ✓  2 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API (41ms)
+
+
+  1) [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mnull[39m
+
+      36 |   test("Kgosi sees only Kgosi matters via API", async () => {
+      37 |     const jwt = await getPortalJwt(KGOSI_EMAIL);
+    > 38 |     expect(jwt).toBeTruthy();
+         |                 ^
+      39 |     // Phase 87 S3 Batch 5 (ADR-337): API path
+      40 |     const res = await fetch(`${BACKEND_URL}/portal/matters`, {
+      41 |       headers: { Authorization: `Bearer ${jwt}` },
+        at /Users/rakheendama/Projects/2026/wt-fix-portal-deadlines/frontend/e2e/tests/portal/portal-data-isolation.spec.ts:38:17
+
+    Error Context: test-results/portal-portal-data-isolati-1e8f0--only-Kgosi-matters-via-API-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API 
+  1 passed (804ms)
+ ELIFECYCLE  Command failed with exit code 1.
+EXIT=1
+Sat Nov 28 05:41:24 UTC 2026

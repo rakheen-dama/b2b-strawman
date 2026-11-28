@@ -1,0 +1,97 @@
+Sat Nov 28 05:33:22 UTC 2026
+component at origin/main d82b242ff, tests at working tree
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-portal-deadlines/portal
+
+ ❯ components/deadlines/__tests__/deadline-list.test.tsx (14 tests | 3 failed) 119ms
+       × at 01:00 SAST, yesterday is overdue, today and tomorrow are red, and the 7/14-day thresholds hold 12ms
+       × at 01:00 SAST, yesterday is overdue, today and tomorrow are red, and the 7/14-day thresholds hold 7ms
+     × counts calendar days across a US clock change (New York, 14 Mar 2027) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/deadlines/__tests__/deadline-list.test.tsx > DeadlineList urgency on the South African calendar > runtime zone UTC > at 01:00 SAST, yesterday is overdue, today and tomorrow are red, and the 7/14-day thresholds hold
+ FAIL  components/deadlines/__tests__/deadline-list.test.tsx > DeadlineList urgency on the South African calendar > runtime zone America/New_York > at 01:00 SAST, yesterday is overdue, today and tomorrow are red, and the 7/14-day thresholds hold
+AssertionError: expected [ [ '2026-11-26', 'red' ], …(6) ] to deeply equal [ [ '2026-11-26', 'red-solid' ], …(6) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    [
+      "2026-11-26",
+-     "red-solid",
++     "red",
+    ],
+    [
+      "2026-11-27",
+      "red",
+    ],
+@@ -11,19 +11,19 @@
+      "2026-11-28",
+      "red",
+    ],
+    [
+      "2026-12-04",
+-     "red",
++     "amber",
+    ],
+    [
+      "2026-12-05",
+      "amber",
+    ],
+    [
+      "2026-12-11",
+-     "amber",
++     "grey",
+    ],
+    [
+      "2026-12-12",
+      "grey",
+    ],
+
+ ❯ components/deadlines/__tests__/deadline-list.test.tsx:234:30
+    232|         vi.useFakeTimers({ toFake: ["Date"] });
+    233|         vi.setSystemTime(new Date(instant));
+    234|         expect(tones(dates)).toEqual(
+       |                              ^
+    235|           dates.map(([, dueDate, , tone]) => [dueDate, tone]),
+    236|         );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  components/deadlines/__tests__/deadline-list.test.tsx > DeadlineList urgency on the South African calendar > counts calendar days across a US clock change (New York, 14 Mar 2027)
+AssertionError: expected [ [ '2027-03-13', 'amber' ], …(1) ] to deeply equal [ [ '2027-03-13', 'amber' ], …(1) ]
+
+- Expected
++ Received
+
+@@ -3,8 +3,8 @@
+      "2027-03-13",
+      "amber",
+    ],
+    [
+      "2027-03-20",
+-     "grey",
++     "amber",
+    ],
+  ]
+
+ ❯ components/deadlines/__tests__/deadline-list.test.tsx:251:30
+    249|       ["plus15", "2027-03-20", "UPCOMING", "grey"],
+    250|     ] as const;
+    251|     expect(tones(acrossDst)).toEqual([
+       |                              ^
+    252|       ["2027-03-13", "amber"],
+    253|       ["2027-03-20", "grey"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 11 passed (14)
+   Start at  07:33:22
+   Duration  634ms (transform 74ms, setup 49ms, import 184ms, tests 119ms, environment 129ms)
+
+Sat Nov 28 05:33:23 UTC 2026

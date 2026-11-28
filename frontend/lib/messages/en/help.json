@@ -140,5 +140,11 @@
       "title": "Portal contacts",
       "body": "Portal contacts are external users who can access the client portal to view documents, respond to requests, and accept engagement letters."
     }
+  },
+  "legal": {
+    "lastDayToServe": {
+      "title": "Last day to serve",
+      "body": "A calculated aid, not legal advice. The last day to serve is the cause-of-action date plus the prescription period, less one day. It does not allow for the knowledge rule (s12) or delays (s13) of the Prescription Act, and is not moved for weekends or public holidays. Confirm it before relying on it."
+    }
   }
 }

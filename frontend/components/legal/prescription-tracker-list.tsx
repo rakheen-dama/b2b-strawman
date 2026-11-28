@@ -5,6 +5,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { cn } from "@/lib/utils";
+import { HelpTip } from "@/components/help-tip";
 import type { PrescriptionTracker, PrescriptionStatus } from "@/lib/types";
 import { CreatePrescriptionDialog } from "./create-prescription-dialog";
 import { InterruptDialog } from "./interrupt-dialog";
@@ -66,8 +67,8 @@ function prescriptionTypeLabel(type: string): string {
 }
 
 /**
- * Calendar days from today in South Africa to the yyyy-MM-dd prescription date: 0 is the date
- * itself, negative is past it. The same answer on the UTC SSR server and in any browser, at any
+ * Calendar days from today in South Africa to the yyyy-MM-dd last day to serve (the stored
+ * prescription date): 0 is the date itself, negative is past it. The same answer on the UTC SSR server and in any browser, at any
  * hour — `new Date("yyyy-MM-dd")` parses as UTC midnight, which overstated the statutory count by
  * one between 00:00 and 02:00 SAST and showed "—" on the date itself.
  */
@@ -76,10 +77,10 @@ function daysRemaining(prescriptionDate: string): number {
 }
 
 /**
- * The Days left cell. Day 0 follows the backend's status: the stored prescription date is the
- * anniversary, which under the backend's rule (and SA's civilian computation) is already the first
- * prescribed day, so it arrives EXPIRED and reads "—". "Today" shows only for a day-0 tracker the
- * backend still treats as live (so it appears by itself if that expiry rule ever changes).
+ * The Days left cell. The stored prescription date is the last day to serve (the anniversary minus
+ * one day, SA's civilian computation), so on day 0 the backend still reports it live and the cell
+ * reads "Today"; it is EXPIRED from the day after. Day 0 stays status-driven: a historic tracker
+ * that still stores the anniversary, or an INTERRUPTED one, reads "—".
  */
 function daysLeftLabel(remaining: number, status: PrescriptionStatus): string | number {
   if (remaining > 0) return remaining;
@@ -97,13 +98,14 @@ export function PrescriptionTrackerList({
   onRefresh,
   canManageLegal = false,
 }: PrescriptionTrackerListProps) {
-  const [interruptTarget, setInterruptTarget] = useState<string | null>(null);
+  const [interruptTarget, setInterruptTarget] = useState<PrescriptionTracker | null>(null);
 
   return (
     <div data-testid="prescription-tracker-list">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <h3 className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
           Prescription trackers
+          <HelpTip code="legal.lastDayToServe" />
         </h3>
         {canManageLegal && (
           <CreatePrescriptionDialog
@@ -129,7 +131,7 @@ export function PrescriptionTrackerList({
               <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className={TH}>Type</th>
                 <th className={TH}>Cause of action</th>
-                <th className={TH}>Prescription date</th>
+                <th className={TH}>Last day to serve</th>
                 <th className={TH}>Status</th>
                 <th className={cn(TH, "text-right")}>Days left</th>
                 {canManageLegal && <th className={cn(TH, "text-right")}>Actions</th>}
@@ -138,7 +140,9 @@ export function PrescriptionTrackerList({
             <tbody>
               {trackers.map((tracker) => {
                 const remaining = daysRemaining(tracker.prescriptionDate);
-                const canInterrupt = tracker.status === "RUNNING" || tracker.status === "WARNED";
+                // Interrupt records a past service date, so it stays available once EXPIRED; the
+                // dialog (and backend) check that date against the last day to serve.
+                const canInterrupt = tracker.status !== "INTERRUPTED";
 
                 return (
                   <tr
@@ -178,7 +182,7 @@ export function PrescriptionTrackerList({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setInterruptTarget(tracker.id)}
+                            onClick={() => setInterruptTarget(tracker)}
                           >
                             Interrupt
                           </Button>
@@ -196,7 +200,8 @@ export function PrescriptionTrackerList({
       {canManageLegal && interruptTarget && (
         <InterruptDialog
           slug={slug}
-          prescriptionId={interruptTarget}
+          prescriptionId={interruptTarget.id}
+          lastDayToServe={interruptTarget.prescriptionDate}
           open={!!interruptTarget}
           onOpenChange={(v) => {
             if (!v) setInterruptTarget(null);

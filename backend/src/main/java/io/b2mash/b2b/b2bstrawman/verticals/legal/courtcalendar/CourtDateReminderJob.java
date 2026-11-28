@@ -166,7 +166,8 @@ public class CourtDateReminderJob {
     for (var tracker : trackers) {
       long daysUntil = ChronoUnit.DAYS.between(today, tracker.getPrescriptionDate());
 
-      // Handle expired prescriptions — catches any that slipped past while job was down
+      // Handle expired prescriptions — catches any that slipped past while job was down. The
+      // prescription date is the last day to serve, so day 0 is still live: EXPIRED from day -1.
       if (daysUntil < 0) {
         tracker.setStatus("EXPIRED");
         prescriptionTrackerRepository.save(tracker);
@@ -204,7 +205,7 @@ public class CourtDateReminderJob {
       }
 
       var body =
-          "Matter %s: Prescription expires on %s (%d days)."
+          "Matter %s: last day to serve is %s (%d days left)."
               .formatted(projectName, tracker.getPrescriptionDate(), daysUntil);
 
       notificationService.createIfEnabled(

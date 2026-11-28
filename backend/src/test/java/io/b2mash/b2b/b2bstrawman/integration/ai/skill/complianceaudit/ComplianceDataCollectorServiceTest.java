@@ -231,6 +231,54 @@ class ComplianceDataCollectorServiceTest {
     assertThat(snapshot.retention().pastExpiry()).isZero();
   }
 
+  /**
+   * The stored prescription date is the last day to serve (tasks/legal/prescription-computation
+   * -2026-11-28.md): a tracker dated today is still live and counts as approaching; only one dated
+   * yesterday or earlier is expired.
+   */
+  @Test
+  void collectSnapshot_prescription_lastDayToServeTodayIsApproaching_notExpired() {
+    LocalDate today = LocalDate.of(2026, 11, 28);
+    var fixedClock =
+        Clock.fixed(today.atStartOfDay(KaziTime.ZONE).plusHours(9).toInstant(), KaziTime.ZONE);
+    var service =
+        new ComplianceDataCollectorService(
+            customerRepository,
+            checklistInstanceRepository,
+            checklistInstanceItemRepository,
+            processingActivityRepository,
+            dataSubjectRequestRepository,
+            trustAccountRepository,
+            trustLedgerQueryRepository,
+            prescriptionTrackerRepository,
+            retentionPolicyRepository,
+            retentionService,
+            moduleGuard,
+            fixedClock);
+    var live = List.of("RUNNING", "WARNED");
+    when(customerRepository.findByLifecycleStatus(LifecycleStatus.ACTIVE)).thenReturn(List.of());
+    when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
+    when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(true);
+    when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
+    when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
+    when(prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+            live, today, today.plusDays(90)))
+        .thenReturn(List.of());
+    when(prescriptionTrackerRepository.findByStatusInAndPrescriptionDateLessThanEqual(
+            live, today.minusDays(1)))
+        .thenReturn(List.of());
+
+    service.collectComplianceSnapshot();
+
+    verify(prescriptionTrackerRepository)
+        .findByStatusInAndPrescriptionDateBetween(live, today, today.plusDays(90));
+    verify(prescriptionTrackerRepository)
+        .findByStatusInAndPrescriptionDateLessThanEqual(live, today.minusDays(1));
+  }
+
   @Test
   void collectSnapshot_largeFirm_usesAggressiveAggregation() {
     // 550 customers (>500 threshold)

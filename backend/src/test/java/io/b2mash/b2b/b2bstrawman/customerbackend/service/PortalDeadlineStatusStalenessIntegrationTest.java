@@ -156,10 +156,10 @@ class PortalDeadlineStatusStalenessIntegrationTest {
     assertThat(courtAtD).as("court row at D").isNotNull();
     assertThat(trackerAtD).as("prescription row at D").isNotNull();
     assertThat(courtAtD.dueDate()).isEqualTo(due);
-    // The prescription's due date is what the GENERAL_3Y rule computes from the cause-of-action
-    // date. It equals `due` except when `due` is 29 Feb: minusYears(3) lands on 28 Feb and the
-    // rule gives 28 Feb (D+9), which still reads UPCOMING at D, DUE_SOON at D+5, OVERDUE at D+11.
-    assertThat(trackerAtD.dueDate()).isEqualTo(due.minusYears(3).plusYears(3));
+    // The prescription's due date is the last day to serve the GENERAL_3Y rule computes from the
+    // cause-of-action date: the anniversary minus one day, so D+9 (D+8 when `due` is 29 Feb:
+    // minusYears(3) lands on 28 Feb). Either reads UPCOMING at D, DUE_SOON at D+5, OVERDUE at D+11.
+    assertThat(trackerAtD.dueDate()).isEqualTo(due.minusYears(3).plusYears(3).minusDays(1));
     assertThat(courtAtD.status()).as("court status at D (10 days out)").isEqualTo("UPCOMING");
     assertThat(trackerAtD.status()).as("prescription status at D").isEqualTo("UPCOMING");
 

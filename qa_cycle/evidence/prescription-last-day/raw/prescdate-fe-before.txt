@@ -1,0 +1,388 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-prescription-last-day/frontend
+
+ ❯ __tests__/legal/court-dates.test.tsx (34 tests | 5 failed) 762ms
+     × labels the date column Last day to serve 13ms
+     × offers Interrupt on RUNNING, WARNED and EXPIRED trackers, not on INTERRUPTED ones 8ms
+       × rejects a date after the last day to serve, inline, without calling the backend 13ms
+       × rejects a date in the future, inline 13ms
+       × records an interruption served on the last day to serve of an EXPIRED tracker 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList last day to serve and Interrupt > labels the date column Last day to serve
+AssertionError: expected [ 'Type', 'Cause of action', …(4) ] to include 'Last day to serve'
+ ❯ __tests__/legal/court-dates.test.tsx:391:21
+    389|
+    390|     const headers = screen.getAllByRole("columnheader").map((h) => h.t…
+    391|     expect(headers).toContain("Last day to serve");
+       |                     ^
+    392|     expect(headers).not.toContain("Prescription date");
+    393|     expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList last day to serve and Interrupt > offers Interrupt on RUNNING, WARNED and EXPIRED trackers, not on INTERRUPTED ones
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ __tests__/legal/court-dates.test.tsx:414:33
+    412|     expect(interruptIn("pt-r")).toBeInTheDocument();
+    413|     expect(interruptIn("pt-w")).toBeInTheDocument();
+    414|     expect(interruptIn("pt-e")).toBeInTheDocument();
+       |                                 ^
+    415|     expect(interruptIn("pt-i")).not.toBeInTheDocument();
+    416|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList last day to serve and Interrupt > Interrupt dialog date validation (today in SA: Fri 27 Nov 2026) > rejects a date after the last day to serve, inline, without calling the backend
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Interrupt"
+
+Here are the accessible roles:
+
+  cell:
+
+  Name "General (3yr)":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2024-01-15":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2026-11-20":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "Expired":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<tr[39m
+  [33mclass[39m=[32m"border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"[39m
+  [33mdata-testid[39m=[32m"prescription-tracker-row-pt-e"[39m
+[36m>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-slate-200 text-slate-700 bg-transparent dark:border-slate-700 dark:text-slate-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"outline"[39m
+    [36m>[39m
+      [0mGeneral (3yr)[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2024-01-15[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2026-11-20[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"destructive"[39m
+    [36m>[39m
+      [0mExpired[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"text-sm font-medium text-red-600"[39m
+    [36m>[39m
+      [0m—[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+[36m</tr>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ openDialogFor __tests__/legal/court-dates.test.tsx:429:69
+    427|       renderList([makeTracker({ id: "pt-e", status: "EXPIRED", prescri…
+    428|       await user.click(
+    429|         within(screen.getByTestId("prescription-tracker-row-pt-e")).ge…
+       |                                                                     ^
+    430|           name: "Interrupt",
+    431|         })
+ ❯ __tests__/legal/court-dates.test.tsx:447:44
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList last day to serve and Interrupt > Interrupt dialog date validation (today in SA: Fri 27 Nov 2026) > rejects a date in the future, inline
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Interrupt"
+
+Here are the accessible roles:
+
+  cell:
+
+  Name "General (3yr)":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2024-01-15":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2027-03-14":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "Expired":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "107":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<tr[39m
+  [33mclass[39m=[32m"border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"[39m
+  [33mdata-testid[39m=[32m"prescription-tracker-row-pt-e"[39m
+[36m>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-slate-200 text-slate-700 bg-transparent dark:border-slate-700 dark:text-slate-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"outline"[39m
+    [36m>[39m
+      [0mGeneral (3yr)[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2024-01-15[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2027-03-14[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"destructive"[39m
+    [36m>[39m
+      [0mExpired[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"text-sm font-medium text-slate-600 dark:text-slate-400"[39m
+    [36m>[39m
+      [0m107[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+[36m</tr>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ openDialogFor __tests__/legal/court-dates.test.tsx:429:69
+    427|       renderList([makeTracker({ id: "pt-e", status: "EXPIRED", prescri…
+    428|       await user.click(
+    429|         within(screen.getByTestId("prescription-tracker-row-pt-e")).ge…
+       |                                                                     ^
+    430|           name: "Interrupt",
+    431|         })
+ ❯ __tests__/legal/court-dates.test.tsx:460:44
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList last day to serve and Interrupt > Interrupt dialog date validation (today in SA: Fri 27 Nov 2026) > records an interruption served on the last day to serve of an EXPIRED tracker
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Interrupt"
+
+Here are the accessible roles:
+
+  cell:
+
+  Name "General (3yr)":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2024-01-15":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "2026-11-20":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "Expired":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------cell:
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<tr[39m
+  [33mclass[39m=[32m"border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"[39m
+  [33mdata-testid[39m=[32m"prescription-tracker-row-pt-e"[39m
+[36m>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-slate-200 text-slate-700 bg-transparent dark:border-slate-700 dark:text-slate-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"outline"[39m
+    [36m>[39m
+      [0mGeneral (3yr)[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2024-01-15[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400"[39m
+  [36m>[39m
+    [0m2026-11-20[0m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"inline-flex items-center justify-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"[39m
+      [33mdata-slot[39m=[32m"badge"[39m
+      [33mdata-variant[39m=[32m"destructive"[39m
+    [36m>[39m
+      [0mExpired[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"text-sm font-medium text-red-600"[39m
+    [36m>[39m
+      [0m—[0m
+    [36m</span>[39m
+  [36m</td>[39m
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-3 text-right"[39m
+  [36m/>[39m
+[36m</tr>[39m
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ openDialogFor __tests__/legal/court-dates.test.tsx:429:69
+    427|       renderList([makeTracker({ id: "pt-e", status: "EXPIRED", prescri…
+    428|       await user.click(
+    429|         within(screen.getByTestId("prescription-tracker-row-pt-e")).ge…
+       |                                                                     ^
+    430|           name: "Interrupt",
+    431|         })
+ ❯ __tests__/legal/court-dates.test.tsx:471:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 29 passed (34)
+   Start at  04:13:38
+   Duration  2.35s (transform 256ms, setup 102ms, import 829ms, tests 762ms, environment 198ms)
+

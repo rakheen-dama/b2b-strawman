@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-prescription-last-day/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  42 passed (42)
+   Start at  04:13:47
+   Duration  1.90s (transform 468ms, setup 199ms, import 1.39s, tests 925ms, environment 385ms)
+

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
+import { todayInSA } from "@b2mash/shared/date";
 import {
   Dialog,
   DialogContent,
@@ -31,14 +32,31 @@ import { interruptPrescription } from "@/lib/actions/court-dates";
 interface InterruptDialogProps {
   slug: string;
   prescriptionId: string;
+  /** The tracker's stored prescription date (yyyy-MM-dd): the last day to serve. */
+  lastDayToServe: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
+/**
+ * Interruption records a past event (service of process), so the date may not be in the future
+ * and must be on or before the last day to serve — after it the claim had already prescribed.
+ */
+function interruptionDateError(date: string, lastDayToServe: string): string | null {
+  if (date > todayInSA()) {
+    return "The interruption date cannot be in the future.";
+  }
+  if (date > lastDayToServe) {
+    return `The interruption date is after the last day to serve (${lastDayToServe}). The claim had already prescribed, so it cannot be interrupted.`;
+  }
+  return null;
+}
+
 export function InterruptDialog({
   slug,
   prescriptionId,
+  lastDayToServe,
   open,
   onOpenChange,
   onSuccess,
@@ -56,6 +74,13 @@ export function InterruptDialog({
 
   async function onSubmit(values: InterruptPrescriptionFormData) {
     setError(null);
+    // Mirrors the backend rule (PrescriptionTrackerService.requireInterruptionInTime); yyyy-MM-dd
+    // strings compare in date order. The backend still decides.
+    const dateError = interruptionDateError(values.interruptionDate, lastDayToServe);
+    if (dateError) {
+      form.setError("interruptionDate", { message: dateError });
+      return;
+    }
     setIsSubmitting(true);
 
     try {

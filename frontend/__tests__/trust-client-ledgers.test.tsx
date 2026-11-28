@@ -535,6 +535,28 @@ describe("Client Ledgers — PageHeader + server-paged DataTable (667A)", () => 
     expect(screen.getByTestId("non-zero-filter")).toHaveAttribute("href", LIST);
   });
 
+  // F-667A-10 / F-667A-4: the count and the pager describe every (filtered) ledger, not the page
+  it("list: the count and the pager come from the server's totals", async () => {
+    const rows = Array.from({ length: 5 }, (_, i) =>
+      makeLedgerCard({ id: `ledger-p2-${i}`, clientId: `cust-p2-${i}`, clientName: `P2 ${i}` })
+    );
+    mockFetchClientLedgers.mockResolvedValue({
+      content: rows,
+      totalElements: 25,
+      totalPages: 2,
+      pageSize: 20,
+      pageNumber: 1,
+    });
+
+    await renderListPage({ page: "1" });
+
+    expect(screen.getByText("25 clients found")).toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+    expect(wrapperProps.ledgers[0]).toEqual(
+      expect.objectContaining({ pageIndex: 1, pageCount: 2 })
+    );
+  });
+
   it("list: keeps the empty-state testid on the shared empty state", async () => {
     mockFetchClientLedgers.mockResolvedValue(ledgerPage([]));
 

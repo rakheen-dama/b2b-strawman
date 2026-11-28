@@ -121,6 +121,14 @@ public class ClientLedgerService {
   public record TotalBalanceResponse(BigDecimal balance, CreditorBreakdown creditorBreakdown) {}
 
   /** Optional /history filters (ADR-361); every null field disables its predicate. */
+  /**
+   * The client-ledgers list's filters (F-667A-10): {@code nonZeroOnly} keeps clients whose balance
+   * is not zero; {@code search} (blank = none) is a case-insensitive contains on the client name.
+   */
+  public record ClientLedgerListFilter(boolean nonZeroOnly, String search) {
+    public static final ClientLedgerListFilter NONE = new ClientLedgerListFilter(false, null);
+  }
+
   public record ClientHistoryFilter(
       String type, String status, LocalDate dateFrom, LocalDate dateTo) {
     public static final ClientHistoryFilter NONE = new ClientHistoryFilter(null, null, null, null);
@@ -254,18 +262,34 @@ public class ClientLedgerService {
    * The client ledgers of an account: every client with a posted row (ADR-378 — a client with rows
    * and no anchor is listed), balance descending, paged in SQL. The caller's sort is ignored (the
    * UI sends {@code sort=balance,desc}, which the derived query applies itself — there is no stored
-   * {@code balance} property to sort on).
+   * {@code balance} property to sort on). Unfiltered: see {@link #listClientLedgers(UUID,
+   * ClientLedgerListFilter, Pageable)}.
+   */
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+  public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
+    return listClientLedgers(trustAccountId, ClientLedgerListFilter.NONE, pageable);
+  }
+
+  /**
+   * As above, narrowed by the list's filters (F-667A-10): {@code nonZeroOnly} and {@code search}
+   * apply to every ledger of the account in SQL, so the page and its totals describe the filtered
+   * set. The filters only choose rows; every balance and total is computed as before.
    */
   // One snapshot for the page, its totals and invested balances — see getClientLedger
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-  public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
+  public Page<ClientLedgerCardResponse> listClientLedgers(
+      UUID trustAccountId, ClientLedgerListFilter filter, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
+    var f = filter != null ? filter : ClientLedgerListFilter.NONE;
 
     Pageable unsorted =
         pageable.isPaged()
             ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
             : Pageable.unpaged();
-    Page<ClientBalanceRow> page = ledgerQueries.clientBalancePage(trustAccountId, unsorted);
+    String search = blankToNull(f.search());
+    Page<ClientBalanceRow> page =
+        ledgerQueries.clientBalancePage(
+            trustAccountId, f.nonZeroOnly(), search != null ? escapeLike(search) : null, unsorted);
 
     // Batch-load customer names, lock anchors and derived totals to avoid N+1
     Set<UUID> customerIds =
@@ -326,6 +350,13 @@ public class ClientLedgerService {
 
   private static String blankToNull(String value) {
     return value == null || value.isBlank() ? null : value;
+  }
+
+  /**
+   * {@code %}, {@code _} and a backslash match themselves in the name search (backslash escape).
+   */
+  private static String escapeLike(String value) {
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 
   // --- 440.11: Historical Balance, Total Balance, and Ledger Statement ---

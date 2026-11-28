@@ -32,6 +32,15 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
   /** The optional as-at bound as a bare predicate (inside a FILTER clause). */
   String IN_RANGE = "(CAST(:asAt AS date) IS NULL OR t.transaction_date <= CAST(:asAt AS date))";
 
+  /** The client-ledgers list's optional name search (F-667A-10): a LIKE-escaped contains. */
+  String CLIENT_NAME_SEARCH =
+      "\n   AND (CAST(:search AS text) IS NULL"
+          + " OR c.name ILIKE '%' || CAST(:search AS text) || '%' ESCAPE '\\')";
+
+  /** The client-ledgers list's non-zero toggle (F-667A-10), a HAVING on the derived balance. */
+  String NON_ZERO_ONLY =
+      "\n  HAVING (NOT CAST(:nonZeroOnly AS boolean) OR COALESCE(SUM(t.ledger_effect), 0) <> 0)";
+
   /** The account's cashbook: what the bank should hold for it. */
   @Query(
       nativeQuery = true,
@@ -337,8 +346,14 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
 
   /**
    * The client-ledgers list page: balance descending (the UI's {@code sort=balance,desc} — T4),
-   * paged in SQL. Callers pass a sort-free {@code PageRequest.of(page, size)}: the ORDER BY lives
-   * here.
+   * client id as the tiebreak so pages never drop or repeat a row, paged in SQL. Callers pass a
+   * sort-free {@code PageRequest.of(page, size)}: the ORDER BY lives here.
+   *
+   * <p>F-667A-10: the list's two filters narrow every ledger of the account, not one page, and the
+   * count query applies the same predicates so the page metadata describes the filtered set. {@code
+   * nonZeroOnly} keeps clients whose (general) balance is not zero; {@code search} (nullable) is a
+   * case-insensitive contains on the client name, passed LIKE-escaped with a backslash as the
+   * escape character. Neither filter changes a balance.
    */
   @Query(
       nativeQuery = true,
@@ -347,17 +362,36 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
           SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
                  MAX(t.transaction_date) AS lastTransactionDate
             FROM trust_transactions t
+            JOIN customers c ON c.id = t.customer_id
            WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
-             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
-           GROUP BY t.customer_id
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL"""
+              + CLIENT_NAME_SEARCH
+              + """
+
+           GROUP BY t.customer_id"""
+              + NON_ZERO_ONLY
+              + """
+
            ORDER BY balance DESC, t.customer_id""",
       countQuery =
           """
-          SELECT count(DISTINCT t.customer_id) FROM trust_transactions t
+          SELECT count(*) FROM (
+          SELECT t.customer_id FROM trust_transactions t
+            JOIN customers c ON c.id = t.customer_id
            WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
-             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL""")
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL"""
+              + CLIENT_NAME_SEARCH
+              + """
+
+           GROUP BY t.customer_id"""
+              + NON_ZERO_ONLY
+              + """
+          ) filtered""")
   Page<ClientBalanceRow> clientBalancePage(
-      @Param("trustAccountId") UUID trustAccountId, Pageable pageable);
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("nonZeroOnly") boolean nonZeroOnly,
+      @Param("search") String search,
+      Pageable pageable);
 
   /** One client on one account (the client-ledger card): empty when it has no posted row. */
   @Query(

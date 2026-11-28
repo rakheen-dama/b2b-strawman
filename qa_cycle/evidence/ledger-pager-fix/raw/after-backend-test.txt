@@ -1,0 +1,69 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< io.b2mash.b2b:b2b-strawman-backend >-----------------
+[INFO] Building backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spotless:3.2.1:check (default) @ b2b-strawman-backend ---
+[INFO] Spotless.Java is keeping 2604 files clean - 0 needs changes to be clean, 0 were already clean, 2604 were skipped because caching determined they were already clean
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ b2b-strawman-backend ---
+[INFO] Copying 6 resources from src/main/resources to target/classes
+[INFO] Copying 136 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ b2b-strawman-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1626 source files with javac [debug parameters release 25] to target/classes
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Some input files use or override a deprecated API.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java uses unchecked or unsafe operations.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ b2b-strawman-backend ---
+[INFO] Copying 58 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 978 source files with javac [debug parameters release 25] to target/test-classes
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/test/java/io/b2mash/b2b/b2bstrawman/architecture/TerminologyRemnantScanTest.java: Some input files use or override a deprecated API.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/test/java/io/b2mash/b2b/b2bstrawman/architecture/TerminologyRemnantScanTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ b2b-strawman-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+01:50:30.792 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-fix-ledger-pager/backend/target/test-classes/archunit.properties
+[INFO] Running io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+01:50:30.909 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest]: DerivedLedgerBalanceIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:50:31.096 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.22 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+[INFO] Running io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.652 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+[INFO] Running io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListPagingIntegrationTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.821 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListPagingIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  38.675 s
+[INFO] Finished at: 2026-11-28T03:50:48+02:00
+[INFO] ------------------------------------------------------------------------

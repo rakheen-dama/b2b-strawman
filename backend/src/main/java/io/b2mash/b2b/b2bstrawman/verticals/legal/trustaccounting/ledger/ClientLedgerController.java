@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientLedgerCardResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientLedgerListFilter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.TotalBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
@@ -28,8 +29,13 @@ public class ClientLedgerController {
   @GetMapping("/api/trust-accounts/{accountId}/client-ledgers")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<Page<ClientLedgerCardResponse>> listClientLedgers(
-      @PathVariable UUID accountId, Pageable pageable) {
-    return ResponseEntity.ok(clientLedgerService.listClientLedgers(accountId, pageable));
+      @PathVariable UUID accountId,
+      @RequestParam(defaultValue = "false") boolean nonZeroOnly,
+      @RequestParam(required = false) String search,
+      Pageable pageable) {
+    return ResponseEntity.ok(
+        clientLedgerService.listClientLedgers(
+            accountId, new ClientLedgerListFilter(nonZeroOnly, search), pageable));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}")

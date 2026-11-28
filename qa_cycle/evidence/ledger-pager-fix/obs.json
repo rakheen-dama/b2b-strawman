@@ -1,0 +1,777 @@
+{
+  "at": "2026-11-28T02:49:02.515Z",
+  "run": "a4oj",
+  "pre": {
+    "trustAccounts": [
+      {
+        "id": "bab20061-4415-43b6-85d2-e5c4ecae17ee",
+        "name": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      }
+    ],
+    "ledgerCounts": [
+      0
+    ]
+  },
+  "seeded": [
+    {
+      "id": "4a47a37d-d2d4-4d97-9c6d-ef570e547e3f",
+      "name": "OBS Pager Client 01",
+      "deposit": "1200.00",
+      "settled": false,
+      "ms": 6517
+    },
+    {
+      "id": "402e1926-9033-4b0e-aaf4-34d09db49b84",
+      "name": "OBS Pager Client 02",
+      "deposit": "1190.00",
+      "settled": false,
+      "ms": 6256
+    },
+    {
+      "id": "8e8d2fd1-697f-4460-affa-c677bb69f1a1",
+      "name": "OBS Pager Client 03",
+      "deposit": "1180.00",
+      "settled": false,
+      "ms": 5771
+    },
+    {
+      "id": "e0493e82-1188-4a70-ad78-4c8cbd359318",
+      "name": "OBS Pager Client 04",
+      "deposit": "1170.00",
+      "settled": false,
+      "ms": 6181
+    },
+    {
+      "id": "50b9a0e4-d596-49b5-9134-906ad618dcf5",
+      "name": "OBS Pager Client 05",
+      "deposit": "1160.00",
+      "settled": false,
+      "ms": 6281
+    },
+    {
+      "id": "28e1bf05-c635-44cb-b3c3-aa0639276e9b",
+      "name": "OBS Pager Client 06",
+      "deposit": "1150.00",
+      "settled": false,
+      "ms": 5599
+    },
+    {
+      "id": "1884682a-d5a8-4771-86e6-4f3105c5e2b5",
+      "name": "OBS Pager Client 07",
+      "deposit": "1140.00",
+      "settled": false,
+      "ms": 5849
+    },
+    {
+      "id": "7a009e6a-3790-499d-bfde-dded96c1bae3",
+      "name": "OBS Pager Client 08",
+      "deposit": "1130.00",
+      "settled": false,
+      "ms": 5940
+    },
+    {
+      "id": "988a833f-bc65-47d0-8d69-965add6d490c",
+      "name": "OBS Pager Client 09",
+      "deposit": "1120.00",
+      "settled": false,
+      "ms": 5969
+    },
+    {
+      "id": "0896ab7e-6af8-40e1-bb1b-8353161d055c",
+      "name": "OBS Pager Client 10",
+      "deposit": "1110.00",
+      "settled": false,
+      "ms": 5670
+    },
+    {
+      "id": "53997e00-2c3b-44a6-8f63-9e96531c7857",
+      "name": "OBS Pager Client 11",
+      "deposit": "1100.00",
+      "settled": false,
+      "ms": 5959
+    },
+    {
+      "id": "0986c36d-c11a-4c2f-8055-701bc6e3aa32",
+      "name": "OBS Pager Client 12",
+      "deposit": "1090.00",
+      "settled": false,
+      "ms": 5852
+    },
+    {
+      "id": "e5685d82-2b7d-4c28-97d8-f80a44fea0bf",
+      "name": "OBS Pager Client 13",
+      "deposit": "1080.00",
+      "settled": false,
+      "ms": 5804
+    },
+    {
+      "id": "07e9948c-b072-4d29-ba35-5190dc87ea61",
+      "name": "OBS Pager Client 14",
+      "deposit": "1070.00",
+      "settled": false,
+      "ms": 5125
+    },
+    {
+      "id": "11b51895-c301-4b12-a84e-d44fc789aa56",
+      "name": "OBS Pager Client 15",
+      "deposit": "1060.00",
+      "settled": false,
+      "ms": 5358
+    },
+    {
+      "id": "5c9f6054-2617-4a9d-a242-2885cdc22756",
+      "name": "OBS Pager Client 16",
+      "deposit": "1050.00",
+      "settled": false,
+      "ms": 5601
+    },
+    {
+      "id": "d7e4c35f-9d21-46c1-9a7b-494aa61abd62",
+      "name": "OBS Pager Client 17",
+      "deposit": "1040.00",
+      "settled": false,
+      "ms": 5804
+    },
+    {
+      "id": "17c1517e-1381-445c-a94c-fc86d65c6d0e",
+      "name": "OBS Pager Client 18",
+      "deposit": "1030.00",
+      "settled": false,
+      "ms": 5483
+    },
+    {
+      "id": "5f782f3c-f1a4-470d-a985-146b209c661e",
+      "name": "OBS Pager Client 19",
+      "deposit": "1020.00",
+      "settled": false,
+      "ms": 5804
+    },
+    {
+      "id": "2e706632-42ab-4dc0-9aa4-fd74acfcea84",
+      "name": "OBS Pager Client 20",
+      "deposit": "1010.00",
+      "settled": false,
+      "ms": 6543
+    },
+    {
+      "id": "1a1e374d-87dd-4201-bb66-1199abeeb204",
+      "name": "OBS Zebra Holdings",
+      "deposit": "5.00",
+      "settled": false,
+      "ms": 5690
+    },
+    {
+      "id": "d75588be-3a6e-45c9-b51b-2e4a0bd1e0e3",
+      "name": "OBS Pager Settled 01",
+      "deposit": "300.00",
+      "settled": true,
+      "ms": 8536
+    },
+    {
+      "id": "48e5e4ce-bd1f-43fb-b1c4-f43d3768b753",
+      "name": "OBS Pager Settled 02",
+      "deposit": "300.00",
+      "settled": true,
+      "ms": 8876
+    }
+  ],
+  "steps": [
+    {
+      "label": "page1",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers",
+      "desc": "23 clients found",
+      "pager": "Page 1 of 2",
+      "rowCount": 20,
+      "rows": [
+        {
+          "id": "4a47a37d-d2d4-4d97-9c6d-ef570e547e3f",
+          "name": "OBS Pager Client 01",
+          "balance": 1200
+        },
+        {
+          "id": "402e1926-9033-4b0e-aaf4-34d09db49b84",
+          "name": "OBS Pager Client 02",
+          "balance": 1190
+        },
+        {
+          "id": "8e8d2fd1-697f-4460-affa-c677bb69f1a1",
+          "name": "OBS Pager Client 03",
+          "balance": 1180
+        },
+        {
+          "id": "e0493e82-1188-4a70-ad78-4c8cbd359318",
+          "name": "OBS Pager Client 04",
+          "balance": 1170
+        },
+        {
+          "id": "50b9a0e4-d596-49b5-9134-906ad618dcf5",
+          "name": "OBS Pager Client 05",
+          "balance": 1160
+        },
+        {
+          "id": "28e1bf05-c635-44cb-b3c3-aa0639276e9b",
+          "name": "OBS Pager Client 06",
+          "balance": 1150
+        },
+        {
+          "id": "1884682a-d5a8-4771-86e6-4f3105c5e2b5",
+          "name": "OBS Pager Client 07",
+          "balance": 1140
+        },
+        {
+          "id": "7a009e6a-3790-499d-bfde-dded96c1bae3",
+          "name": "OBS Pager Client 08",
+          "balance": 1130
+        },
+        {
+          "id": "988a833f-bc65-47d0-8d69-965add6d490c",
+          "name": "OBS Pager Client 09",
+          "balance": 1120
+        },
+        {
+          "id": "0896ab7e-6af8-40e1-bb1b-8353161d055c",
+          "name": "OBS Pager Client 10",
+          "balance": 1110
+        },
+        {
+          "id": "53997e00-2c3b-44a6-8f63-9e96531c7857",
+          "name": "OBS Pager Client 11",
+          "balance": 1100
+        },
+        {
+          "id": "0986c36d-c11a-4c2f-8055-701bc6e3aa32",
+          "name": "OBS Pager Client 12",
+          "balance": 1090
+        },
+        {
+          "id": "e5685d82-2b7d-4c28-97d8-f80a44fea0bf",
+          "name": "OBS Pager Client 13",
+          "balance": 1080
+        },
+        {
+          "id": "07e9948c-b072-4d29-ba35-5190dc87ea61",
+          "name": "OBS Pager Client 14",
+          "balance": 1070
+        },
+        {
+          "id": "11b51895-c301-4b12-a84e-d44fc789aa56",
+          "name": "OBS Pager Client 15",
+          "balance": 1060
+        },
+        {
+          "id": "5c9f6054-2617-4a9d-a242-2885cdc22756",
+          "name": "OBS Pager Client 16",
+          "balance": 1050
+        },
+        {
+          "id": "d7e4c35f-9d21-46c1-9a7b-494aa61abd62",
+          "name": "OBS Pager Client 17",
+          "balance": 1040
+        },
+        {
+          "id": "17c1517e-1381-445c-a94c-fc86d65c6d0e",
+          "name": "OBS Pager Client 18",
+          "balance": 1030
+        },
+        {
+          "id": "5f782f3c-f1a4-470d-a985-146b209c661e",
+          "name": "OBS Pager Client 19",
+          "balance": 1020
+        },
+        {
+          "id": "2e706632-42ab-4dc0-9aa4-fd74acfcea84",
+          "name": "OBS Pager Client 20",
+          "balance": 1010
+        }
+      ],
+      "emptyState": false,
+      "shot": "01-page1.png"
+    },
+    {
+      "label": "page2",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?page=1",
+      "desc": "23 clients found",
+      "pager": "Page 2 of 2",
+      "rowCount": 3,
+      "rows": [
+        {
+          "id": "1a1e374d-87dd-4201-bb66-1199abeeb204",
+          "name": "OBS Zebra Holdings",
+          "balance": 5
+        },
+        {
+          "id": "48e5e4ce-bd1f-43fb-b1c4-f43d3768b753",
+          "name": "OBS Pager Settled 02",
+          "balance": 0
+        },
+        {
+          "id": "d75588be-3a6e-45c9-b51b-2e4a0bd1e0e3",
+          "name": "OBS Pager Settled 01",
+          "balance": 0
+        }
+      ],
+      "emptyState": false,
+      "shot": "02-page2.png"
+    },
+    {
+      "label": "nonzero-page1",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?nonZeroOnly=true",
+      "desc": "21 clients found",
+      "pager": "Page 1 of 2",
+      "rowCount": 20,
+      "rows": [
+        {
+          "id": "4a47a37d-d2d4-4d97-9c6d-ef570e547e3f",
+          "name": "OBS Pager Client 01",
+          "balance": 1200
+        },
+        {
+          "id": "402e1926-9033-4b0e-aaf4-34d09db49b84",
+          "name": "OBS Pager Client 02",
+          "balance": 1190
+        },
+        {
+          "id": "8e8d2fd1-697f-4460-affa-c677bb69f1a1",
+          "name": "OBS Pager Client 03",
+          "balance": 1180
+        },
+        {
+          "id": "e0493e82-1188-4a70-ad78-4c8cbd359318",
+          "name": "OBS Pager Client 04",
+          "balance": 1170
+        },
+        {
+          "id": "50b9a0e4-d596-49b5-9134-906ad618dcf5",
+          "name": "OBS Pager Client 05",
+          "balance": 1160
+        },
+        {
+          "id": "28e1bf05-c635-44cb-b3c3-aa0639276e9b",
+          "name": "OBS Pager Client 06",
+          "balance": 1150
+        },
+        {
+          "id": "1884682a-d5a8-4771-86e6-4f3105c5e2b5",
+          "name": "OBS Pager Client 07",
+          "balance": 1140
+        },
+        {
+          "id": "7a009e6a-3790-499d-bfde-dded96c1bae3",
+          "name": "OBS Pager Client 08",
+          "balance": 1130
+        },
+        {
+          "id": "988a833f-bc65-47d0-8d69-965add6d490c",
+          "name": "OBS Pager Client 09",
+          "balance": 1120
+        },
+        {
+          "id": "0896ab7e-6af8-40e1-bb1b-8353161d055c",
+          "name": "OBS Pager Client 10",
+          "balance": 1110
+        },
+        {
+          "id": "53997e00-2c3b-44a6-8f63-9e96531c7857",
+          "name": "OBS Pager Client 11",
+          "balance": 1100
+        },
+        {
+          "id": "0986c36d-c11a-4c2f-8055-701bc6e3aa32",
+          "name": "OBS Pager Client 12",
+          "balance": 1090
+        },
+        {
+          "id": "e5685d82-2b7d-4c28-97d8-f80a44fea0bf",
+          "name": "OBS Pager Client 13",
+          "balance": 1080
+        },
+        {
+          "id": "07e9948c-b072-4d29-ba35-5190dc87ea61",
+          "name": "OBS Pager Client 14",
+          "balance": 1070
+        },
+        {
+          "id": "11b51895-c301-4b12-a84e-d44fc789aa56",
+          "name": "OBS Pager Client 15",
+          "balance": 1060
+        },
+        {
+          "id": "5c9f6054-2617-4a9d-a242-2885cdc22756",
+          "name": "OBS Pager Client 16",
+          "balance": 1050
+        },
+        {
+          "id": "d7e4c35f-9d21-46c1-9a7b-494aa61abd62",
+          "name": "OBS Pager Client 17",
+          "balance": 1040
+        },
+        {
+          "id": "17c1517e-1381-445c-a94c-fc86d65c6d0e",
+          "name": "OBS Pager Client 18",
+          "balance": 1030
+        },
+        {
+          "id": "5f782f3c-f1a4-470d-a985-146b209c661e",
+          "name": "OBS Pager Client 19",
+          "balance": 1020
+        },
+        {
+          "id": "2e706632-42ab-4dc0-9aa4-fd74acfcea84",
+          "name": "OBS Pager Client 20",
+          "balance": 1010
+        }
+      ],
+      "emptyState": false,
+      "shot": "03-nonzero-page1.png"
+    },
+    {
+      "label": "nonzero-page2",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?nonZeroOnly=true&page=1",
+      "desc": "21 clients found",
+      "pager": "Page 2 of 2",
+      "rowCount": 1,
+      "rows": [
+        {
+          "id": "1a1e374d-87dd-4201-bb66-1199abeeb204",
+          "name": "OBS Zebra Holdings",
+          "balance": 5
+        }
+      ],
+      "emptyState": false,
+      "shot": "04-nonzero-page2.png"
+    },
+    {
+      "label": "search-zebra",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?search=zebra",
+      "desc": "1 client found",
+      "pager": null,
+      "rowCount": 1,
+      "rows": [
+        {
+          "id": "1a1e374d-87dd-4201-bb66-1199abeeb204",
+          "name": "OBS Zebra Holdings",
+          "balance": 5
+        }
+      ],
+      "emptyState": false,
+      "shot": "05-search-zebra.png"
+    },
+    {
+      "label": "search-settled",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?search=settled",
+      "desc": "2 clients found",
+      "pager": null,
+      "rowCount": 2,
+      "rows": [
+        {
+          "id": "48e5e4ce-bd1f-43fb-b1c4-f43d3768b753",
+          "name": "OBS Pager Settled 02",
+          "balance": 0
+        },
+        {
+          "id": "d75588be-3a6e-45c9-b51b-2e4a0bd1e0e3",
+          "name": "OBS Pager Settled 01",
+          "balance": 0
+        }
+      ],
+      "emptyState": false,
+      "shot": "06-search-settled.png"
+    },
+    {
+      "label": "search-settled-nonzero",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?search=settled&nonZeroOnly=true",
+      "desc": "0 clients found",
+      "pager": null,
+      "rowCount": 0,
+      "rows": [],
+      "emptyState": true,
+      "shot": "07-search-settled-nonzero.png"
+    },
+    {
+      "label": "search-pager",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?search=pager",
+      "desc": "22 clients found",
+      "pager": "Page 1 of 2",
+      "rowCount": 20,
+      "rows": [
+        {
+          "id": "4a47a37d-d2d4-4d97-9c6d-ef570e547e3f",
+          "name": "OBS Pager Client 01",
+          "balance": 1200
+        },
+        {
+          "id": "402e1926-9033-4b0e-aaf4-34d09db49b84",
+          "name": "OBS Pager Client 02",
+          "balance": 1190
+        },
+        {
+          "id": "8e8d2fd1-697f-4460-affa-c677bb69f1a1",
+          "name": "OBS Pager Client 03",
+          "balance": 1180
+        },
+        {
+          "id": "e0493e82-1188-4a70-ad78-4c8cbd359318",
+          "name": "OBS Pager Client 04",
+          "balance": 1170
+        },
+        {
+          "id": "50b9a0e4-d596-49b5-9134-906ad618dcf5",
+          "name": "OBS Pager Client 05",
+          "balance": 1160
+        },
+        {
+          "id": "28e1bf05-c635-44cb-b3c3-aa0639276e9b",
+          "name": "OBS Pager Client 06",
+          "balance": 1150
+        },
+        {
+          "id": "1884682a-d5a8-4771-86e6-4f3105c5e2b5",
+          "name": "OBS Pager Client 07",
+          "balance": 1140
+        },
+        {
+          "id": "7a009e6a-3790-499d-bfde-dded96c1bae3",
+          "name": "OBS Pager Client 08",
+          "balance": 1130
+        },
+        {
+          "id": "988a833f-bc65-47d0-8d69-965add6d490c",
+          "name": "OBS Pager Client 09",
+          "balance": 1120
+        },
+        {
+          "id": "0896ab7e-6af8-40e1-bb1b-8353161d055c",
+          "name": "OBS Pager Client 10",
+          "balance": 1110
+        },
+        {
+          "id": "53997e00-2c3b-44a6-8f63-9e96531c7857",
+          "name": "OBS Pager Client 11",
+          "balance": 1100
+        },
+        {
+          "id": "0986c36d-c11a-4c2f-8055-701bc6e3aa32",
+          "name": "OBS Pager Client 12",
+          "balance": 1090
+        },
+        {
+          "id": "e5685d82-2b7d-4c28-97d8-f80a44fea0bf",
+          "name": "OBS Pager Client 13",
+          "balance": 1080
+        },
+        {
+          "id": "07e9948c-b072-4d29-ba35-5190dc87ea61",
+          "name": "OBS Pager Client 14",
+          "balance": 1070
+        },
+        {
+          "id": "11b51895-c301-4b12-a84e-d44fc789aa56",
+          "name": "OBS Pager Client 15",
+          "balance": 1060
+        },
+        {
+          "id": "5c9f6054-2617-4a9d-a242-2885cdc22756",
+          "name": "OBS Pager Client 16",
+          "balance": 1050
+        },
+        {
+          "id": "d7e4c35f-9d21-46c1-9a7b-494aa61abd62",
+          "name": "OBS Pager Client 17",
+          "balance": 1040
+        },
+        {
+          "id": "17c1517e-1381-445c-a94c-fc86d65c6d0e",
+          "name": "OBS Pager Client 18",
+          "balance": 1030
+        },
+        {
+          "id": "5f782f3c-f1a4-470d-a985-146b209c661e",
+          "name": "OBS Pager Client 19",
+          "balance": 1020
+        },
+        {
+          "id": "2e706632-42ab-4dc0-9aa4-fd74acfcea84",
+          "name": "OBS Pager Client 20",
+          "balance": 1010
+        }
+      ],
+      "emptyState": false,
+      "shot": "08-search-pager.png"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "pre-state: the list's account had no ledgers before the seed",
+      "ok": true,
+      "detail": {
+        "preCount": 0
+      }
+    },
+    {
+      "name": "1. count is every ledger",
+      "ok": true,
+      "detail": "23 clients found"
+    },
+    {
+      "name": "1. pager reads Page 1 of 2",
+      "ok": true,
+      "detail": "Page 1 of 2"
+    },
+    {
+      "name": "1. 20 rows on page 1",
+      "ok": true,
+      "detail": 20
+    },
+    {
+      "name": "2. pager reads Page 2 of 2",
+      "ok": true,
+      "detail": "Page 2 of 2"
+    },
+    {
+      "name": "2. the remaining 3 ledgers are on page 2",
+      "ok": true,
+      "detail": [
+        "OBS Zebra Holdings",
+        "OBS Pager Settled 02",
+        "OBS Pager Settled 01"
+      ]
+    },
+    {
+      "name": "2. Zebra and both settled clients are on page 2",
+      "ok": true
+    },
+    {
+      "name": "2. pages 1+2 = the seeded set, no duplicate",
+      "ok": true,
+      "detail": {
+        "union": 23,
+        "distinct": 23
+      }
+    },
+    {
+      "name": "2. Σ Trust Balance over both pages == total-balance == seeded deposits less payments",
+      "ok": true,
+      "detail": {
+        "uiSum": 22105,
+        "apiTotal": 22105,
+        "seedTotal": 22105
+      }
+    },
+    {
+      "name": "3. non-zero count excludes the 2 settled clients",
+      "ok": true,
+      "detail": "21 clients found"
+    },
+    {
+      "name": "3. non-zero pager Page 1 of 2",
+      "ok": true,
+      "detail": "Page 1 of 2"
+    },
+    {
+      "name": "3. non-zero page 2 holds Zebra only",
+      "ok": true,
+      "detail": [
+        "OBS Zebra Holdings"
+      ]
+    },
+    {
+      "name": "3. no zero row on either non-zero page",
+      "ok": true
+    },
+    {
+      "name": "3. Σ non-zero balances == total-balance",
+      "ok": true
+    },
+    {
+      "name": "3. UI count == API totalElements (nonZeroOnly)",
+      "ok": true,
+      "detail": {
+        "size": 20,
+        "number": 0,
+        "totalElements": 21,
+        "totalPages": 2
+      }
+    },
+    {
+      "name": "4. search finds Zebra (page 2 unfiltered) on page 1",
+      "ok": true,
+      "detail": [
+        "OBS Zebra Holdings"
+      ]
+    },
+    {
+      "name": "4. '1 client found', no pager",
+      "ok": true,
+      "detail": {
+        "desc": "1 client found",
+        "pager": null
+      }
+    },
+    {
+      "name": "5. search 'settled' → the 2 settled clients, both R 0,00",
+      "ok": true,
+      "detail": [
+        {
+          "id": "48e5e4ce-bd1f-43fb-b1c4-f43d3768b753",
+          "name": "OBS Pager Settled 02",
+          "balance": 0
+        },
+        {
+          "id": "d75588be-3a6e-45c9-b51b-2e4a0bd1e0e3",
+          "name": "OBS Pager Settled 01",
+          "balance": 0
+        }
+      ]
+    },
+    {
+      "name": "5. 'settled' + non-zero → 0 found, empty state",
+      "ok": true,
+      "detail": {
+        "desc": "0 clients found",
+        "empty": true
+      }
+    },
+    {
+      "name": "6. search 'pager' → 22 found, Page 1 of 2",
+      "ok": true,
+      "detail": {
+        "desc": "22 clients found",
+        "pager": "Page 1 of 2"
+      }
+    },
+    {
+      "name": "6. UI count == API totalElements (search)",
+      "ok": true,
+      "detail": {
+        "size": 20,
+        "number": 0,
+        "totalElements": 22,
+        "totalPages": 2
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "notes": [
+    "Restore: no setting or pre-existing record was changed; only additive seed data on a fresh throwaway stack."
+  ],
+  "accountId": "bab20061-4415-43b6-85d2-e5c4ecae17ee",
+  "totalBalance": {
+    "balance": 22105,
+    "creditorBreakdown": {
+      "clientLedgers": 22105,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 22105
+    }
+  },
+  "pass": true
+}

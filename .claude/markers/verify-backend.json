@@ -1,7 +1,7 @@
 {
-  "commit": "e3273bcdb",
-  "command": "bash backend/scripts/verify.sh (wt-fix-stale-vat, fix/stale-vat-after-clearing-rate)",
+  "commit": "b023756f0",
+  "command": "bash backend/scripts/verify.sh (wt-fix-none-tax, fix/none-tax-option-ignored)",
   "exit": 0,
-  "ts": "2026-11-27T21:04:45Z",
-  "summary": "Stale VAT after last taxed line cleared @e3273bcdb — 8223 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 28:19)"
+  "ts": "2026-11-28T01:15:19Z",
+  "summary": "None tax option ignored (edit + add) @b023756f0 — 8229 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 25:22)"
 }

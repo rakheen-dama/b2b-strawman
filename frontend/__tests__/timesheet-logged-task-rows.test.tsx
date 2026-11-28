@@ -204,6 +204,10 @@ describe("K-88 rule 1: rows for every task with the user's time", () => {
 });
 
 describe("K-88 rule 2: rows are rebuilt on every week load (RISK-2)", () => {
+  // The new week's rows and totals can render while the week label still reads "Loading..."
+  // (the label waits for the week-load transition to settle). Waiting for a row alone and then
+  // asserting the label failed on CI (run 46112298490), so each navigation waits for the label
+  // and the week's rows together before asserting the rest.
   it("Next, Previous and This Week each show that week's entry-only tasks and totals", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date(2026, 2, 18, 10, 0)); // Wed 18 March → This Week = 16 March
@@ -211,26 +215,36 @@ describe("K-88 rule 2: rows are rebuilt on every week load (RISK-2)", () => {
     await renderPage("2026-03-09", WEEK_1);
 
     await user.click(screen.getByRole("button", { name: "Previous week" }));
-    await waitFor(() => expect(screen.getByText("Mar 2 – Mar 8, 2026")).toBeInTheDocument());
-    expect(taskTitles()).toEqual(["Heads of argument"]);
-    expect(totals()[7]).toBe("—");
+    await waitFor(() => {
+      expect(screen.getByText("Mar 2 – Mar 8, 2026")).toBeInTheDocument();
+      expect(taskTitles()).toEqual(["Heads of argument"]);
+      expect(totals()[7]).toBe("—");
+    });
 
     await user.click(screen.getByRole("button", { name: "This Week" }));
-    await waitFor(() => expect(screen.getByText("Consult with counsel")).toBeInTheDocument());
-    expect(screen.getByText("Mar 16 – Mar 22, 2026")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Mar 16 – Mar 22, 2026")).toBeInTheDocument();
+      expect(screen.getByText("Consult with counsel")).toBeInTheDocument();
+      expect(totals()).toEqual(["—", "2h", "—", "—", "—", "—", "—", "2h"]);
+    });
     expect(taskTitles()).toEqual(["Consult with counsel", "Heads of argument"]);
     expect(within(rowFor("Consult with counsel")).getByText("Pillay Trust")).toBeInTheDocument();
-    expect(totals()).toEqual(["—", "2h", "—", "—", "—", "—", "—", "2h"]);
 
     await user.click(screen.getByRole("button", { name: "Previous week" }));
-    await waitFor(() => expect(screen.getByText("Draft transfer documents")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Mar 9 – Mar 15, 2026")).toBeInTheDocument();
+      expect(screen.getByText("Draft transfer documents")).toBeInTheDocument();
+      expect(totals()[7]).toBe("4.5h");
+    });
     expect(screen.queryByText("Consult with counsel")).toBeNull();
-    expect(totals()[7]).toBe("4.5h");
 
     await user.click(screen.getByRole("button", { name: "Next week" }));
-    await waitFor(() => expect(screen.getByText("Consult with counsel")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Mar 16 – Mar 22, 2026")).toBeInTheDocument();
+      expect(screen.getByText("Consult with counsel")).toBeInTheDocument();
+      expect(totals()[7]).toBe("2h");
+    });
     expect(screen.queryByText("Draft transfer documents")).toBeNull();
-    expect(totals()[7]).toBe("2h");
   });
 });
 
@@ -312,7 +326,12 @@ describe("K-88 rule 3: entry-only rows save under the F-668A-R1 plan", () => {
     mockSaveWeeklyEntries.mockResolvedValue(okBatch(1));
 
     await user.click(screen.getByRole("button", { name: "Next week" }));
-    await waitFor(() => expect(cell("Consult with counsel", 2).value).toBe("2"));
+    // The cells stay disabled until the week-load transition settles, which can land a tick after
+    // the new values render; wait for the editable cell before typing into it.
+    await waitFor(() => {
+      expect(cell("Consult with counsel", 2).value).toBe("2");
+      expect(cell("Consult with counsel", 2)).not.toBeDisabled();
+    });
 
     await setCell(user, "Consult with counsel", 2, "3"); // Tue 17: 2h → 3h
     await clickSave(user);

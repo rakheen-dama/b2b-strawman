@@ -11,7 +11,9 @@ import java.util.UUID;
  * {@link TrustLedgerQueryRepository#clientSummary} and {@link
  * TrustLedgerQueryRepository#generalBalancesByClient}; for {@link
  * TrustLedgerQueryRepository#investedBalancesByClient} (648E) the balance is the client's posted
- * {@code CLIENT_INVESTMENT} effect from section 86(4) investments placed from the account.
+ * {@code CLIENT_INVESTMENT} effect from section 86(4) investments placed from the account. A {@link
+ * TrustLedgerQueryRepository#clientBalancePage} row for a client with only invested money (D-126,
+ * 657A) has a zero balance and no last date.
  */
 public interface ClientBalanceRow {
 

@@ -1,0 +1,1 @@
+targeted (verticals/legal/**, architecture/**, WireVocabularyContractTest, takeon/**, dashboard/**): 191 classes, 1901 <testcase>, failures=0 errors=0 skipped=29

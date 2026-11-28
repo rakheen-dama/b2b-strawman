@@ -37,9 +37,47 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       "\n   AND (CAST(:search AS text) IS NULL"
           + " OR c.name ILIKE '%' || CAST(:search AS text) || '%' ESCAPE '\\')";
 
-  /** The client-ledgers list's non-zero toggle (F-667A-10), a HAVING on the derived balance. */
+  /**
+   * The client-ledgers list's rows before its filters (D-126): per client, the general ({@code
+   * CLIENT}) balance and last date on the account, and what is held for them in section 86(4)
+   * investments placed from it — {@link #investedBalancesByClient}'s funding-account rule. A client
+   * is a row when it has a posted {@code CLIENT} row on the account, or money still invested from
+   * it (657A: one taken on with only an s86(4) investment has no {@code CLIENT} row), as its card
+   * is not the zero card ({@code ClientLedgerService.getClientLedger}). On an investment account
+   * nothing is placed from it, so {@code invested} is empty there.
+   */
+  String CLIENT_LEDGER_ROWS =
+      """
+      WITH general AS (
+        SELECT t.customer_id, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+               MAX(t.transaction_date) AS last_date
+          FROM trust_transactions t
+         WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+           AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+         GROUP BY t.customer_id),
+      invested AS (
+        SELECT t.customer_id, SUM(t.ledger_effect) AS balance
+          FROM trust_transactions t
+          JOIN trust_investments i ON i.id = t.investment_id
+         WHERE i.trust_account_id = :trustAccountId
+           AND t.trust_account_id = i.investment_account_id
+           AND t.customer_id IS NOT NULL
+           AND t.ledger = 'CLIENT_INVESTMENT' AND t.posted_at IS NOT NULL
+         GROUP BY t.customer_id
+        HAVING SUM(t.ledger_effect) <> 0),
+      ledgers AS (
+        SELECT COALESCE(g.customer_id, v.customer_id) AS customer_id,
+               COALESCE(g.balance, 0) AS balance, g.last_date,
+               COALESCE(v.balance, 0) AS invested
+          FROM general g FULL JOIN invested v ON v.customer_id = g.customer_id)
+      """;
+
+  /**
+   * The client-ledgers list's non-zero toggle (F-667A-10; D-126): keeps a client who holds money in
+   * trust on the account — a general balance, or money invested in s86(4) from it.
+   */
   String NON_ZERO_ONLY =
-      "\n  HAVING (NOT CAST(:nonZeroOnly AS boolean) OR COALESCE(SUM(t.ledger_effect), 0) <> 0)";
+      "\n   WHERE (NOT CAST(:nonZeroOnly AS boolean) OR l.balance <> 0 OR l.invested <> 0)";
 
   /** The account's cashbook: what the bank should hold for it. */
   @Query(
@@ -351,42 +389,34 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
    *
    * <p>F-667A-10: the list's two filters narrow every ledger of the account, not one page, and the
    * count query applies the same predicates so the page metadata describes the filtered set. {@code
-   * nonZeroOnly} keeps clients whose (general) balance is not zero; {@code search} (nullable) is a
-   * case-insensitive contains on the client name, passed LIKE-escaped with a backslash as the
-   * escape character. Neither filter changes a balance.
+   * nonZeroOnly} keeps clients who hold money in trust on the account: a general balance that is
+   * not zero, or money invested in s86(4) from it (D-126 — {@link #CLIENT_LEDGER_ROWS}); {@code
+   * search} (nullable) is a case-insensitive contains on the client name, passed LIKE-escaped with
+   * a backslash as the escape character. Neither filter changes a balance: a row's {@code balance}
+   * is the general balance (R0 for a client with no {@code CLIENT} row), its last date that of its
+   * {@code CLIENT} rows (null without one).
    */
   @Query(
       nativeQuery = true,
       value =
-          """
-          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
-                 MAX(t.transaction_date) AS lastTransactionDate
-            FROM trust_transactions t
-            JOIN customers c ON c.id = t.customer_id
-           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
-             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL"""
+          CLIENT_LEDGER_ROWS
+              + """
+          SELECT l.customer_id AS customerId, l.balance AS balance,
+                 l.last_date AS lastTransactionDate
+            FROM ledgers l
+            JOIN customers c ON c.id = l.customer_id"""
+              + NON_ZERO_ONLY
               + CLIENT_NAME_SEARCH
               + """
 
-           GROUP BY t.customer_id"""
-              + NON_ZERO_ONLY
-              + """
-
-           ORDER BY balance DESC, t.customer_id""",
+           ORDER BY l.balance DESC, l.customer_id""",
       countQuery =
-          """
-          SELECT count(*) FROM (
-          SELECT t.customer_id FROM trust_transactions t
-            JOIN customers c ON c.id = t.customer_id
-           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
-             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL"""
-              + CLIENT_NAME_SEARCH
+          CLIENT_LEDGER_ROWS
               + """
-
-           GROUP BY t.customer_id"""
+          SELECT count(*) FROM ledgers l
+            JOIN customers c ON c.id = l.customer_id"""
               + NON_ZERO_ONLY
-              + """
-          ) filtered""")
+              + CLIENT_NAME_SEARCH)
   Page<ClientBalanceRow> clientBalancePage(
       @Param("trustAccountId") UUID trustAccountId,
       @Param("nonZeroOnly") boolean nonZeroOnly,

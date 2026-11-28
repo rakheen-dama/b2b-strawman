@@ -260,9 +260,10 @@ public class ClientLedgerService {
 
   /**
    * The client ledgers of an account: every client with a posted row (ADR-378 — a client with rows
-   * and no anchor is listed), balance descending, paged in SQL. The caller's sort is ignored (the
-   * UI sends {@code sort=balance,desc}, which the derived query applies itself — there is no stored
-   * {@code balance} property to sort on). Unfiltered: see {@link #listClientLedgers(UUID,
+   * and no anchor is listed), or with money still invested in section 86(4) from the account
+   * (D-126, 657A), balance descending, paged in SQL. The caller's sort is ignored (the UI sends
+   * {@code sort=balance,desc}, which the derived query applies itself — there is no stored {@code
+   * balance} property to sort on). Unfiltered: see {@link #listClientLedgers(UUID,
    * ClientLedgerListFilter, Pageable)}.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -273,7 +274,8 @@ public class ClientLedgerService {
   /**
    * As above, narrowed by the list's filters (F-667A-10): {@code nonZeroOnly} and {@code search}
    * apply to every ledger of the account in SQL, so the page and its totals describe the filtered
-   * set. The filters only choose rows; every balance and total is computed as before.
+   * set. {@code nonZeroOnly} keeps a client holding money in trust: general balance or s86(4)
+   * invested (D-126). The filters only choose rows; every balance and total is computed as before.
    */
   // One snapshot for the page, its totals and invested balances — see getClientLedger
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)

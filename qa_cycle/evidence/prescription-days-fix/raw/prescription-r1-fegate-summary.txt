@@ -1,0 +1,6 @@
+lint exit=0
+typecheck exit=0
+format:check exit=0
+test exit=1
+build exit=0
+test (re-run of full vitest after attempt 1: 5 unrelated timeouts, ~864s per test under load avg 26-75) exit=0

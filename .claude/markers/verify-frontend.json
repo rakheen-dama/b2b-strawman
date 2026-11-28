@@ -1,7 +1,7 @@
 {
-  "commit": "726fcd21e",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-guard-timeout, contrast-guard timeout PR)",
+  "commit": "3297d7fe7",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-prescription-days, PR #1889 round 1)",
   "exit": 0,
-  "ts": "2026-11-28T01:43:52Z",
-  "summary": "@726fcd21e (final head) — lint 0 errors (75 warnings, pre-existing, none in changed file), typecheck 0, format clean, build 0, full vitest 553 files / 5665 passed / 2 skipped exit 0 (88 s, under /tmp/kazi-heavy.lock). dark-mode-contrast-guard.test.ts 5/5 single-file runs green (6/6 each); --testTimeout=1 run shows the 3 scan cases keep their 30 s override (only the unmarked self-test times out). Test-only change; E2E not required."
+  "ts": "2026-11-28T00:50:00Z",
+  "summary": "PR #1889 @3297d7fe7 (final head; gate ran on product commit 7f3f315dd, head adds evidence only) — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, build 0; full vitest attempt 1 had 5 unrelated ~864s timeouts under load avg 26-75, full re-run 553 files / 5679 passed / 2 skipped exit 0. E2E fresh stack from the worktree @7f3f315dd: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (raw/prescription-r1-*). OBS obs-r1 10/10 PASS (day 0 Expired reads —, tomorrow Warned reads 1, JHB + NY)."
 }

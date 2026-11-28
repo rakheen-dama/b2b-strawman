@@ -1,0 +1,26 @@
+I merged 662A as `cb8c26839` (PR #1864). It's evidence only: the walk of the whole firm app plus the kinks register. Phase 91 is now stopped until you approve the register (FD-3), and nothing else starts before you do.
+
+**The walk:** I brought the test stack up fresh from `main`. Both legal test suites passed (105 tests, and 40 with 4 skipped) and loaded the data. The walk covered every page, all 32 settings tabs, the 11 settings sub-pages and 73 dialogs. Each was captured at two screen widths, in light and dark, as owner and as member, plus the phone width for the shell and settings: 1,433 screenshots in all. There were no hydration warnings.
+
+**The register** is `qa_cycle/evidence/phase91-ui/kinks-register.md`. It has 125 rows (21 known going in, 25 from the 661B walk, 79 new) and opens with your approval pack:
+- **Severity:** 2 HIGH, 28 MEDIUM. Both HIGHs are dialogs taller than the screen that can't scroll ("Save View" on matters/clients, and "Create Role"). Their buttons can't be clicked with a mouse.
+- **Proposed handling:** 57 rows fixed in this phase, 65 backlog. 47 rows need a decision from you on copy, layout or behaviour, and all of them default to backlog.
+- **The saved-view column bug (K-11) reproduced:** the Client column shrinks to 16 px at 1024 wide. Your FD-11 ruling made 664B's fix conditional on this, so that fix goes ahead.
+
+**Top question in the pack:** should team members (not just owners and admins) be able to read every client record? Today the client list is hidden from members in the app, but the server has no check on it. A member can open any client's page directly, and the API returns every client record to them. This was already there before this phase. If your answer is no, it needs a separate backend fix, because Phase 91 has no backend work.
+
+**Review:** two independent reviewers (general-purpose Opus agents, since the specialist review agent type wasn't available). Each opened 10 random screenshots, re-checked measured numbers against the captured data and checked file references; all matched.
+- **First pass:** the second reviewer asked for changes. Seven rows had been proposed for slices whose written scope excludes that work. They are now backlog and listed in the pack under "scope additions to authorise".
+- **CodeRabbit:** one round with 13 comments, mostly on the walk scripts. Those scripts stay exactly as they were run. One problem it described did happen, and it changed no result.
+- **Final:** both reviewers approved after two fix rounds, and every CI check passed.
+
+**Decisions logged** (D-12 to D-18 in `tasks/phase91-decisions.md`):
+- One contact sheet per page with owner and member together, which kept the PR under CodeRabbit's 150-file limit.
+- The second legal test suite was run too, so the data matched the 661B walk.
+- Records were added through the UI only, so two empty detail pages could be photographed. The reconciliation monthly list was skipped because the data has no completed reconciliation.
+- The seven out-of-scope proposals moved to backlog (above).
+- A note for slice 669A: if you approve the data-request date fix, the merge hook will require a full portal check.
+
+**What I need from you:** in the register's founder-decision column, change each "PROPOSED" to in-phase, backlog or won't-fix, or reply "approve all proposals except …". Then restart the runner at 663A.
+
+The raw screenshots weren't committed; they are in `/Users/rakheendama/Projects/2026/archive-662A-walk/` along with the triage notes. The e2e stack is still running.

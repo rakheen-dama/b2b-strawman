@@ -1,0 +1,30 @@
+Slice 661B is merged: PR #1863, squash commit `023ddb315`. The bookkeeping is in `16423ca4b`, which marks 661B and Epic 661 Done in the task file and TASKS.md and commits the frontend and portal verify markers.
+
+**What shipped:** the light colour scheme you picked (A1). It applies only to the firm app in light mode. Dark mode, the portal and the marketing site look exactly as before: the before/after screenshot comparisons show 0 changed pixels. The firm-app sidebar now uses the inset look (your option (c)), with the CSS drawn in light mode only. ADR-392 is now marked Accepted. The light-mode accent button and focused menu item now pass contrast (5.46:1, up from 3.16:1). The dark-mode contrast problem stays in the backlog, as ruled.
+
+**Checks, all run:**
+- **Baseline first**, recorded on `main` before any edit.
+- **Frontend checks:** all passed on the final code; 5,047 tests pass with 2 skipped.
+- **Portal checks:** all passed; 293 tests pass, the same as before.
+- **CI:** all green.
+- **Browser test suites:** both legal suites match the baseline (105/105 and 40 passed with 4 skipped), and navigation passed 17/17 twice.
+- **Browser check:** the collapsed sidebar at 1024 now shows the active item whole, and the sticky headers still sit correctly. A light-mode walk of the whole app covered 82 page loads, all 32 settings tabs and all 11 sub-pages, and found no page made unreadable by the new scheme.
+- **Reviews:** two independent reviewers approved, then approved again after the fixes. I fixed two of CodeRabbit's three comments; the third asked to keep ADR-392 at Proposed, and the phase plan already authorises 661B to mark it Accepted.
+
+**One real defect found and fixed before merge:** I first wrote the new button text colour in a different colour format. On screen it came out 1/255 off pure white at letter edges, which changed pixels on dark-mode, portal and marketing buttons. Switching it to Tailwind's own white value fixed it, and the screenshots now match exactly.
+
+**Left for the next slice (662A), not fixed here:** these are logged in `qa_cycle/evidence/phase91-ui/661B/found.md`.
+- The new darker accent makes some existing problems worse. An icon in a highlighted menu row now measures 1.40:1 (it was 2.41:1). A highlighted red "Delete" item now measures 1.14:1 (it was 1.51:1). The fix needs edits to the shared menu and select components, which this slice was only allowed to observe.
+- The organisation name in the top bar now wraps to two lines at 1024 with the sidebar collapsed.
+- The product screenshots on the marketing page still show the old dark sidebar.
+- Eleven smaller items from the walk, all low severity.
+
+**Decisions logged** (D-6 to D-11 in `tasks/phase91-decisions.md`):
+- **D-6:** the month-end trust test suite can't share a test environment with the legal suites, so it now gets its own, with the portal running. I corrected the phase plan.
+- **D-7:** small layout and colour defaults the plan left open.
+- **D-8:** the menu-contrast items above are deferred to 662A.
+- **D-9:** CodeRabbit's request to keep ADR-392 at Proposed was declined, because the phase plan authorises 661B to mark it Accepted.
+- **D-10:** I didn't re-run the legal suites after the colour fix, because it changed no page structure. The navigation suite and the screenshot comparisons were re-run instead.
+- **D-11:** recorded the merge, and that the prototype branch was deleted (its last commit is kept as a tag).
+
+The test environment is still running on the 661B build. Next is 662A, the kinks register, which then stops for your FD-3 approval.

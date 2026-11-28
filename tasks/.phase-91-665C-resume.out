@@ -1,0 +1,35 @@
+Slice 665C is merged: PR #1872, squash commit `582ad0511`. The bookkeeping commit `1a867a784` is on `main`, and Phase 91's next slice is 665D.
+
+**Resume check.** The builder had finished every task (665.9–665.12) and committed it before the crash, but never pushed or opened the PR. I re-ran every gate on the slice's own code; none of the earlier session's results were carried over.
+
+**Gates (all passed on the final code, `b87d6d742`):**
+- **FE-GATE:** lint, typecheck, format and build all clean; vitest 527 files / 5291 tests passed, 2 skipped (baseline was 526 / 5248).
+- **E2E, each run on a freshly wiped stack:**
+
+  | Suite | Result | Baseline |
+  |---|---|---|
+  | legal-lifecycle | 105/105 | 105 |
+  | legal-depth-ii | 40 passed, 4 skipped | 40 + 4 |
+  | settings | 30/30 | 30 |
+  | take-on (its own stack) | 17/17 | — |
+
+  After the fixes I rebuilt the frontend and settings passed 30/30 again. I did not re-run the two legal suites, because the fixes change no labels, roles or routes.
+- **Browser check (OBS):** the earlier sideways scroll on Templates and Checklists at 1024 wide (F-665C-2) is gone: overflow is now 0 px, down from 47 and 117. Tab visibility for all four personas and the headings are identical to before, and the console has no errors.
+- **Reviews:** both reviewers first asked for changes on the same two problems OBS found. After the fixes, both approved the final commit. CodeRabbit had 5 findings in its first round: one fixed, two already present before this slice, two on frozen evidence scripts. Its 7 later comments were all on frozen evidence and are logged as deferred.
+
+**Two fix rounds were needed**, both for visual bugs this slice introduced that only showed in the browser:
+1. In dark mode the Delete icons on Templates and Tags turned grey instead of red. The checklist-detail items table stopped wrapping and was cut off on the right. I also fixed the tag text-colour contrast choice and two small nits.
+2. One column header ("Document Required") still couldn't wrap and clipped the table at 1024 wide. A one-line fix cleared it, and a re-check measured the table fitting at every size.
+
+**Decisions logged (D-53..D-57 in `tasks/phase91-decisions.md`):**
+- Three pages still have no top-level heading: the take-on wizard, the request-template page a member sees, and the template "not found" page. Adding one is a heading and copy decision this slice isn't allowed to make, so they're on the backlog.
+- The same grey-Delete-icon bug is already on `main` on three earlier settings screens (Roles, Retention, Data protection), found in code but not seen in a browser. The real fix belongs in the shared button kit, so it's routed to 669A/670A.
+- Edit and Delete sit side by side on Tags and Custom fields in a pattern that can leave one button dead. That was there before this slice, so it's a follow-up.
+
+**Still open, for your backlog list (in `qa_cycle/evidence/phase91-ui/665C/found.md`):**
+- **F-665C-3:** Naming can't clear its pattern. It says "updated" but nothing changes.
+- **F-665C-4:** every Request settings save fails because the backend has no endpoint for it.
+- **F-665C-7:** members can open the "new checklist" form even though the Checklists tab is admin-only.
+- **F-665C-1:** a checklist name that starts with a digit is rejected, and the raw backend error is shown to the user.
+
+The e2e stack is still running with the OBS data on it. The next slice resets it.

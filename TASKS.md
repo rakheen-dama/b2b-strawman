@@ -761,6 +761,14 @@
 | 668 | Diary, My Work, Timesheet, Notifications on the Kit (E8) | Frontend | 663A, 664B | M | 668A (0 verifies) | **Done** — 668A (PR #1880) |
 | 669 | Light Pass + EmptyState Guard Finalised (E9) | Frontend | 663A, 664B; every allowlist owner for 669B | M | 669A, 669B (0 verifies) | **Done** — 669A (PR #1881), 669B (PR #1882) |
 | 670 | Exit Gate — Fresh-Stack Suites, Observation Matrix, Metrics vs Baseline, Closure (E10; gate epic, no product code) | QA / Process / Docs | every slice merged | M | 670A (0 verifies; FE-GATE + PORTAL-GATE on `main`) | **Done** (PR #1883) |
+| **Phase 94 — AI Egress Guard: Client Personal Information Leaves Kazi Only Masked, Tokenised, Lawful and On the Record** | | | | | | See [tasks/phase94-ai-egress-guard.md](tasks/phase94-ai-egress-guard.md). Architecture `architecture/phase94-ai-egress-guard.md` §19, ADR-397..403, rulings `.arch-rulings-phase94.md`. Tenant V38 (next free at build), no global; packs compliance-za v2, legal-za clauses v4, legal-za templates v17. 7 epics / 9 slices, 8 backend verifies, ≈ 62 h (flagged > 40 h; M-4 applied 2026-11-28: E2E-LEGAL at stage checkpoints 671A/672A/673B/674B/676A/677A only; M-1..M-3 not applied). FD-1..FD-21 RULED 2026-11-28 (all accepted; FD-1 moot, no live tenants). Bundles AU-1..AU-5 AUTHORISED (founder 2026-11-28, CLAUDE.md §7). Nothing open blocks a slice. **Release-gated:** RG-1..RG-9 need practising-attorney sign-off before release to a real firm (not build blockers). |
+| 671 | Egress Foundation — V38, Categories, Detectors, Policy, Transfer Basis, Unblocks, Ledger Model, AI Data Protection Tab (E1 + E7 minimal) | Backend + Frontend | — (AU-1) | XL | 671A (1 verify) | |
+| 672 | Sensitive Matters, Children and "No AI" (E4) | Backend + Frontend | 671A | M | 672A (1 verify) | |
+| 673 | Route A Adapter — Block, then Tokenise, Rehydrate and Record (E2 + E7 skill UX) | Backend + Frontend | 671A, 672A | XL | 673A, 673B (2 verifies) | |
+| 674 | Route B Adapter — Exclusions and Enablement, then the Classified Writer (E3 + E7 MCP card) | Backend + Frontend | 671A, 672A, 673B | XL | 674A, 674B (2 verifies) | |
+| 675 | Egress Log, Client AI Disclosures and DSAR (E5 + E7 log/panel) | Backend + Frontend | 673B, 674B | M | 675A (1 verify) | |
+| 676 | POPIA Documents and Wording — Register Sync, PAIA v2, Clauses v4, Engagement Letters v17, Wording Guards (E6) | Backend + Frontend + packs | 671A, 674A | M | 676A (1 verify) | |
+| 677 | QA Capstone — Observed End to End (E8) | e2e + QA / Docs | every slice merged | L | 677A (0 verifies; +1 per defect-fix PR) | |
 
 ---
 

@@ -1,7 +1,7 @@
 {
-  "commit": "d6f9d543e",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-date-display; run at 31947cf12 after rebase onto 6efca4504 — d6f9d543e adds only qa_cycle/ evidence)",
+  "commit": "602885673",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm build && pnpm test && pnpm format:check (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-dashboard-active-clients; the next commit adds only qa_cycle/ evidence and this marker)",
   "exit": 0,
-  "ts": "2026-11-28T06:51:30Z",
-  "summary": "fix/date-only-display-sa-calendar @d6f9d543e — lint 0 errors (75 pre-existing warnings), typecheck 0, format:check clean, vitest 558 files / 5723 passed + 2 skipped, build ok. Pre-rebase run 1 at d35c5d8d1 had 2 flakes (timesheet-logged-task-rows K-88, fixed on main by #1896; EmailSettingsPage DeliveryLogTable row count) — both pass in isolation x2 and in run 2 (558/558). e2e legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped; OBS 51/51."
+  "ts": "2026-11-28T10:30:47Z",
+  "summary": "fix/trust-dashboard-active-clients @602885673 — lint 0 errors (75 pre-existing warnings), typecheck 0, build ok, vitest 559 files / 5733 passed + 2 skipped, format:check clean. e2e (fresh stacks from the worktree): legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, exit-month 16/16 (portal :3002); OBS 11/11."
 }

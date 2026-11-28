@@ -1,0 +1,3 @@
+2026-11-28T10:43:11Z
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.

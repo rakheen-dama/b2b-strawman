@@ -1,0 +1,221 @@
+{
+  "at": "2026-11-28T10:42:33.022Z",
+  "run": "72da",
+  "pre": {
+    "trustAccounts": [
+      {
+        "id": "75bb0601-c182-46ed-8a17-89e5daf7460e",
+        "name": "Mathebula & Partners Trust Account",
+        "type": "GENERAL",
+        "isPrimary": true
+      }
+    ],
+    "ledgerCounts": [
+      0
+    ]
+  },
+  "seeded": [
+    {
+      "key": "holder",
+      "id": "c0987079-0b9c-4ca8-936b-e5c5a1440e52",
+      "name": "OBS Act Holder 72da",
+      "matterId": "c29a0b4d-f333-4ba7-b40b-bca9be74a705",
+      "deposit": "30000.00",
+      "ms": 9487
+    },
+    {
+      "key": "plain",
+      "id": "5cd23660-8ddc-48d7-a4eb-a7b786dd4033",
+      "name": "OBS Act Plain 72da",
+      "matterId": "b1ebf7a4-290f-478e-ae40-161b52ec3a69",
+      "deposit": "1000.00",
+      "ms": 6206
+    },
+    {
+      "key": "settled",
+      "id": "50cbca80-dcbe-42f8-908c-ddb2be3ba054",
+      "name": "OBS Act Settled 72da",
+      "matterId": "cabb1a6c-b780-4a3a-ad92-bd8bf909d170",
+      "deposit": "300.00",
+      "ms": 8871
+    }
+  ],
+  "steps": [
+    {
+      "label": "dashboard-before-seed",
+      "url": "/org/e2e-test-org/trust-accounting",
+      "activeClients": "0",
+      "cardText": "Active Clients0Clients with trust balances",
+      "shot": "01-dashboard-before-seed.png"
+    },
+    {
+      "label": "dashboard-after-seed",
+      "url": "/org/e2e-test-org/trust-accounting",
+      "activeClients": "2",
+      "cardText": "Active Clients2Clients with trust balances",
+      "shot": "02-dashboard-after-seed.png"
+    },
+    {
+      "label": "ledgers-nonzero-on",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?nonZeroOnly=true",
+      "desc": "2 clients found",
+      "headers": [
+        "Client Name",
+        "General balance",
+        "Total Deposits",
+        "Total Payments",
+        "Total Fee Transfers",
+        "Total Refunds",
+        "Placed in s86(4)",
+        "Invested (s86(4))",
+        "Last Transaction"
+      ],
+      "rowCount": 2,
+      "rows": [
+        {
+          "id": "5cd23660-8ddc-48d7-a4eb-a7b786dd4033",
+          "name": "OBS Act Plain 72da",
+          "balance": 1000,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Act Plain 72da",
+            "General balance": "R 1 000,00",
+            "Total Deposits": "R 1 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "c0987079-0b9c-4ca8-936b-e5c5a1440e52",
+          "name": "OBS Act Holder 72da",
+          "balance": 0,
+          "invested": 30000,
+          "cells": {
+            "Client Name": "OBS Act Holder 72da",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 30 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 30 000,00",
+            "Invested (s86(4))": "R 30 000,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        }
+      ],
+      "shot": "03-ledgers-nonzero-on.png"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "0. before the seed: Active Clients reads 0",
+      "ok": true,
+      "detail": "Active Clients0Clients with trust balances"
+    },
+    {
+      "name": "pre-state: the dashboard's account had no ledgers before the seed",
+      "ok": true,
+      "detail": {
+        "preCount": 0
+      }
+    },
+    {
+      "name": "seed: holder's general balance is R 0 and R 30 000 is invested (card, read-only GET)",
+      "ok": true,
+      "detail": {
+        "balance": 0,
+        "investedBalance": 30000
+      }
+    },
+    {
+      "name": "1. dashboard: Active Clients reads 2 (Plain + Holder; Settled not counted)",
+      "ok": true,
+      "detail": "Active Clients2Clients with trust balances"
+    },
+    {
+      "name": "1. card hint still reads 'Clients with trust balances'",
+      "ok": true,
+      "detail": "Active Clients2Clients with trust balances"
+    },
+    {
+      "name": "2. Non-zero balances only: 2 clients found",
+      "ok": true,
+      "detail": "2 clients found"
+    },
+    {
+      "name": "2. list = Plain + Holder; Settled hidden",
+      "ok": true,
+      "detail": [
+        "OBS Act Plain 72da",
+        "OBS Act Holder 72da"
+      ]
+    },
+    {
+      "name": "2. dashboard card == list count",
+      "ok": true,
+      "detail": {
+        "card": "2",
+        "list": "2 clients found"
+      }
+    },
+    {
+      "name": "2. card == API nonZeroOnly totalElements",
+      "ok": true,
+      "detail": {
+        "size": 1,
+        "number": 0,
+        "totalElements": 2,
+        "totalPages": 2
+      }
+    },
+    {
+      "name": "3. cross-check: the old rule (general ≠ 0 over ?size=200) gives 1 — the holder was left out",
+      "ok": true,
+      "detail": {
+        "oldCount": 1,
+        "rows": [
+          {
+            "name": "OBS Act Plain 72da",
+            "balance": 1000,
+            "invested": 0
+          },
+          {
+            "name": "OBS Act Settled 72da",
+            "balance": 0,
+            "invested": 0
+          },
+          {
+            "name": "OBS Act Holder 72da",
+            "balance": 0,
+            "invested": 30000
+          }
+        ]
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "notes": [
+    "Restore: no setting or pre-existing record was changed; only additive seed data (an investment account, 3 clients, their matters and postings) on a fresh throwaway stack. The stack is wiped afterwards (e2e-down.sh)."
+  ],
+  "deferred": [
+    "More than 200 active clients on one account: not seeded through the UI (≈200 clients × onboarding + matter + deposit). Covered by __tests__/trust/dashboard-active-clients.test.ts (250 vs the old 200) and by the server count query (#1899, ClientLedgerListPagingIntegrationTest). DEFERRED, not PASS.",
+    "The old UI showing 1 on this data was not observed (the stack runs the fix); the old figure is derived from the old request via a read-only GET (check 3), and the unfixed vitest shows 1 vs 2."
+  ],
+  "investmentId": "d81ee477-c07b-4ea0-8727-3c7facafe465",
+  "accountId": "75bb0601-c182-46ed-8a17-89e5daf7460e",
+  "holderCard": {
+    "balance": 0,
+    "investedBalance": 30000
+  },
+  "oldRuleCount": 1,
+  "pass": true
+}

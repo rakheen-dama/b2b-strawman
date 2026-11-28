@@ -1,0 +1,11 @@
+Sat Nov 28 05:33:14 UTC 2026
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-portal-deadlines/portal
+
+
+ Test Files  4 passed (4)
+      Tests  25 passed (25)
+   Start at  07:33:15
+   Duration  646ms (transform 253ms, setup 219ms, import 840ms, tests 229ms, environment 650ms)
+
+Sat Nov 28 05:33:15 UTC 2026

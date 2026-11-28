@@ -76,7 +76,20 @@ public class InvoiceTaxService {
     lineRepository.saveAll(lines);
   }
 
-  void recalculateInvoiceTotals(Invoice invoice) {
+  /**
+   * Re-totals the draft after a change that cannot take a tax rate off a line (lines added, details
+   * saved, tax rates re-priced). A header-tax draft keeps its header tax.
+   */
+  public void recalculateInvoiceTotals(Invoice invoice) {
+    recalculateInvoiceTotals(invoice, false);
+  }
+
+  /**
+   * Re-totals the draft after a line edit or delete. {@code hadPerLineTax} is whether any of its
+   * lines carried a tax rate before the change: if one did and none does now, the lines' VAT drops
+   * to zero rather than surviving as header tax.
+   */
+  void recalculateInvoiceTotals(Invoice invoice, boolean hadPerLineTax) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -90,6 +103,6 @@ public class InvoiceTaxService {
         lines.stream()
             .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-    invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
+    invoice.recalculateTotals(subtotal, hadPerLineTax, hasPerLineTax, perLineTaxSum, taxInclusive);
   }
 }

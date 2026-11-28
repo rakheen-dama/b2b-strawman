@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceTaxService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.CreateTaxRateRequest;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxRateResponse;
@@ -36,6 +37,7 @@ public class TaxRateService {
   private final InvoiceRepository invoiceRepository;
   private final TaxCalculationService taxCalculationService;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final InvoiceTaxService invoiceTaxService;
 
   public TaxRateService(
       TaxRateRepository taxRateRepository,
@@ -43,13 +45,15 @@ public class TaxRateService {
       InvoiceLineRepository invoiceLineRepository,
       InvoiceRepository invoiceRepository,
       TaxCalculationService taxCalculationService,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      InvoiceTaxService invoiceTaxService) {
     this.taxRateRepository = taxRateRepository;
     this.auditService = auditService;
     this.invoiceLineRepository = invoiceLineRepository;
     this.invoiceRepository = invoiceRepository;
     this.taxCalculationService = taxCalculationService;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.invoiceTaxService = invoiceTaxService;
   }
 
   @Transactional
@@ -272,19 +276,12 @@ public class TaxRateService {
     }
     invoiceLineRepository.saveAll(affectedLines);
 
-    // Recalculate totals on each affected invoice
+    // Re-total each affected invoice the same way a line edit does. Re-pricing keeps every line's
+    // rate, so per-line tax is never removed here.
     for (UUID invoiceId : affectedInvoiceIds) {
       var invoice = invoiceRepository.findById(invoiceId).orElse(null);
       if (invoice != null) {
-        var allLines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
-        BigDecimal subtotal =
-            allLines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        boolean hasPerLineTax = taxCalculationService.hasPerLineTax(allLines);
-        BigDecimal perLineTaxSum =
-            allLines.stream()
-                .map(l -> l.getTaxAmount() != null ? l.getTaxAmount() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
+        invoiceTaxService.recalculateInvoiceTotals(invoice);
         invoiceRepository.save(invoice);
       }
     }

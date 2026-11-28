@@ -770,7 +770,263 @@ class InvoiceTaxIntegrationTest {
     assertStoredTotals(invoiceId[0], "100.00", "0.00", "100.00");
   }
 
+  // --- The last taxed line goes: its VAT must not survive as header tax ---
+
+  @Test
+  void updateLineItem_clearingLastTaxedLinesRate_dropsVatToZero() {
+    // R 100,00 at VAT 15% → VAT R 15,00, total R 115,00.
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+    assertStoredTotals(invoiceId, "100.00", "15.00", "115.00");
+    var lineId = onlyLineId(invoiceId);
+
+    runInTenant(
+        () -> {
+          var response =
+              invoiceService.updateLineItem(
+                  invoiceId,
+                  lineId,
+                  new UpdateLineItemRequest(
+                      "Taxed service", BigDecimal.ONE, new BigDecimal("100.00"), 0, null, true));
+          assertThat(response.hasPerLineTax()).isFalse();
+          assertThat(response.taxAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+          assertThat(response.total()).isEqualByComparingTo(new BigDecimal("100.00"));
+        });
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+
+    // A later details save (due date only) brings no phantom VAT back.
+    runInTenant(
+        () ->
+            invoiceService.updateDraft(
+                invoiceId,
+                new UpdateInvoiceRequest(
+                    LocalDate.of(2026, 12, 31), null, null, null, null, null, null, null)));
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+  }
+
+  @Test
+  void updateLineItem_clearingLastTaxedLinesRate_taxInclusive_dropsVatToZero() {
+    setTaxInclusive(true);
+    try {
+      // Tax-inclusive: R 1 150,00 line carries R 150,00 VAT; total stays R 1 150,00.
+      var invoiceId = draftWithTaxedLine(new BigDecimal("1150.00"));
+      assertStoredTotals(invoiceId, "1150.00", "150.00", "1150.00");
+      var lineId = onlyLineId(invoiceId);
+
+      runInTenant(
+          () ->
+              invoiceService.updateLineItem(
+                  invoiceId,
+                  lineId,
+                  new UpdateLineItemRequest(
+                      "Taxed service", BigDecimal.ONE, new BigDecimal("1150.00"), 0, null, true)));
+
+      assertStoredTotals(invoiceId, "1150.00", "0.00", "1150.00");
+    } finally {
+      setTaxInclusive(false);
+    }
+  }
+
+  @Test
+  void deleteLineItem_lastTaxedLine_dropsVatToZero() {
+    var ids = new UUID[2];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // No rates yet: an untaxed R 50,00 line.
+                  var invoice = createDraftInvoice();
+                  invoiceService.addLineItem(
+                      invoice.getId(),
+                      new AddLineItemRequest(
+                          projectId,
+                          "Untaxed service",
+                          BigDecimal.ONE,
+                          new BigDecimal("50.00"),
+                          0,
+                          null,
+                          null));
+                  // Then a R 100,00 line at VAT 15% → VAT R 15,00.
+                  var rate =
+                      taxRateRepository.save(
+                          new TaxRate("Standard (15%)", new BigDecimal("15.00"), false, false, 0));
+                  var response =
+                      invoiceService.addLineItem(
+                          invoice.getId(),
+                          new AddLineItemRequest(
+                              projectId,
+                              "Taxed service",
+                              BigDecimal.ONE,
+                              new BigDecimal("100.00"),
+                              1,
+                              rate.getId(),
+                              null));
+                  ids[0] = invoice.getId();
+                  ids[1] =
+                      response.lines().stream()
+                          .filter(l -> l.taxRateId() != null)
+                          .findFirst()
+                          .orElseThrow()
+                          .id();
+                }));
+    assertStoredTotals(ids[0], "150.00", "15.00", "165.00");
+
+    runInTenant(() -> invoiceService.deleteLineItem(ids[0], ids[1]));
+
+    assertStoredTotals(ids[0], "50.00", "0.00", "50.00");
+  }
+
+  @Test
+  void clearedPerLineTax_thenExplicitHeaderTax_applies_andSurvivesUntaxedLineEdits() {
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+    var lineId = onlyLineId(invoiceId);
+    runInTenant(
+        () ->
+            invoiceService.updateLineItem(
+                invoiceId,
+                lineId,
+                new UpdateLineItemRequest(
+                    "Taxed service", BigDecimal.ONE, new BigDecimal("100.00"), 0, null, true)));
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+
+    // Header tax typed afterwards is the firm's choice: it applies...
+    runInTenant(
+        () ->
+            invoiceService.updateDraft(
+                invoiceId,
+                new UpdateInvoiceRequest(
+                    null, null, null, new BigDecimal("20.00"), null, null, null, null)));
+    assertStoredTotals(invoiceId, "100.00", "20.00", "120.00");
+
+    // ...and an edit of the now-untaxed line (no rate introduced) keeps it.
+    runInTenant(
+        () ->
+            invoiceService.updateLineItem(
+                invoiceId,
+                lineId,
+                new UpdateLineItemRequest(
+                    "Service", new BigDecimal("2"), new BigDecimal("100.00"), 0, null, true)));
+    assertStoredTotals(invoiceId, "200.00", "20.00", "220.00");
+  }
+
+  @Test
+  void headerTaxOnlyDraft_keepsManualTax_throughLineAddEditAndDelete() {
+    var ids = new UUID[2];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // No tax rates — a header-tax fee note with R 15,00 typed by hand.
+                  var invoice = createDraftInvoice();
+                  var response =
+                      invoiceService.addLineItem(
+                          invoice.getId(),
+                          new AddLineItemRequest(
+                              projectId,
+                              "No tax service",
+                              BigDecimal.ONE,
+                              new BigDecimal("100.00"),
+                              0,
+                              null,
+                              null));
+                  invoiceService.updateDraft(
+                      invoice.getId(),
+                      new UpdateInvoiceRequest(
+                          null, null, null, new BigDecimal("15.00"), null, null, null, null));
+                  ids[0] = invoice.getId();
+                  ids[1] = response.lines().getFirst().id();
+                }));
+    assertStoredTotals(ids[0], "100.00", "15.00", "115.00");
+
+    // Add a second untaxed line.
+    var secondLineId = new UUID[1];
+    runInTenant(
+        () -> {
+          var response =
+              invoiceService.addLineItem(
+                  ids[0],
+                  new AddLineItemRequest(
+                      projectId,
+                      "Second service",
+                      BigDecimal.ONE,
+                      new BigDecimal("40.00"),
+                      1,
+                      null,
+                      null));
+          secondLineId[0] =
+              response.lines().stream()
+                  .filter(l -> !l.id().equals(ids[1]))
+                  .findFirst()
+                  .orElseThrow()
+                  .id();
+        });
+    assertStoredTotals(ids[0], "140.00", "15.00", "155.00");
+
+    // Edit it — with and without the clear flag — no rate is ever introduced.
+    runInTenant(
+        () ->
+            invoiceService.updateLineItem(
+                ids[0],
+                secondLineId[0],
+                new UpdateLineItemRequest(
+                    "Second service", BigDecimal.ONE, new BigDecimal("60.00"), 1, null, null)));
+    assertStoredTotals(ids[0], "160.00", "15.00", "175.00");
+    runInTenant(
+        () ->
+            invoiceService.updateLineItem(
+                ids[0],
+                secondLineId[0],
+                new UpdateLineItemRequest(
+                    "Second service", BigDecimal.ONE, new BigDecimal("60.00"), 1, null, true)));
+    assertStoredTotals(ids[0], "160.00", "15.00", "175.00");
+
+    // Delete it.
+    runInTenant(() -> invoiceService.deleteLineItem(ids[0], secondLineId[0]));
+    assertStoredTotals(ids[0], "100.00", "15.00", "115.00");
+  }
+
+  @Test
+  void clearingOneOfTwoTaxedLines_keepsTheOtherLinesVat() {
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+    var firstLineId = onlyLineId(invoiceId);
+    runInTenant(
+        () ->
+            invoiceService.addLineItem(
+                invoiceId,
+                new AddLineItemRequest(
+                    projectId,
+                    "Second taxed service",
+                    BigDecimal.ONE,
+                    new BigDecimal("200.00"),
+                    1,
+                    null,
+                    null)));
+    assertStoredTotals(invoiceId, "300.00", "45.00", "345.00");
+
+    runInTenant(
+        () ->
+            invoiceService.updateLineItem(
+                invoiceId,
+                firstLineId,
+                new UpdateLineItemRequest(
+                    "Taxed service", BigDecimal.ONE, new BigDecimal("100.00"), 0, null, true)));
+
+    assertStoredTotals(invoiceId, "300.00", "30.00", "330.00");
+  }
+
   // --- Helpers ---
+
+  private UUID onlyLineId(UUID invoiceId) {
+    var lineId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+                  assertThat(lines).hasSize(1);
+                  lineId[0] = lines.getFirst().getId();
+                }));
+    return lineId[0];
+  }
 
   /** A draft with one R {@code amount} line at the default VAT 15% rate; returns its id. */
   private UUID draftWithTaxedLine(BigDecimal amount) {

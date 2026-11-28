@@ -66,9 +66,23 @@ export function formatCurrencySafe(
 // Dates
 // ---------------------------------------------------------------------------
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * The zone to format `date` in. A "YYYY-MM-DD" value (a due date, a court date) is a calendar
+ * date, not an instant: `new Date("2026-11-27")` is UTC midnight, so formatting it in the
+ * runtime zone printed the day before west of UTC ("26 Nov 2026" in New York). Formatting it in
+ * UTC prints the stored date in every zone. Instants (an ISO string with a time, or a Date) keep
+ * the runtime zone.
+ */
+function zoneFor(date: string | Date): { timeZone?: string } {
+  return typeof date === "string" && DATE_ONLY.test(date) ? { timeZone: "UTC" } : {};
+}
+
 /**
  * Formats a date as a human-readable day-first date (en-GB: "1 May 2026").
- * Accepts an ISO string or a Date. Returns "" for empty/invalid input.
+ * Accepts an ISO string or a Date. A "YYYY-MM-DD" value prints that calendar date in every
+ * zone; an instant prints on the runtime's calendar. Returns "" for empty/invalid input.
  */
 export function formatDate(date: string | Date): string {
   if (!date) return "";
@@ -78,12 +92,13 @@ export function formatDate(date: string | Date): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    ...zoneFor(date),
   });
 }
 
 /**
- * Formats a date as a short day-first date without year (en-GB: "1 May").
- * (Staff-app helper, retained; flipped from en-US month-first to en-GB.)
+ * Formats a date as a short day-first date without year (en-GB: "1 May"). Same zone rule as
+ * `formatDate`. (Staff-app helper, retained; flipped from en-US month-first to en-GB.)
  */
 export function formatDateShort(date: string | Date): string {
   if (!date) return "";
@@ -92,6 +107,7 @@ export function formatDateShort(date: string | Date): string {
   return d.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
+    ...zoneFor(date),
   });
 }
 

@@ -1,0 +1,380 @@
+{
+  "startedAt": "2026-11-28T06:40:21.256Z",
+  "gitHead": "d35c5d8d1b40a882edf032af2978b0440559ebc8",
+  "run": "mx01jll4",
+  "journal": [
+    {
+      "kind": "court-date",
+      "offset": 0,
+      "date": "2026-11-28",
+      "courtName": "OBS-DDF mx01jll4 day0x",
+      "label": "Hearing — OBS-DDF mx01jll4 day0x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 1,
+      "date": "2026-11-29",
+      "courtName": "OBS-DDF mx01jll4 day1x",
+      "label": "Hearing — OBS-DDF mx01jll4 day1x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 2,
+      "date": "2026-11-30",
+      "courtName": "OBS-DDF mx01jll4 day2x",
+      "label": "Hearing — OBS-DDF mx01jll4 day2x",
+      "state": "cancelled"
+    }
+  ],
+  "steps": [
+    "2026-11-28T06:40:21.753Z portal sign-in via /login + Mailpit message AFy8nvvjRZ6gyMzVZggkod → /matters",
+    "2026-11-28T06:40:23.295Z firm UI: scheduled HEARING \"OBS-DDF mx01jll4 day0x\" on 2026-11-28 (+0)",
+    "2026-11-28T06:40:24.086Z firm UI: scheduled HEARING \"OBS-DDF mx01jll4 day1x\" on 2026-11-29 (+1)",
+    "2026-11-28T06:40:24.911Z firm UI: scheduled HEARING \"OBS-DDF mx01jll4 day2x\" on 2026-11-30 (+2)",
+    "2026-11-28T06:41:04.017Z firm UI: cancelled \"OBS-DDF mx01jll4 day0x\"",
+    "2026-11-28T06:41:05.237Z firm UI: cancelled \"OBS-DDF mx01jll4 day1x\"",
+    "2026-11-28T06:41:06.399Z firm UI: cancelled \"OBS-DDF mx01jll4 day2x\""
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "an issued fee note exists to read (date-only issueDate/dueDate)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+          "invoiceNumber": "INV-0002",
+          "status": "PARTIALLY_PAID",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        },
+        {
+          "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+          "invoiceNumber": "INV-0001",
+          "status": "SENT",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        }
+      ]
+    },
+    {
+      "name": "portal read model has the 3 new rows",
+      "ok": true,
+      "detail": [
+        {
+          "id": "e9729b6f-0ab8-45f5-9908-b2b70f176547",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01jll4 day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01jll4 day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "0e3ba545-135c-4a72-81b7-32c8206b3c1a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01jll4 day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01jll4 day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "a1288eda-9148-47e0-8de8-6dc87417e7de",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01jll4 day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01jll4 day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ]
+    },
+    {
+      "name": "firm-feenote-johannesburg: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-johannesburg",
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 08:40:27 GMT+0200 (South Africa Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-johannesburg: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-johannesburg",
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 08:40:27 GMT+0200 (South Africa Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-new_york: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-new_york",
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "27 Nov 2026",
+          "due": "27 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 01:40:29 GMT-0500 (Eastern Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-new_york: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-new_york",
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "27 Nov 2026",
+          "due": "27 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 01:40:29 GMT-0500 (Eastern Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-dubai: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-dubai",
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 10:40:31 GMT+0400 (Gulf Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-dubai: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-dubai",
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 10:40:31 GMT+0400 (Gulf Standard Time)"
+      }
+    },
+    {
+      "name": "firm fee-note dates identical across zones",
+      "ok": true,
+      "detail": [
+        [
+          "Africa/Johannesburg",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ],
+        [
+          "America/New_York",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ],
+        [
+          "Asia/Dubai",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ]
+      ]
+    },
+    {
+      "name": "portal-invoices-johannesburg: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-johannesburg: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-new_york: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "27 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-new_york: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "America/New_York",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "27 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-dubai: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-dubai: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [
+    {
+      "tag": "firm-feenote-johannesburg",
+      "zone": "Africa/Johannesburg",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "28 Nov 2026",
+        "due": "28 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 08:40:27 GMT+0200 (South Africa Standard Time)"
+    },
+    {
+      "tag": "firm-feenote-new_york",
+      "zone": "America/New_York",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "27 Nov 2026",
+        "due": "27 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 01:40:29 GMT-0500 (Eastern Standard Time)"
+    },
+    {
+      "tag": "firm-feenote-dubai",
+      "zone": "Asia/Dubai",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "28 Nov 2026",
+        "due": "28 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 10:40:31 GMT+0400 (Gulf Standard Time)"
+    },
+    {
+      "tag": "portal-invoices-johannesburg",
+      "zone": "Africa/Johannesburg",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "28 Dec 2026"
+    },
+    {
+      "tag": "portal-invoices-new_york",
+      "zone": "America/New_York",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "27 Dec 2026"
+    },
+    {
+      "tag": "portal-invoices-dubai",
+      "zone": "Asia/Dubai",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "28 Dec 2026"
+    }
+  ],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0",
+    "name": "Website Redesign"
+  },
+  "feeNotes": [
+    {
+      "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+      "invoiceNumber": "INV-0002",
+      "status": "PARTIALLY_PAID",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    },
+    {
+      "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+      "invoiceNumber": "INV-0001",
+      "status": "SENT",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    }
+  ],
+  "todaySA": "2026-11-28",
+  "error": "page.waitForResponse: Timeout 30000ms exceeded while waiting for event \"response\"\n    at readDeadlines (/Users/rakheendama/Projects/2026/wt-fix-date-display/qa_cycle/evidence/date-display-fix/scripts/obs.cjs:176:21)\n    at async /Users/rakheendama/Projects/2026/wt-fix-date-display/qa_cycle/evidence/date-display-fix/scripts/obs.cjs:290:23",
+  "finishedAt": "2026-11-28T06:41:06.407Z",
+  "allChecksPass": false
+}

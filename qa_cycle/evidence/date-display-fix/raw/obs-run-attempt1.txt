@@ -1,0 +1,12 @@
+Sat Nov 28 06:38:38 UTC 2026
+d35c5d8d1b40a882edf032af2978b0440559ebc8
+{
+  "allChecksPass": false,
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('INV-0002').first() to be visible\u001b[22m\n\u001b[2m    63 × locator resolved to hidden <a href=\"/invoices/524979b7-d878-43df-8c77-e8b22b9c4ec1\" class=\"inline-flex min-h-11 items-center font-medium text-teal-600 hover:text-teal-700 hover:underline\">INV-0002</a>\u001b[22m\n\n    at readPortalInvoices (/Users/rakheendama/Projects/2026/wt-fix-date-display/qa_cycle/evidence/date-display-fix/scripts/obs.cjs:160:55)\n    at async /Users/rakheendama/Projects/2026/wt-fix-date-display/qa_cycle/evidence/date-display-fix/scripts/obs.cjs:271:48",
+  "checks": 10,
+  "failed": [
+    "restore: the client's deadline ids are back to the originals"
+  ]
+}
+EXIT=1
+Sat Nov 28 06:39:43 UTC 2026

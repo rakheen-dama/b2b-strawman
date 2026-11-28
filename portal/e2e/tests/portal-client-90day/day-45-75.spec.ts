@@ -177,7 +177,7 @@ test.describe
   // the client sees the sanitised rows on /deadlines and never that text. There is no mark-read
   // control (Phase 89 decision 7). Cancel / interrupt DELETE the portal rows (B4), and the cleanup
   // after the try guarantees it, so /deadlines is empty again for Day 7 and the responsive suite. The
-  // default window is today..+60 days (deadlines/page.tsx defaultWindow), so both dates sit inside.
+  // default window is today..+60 days on the SA calendar (the backend default), so both dates sit inside.
   test("Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them", async ({
     page,
   }) => {

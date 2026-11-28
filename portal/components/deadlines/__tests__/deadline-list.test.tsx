@@ -256,3 +256,46 @@ describe("DeadlineList urgency on the South African calendar", () => {
     ]);
   });
 });
+
+describe("DeadlineList dates are the same calendar date in every browser zone", () => {
+  // Fri 27 Nov 2026 is in the week of Mon 23 Nov; Sun 29 Nov is the week's last day. A zone-less
+  // formatter read "2026-11-27" as UTC midnight and printed "26 Nov 2026" (and "Week of 22 Nov
+  // 2026", a Sunday) in New York.
+  const zones = [
+    "UTC",
+    "Africa/Johannesburg",
+    "America/New_York",
+    "Asia/Dubai",
+    "Pacific/Pago_Pago",
+  ];
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllEnvs();
+  });
+
+  it.each(zones)(
+    "under TZ=%s, rows print their due date and the header names the Monday",
+    (zone) => {
+      inZone(zone);
+      render(
+        <Harness
+          now={new Date("2026-11-26T09:40:00Z")}
+          deadlines={[
+            deadline({ id: "fri", dueDate: "2026-11-27", label: "Hearing" }),
+            deadline({ id: "sun", dueDate: "2026-11-29", label: "Filing" }),
+          ]}
+        />,
+      );
+      const week = screen.getByTestId("deadline-week-2026-11-23");
+      expect(week).toHaveAccessibleName("Week of 23 Nov 2026");
+      expect(week.querySelector("h3")?.textContent).toBe("Week of 23 Nov 2026");
+      expect(
+        screen.getByTestId("deadline-row-FILING_SCHEDULE-fri").textContent,
+      ).toContain("27 Nov 2026");
+      expect(
+        screen.getByTestId("deadline-row-FILING_SCHEDULE-sun").textContent,
+      ).toContain("29 Nov 2026");
+    },
+  );
+});

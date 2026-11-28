@@ -1,7 +1,7 @@
 {
-  "commit": "607cfe0ab",
-  "command": "cd portal && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-portal-deadlines; run at c92489bd0 — HEAD adds only qa_cycle/ evidence, portal/packages diff empty)",
+  "commit": "d6f9d543e",
+  "command": "cd portal && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-date-display; run at d35c5d8d1 — rebase onto 6efca4504 brought only a frontend test + docs, portal/packages diff to d6f9d543e empty)",
   "exit": 0,
-  "ts": "2026-11-28T05:56:11Z",
-  "summary": "fix/portal-deadline-countdown @607cfe0ab — lint 0 errors (4 pre-existing warnings, none in changed files), typecheck 0, format:check 0, vitest 51 files / 303 passed, build 0"
+  "ts": "2026-11-28T06:22:29Z",
+  "summary": "fix/date-only-display-sa-calendar @d6f9d543e — lint 0 errors (4 pre-existing warnings), typecheck 0, format:check clean, vitest 52 files / 313 passed, build ok. e2e portal 34 passed; OBS 51/51."
 }

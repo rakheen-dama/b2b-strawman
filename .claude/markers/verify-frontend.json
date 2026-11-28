@@ -1,7 +1,7 @@
 {
-  "commit": "e28e82837c85e3bfc156f45cabb24b309bbce9da",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1)",
+  "commit": "d6f9d543e",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-date-display; run at 31947cf12 after rebase onto 6efca4504 — d6f9d543e adds only qa_cycle/ evidence)",
   "exit": 0,
-  "ts": "2026-11-28T05:19:15Z",
-  "summary": "Prescription last day to serve @e28e82837 — lint 0 errors, typecheck/format/build green, vitest 553 files / 5684 passed / 2 skipped"
+  "ts": "2026-11-28T06:51:30Z",
+  "summary": "fix/date-only-display-sa-calendar @d6f9d543e — lint 0 errors (75 pre-existing warnings), typecheck 0, format:check clean, vitest 558 files / 5723 passed + 2 skipped, build ok. Pre-rebase run 1 at d35c5d8d1 had 2 flakes (timesheet-logged-task-rows K-88, fixed on main by #1896; EmailSettingsPage DeliveryLogTable row count) — both pass in isolation x2 and in run 2 (558/558). e2e legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped; OBS 51/51."
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { cn } from "@/lib/utils";
 import type { PrescriptionTracker, PrescriptionStatus } from "@/lib/types";
 import { CreatePrescriptionDialog } from "./create-prescription-dialog";
@@ -64,11 +65,26 @@ function prescriptionTypeLabel(type: string): string {
   }
 }
 
+/**
+ * Calendar days from today in South Africa to the yyyy-MM-dd prescription date: 0 is the date
+ * itself, negative is past it. The same answer on the UTC SSR server and in any browser, at any
+ * hour — `new Date("yyyy-MM-dd")` parses as UTC midnight, which overstated the statutory count by
+ * one between 00:00 and 02:00 SAST and showed "—" on the date itself.
+ */
 function daysRemaining(prescriptionDate: string): number {
-  const target = new Date(prescriptionDate);
-  const now = new Date();
-  const diff = target.getTime() - now.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  return daysBetween(todayInSA(), prescriptionDate);
+}
+
+/**
+ * The Days left cell. Day 0 follows the backend's status: the stored prescription date is the
+ * anniversary, which under the backend's rule (and SA's civilian computation) is already the first
+ * prescribed day, so it arrives EXPIRED and reads "—". "Today" shows only for a day-0 tracker the
+ * backend still treats as live (so it appears by itself if that expiry rule ever changes).
+ */
+function daysLeftLabel(remaining: number, status: PrescriptionStatus): string | number {
+  if (remaining > 0) return remaining;
+  const live = status !== "EXPIRED" && status !== "INTERRUPTED";
+  return remaining === 0 && live ? "Today" : "—";
 }
 
 const TH =
@@ -153,7 +169,7 @@ export function PrescriptionTrackerList({
                               : "text-slate-600 dark:text-slate-400"
                         )}
                       >
-                        {remaining > 0 ? remaining : "—"}
+                        {daysLeftLabel(remaining, tracker.status)}
                       </span>
                     </td>
                     {canManageLegal && (

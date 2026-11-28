@@ -1,0 +1,6 @@
+
+> frontend@0.1.0 typecheck /Users/rakheendama/Projects/2026/wt-fix-prescription-days/frontend
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully

@@ -1,0 +1,85 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-prescription-days/frontend
+
+ ❯ __tests__/legal/court-dates.test.tsx (29 tests | 11 failed | 15 skipped) 219ms
+       × at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 45ms
+       × at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 18ms
+       × at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 15ms
+       × at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 16ms
+       × at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 14ms
+       × at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 17ms
+       × at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 18ms
+       × at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 18ms
+       × at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2 17ms
+     × a day-0 EXPIRED tracker reads — 6ms
+     × a day-0 INTERRUPTED tracker reads — 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone UTC > at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone Africa/Johannesburg > at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 01:00 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 11:40 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > runtime zone America/New_York > at 23:30 SAST, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2
+AssertionError: expected [ [ '2026-11-26', '—', true ], …(3) ] to deeply equal [ [ '2026-11-26', '—', true ], …(3) ]
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+      "—",
+      true,
+    ],
+    [
+      "2026-11-27",
+-     "—",
++     "Today",
+      true,
+    ],
+    [
+      "2026-11-28",
+      "1",
+
+ ❯ __tests__/legal/court-dates.test.tsx:288:26
+    286|           return [prescriptionDate, span.textContent, span.classList.c…
+    287|         });
+    288|         expect(daysLeft).toEqual([
+       |                          ^
+    289|           ["2026-11-26", "—", true],
+    290|           ["2026-11-27", "—", true],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > a day-0 EXPIRED tracker reads —
+ FAIL  __tests__/legal/court-dates.test.tsx > PrescriptionTrackerList days left on the South African calendar > a day-0 INTERRUPTED tracker reads —
+AssertionError: expected [ 'Today', true ] to deeply equal [ '—', true ]
+
+- Expected
++ Received
+
+  [
+-   "—",
++   "Today",
+    true,
+  ]
+
+ ❯ __tests__/legal/court-dates.test.tsx:357:73
+    355|       .getAllByRole("cell")[4]
+    356|       .querySelector("span")!;
+    357|     expect([span.textContent, span.classList.contains("text-red-600")]…
+       |                                                                         ^
+    358|   });
+    359| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 3 passed | 15 skipped (29)
+   Start at  01:42:59
+   Duration  1.13s (transform 197ms, setup 86ms, import 548ms, tests 219ms, environment 150ms)
+

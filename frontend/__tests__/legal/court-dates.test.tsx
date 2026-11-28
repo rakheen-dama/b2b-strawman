@@ -65,6 +65,7 @@ import { CreatePrescriptionDialog } from "@/components/legal/create-prescription
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { createPrescriptionTracker, fetchProjects } from "@/lib/actions/court-dates";
 import type { CourtDate, PrescriptionTracker } from "@/lib/types";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -234,6 +235,126 @@ describe("PrescriptionTrackerList", () => {
         expect.objectContaining({ matterId: MATTER_ID, causeOfActionDate: "2026-01-15" })
       )
     );
+  });
+});
+
+describe("PrescriptionTrackerList days left on the South African calendar", () => {
+  // Today in South Africa is Fri 27 Nov 2026 at each of these instants.
+  const instants = [
+    ["01:00 SAST", "2026-11-26T23:00:00Z"],
+    ["11:40 SAST", "2026-11-27T09:40:00Z"],
+    ["23:30 SAST", "2026-11-27T21:30:00Z"],
+  ] as const;
+  // The server renders in UTC; a browser may run in any zone. The count must not depend on it.
+  const zones = ["UTC", "Africa/Johannesburg", "America/New_York"];
+  // Statuses as the backend sends them (PrescriptionTrackerService.computeEffectiveStatus): the
+  // prescription date itself and earlier are EXPIRED; within 90 days WARNED; otherwise RUNNING.
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  describe.each(zones)("runtime zone %s", (zone) => {
+    it.each(instants)(
+      "at %s, yesterday and today (both EXPIRED) read —, tomorrow is 1, +2 is 2",
+      (_label, instant) => {
+        inZone(zone);
+        vi.useFakeTimers({ toFake: ["Date"] });
+        vi.setSystemTime(new Date(instant));
+        const dates = [
+          ["pt-y", "2026-11-26", "EXPIRED"],
+          ["pt-t", "2026-11-27", "EXPIRED"],
+          ["pt-1", "2026-11-28", "WARNED"],
+          ["pt-2", "2026-11-29", "WARNED"],
+        ] as const;
+        render(
+          <PrescriptionTrackerList
+            trackers={dates.map(([id, prescriptionDate, status]) =>
+              makeTracker({ id, prescriptionDate, status })
+            )}
+            slug="acme"
+            matterId="m-1"
+            onRefresh={vi.fn()}
+          />
+        );
+        const daysLeft = dates.map(([id, prescriptionDate]) => {
+          const cells = within(screen.getByTestId(`prescription-tracker-row-${id}`)).getAllByRole(
+            "cell"
+          );
+          const span = cells[4].querySelector("span")!;
+          return [prescriptionDate, span.textContent, span.classList.contains("text-red-600")];
+        });
+        expect(daysLeft).toEqual([
+          ["2026-11-26", "—", true],
+          ["2026-11-27", "—", true],
+          ["2026-11-28", "1", true],
+          ["2026-11-29", "2", true],
+        ]);
+      }
+    );
+  });
+
+  it("colours the count from the SA-calendar value at the 30- and 90-day thresholds", () => {
+    inZone("UTC");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    // 01:00 SAST on 27 Nov: the old count read one day more than remains.
+    vi.setSystemTime(new Date("2026-11-26T23:00:00Z"));
+    const dates = [
+      ["pt-30", "2026-12-27", "WARNED"], // 30 days left: red
+      ["pt-31", "2026-12-28", "WARNED"], // 31: amber
+      ["pt-90", "2027-02-25", "WARNED"], // 90: amber
+      ["pt-91", "2027-02-26", "RUNNING"], // 91: slate
+    ] as const;
+    render(
+      <PrescriptionTrackerList
+        trackers={dates.map(([id, prescriptionDate, status]) =>
+          makeTracker({ id, prescriptionDate, status })
+        )}
+        slug="acme"
+        matterId="m-1"
+        onRefresh={vi.fn()}
+      />
+    );
+    const shown = dates.map(([id]) => {
+      const span = within(screen.getByTestId(`prescription-tracker-row-${id}`))
+        .getAllByRole("cell")[4]
+        .querySelector("span")!;
+      const colour = ["text-red-600", "text-amber-600", "text-slate-600"].find((c) =>
+        span.classList.contains(c)
+      );
+      return [span.textContent, colour];
+    });
+    expect(shown).toEqual([
+      ["30", "text-red-600"],
+      ["31", "text-amber-600"],
+      ["90", "text-amber-600"],
+      ["91", "text-slate-600"],
+    ]);
+  });
+  // "Today" follows the backend status: if the backend still treats a day-0 tracker as live (e.g. a
+  // future change to its expiry rule), the cell says Today; once it is EXPIRED or INTERRUPTED, "—".
+  it.each([
+    ["WARNED", "Today"],
+    ["RUNNING", "Today"],
+    ["EXPIRED", "—"],
+    ["INTERRUPTED", "—"],
+  ] as const)("a day-0 %s tracker reads %s", (status, label) => {
+    inZone("UTC");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-26T23:00:00Z")); // 01:00 SAST, Fri 27 Nov
+    render(
+      <PrescriptionTrackerList
+        trackers={[makeTracker({ id: "pt-0", prescriptionDate: "2026-11-27", status })]}
+        slug="acme"
+        matterId="m-1"
+        onRefresh={vi.fn()}
+      />
+    );
+    const span = within(screen.getByTestId("prescription-tracker-row-pt-0"))
+      .getAllByRole("cell")[4]
+      .querySelector("span")!;
+    expect([span.textContent, span.classList.contains("text-red-600")]).toEqual([label, true]);
   });
 });
 

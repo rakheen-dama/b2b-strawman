@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-prescription-days/frontend
+
+
+ Test Files  20 passed (20)
+      Tests  222 passed (222)
+   Start at  22:52:54
+   Duration  3.94s (transform 2.99s, setup 1.71s, import 13.77s, tests 8.85s, environment 5.47s)
+

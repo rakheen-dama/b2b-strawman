@@ -257,6 +257,14 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     setNewLineTaxRateId(defaultTaxRate?.id ?? "none");
   }
 
+  // A line save returns the server's totals. The header Tax Amount field is hidden while lines
+  // carry tax, so nobody can have typed into it: keep it at the server's tax, or it would show (and
+  // Save Changes would re-send) the VAT the note opened with once the last taxed line goes "None".
+  function applyLineSave(next: InvoiceResponse) {
+    if (invoice.hasPerLineTax) setTaxAmount(String(next.taxAmount ?? 0));
+    setInvoice(next);
+  }
+
   function submitAddLine() {
     if (!newLineDesc.trim()) return;
     setError(null);
@@ -266,10 +274,13 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(newLineQty) || 1,
         unitPrice: parseFloat(newLineRate) || 0,
         taxRateId: newLineTaxRateId !== "none" ? newLineTaxRateId : null,
+        // "None" picked in the tax select means no tax, not the org default. With no rates
+        // loaded the select is hidden, nothing was chosen, and the backend default applies.
+        ...(newLineTaxRateId === "none" && taxRates.length > 0 && { noTaxRate: true }),
       };
       const result = await addLineItem(slug, invoice.id, invoice.clientId, request);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyLineSave(result.invoice);
         setShowAddLine(false);
       } else {
         handleError(result);
@@ -294,6 +305,8 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(editLineQty) || 1,
         unitPrice: parseFloat(editLineRate) || 0,
         taxRateId: editLineTaxRateId !== "none" ? editLineTaxRateId : null,
+        // Without the flag a null rate means "keep and re-price the line's current rate".
+        ...(editLineTaxRateId === "none" && { clearTaxRate: true }),
       };
       const result = await updateLineItem(
         slug,
@@ -303,7 +316,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         request
       );
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyLineSave(result.invoice);
         setEditingLine(null);
       } else {
         handleError(result);

@@ -178,6 +178,8 @@ export interface AddLineItemRequest {
   sortOrder?: number;
   taxRateId?: string | null;
   tariffItemId?: string;
+  /** true = the line carries no tax ("None"); omitted = the org default rate applies. */
+  noTaxRate?: boolean;
 }
 
 export interface UpdateLineItemRequest {
@@ -186,6 +188,8 @@ export interface UpdateLineItemRequest {
   unitPrice: number;
   sortOrder?: number;
   taxRateId?: string | null;
+  /** true = take the line's tax rate off ("None"); omitted = keep and re-price its rate. */
+  clearTaxRate?: boolean;
 }
 
 // POST /api/invoices/{id}/payment — amount + method are required (622E, §13.4.7).

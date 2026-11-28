@@ -214,12 +214,12 @@ class InvoiceAddedLineSortOrderIntegrationTest extends AbstractIntegrationTest {
   // --- helpers ---
 
   private AddLineItemRequest tariffRequest() {
-    return new AddLineItemRequest(null, null, BigDecimal.ONE, null, null, null, tariffItemId);
+    return new AddLineItemRequest(null, null, BigDecimal.ONE, null, null, null, tariffItemId, null);
   }
 
   private AddLineItemRequest manualRequest(String description) {
     return new AddLineItemRequest(
-        null, description, BigDecimal.ONE, new BigDecimal("100.00"), null, null, null);
+        null, description, BigDecimal.ONE, new BigDecimal("100.00"), null, null, null, null);
   }
 
   private InvoiceResponse draftWithTimeLines(String... narratives) {

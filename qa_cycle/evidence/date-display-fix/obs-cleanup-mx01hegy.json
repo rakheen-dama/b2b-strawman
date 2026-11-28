@@ -1,0 +1,95 @@
+{
+  "startedAt": "2026-11-28T06:40:11.374Z",
+  "gitHead": "d35c5d8d1b40a882edf032af2978b0440559ebc8",
+  "run": "mx01hegy",
+  "journal": [
+    {
+      "kind": "court-date",
+      "offset": 0,
+      "date": "2026-11-28",
+      "courtName": "OBS-DDF mx01hegy day0x",
+      "label": "Hearing — OBS-DDF mx01hegy day0x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 1,
+      "date": "2026-11-29",
+      "courtName": "OBS-DDF mx01hegy day1x",
+      "label": "Hearing — OBS-DDF mx01hegy day1x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 2,
+      "date": "2026-11-30",
+      "courtName": "OBS-DDF mx01hegy day2x",
+      "label": "Hearing — OBS-DDF mx01hegy day2x",
+      "state": "cancelled"
+    }
+  ],
+  "steps": [
+    "2026-11-28T06:40:11.905Z portal sign-in via /login + Mailpit message 4nSbats8APvsZDdqUEh5PP → /matters",
+    "2026-11-28T06:40:13.682Z firm UI: cancelled \"OBS-DDF mx01hegy day0x\"",
+    "2026-11-28T06:40:15.394Z firm UI: cancelled \"OBS-DDF mx01hegy day2x\""
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "an issued fee note exists to read (date-only issueDate/dueDate)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+          "invoiceNumber": "INV-0002",
+          "status": "PARTIALLY_PAID",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        },
+        {
+          "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+          "invoiceNumber": "INV-0001",
+          "status": "SENT",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        }
+      ]
+    },
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0",
+    "name": "Website Redesign"
+  },
+  "feeNotes": [
+    {
+      "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+      "invoiceNumber": "INV-0002",
+      "status": "PARTIALLY_PAID",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    },
+    {
+      "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+      "invoiceNumber": "INV-0001",
+      "status": "SENT",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    }
+  ],
+  "mode": "cleanup of run mx01hegy",
+  "finishedAt": "2026-11-28T06:40:15.403Z",
+  "allChecksPass": true
+}

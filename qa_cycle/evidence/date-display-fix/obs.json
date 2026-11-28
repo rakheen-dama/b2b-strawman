@@ -1,0 +1,978 @@
+{
+  "startedAt": "2026-11-28T06:47:33.808Z",
+  "gitHead": "d35c5d8d1b40a882edf032af2978b0440559ebc8",
+  "run": "mx01svcg",
+  "journal": [
+    {
+      "kind": "court-date",
+      "offset": -1,
+      "date": "2026-11-27",
+      "courtName": "OBS-DDF mx01svcg day-1x",
+      "label": "Hearing — OBS-DDF mx01svcg day-1x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 0,
+      "date": "2026-11-28",
+      "courtName": "OBS-DDF mx01svcg day0x",
+      "label": "Hearing — OBS-DDF mx01svcg day0x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 1,
+      "date": "2026-11-29",
+      "courtName": "OBS-DDF mx01svcg day1x",
+      "label": "Hearing — OBS-DDF mx01svcg day1x",
+      "state": "cancelled"
+    },
+    {
+      "kind": "court-date",
+      "offset": 2,
+      "date": "2026-11-30",
+      "courtName": "OBS-DDF mx01svcg day2x",
+      "label": "Hearing — OBS-DDF mx01svcg day2x",
+      "state": "cancelled"
+    }
+  ],
+  "steps": [
+    "2026-11-28T06:47:34.265Z portal sign-in via /login + Mailpit message 9KQfMRDV2tAeKEyj5ZeVPe → /matters",
+    "2026-11-28T06:47:35.859Z firm UI: scheduled HEARING \"OBS-DDF mx01svcg day-1x\" on 2026-11-27 (+-1)",
+    "2026-11-28T06:47:37.144Z firm UI: scheduled HEARING \"OBS-DDF mx01svcg day0x\" on 2026-11-28 (+0)",
+    "2026-11-28T06:47:37.883Z firm UI: scheduled HEARING \"OBS-DDF mx01svcg day1x\" on 2026-11-29 (+1)",
+    "2026-11-28T06:47:38.646Z firm UI: scheduled HEARING \"OBS-DDF mx01svcg day2x\" on 2026-11-30 (+2)",
+    "2026-11-28T06:47:57.917Z firm UI: cancelled \"OBS-DDF mx01svcg day-1x\"",
+    "2026-11-28T06:47:59.084Z firm UI: cancelled \"OBS-DDF mx01svcg day0x\"",
+    "2026-11-28T06:48:00.267Z firm UI: cancelled \"OBS-DDF mx01svcg day1x\"",
+    "2026-11-28T06:48:01.470Z firm UI: cancelled \"OBS-DDF mx01svcg day2x\""
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "an issued fee note exists to read (date-only issueDate/dueDate)",
+      "ok": true,
+      "detail": [
+        {
+          "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+          "invoiceNumber": "INV-0002",
+          "status": "PARTIALLY_PAID",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        },
+        {
+          "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+          "invoiceNumber": "INV-0001",
+          "status": "SENT",
+          "issueDate": "2026-11-28",
+          "dueDate": "2026-12-28"
+        }
+      ]
+    },
+    {
+      "name": "portal default window has the 3 new in-window rows",
+      "ok": true,
+      "detail": [
+        {
+          "id": "8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ]
+    },
+    {
+      "name": "firm-feenote-johannesburg: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-johannesburg",
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 08:47:40 GMT+0200 (South Africa Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-johannesburg: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-johannesburg",
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 08:47:40 GMT+0200 (South Africa Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-new_york: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-new_york",
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "27 Nov 2026",
+          "due": "27 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 01:47:42 GMT-0500 (Eastern Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-new_york: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-new_york",
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "27 Nov 2026",
+          "due": "27 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 01:47:42 GMT-0500 (Eastern Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-dubai: \"Issued: 28 Nov 2026\" is the stored issue date 2026-11-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-dubai",
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 10:47:44 GMT+0400 (Gulf Standard Time)"
+      }
+    },
+    {
+      "name": "firm-feenote-dubai: \"Due: 28 Dec 2026\" is the stored due date 2026-12-28",
+      "ok": true,
+      "detail": {
+        "tag": "firm-feenote-dubai",
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "apiIssueDate": "2026-11-28",
+        "apiDueDate": "2026-12-28",
+        "issued": "Issued: 28 Nov 2026",
+        "due": "Due: 28 Dec 2026",
+        "mainWouldShow": {
+          "issued": "28 Nov 2026",
+          "due": "28 Dec 2026"
+        },
+        "browserNow": "Sat Nov 28 2026 10:47:44 GMT+0400 (Gulf Standard Time)"
+      }
+    },
+    {
+      "name": "firm fee-note dates identical across zones",
+      "ok": true,
+      "detail": [
+        [
+          "Africa/Johannesburg",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ],
+        [
+          "America/New_York",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ],
+        [
+          "Asia/Dubai",
+          "Issued: 28 Nov 2026",
+          "Due: 28 Dec 2026"
+        ]
+      ]
+    },
+    {
+      "name": "portal-invoices-johannesburg: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-johannesburg: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Africa/Johannesburg",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-new_york: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "America/New_York",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "27 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-new_york: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "America/New_York",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "27 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-dubai: INV-0002 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0002",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-invoices-dubai: INV-0001 shows issue 28 Nov 2026 and due 28 Dec 2026",
+      "ok": true,
+      "detail": {
+        "zone": "Asia/Dubai",
+        "invoice": "INV-0001",
+        "mainWouldShowDue": "28 Dec 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: /portal/deadlines request carries no from/to (backend SA default)",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: Hearing — OBS-DDF mx01svcg day-1x (2026-11-27, SA-yesterday) is outside the window and not listed (browser local date 2026-11-28)",
+      "ok": true,
+      "detail": {
+        "apiRow": null
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: Hearing — OBS-DDF mx01svcg day0x (2026-11-28) listed and reads 28 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026",
+        "apiDueDate": "2026-11-28"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: week of 2026-11-28 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 23 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: Hearing — OBS-DDF mx01svcg day1x (2026-11-29) listed and reads 29 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026",
+        "apiDueDate": "2026-11-29"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: week of 2026-11-29 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 23 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: Hearing — OBS-DDF mx01svcg day2x (2026-11-30) listed and reads 30 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026",
+        "apiDueDate": "2026-11-30"
+      }
+    },
+    {
+      "name": "portal-deadlines-johannesburg-now: week of 2026-11-30 is headed \"Week of 30 Nov 2026\" (main would show \"Week of 30 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-30",
+        "aria": "Week of 30 Nov 2026",
+        "header": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: /portal/deadlines request carries no from/to (backend SA default)",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "portal-deadlines-new_york-now: Hearing — OBS-DDF mx01svcg day-1x (2026-11-27, SA-yesterday) is outside the window and not listed (browser local date 2026-11-28)",
+      "ok": true,
+      "detail": {
+        "apiRow": null
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: Hearing — OBS-DDF mx01svcg day0x (2026-11-28) listed and reads 28 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026",
+        "apiDueDate": "2026-11-28"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: week of 2026-11-28 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 22 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: Hearing — OBS-DDF mx01svcg day1x (2026-11-29) listed and reads 29 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026",
+        "apiDueDate": "2026-11-29"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: week of 2026-11-29 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 22 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: Hearing — OBS-DDF mx01svcg day2x (2026-11-30) listed and reads 30 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026",
+        "apiDueDate": "2026-11-30"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-now: week of 2026-11-30 is headed \"Week of 30 Nov 2026\" (main would show \"Week of 29 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-30",
+        "aria": "Week of 30 Nov 2026",
+        "header": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: /portal/deadlines request carries no from/to (backend SA default)",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "portal-deadlines-dubai-now: Hearing — OBS-DDF mx01svcg day-1x (2026-11-27, SA-yesterday) is outside the window and not listed (browser local date 2026-11-28)",
+      "ok": true,
+      "detail": {
+        "apiRow": null
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: Hearing — OBS-DDF mx01svcg day0x (2026-11-28) listed and reads 28 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026",
+        "apiDueDate": "2026-11-28"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: week of 2026-11-28 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 23 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: Hearing — OBS-DDF mx01svcg day1x (2026-11-29) listed and reads 29 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026",
+        "apiDueDate": "2026-11-29"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: week of 2026-11-29 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 23 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: Hearing — OBS-DDF mx01svcg day2x (2026-11-30) listed and reads 30 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026",
+        "apiDueDate": "2026-11-30"
+      }
+    },
+    {
+      "name": "portal-deadlines-dubai-now: week of 2026-11-30 is headed \"Week of 30 Nov 2026\" (main would show \"Week of 30 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-30",
+        "aria": "Week of 30 Nov 2026",
+        "header": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: /portal/deadlines request carries no from/to (backend SA default)",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: Hearing — OBS-DDF mx01svcg day-1x (2026-11-27, SA-yesterday) is outside the window and not listed (browser local date 2026-11-27)",
+      "ok": true,
+      "detail": {
+        "apiRow": null
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: Hearing — OBS-DDF mx01svcg day0x (2026-11-28) listed and reads 28 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026",
+        "apiDueDate": "2026-11-28"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: week of 2026-11-28 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 22 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: Hearing — OBS-DDF mx01svcg day1x (2026-11-29) listed and reads 29 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026",
+        "apiDueDate": "2026-11-29"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: week of 2026-11-29 is headed \"Week of 23 Nov 2026\" (main would show \"Week of 22 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-23",
+        "aria": "Week of 23 Nov 2026",
+        "header": "Week of 23 Nov 2026"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: Hearing — OBS-DDF mx01svcg day2x (2026-11-30) listed and reads 30 Nov 2026",
+      "ok": true,
+      "detail": {
+        "row": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026",
+        "apiDueDate": "2026-11-30"
+      }
+    },
+    {
+      "name": "portal-deadlines-new_york-0100sast: week of 2026-11-30 is headed \"Week of 30 Nov 2026\" (main would show \"Week of 29 Nov 2026\")",
+      "ok": true,
+      "detail": {
+        "testid": "deadline-week-2026-11-30",
+        "aria": "Week of 30 Nov 2026",
+        "header": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "name": "portal deadlines identical across zones and clocks",
+      "ok": true,
+      "detail": [
+        [
+          "portal-deadlines-johannesburg-now",
+          [
+            "Week of 23 Nov 2026",
+            "Week of 30 Nov 2026"
+          ]
+        ],
+        [
+          "portal-deadlines-new_york-now",
+          [
+            "Week of 23 Nov 2026",
+            "Week of 30 Nov 2026"
+          ]
+        ],
+        [
+          "portal-deadlines-dubai-now",
+          [
+            "Week of 23 Nov 2026",
+            "Week of 30 Nov 2026"
+          ]
+        ],
+        [
+          "portal-deadlines-new_york-0100sast",
+          [
+            "Week of 23 Nov 2026",
+            "Week of 30 Nov 2026"
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "New York at 01:00 SAST: browser local date 2026-11-27 is SA-yesterday (main would have requested from=2026-11-27)",
+      "ok": true,
+      "detail": {
+        "browserNow": "Fri Nov 27 2026 18:00:00 GMT-0500 (Eastern Standard Time)",
+        "requestUrl": "http://localhost:8081/portal/deadlines"
+      }
+    },
+    {
+      "name": "no hydration-mismatch console errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [
+    {
+      "tag": "firm-feenote-johannesburg",
+      "zone": "Africa/Johannesburg",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "28 Nov 2026",
+        "due": "28 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 08:47:40 GMT+0200 (South Africa Standard Time)"
+    },
+    {
+      "tag": "firm-feenote-new_york",
+      "zone": "America/New_York",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "27 Nov 2026",
+        "due": "27 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 01:47:42 GMT-0500 (Eastern Standard Time)"
+    },
+    {
+      "tag": "firm-feenote-dubai",
+      "zone": "Asia/Dubai",
+      "invoice": "INV-0002",
+      "apiIssueDate": "2026-11-28",
+      "apiDueDate": "2026-12-28",
+      "issued": "Issued: 28 Nov 2026",
+      "due": "Due: 28 Dec 2026",
+      "mainWouldShow": {
+        "issued": "28 Nov 2026",
+        "due": "28 Dec 2026"
+      },
+      "browserNow": "Sat Nov 28 2026 10:47:44 GMT+0400 (Gulf Standard Time)"
+    },
+    {
+      "tag": "portal-invoices-johannesburg",
+      "zone": "Africa/Johannesburg",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "28 Dec 2026"
+    },
+    {
+      "tag": "portal-invoices-new_york",
+      "zone": "America/New_York",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "27 Dec 2026"
+    },
+    {
+      "tag": "portal-invoices-dubai",
+      "zone": "Asia/Dubai",
+      "text": "Fee notes Fee Note # Status Issue Date Due Date Total Actions INV-0001 Sent 28 Nov 2026 28 Dec 2026 R 8 625,00 View PDF INV-0002 Partially paid 28 Nov 2026 28 Dec 2026 R 2 300,00 Balance R 1 800,00 View PDF",
+      "mainWouldShow": "28 Dec 2026"
+    },
+    {
+      "tag": "portal-deadlines-johannesburg-now",
+      "zone": "Africa/Johannesburg",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 08:47:45 GMT+0200 (South Africa Standard Time)",
+      "browserLocalDate": "2026-11-28",
+      "requestUrl": "http://localhost:8081/portal/deadlines",
+      "api": [
+        {
+          "id": "8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "text": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "text": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "text": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "weeks": [
+        {
+          "testid": "deadline-week-2026-11-23",
+          "aria": "Week of 23 Nov 2026",
+          "header": "Week of 23 Nov 2026"
+        },
+        {
+          "testid": "deadline-week-2026-11-30",
+          "aria": "Week of 30 Nov 2026",
+          "header": "Week of 30 Nov 2026"
+        }
+      ],
+      "mainWeekHeaders": {
+        "2026-11-23": "Week of 23 Nov 2026",
+        "2026-11-30": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "tag": "portal-deadlines-new_york-now",
+      "zone": "America/New_York",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 01:47:45 GMT-0500 (Eastern Standard Time)",
+      "browserLocalDate": "2026-11-28",
+      "requestUrl": "http://localhost:8081/portal/deadlines",
+      "api": [
+        {
+          "id": "8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "text": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "text": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "text": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "weeks": [
+        {
+          "testid": "deadline-week-2026-11-23",
+          "aria": "Week of 23 Nov 2026",
+          "header": "Week of 23 Nov 2026"
+        },
+        {
+          "testid": "deadline-week-2026-11-30",
+          "aria": "Week of 30 Nov 2026",
+          "header": "Week of 30 Nov 2026"
+        }
+      ],
+      "mainWeekHeaders": {
+        "2026-11-23": "Week of 22 Nov 2026",
+        "2026-11-30": "Week of 29 Nov 2026"
+      }
+    },
+    {
+      "tag": "portal-deadlines-dubai-now",
+      "zone": "Asia/Dubai",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 10:47:46 GMT+0400 (Gulf Standard Time)",
+      "browserLocalDate": "2026-11-28",
+      "requestUrl": "http://localhost:8081/portal/deadlines",
+      "api": [
+        {
+          "id": "8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "text": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "text": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "text": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "weeks": [
+        {
+          "testid": "deadline-week-2026-11-23",
+          "aria": "Week of 23 Nov 2026",
+          "header": "Week of 23 Nov 2026"
+        },
+        {
+          "testid": "deadline-week-2026-11-30",
+          "aria": "Week of 30 Nov 2026",
+          "header": "Week of 30 Nov 2026"
+        }
+      ],
+      "mainWeekHeaders": {
+        "2026-11-23": "Week of 23 Nov 2026",
+        "2026-11-30": "Week of 30 Nov 2026"
+      }
+    },
+    {
+      "tag": "portal-deadlines-new_york-0100sast",
+      "zone": "America/New_York",
+      "pinned": "2026-11-28T01:00:00+02:00",
+      "browserNow": "Fri Nov 27 2026 18:00:00 GMT-0500 (Eastern Standard Time)",
+      "browserLocalDate": "2026-11-27",
+      "requestUrl": "http://localhost:8081/portal/deadlines",
+      "api": [
+        {
+          "id": "8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day0x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day1x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        },
+        {
+          "id": "9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-DDF mx01svcg day2x",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-DDF mx01svcg day2x",
+          "matterId": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-8c009f9c-e5b6-4056-ac4e-7a823ed203ac",
+          "text": "Hearing — OBS-DDF mx01svcg day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f94909ae-d1c7-46f6-8f58-9d32a31c2820",
+          "text": "Hearing — OBS-DDF mx01svcg day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-9b255241-255e-4a21-8097-e46f8dbbfe64",
+          "text": "Hearing — OBS-DDF mx01svcg day2x Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "weeks": [
+        {
+          "testid": "deadline-week-2026-11-23",
+          "aria": "Week of 23 Nov 2026",
+          "header": "Week of 23 Nov 2026"
+        },
+        {
+          "testid": "deadline-week-2026-11-30",
+          "aria": "Week of 30 Nov 2026",
+          "header": "Week of 30 Nov 2026"
+        }
+      ],
+      "mainWeekHeaders": {
+        "2026-11-23": "Week of 22 Nov 2026",
+        "2026-11-30": "Week of 29 Nov 2026"
+      }
+    }
+  ],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "04ef4ba5-b76c-4fa7-adf1-63076377e1d0",
+    "name": "Website Redesign"
+  },
+  "feeNotes": [
+    {
+      "id": "524979b7-d878-43df-8c77-e8b22b9c4ec1",
+      "invoiceNumber": "INV-0002",
+      "status": "PARTIALLY_PAID",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    },
+    {
+      "id": "6bcbcad3-10fa-4815-87e6-59c90cb02ebf",
+      "invoiceNumber": "INV-0001",
+      "status": "SENT",
+      "issueDate": "2026-11-28",
+      "dueDate": "2026-12-28"
+    }
+  ],
+  "todaySA": "2026-11-28",
+  "unreached-portal-deadlines-dubai-2230sast": {
+    "finalUrl": "http://localhost:3002/login?redirectTo=%2Fdeadlines",
+    "browserNow": "Sun Nov 29 2026 00:30:00 GMT+0400 (Gulf Standard Time)"
+  },
+  "dubaiLate": {
+    "deferred": true,
+    "pinned": "2026-11-28T22:30:00+02:00",
+    "reason": "portal JWT TTL is 1 h (PortalJwtService.SESSION_TTL) and portal/lib/auth.ts getAuth() clears a token whose exp is before Date.now(); a browser clock 14 h ahead is signed out before /portal/deadlines is requested",
+    "error": "TimeoutError: page.waitForResponse: Timeout 10000ms exceeded while waiting for event \"response\""
+  },
+  "finishedAt": "2026-11-28T06:48:01.479Z",
+  "allChecksPass": true
+}

@@ -1,0 +1,103 @@
+Sat Nov 28 06:11:55 UTC 2026
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-date-display/portal
+
+ ❯ app/(authenticated)/deadlines/__tests__/page.test.tsx (5 tests | 5 failed) 97ms
+     × under TZ=Asia/Dubai at 22:30 SAST, leaves the window to the backend's SA-calendar default 33ms
+     × under TZ=Africa/Nairobi at 22:30 SAST, leaves the window to the backend's SA-calendar default 10ms
+     × under TZ=Africa/Johannesburg at 22:30 SAST, leaves the window to the backend's SA-calendar default 7ms
+     × under TZ=America/New_York at 22:30 SAST, leaves the window to the backend's SA-calendar default 7ms
+     × refetches with the default window on a filter change (no window frozen at mount) 39ms
+ ❯ components/deadlines/__tests__/deadline-list.test.tsx (19 tests | 2 failed) 147ms
+     × under TZ=America/New_York, rows print their due date and the header names the Monday 7ms
+     × under TZ=Pacific/Pago_Pago, rows print their due date and the header names the Monday 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/deadlines/__tests__/deadline-list.test.tsx > DeadlineList dates are the same calendar date in every browser zone > under TZ=America/New_York, rows print their due date and the header names the Monday
+ FAIL  components/deadlines/__tests__/deadline-list.test.tsx > DeadlineList dates are the same calendar date in every browser zone > under TZ=Pacific/Pago_Pago, rows print their due date and the header names the Monday
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAccessibleName()[22m
+
+Expected element to have accessible name:
+[32m  Week of 23 Nov 2026[39m
+Received:
+[31m  Week of 22 Nov 2026[39m
+ ❯ components/deadlines/__tests__/deadline-list.test.tsx:291:20
+    289|       );
+    290|       const week = screen.getByTestId("deadline-week-2026-11-23");
+    291|       expect(week).toHaveAccessibleName("Week of 23 Nov 2026");
+       |                    ^
+    292|       expect(week.querySelector("h3")?.textContent).toBe("Week of 23 N…
+    293|       expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  app/(authenticated)/deadlines/__tests__/page.test.tsx > DeadlinesPage date window > under TZ=Asia/Dubai at 22:30 SAST, leaves the window to the backend's SA-calendar default
+AssertionError: expected '2026-11-29' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"2026-11-29"
+
+ ❯ app/(authenticated)/deadlines/__tests__/page.test.tsx:68:27
+     66|       await waitFor(() => expect(mockListDeadlines).toHaveBeenCalled()…
+     67|       const params = mockListDeadlines.mock.calls[0][0] ?? {};
+     68|       expect(params.from).toBeUndefined();
+       |                           ^
+     69|       expect(params.to).toBeUndefined();
+     70|       // Dates print on the SA calendar too: the 28 Nov hearing reads …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  app/(authenticated)/deadlines/__tests__/page.test.tsx > DeadlinesPage date window > under TZ=Africa/Nairobi at 22:30 SAST, leaves the window to the backend's SA-calendar default
+ FAIL  app/(authenticated)/deadlines/__tests__/page.test.tsx > DeadlinesPage date window > under TZ=Africa/Johannesburg at 22:30 SAST, leaves the window to the backend's SA-calendar default
+ FAIL  app/(authenticated)/deadlines/__tests__/page.test.tsx > DeadlinesPage date window > under TZ=America/New_York at 22:30 SAST, leaves the window to the backend's SA-calendar default
+AssertionError: expected '2026-11-28' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"2026-11-28"
+
+ ❯ app/(authenticated)/deadlines/__tests__/page.test.tsx:68:27
+     66|       await waitFor(() => expect(mockListDeadlines).toHaveBeenCalled()…
+     67|       const params = mockListDeadlines.mock.calls[0][0] ?? {};
+     68|       expect(params.from).toBeUndefined();
+       |                           ^
+     69|       expect(params.to).toBeUndefined();
+     70|       // Dates print on the SA calendar too: the 28 Nov hearing reads …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  app/(authenticated)/deadlines/__tests__/page.test.tsx > DeadlinesPage date window > refetches with the default window on a filter change (no window frozen at mount)
+AssertionError: expected { from: '2026-11-28', …(2) } to deeply equal { status: 'DUE_SOON' }
+
+- Expected
++ Received
+
+  {
++   "from": "2026-11-28",
+    "status": "DUE_SOON",
++   "to": "2027-01-27",
+  }
+
+ ❯ app/(authenticated)/deadlines/__tests__/page.test.tsx:88:48
+     86|
+     87|     await waitFor(() => expect(mockListDeadlines).toHaveBeenCalledTime…
+     88|     expect(mockListDeadlines.mock.calls[1][0]).toEqual({ status: "DUE_…
+       |                                                ^
+     89|   });
+     90| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 17 passed (24)
+   Start at  08:11:55
+   Duration  668ms (transform 164ms, setup 106ms, import 420ms, tests 245ms, environment 303ms)
+
+Sat Nov 28 06:11:56 UTC 2026

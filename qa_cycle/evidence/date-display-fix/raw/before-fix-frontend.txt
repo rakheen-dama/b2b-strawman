@@ -1,0 +1,89 @@
+Sat Nov 28 06:11:31 UTC 2026
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-date-display/frontend
+
+ ❯ __tests__/lib/format-date-only.test.ts (22 tests | 7 failed) 32ms
+     × formatDate prints the stored calendar date 6ms
+     × formatDate rolls neither the month nor the year 2ms
+     × formatDateShort prints the stored calendar date 1ms
+     × formatDate prints the stored calendar date 2ms
+     × formatDate rolls neither the month nor the year 1ms
+     × formatDateShort prints the stored calendar date 1ms
+     × prints the stored calendar date on both sides of each change 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=America/New_York > formatDate prints the stored calendar date
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=Pacific/Pago_Pago > formatDate prints the stored calendar date
+AssertionError: expected '26 Nov 2026' to be '27 Nov 2026' // Object.is equality
+
+Expected: "27 Nov 2026"
+Received: "26 Nov 2026"
+
+ ❯ __tests__/lib/format-date-only.test.ts:27:38
+     25|   it("formatDate prints the stored calendar date", () => {
+     26|     inZone(zone);
+     27|     expect(formatDate("2026-11-27")).toBe("27 Nov 2026");
+       |                                      ^
+     28|     expect(formatDate("2026-11-23")).toBe("23 Nov 2026");
+     29|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=America/New_York > formatDate rolls neither the month nor the year
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=Pacific/Pago_Pago > formatDate rolls neither the month nor the year
+AssertionError: expected '31 Dec 2026' to be '1 Jan 2027' // Object.is equality
+
+Expected: "1 Jan 2027"
+Received: "31 Dec 2026"
+
+ ❯ __tests__/lib/format-date-only.test.ts:33:38
+     31|   it("formatDate rolls neither the month nor the year", () => {
+     32|     inZone(zone);
+     33|     expect(formatDate("2027-01-01")).toBe("1 Jan 2027");
+       |                                      ^
+     34|     expect(formatDate("2026-03-01")).toBe("1 Mar 2026");
+     35|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=America/New_York > formatDateShort prints the stored calendar date
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values under TZ=Pacific/Pago_Pago > formatDateShort prints the stored calendar date
+AssertionError: expected '26 Nov' to be '27 Nov' // Object.is equality
+
+Expected: "27 Nov"
+Received: "26 Nov"
+
+ ❯ __tests__/lib/format-date-only.test.ts:39:43
+     37|   it("formatDateShort prints the stored calendar date", () => {
+     38|     inZone(zone);
+     39|     expect(formatDateShort("2026-11-27")).toBe("27 Nov");
+       |                                           ^
+     40|     expect(formatDateShort("2027-01-01")).toBe("1 Jan");
+     41|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  __tests__/lib/format-date-only.test.ts > date-only values across a US clock change (New York, 8 Mar / 1 Nov 2026) > prints the stored calendar date on both sides of each change
+AssertionError: expected '7 Mar 2026' to be '8 Mar 2026' // Object.is equality
+
+Expected: "8 Mar 2026"
+Received: "7 Mar 2026"
+
+ ❯ __tests__/lib/format-date-only.test.ts:47:38
+     45|   it("prints the stored calendar date on both sides of each change", (…
+     46|     inZone("America/New_York");
+     47|     expect(formatDate("2026-03-08")).toBe("8 Mar 2026");
+       |                                      ^
+     48|     expect(formatDate("2026-03-09")).toBe("9 Mar 2026");
+     49|     expect(formatDate("2026-11-01")).toBe("1 Nov 2026");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 15 passed (22)
+   Start at  08:11:33
+   Duration  1.13s (transform 62ms, setup 110ms, import 71ms, tests 32ms, environment 172ms)
+
+Sat Nov 28 06:11:34 UTC 2026

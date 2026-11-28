@@ -1,0 +1,1081 @@
+Sat Nov 28 06:17:47 UTC 2026
+
+> frontend@0.1.0 test /Users/rakheendama/Projects/2026/wt-fix-date-display/frontend
+> vitest run
+
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-date-display/frontend
+
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+ ❯ __tests__/timesheet-logged-task-rows.test.tsx (12 tests | 1 failed) 2063ms
+     × an entry-only row that first appears after navigation saves only the difference 157ms
+ ❯ __tests__/email/EmailSettingsPage.test.tsx (8 tests | 1 failed) 379ms
+     × renders the log as one table in an untitled section, one row per entry 66ms
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/wt-fix-date-display/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+AggregateError
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5)
+Emitted 'error' event on ClientRequest instance at:
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:3000
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 3000
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:3000
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 3000
+    }
+  ]
+}
+
+Node.js v20.11.1
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/timesheet-logged-task-rows.test.tsx > K-88 rule 3: entry-only rows save under the F-668A-R1 plan > an entry-only row that first appears after navigation saves only the difference
+Error: clear()` is only supported on editable elements.
+ ❯ Object.clear ../node_modules/.pnpm/@testing-library+user-event@14.6.1_@testing-library+dom@10.4.1/node_modules/@testing-library/user-event/dist/esm/utility/clear.js:17:15
+ ❯ ../node_modules/.pnpm/@testing-library+user-event@14.6.1_@testing-library+dom@10.4.1/node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:35
+ ❯ Object.asyncWrapper ../node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_45d0eec8526379f6699ddacab327519f/node_modules/@testing-library/react/dist/pure.js:87:28
+ ❯ wrapAsync ../node_modules/.pnpm/@testing-library+user-event@14.6.1_@testing-library+dom@10.4.1/node_modules/@testing-library/user-event/dist/esm/setup/wrapAsync.js:6:24
+ ❯ Object.method [as clear] ../node_modules/.pnpm/@testing-library+user-event@14.6.1_@testing-library+dom@10.4.1/node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:16
+ ❯ setCell __tests__/timesheet-logged-task-rows.test.tsx:161:14
+    159| ) {
+    160|   const input = cell(title, day);
+    161|   await user.clear(input);
+       |              ^
+    162|   if (value !== "") await user.type(input, value);
+    163|   await user.tab();
+ ❯ __tests__/timesheet-logged-task-rows.test.tsx:317:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  __tests__/email/EmailSettingsPage.test.tsx > DeliveryLogTable > renders the log as one table in an untitled section, one row per entry
+AssertionError: expected [ <tr …(2)>…(6)</tr>, …(8) ] to have a length of 3 but got 9
+
+- Expected
++ Received
+
+- 3
++ 9
+
+ ❯ __tests__/email/EmailSettingsPage.test.tsx:94:47
+     92|     ).toEqual(["Date", "Recipient", "Template", "Status", "Provider Me…
+     93|     // header row + two entries
+     94|     expect(within(table).getAllByRole("row")).toHaveLength(3);
+       |                                               ^
+     95|     expect(within(table).getByText("FAILED")).toBeInTheDocument();
+     96|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 556 passed (558)
+      Tests  2 failed | 5721 passed | 2 skipped (5725)
+   Start at  08:17:48
+   Duration  97.15s (transform 27.84s, setup 50.61s, import 299.37s, tests 269.91s, environment 157.49s)
+
+ ELIFECYCLE  Test failed. See above for more details.
+exit 1
+Sat Nov 28 06:19:25 UTC 2026

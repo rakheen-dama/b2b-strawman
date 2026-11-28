@@ -1,0 +1,11 @@
+Sat Nov 28 06:46:17 UTC 2026
+d35c5d8d1b40a882edf032af2978b0440559ebc8
+{
+  "allChecksPass": false,
+  "checks": 51,
+  "failed": [
+    "portal read model has the 4 new rows"
+  ]
+}
+EXIT=1
+Sat Nov 28 06:47:16 UTC 2026

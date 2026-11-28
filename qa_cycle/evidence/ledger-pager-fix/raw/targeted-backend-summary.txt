@@ -1,0 +1,4 @@
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.099 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingRulesTest
+[WARNING] Tests run: 1548, Failures: 0, Errors: 0, Skipped: 29
+[INFO] BUILD SUCCESS
+[INFO] Total time:  03:45 min

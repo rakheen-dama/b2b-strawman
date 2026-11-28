@@ -1,7 +1,7 @@
 {
-  "commit": "e3273bcdb",
-  "command": "bash backend/scripts/verify.sh (wt-fix-stale-vat, fix/stale-vat-after-clearing-rate)",
+  "commit": "1bac55d63",
+  "command": "bash backend/scripts/verify.sh (wt-fix-ledger-pager, fix/client-ledgers-server-paging)",
   "exit": 0,
-  "ts": "2026-11-27T21:04:45Z",
-  "summary": "Stale VAT after last taxed line cleared @e3273bcdb — 8223 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 28:19)"
+  "ts": "2026-11-28T02:28:30Z",
+  "summary": "F-667A-10 client-ledgers server paging @1bac55d63 (last backend commit; b0af4d5e5 head adds a frontend test + evidence only) — 8228 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 29:36)"
 }

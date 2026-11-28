@@ -3,6 +3,10 @@ package io.b2mash.b2b.b2bstrawman.tax;
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomerWithPrerequisiteFields;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
@@ -26,6 +30,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -42,8 +47,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
@@ -173,6 +180,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
+                          null,
                           null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
@@ -210,6 +218,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("200.00"),
                           0,
                           customRate.getId(),
+                          null,
                           null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
@@ -238,6 +247,7 @@ class InvoiceTaxIntegrationTest {
                           BigDecimal.ONE,
                           new BigDecimal("100.00"),
                           0,
+                          null,
                           null,
                           null);
 
@@ -282,7 +292,14 @@ class InvoiceTaxIntegrationTest {
         () -> {
           var request =
               new AddLineItemRequest(
-                  projectId, "Test", BigDecimal.ONE, new BigDecimal("100.00"), 0, rateId[0], null);
+                  projectId,
+                  "Test",
+                  BigDecimal.ONE,
+                  new BigDecimal("100.00"),
+                  0,
+                  rateId[0],
+                  null,
+                  null);
 
           assertThatThrownBy(() -> invoiceService.addLineItem(invoiceId[0], request))
               .isInstanceOf(ResourceNotFoundException.class);
@@ -311,6 +328,7 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("100.00"),
                               0,
+                              null,
                               null,
                               null));
 
@@ -357,6 +375,7 @@ class InvoiceTaxIntegrationTest {
                               new BigDecimal("100.00"),
                               0,
                               null,
+                              null,
                               null));
 
                   var lineId = addResponse.lines().getFirst().id();
@@ -396,6 +415,7 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("200.00"),
                               0,
+                              null,
                               null,
                               null));
 
@@ -520,6 +540,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
+                          null,
                           null));
                   invoiceId[0] = invoice.getId();
                 }));
@@ -553,6 +574,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
+                          null,
                           null));
 
                   var response =
@@ -585,6 +607,7 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("100.00"),
                               0,
+                              null,
                               null,
                               null));
 
@@ -639,6 +662,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
+                          null,
                           null));
                   var response =
                       invoiceService.addLineItem(
@@ -649,6 +673,7 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("200.00"),
                               1,
+                              null,
                               null,
                               null));
 
@@ -742,6 +767,7 @@ class InvoiceTaxIntegrationTest {
                           BigDecimal.ONE,
                           new BigDecimal("100.00"),
                           0,
+                          null,
                           null,
                           null));
                   invoiceService.updateDraft(
@@ -844,6 +870,7 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("50.00"),
                           0,
                           null,
+                          null,
                           null));
                   // Then a R 100,00 line at VAT 15% → VAT R 15,00.
                   var rate =
@@ -859,6 +886,7 @@ class InvoiceTaxIntegrationTest {
                               new BigDecimal("100.00"),
                               1,
                               rate.getId(),
+                              null,
                               null));
                   ids[0] = invoice.getId();
                   ids[1] =
@@ -927,6 +955,7 @@ class InvoiceTaxIntegrationTest {
                               new BigDecimal("100.00"),
                               0,
                               null,
+                              null,
                               null));
                   invoiceService.updateDraft(
                       invoice.getId(),
@@ -950,6 +979,7 @@ class InvoiceTaxIntegrationTest {
                       BigDecimal.ONE,
                       new BigDecimal("40.00"),
                       1,
+                      null,
                       null,
                       null));
           secondLineId[0] =
@@ -999,6 +1029,7 @@ class InvoiceTaxIntegrationTest {
                     new BigDecimal("200.00"),
                     1,
                     null,
+                    null,
                     null)));
     assertStoredTotals(invoiceId, "300.00", "45.00", "345.00");
 
@@ -1013,7 +1044,155 @@ class InvoiceTaxIntegrationTest {
     assertStoredTotals(invoiceId, "300.00", "30.00", "330.00");
   }
 
+  // --- "None" tax choice from the fee-note line form (wire contract the frontend sends) ---
+
+  @Test
+  void addLine_withNoTaxRate_isUntaxed_evenWhenTheOrgHasADefaultRate() throws Exception {
+    var invoiceId = draftWithDefaultVatRate();
+
+    postLine(
+            invoiceId,
+            """
+            {"matterId": "%s", "description": "Untaxed service", "quantity": 1,
+             "unitPrice": 100.00, "sortOrder": 0, "taxRateId": null, "noTaxRate": true}
+            """
+                .formatted(projectId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.lines[0].taxRateId").doesNotExist())
+        .andExpect(jsonPath("$.lines[0].taxAmount").doesNotExist())
+        .andExpect(jsonPath("$.hasPerLineTax").value(false));
+
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+  }
+
+  @Test
+  void addLine_withNoTaxRate_besideATaxedLine_keepsOnlyThatLinesVat() throws Exception {
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+
+    postLine(
+            invoiceId,
+            """
+            {"matterId": "%s", "description": "Untaxed service", "quantity": 1,
+             "unitPrice": 50.00, "sortOrder": 1, "taxRateId": null, "noTaxRate": true}
+            """
+                .formatted(projectId))
+        .andExpect(status().isCreated());
+
+    // 100 at 15% (R 15) + 50 untaxed — not 150 at 15%.
+    assertStoredTotals(invoiceId, "150.00", "15.00", "165.00");
+  }
+
+  @Test
+  void addLine_omittingNoTaxRate_stillGetsTheOrgDefaultRate() throws Exception {
+    var invoiceId = draftWithDefaultVatRate();
+
+    postLine(
+            invoiceId,
+            """
+            {"matterId": "%s", "description": "Default-taxed service", "quantity": 1,
+             "unitPrice": 100.00, "sortOrder": 0}
+            """
+                .formatted(projectId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.lines[0].taxRateName").value("Standard (15%)"));
+
+    assertStoredTotals(invoiceId, "100.00", "15.00", "115.00");
+  }
+
+  @Test
+  void addLine_withAnExplicitRate_usesThatRate_evenIfNoTaxRateIsAlsoSent() throws Exception {
+    var invoiceId = draftWithDefaultVatRate();
+    var zeroRatedId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    zeroRatedId[0] =
+                        taxRateRepository
+                            .save(new TaxRate("Zero-rated", BigDecimal.ZERO, false, false, 1))
+                            .getId()));
+
+    postLine(
+            invoiceId,
+            """
+            {"matterId": "%s", "description": "Zero-rated service", "quantity": 1,
+             "unitPrice": 100.00, "sortOrder": 0, "taxRateId": "%s", "noTaxRate": true}
+            """
+                .formatted(projectId, zeroRatedId[0]))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.lines[0].taxRateId").value(zeroRatedId[0].toString()))
+        .andExpect(jsonPath("$.hasPerLineTax").value(true));
+
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+  }
+
+  @Test
+  void editLine_toNone_withClearTaxRate_dropsTheLastTaxedLinesVat() throws Exception {
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+    var lineId = onlyLineId(invoiceId);
+
+    mockMvc
+        .perform(
+            put("/api/invoices/" + invoiceId + "/lines/" + lineId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_tax_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"description": "Taxed service", "quantity": 1, "unitPrice": 100.00,
+                     "taxRateId": null, "clearTaxRate": true}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lines[0].taxRateId").doesNotExist())
+        .andExpect(jsonPath("$.hasPerLineTax").value(false))
+        .andExpect(jsonPath("$.taxAmount").value(0));
+
+    assertStoredTotals(invoiceId, "100.00", "0.00", "100.00");
+  }
+
+  @Test
+  void editLine_omittingClearTaxRate_keepsAndRepricesTheLinesRate() throws Exception {
+    var invoiceId = draftWithTaxedLine(new BigDecimal("100.00"));
+    var lineId = onlyLineId(invoiceId);
+
+    mockMvc
+        .perform(
+            put("/api/invoices/" + invoiceId + "/lines/" + lineId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_tax_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"description": "Taxed service", "quantity": 2, "unitPrice": 100.00,
+                     "taxRateId": null}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lines[0].taxRateName").value("Standard (15%)"));
+
+    assertStoredTotals(invoiceId, "200.00", "30.00", "230.00");
+  }
+
   // --- Helpers ---
+
+  private ResultActions postLine(UUID invoiceId, String json) throws Exception {
+    return mockMvc.perform(
+        post("/api/invoices/" + invoiceId + "/lines")
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_tax_owner"))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+  }
+
+  /** An empty draft in an org whose default rate is VAT 15%; returns its id. */
+  private UUID draftWithDefaultVatRate() {
+    var invoiceId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  taxRateRepository.save(
+                      new TaxRate("Standard (15%)", new BigDecimal("15.00"), true, false, 0));
+                  invoiceId[0] = createDraftInvoice().getId();
+                }));
+    return invoiceId[0];
+  }
 
   private UUID onlyLineId(UUID invoiceId) {
     var lineId = new UUID[1];
@@ -1041,7 +1220,7 @@ class InvoiceTaxIntegrationTest {
                   invoiceService.addLineItem(
                       invoice.getId(),
                       new AddLineItemRequest(
-                          projectId, "Taxed service", BigDecimal.ONE, amount, 0, null, null));
+                          projectId, "Taxed service", BigDecimal.ONE, amount, 0, null, null, null));
                   invoiceId[0] = invoice.getId();
                 }));
     return invoiceId[0];

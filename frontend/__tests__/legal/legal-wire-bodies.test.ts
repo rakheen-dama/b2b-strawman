@@ -260,16 +260,18 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     expect(url).not.toContain("DISBURSEMENT_PAYMENT");
   });
 
-  it("fetchClientLedgers search filters on clientName", async () => {
+  // F-667A-10: the server filters on the client name (ClientLedgerListPagingIntegrationTest); the
+  // action sends `search` and keeps the server's rows (read by `clientName`) and totals
+  it("fetchClientLedgers sends search to the server and keeps its clientName rows", async () => {
     mockGet.mockResolvedValue({
-      content: [
-        { id: "l1", clientId: C, clientName: "Acme Corp", balance: 10 },
-        { id: "l2", clientId: C2, clientName: "Beta Inc", balance: 20 },
-      ],
-      page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
+      content: [{ id: "l1", clientId: C, clientName: "Acme Corp", balance: 10 }],
+      page: { totalElements: 1, totalPages: 1, size: 20, number: 0 },
     });
     const page = await fetchClientLedgers("ta-1", { search: "acme" });
-    expect(page.content.map((l) => l.id)).toEqual(["l1"]);
+    const url = mockGet.mock.calls.at(-1)?.[0] as string;
+    expect(new URLSearchParams(url.split("?")[1]).get("search")).toBe("acme");
+    expect(page.content.map((l) => [l.id, l.clientName])).toEqual([["l1", "Acme Corp"]]);
+    expect(page.totalElements).toBe(1);
   });
 
   // ---- loud (400/404) ----

@@ -1,0 +1,156 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/frontend
+
+ ❯ __tests__/trust-client-ledgers.test.tsx (17 tests | 1 failed | 16 skipped) 55ms
+     × list: the count and the pager come from the server's totals 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust-client-ledgers.test.tsx > Client Ledgers — PageHeader + server-paged DataTable (667A) > list: the count and the pager come from the server's totals
+TestingLibraryElementError: Unable to find an element with the text: 25 clients found. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+      [33mdata-testid[39m=[32m"client-ledgers-page"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col gap-4"[39m
+        [33mdata-slot[39m=[32m"page-header"[39m
+        [33mdata-testid[39m=[32m"page-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 space-y-1"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"font-display text-foreground text-2xl font-semibold tracking-tight"[39m
+              [33mdata-slot[39m=[32m"page-header-title"[39m
+            [36m>[39m
+              [0mClient Ledgers[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-muted-foreground text-sm"[39m
+              [33mdata-slot[39m=[32m"page-header-description"[39m
+            [36m>[39m
+              [0mTrust account balances by client[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-800/80"[39m
+        [33mdata-slot[39m=[32m"card"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6"[39m
+          [33mdata-slot[39m=[32m"card-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"leading-none font-semibold"[39m
+            [33mdata-slot[39m=[32m"card-title"[39m
+          [36m>[39m
+            [0mClient Balances[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-muted-foreground text-sm"[39m
+            [33mdata-slot[39m=[32m"card-description"[39m
+          [36m>[39m
+            [0m5[0m
+            [0m client[0m
+            [0ms[0m
+            [0m found[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"px-6"[39m
+          [33mdata-slot[39m=[32m"card-content"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-3"[39m
+            [33mdata-slot[39m=[32m"data-table"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"space-y-3"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex flex-wrap items-center gap-4"[39m
+                  [33mdata-testid[39m=[32m"ledger-filters"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"rounded-full px-3 py-1 text-sm transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"[39m
+                    [33mdata-testid[39m=[32m"non-zero-filter"[39m
+                    [33mhref[39m=[32m"/org/acme/trust-accounting/client-ledgers?nonZeroOnly=true"[39m
+                  [36m>[39m
+                    [0mNon-zero balances only[0m
+                  [36m</a>[39m
+                  [36m<form[39m
+                    [33maction[39m=[32m"/org/acme/trust-accounting/client-ledgers"[39m
+                    [33mclass[39m=[32m"flex items-center gap-2"[39m
+                    [33mmethod[39m=[32m"GET"[39m
+                  [36m>[39m
+                    [36m<input[39m
+                      [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive placeholder:text-muted-foreground h-8 w-56"[39m
+                      [33mdata-slot[39m=[32m"input"[39m
+                      [33mdata-testid[39m=[32m"client-search"[39m
+                      [33mname[39m=[32m"search"[39m
+                      [33mplaceholder[39m=[32m"Search clients..."[39m
+                      [33mtype[39m=[32m"text"[39m
+                      [33mvalue[39m=[32m""[39m
+                    [36m/>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border border-slate-200 bg-background hover:bg-slate-100 hover:text-foreground dark:border-slate-800 dark:hover:bg-slate-800 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5"[39m
+                      [33mdata-size[39m=[32m"sm"[39m
+                      [33mdata-slot[39m=[32m"button"[39m
+                      [33mdata-variant[39m=[32m"outline"[39m
+                      [33mtype[39m=[32m"submit"[39m
+                    [36m>[39m
+                      [0mSearch[0m
+                    [36m</button>[39m
+                  [36m</form>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"@container"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative w-full overflow-x-auto"[39m
+                [33mdata-slot[39m=[32m"table-container"[39m
+              [36m>[39m
+                [36m<table[39m
+                  [33mclass[39m=[32m"w-full caption-bottom text-sm tabular-nums"[39m
+                  [33mdata-slot[39m=[32m"table"[39m
+                  [33mdata-testid[39m=[32m"client-ledgers-table"[39m
+                [36m>[39m
+                  [36m<caption[39m
+                    [33mclass[39m=[32m"text-muted-foreground mt-4 text-sm sr-only"[39m
+                    [33mdata-slot[39m=[32m"table-caption"[39m
+  ...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/trust-client-ledgers.test.tsx:553:19
+    551|     await renderListPage({ page: "1" });
+    552|
+    553|     expect(screen.getByText("25 clients found")).toBeInTheDocument();
+       |                   ^
+    554|     expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
+    555|     expect(wrapperProps.ledgers[0]).toEqual(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  03:51:50
+   Duration  850ms (transform 242ms, setup 60ms, import 510ms, tests 55ms, environment 131ms)
+

@@ -186,9 +186,9 @@ export function InvoiceDetailClient({
               invoiceId={h.invoice.id}
               slug={slug}
               customerId={h.invoice.clientId}
-              onSuccess={async () => {
+              onSuccess={() => {
                 setShowTariffDialog(false);
-                await h.handleRefresh();
+                h.handleRefresh();
               }}
             />
           </ModuleGate>
@@ -209,9 +209,9 @@ export function InvoiceDetailClient({
               slug={slug}
               customerId={h.invoice.clientId}
               projectId={invoiceProjectId}
-              onSuccess={async () => {
+              onSuccess={() => {
                 setShowDisbursementsDialog(false);
-                await h.handleRefresh();
+                h.handleRefresh();
               }}
             />
           </ModuleGate>

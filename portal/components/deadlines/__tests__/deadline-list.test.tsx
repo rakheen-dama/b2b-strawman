@@ -7,6 +7,7 @@ import type {
   PortalDeadlineStatus,
   PortalDeadlineType,
 } from "@/lib/api/deadlines";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 function deadline(
   overrides: Partial<PortalDeadline> & { id: string },
@@ -176,5 +177,82 @@ describe("DeadlineList", () => {
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ id: "click-me", label: "Click target" }),
     );
+  });
+});
+
+describe("DeadlineList urgency on the South African calendar", () => {
+  // Today in South Africa is Fri 27 Nov 2026 at each of these instants.
+  const instants = [
+    ["01:00 SAST", "2026-11-26T23:00:00Z"],
+    ["11:40 SAST", "2026-11-27T09:40:00Z"],
+    ["23:30 SAST", "2026-11-27T21:30:00Z"],
+  ] as const;
+  // A client's browser may run in any zone. The count must not depend on it.
+  const zones = ["UTC", "Africa/Johannesburg", "America/New_York"];
+  // Days from SA today → tone: overdue (< 0) red-solid, 0–7 red, 8–14 amber, else grey. The
+  // threshold days are where an off-by-one count changes the colour. Statuses are what the
+  // backend sends (PortalDeadlineStatus.derive: past OVERDUE, 0–7 DUE_SOON, else UPCOMING).
+  const dates = [
+    ["yesterday", "2026-11-26", "OVERDUE", "red-solid"],
+    ["today", "2026-11-27", "DUE_SOON", "red"],
+    ["tomorrow", "2026-11-28", "DUE_SOON", "red"],
+    ["plus7", "2026-12-04", "DUE_SOON", "red"],
+    ["plus8", "2026-12-05", "UPCOMING", "amber"],
+    ["plus14", "2026-12-11", "UPCOMING", "amber"],
+    ["plus15", "2026-12-12", "UPCOMING", "grey"],
+  ] as const;
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  function tones(
+    items: ReadonlyArray<readonly [string, string, string, string]>,
+  ) {
+    render(
+      <Harness
+        deadlines={items.map(([id, dueDate, status]) =>
+          deadline({ id, dueDate, status: status as PortalDeadlineStatus }),
+        )}
+      />,
+    );
+    return items.map(([id, dueDate]) => [
+      dueDate,
+      screen
+        .getByTestId(`deadline-row-FILING_SCHEDULE-${id}`)
+        .getAttribute("data-tone"),
+    ]);
+  }
+
+  describe.each(zones)("runtime zone %s", (zone) => {
+    it.each(instants)(
+      "at %s, yesterday is overdue, today and tomorrow are red, and the 7/14-day thresholds hold",
+      (_label, instant) => {
+        inZone(zone);
+        vi.useFakeTimers({ toFake: ["Date"] });
+        vi.setSystemTime(new Date(instant));
+        expect(tones(dates)).toEqual(
+          dates.map(([, dueDate, , tone]) => [dueDate, tone]),
+        );
+      },
+    );
+  });
+
+  it("counts calendar days across a US clock change (New York, 14 Mar 2027)", () => {
+    inZone("America/New_York");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    // 11:40 SAST on Fri 5 Mar 2027; New York springs forward on Sun 14 Mar, so +15 days of
+    // local midnights is one hour short of 15 × 24 h (+8 is before the change, a control).
+    vi.setSystemTime(new Date("2027-03-05T09:40:00Z"));
+    const acrossDst = [
+      ["plus8", "2027-03-13", "UPCOMING", "amber"],
+      ["plus15", "2027-03-20", "UPCOMING", "grey"],
+    ] as const;
+    expect(tones(acrossDst)).toEqual([
+      ["2027-03-13", "amber"],
+      ["2027-03-20", "grey"],
+    ]);
   });
 });

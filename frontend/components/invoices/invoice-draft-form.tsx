@@ -76,6 +76,9 @@ export function InvoiceDraftForm({
               type="number"
               value={taxAmount}
               onChange={(e) => onTaxAmountChange(e.target.value)}
+              // A pending line save or refresh resets this field from the server's tax; locking it
+              // stops that reset landing on a value typed meanwhile (Save Changes is locked too).
+              disabled={isPending}
               min="0"
               step="0.01"
               className={inputClass}

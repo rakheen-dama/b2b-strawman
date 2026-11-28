@@ -1,0 +1,902 @@
+{
+  "at": "2026-11-28T01:41:40.372Z",
+  "source": {
+    "generatedFrom": {
+      "id": "78a35183-ec8e-4d75-847a-9fcdefba4fed",
+      "name": "Apex Holdings mwzqp1dmeca5",
+      "unbilledZarEntries": 1
+    }
+  },
+  "invoiceId": "d86ea834-f0f0-4186-86fb-fe7f63df251e",
+  "taxRate": {
+    "id": "515e6cad-2ab1-4a48-a188-dae75985e8bb",
+    "name": "VAT — Standard",
+    "rate": 15,
+    "wasDefault": true
+  },
+  "steps": [
+    {
+      "name": "0-draft-from-time-default-vat",
+      "reloaded": true,
+      "at": "2026-11-28T01:41:44.279Z",
+      "dom": {
+        "Subtotal": "R 1 250,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 437,50",
+        "parsed": {
+          "subtotal": 1250,
+          "tax": 187.5,
+          "total": 1437.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineSum": 1250,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "1-none-line-added (no reload)",
+      "reloaded": false,
+      "at": "2026-11-28T01:41:46.000Z",
+      "dom": {
+        "Subtotal": "R 1 350,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 537,50",
+        "parsed": {
+          "subtotal": 1350,
+          "tax": 187.5,
+          "total": 1537.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1350,
+        "taxAmount": 187.5,
+        "total": 1537.5,
+        "lineSum": 1350,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "1-none-line-added (reloaded)",
+      "reloaded": true,
+      "at": "2026-11-28T01:41:47.321Z",
+      "dom": {
+        "Subtotal": "R 1 350,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 537,50",
+        "parsed": {
+          "subtotal": 1350,
+          "tax": 187.5,
+          "total": 1537.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1350,
+        "taxAmount": 187.5,
+        "total": 1537.5,
+        "lineSum": 1350,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "2a-vat-line-added",
+      "reloaded": true,
+      "at": "2026-11-28T01:41:50.243Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "VAT — Standard (15%)": "R 217,50",
+        "Total": "R 1 767,50",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 217.5,
+          "total": 1767.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 217.5,
+        "total": 1767.5,
+        "lineSum": 1550,
+        "lineTaxSum": 217.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 30
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 217.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "2b-vat-line-edited-to-none (no reload)",
+      "reloaded": false,
+      "at": "2026-11-28T01:41:51.910Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 737,50",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 187.5,
+          "total": 1737.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 187.5,
+        "total": 1737.5,
+        "lineSum": 1550,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "2b-vat-line-edited-to-none (reloaded)",
+      "reloaded": true,
+      "at": "2026-11-28T01:41:53.208Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "VAT — Standard (15%)": "R 187,50",
+        "Total": "R 1 737,50",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 187.5,
+          "total": 1737.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 187.5,
+        "total": 1737.5,
+        "lineSum": 1550,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "2c-all-lines-none (no reload)",
+      "reloaded": false,
+      "at": "2026-11-28T01:41:54.908Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "Tax": "R 0,00",
+        "Total": "R 1 550,00",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 0,
+          "total": 1550,
+          "taxRows": [
+            "Tax"
+          ]
+        },
+        "headerTaxField": "0"
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": false,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 0,
+        "total": 1550,
+        "lineSum": 1550,
+        "lineTaxSum": 0,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": []
+      }
+    },
+    {
+      "name": "2c-save-changes-without-reload (then reloaded)",
+      "reloaded": true,
+      "at": "2026-11-28T01:41:58.313Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "Tax": "R 0,00",
+        "Total": "R 1 550,00",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 0,
+          "total": 1550,
+          "taxRows": [
+            "Tax"
+          ]
+        },
+        "headerTaxField": "0"
+      },
+      "api": {
+        "status": "DRAFT",
+        "hasPerLineTax": false,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 0,
+        "total": 1550,
+        "lineSum": 1550,
+        "lineTaxSum": 0,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": []
+      }
+    },
+    {
+      "name": "3-approved",
+      "reloaded": true,
+      "at": "2026-11-28T01:42:00.251Z",
+      "dom": {
+        "Subtotal": "R 1 550,00",
+        "Tax": "R 0,00",
+        "Total": "R 1 550,00",
+        "parsed": {
+          "subtotal": 1550,
+          "tax": 0,
+          "total": 1550,
+          "taxRows": [
+            "Tax"
+          ]
+        },
+        "headerTaxField": null
+      },
+      "api": {
+        "status": "APPROVED",
+        "hasPerLineTax": false,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 0,
+        "total": 1550,
+        "lineSum": 1550,
+        "lineTaxSum": 0,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": []
+      }
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "pre: VAT is the default tax rate",
+      "ok": true,
+      "detail": {
+        "id": "515e6cad-2ab1-4a48-a188-dae75985e8bb",
+        "name": "VAT — Standard",
+        "rate": 15,
+        "isDefault": true,
+        "isExempt": false,
+        "active": true,
+        "sortOrder": 0,
+        "createdAt": "2026-11-28T01:36:12.988177Z",
+        "updatedAt": "2026-11-28T01:36:14.615639Z"
+      }
+    },
+    {
+      "name": "pre: draft totals consistent (total == subtotal + VAT)",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1250,
+        "taxAmount": 187.5,
+        "total": 1437.5,
+        "lineSum": 1250,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "step 1: the None line carries no tax rate and no tax",
+      "ok": true,
+      "detail": {
+        "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+        "description": "OBS None line",
+        "amount": 100,
+        "taxRateName": null,
+        "taxAmount": null
+      }
+    },
+    {
+      "name": "step 1: VAT unchanged by the None line",
+      "ok": true,
+      "detail": {
+        "before": 187.5,
+        "after": 187.5
+      }
+    },
+    {
+      "name": "step 1: subtotal +100, total == subtotal + VAT",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1350,
+        "taxAmount": 187.5,
+        "total": 1537.5,
+        "lineSum": 1350,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "step 1: DOM totals == API (no reload)",
+      "ok": true,
+      "detail": {
+        "subtotal": 1350,
+        "tax": 187.5,
+        "total": 1537.5,
+        "taxRows": [
+          "VAT — Standard (15%)"
+        ]
+      }
+    },
+    {
+      "name": "step 1: DOM totals == API (reloaded)",
+      "ok": true,
+      "detail": {
+        "subtotal": 1350,
+        "tax": 187.5,
+        "total": 1537.5,
+        "taxRows": [
+          "VAT — Standard (15%)"
+        ]
+      }
+    },
+    {
+      "name": "step 2a: VAT +15% of the VAT line",
+      "ok": true,
+      "detail": {
+        "vat": 30,
+        "api": 217.5
+      }
+    },
+    {
+      "name": "step 2b: no reload — DOM VAT and Total dropped back",
+      "ok": true,
+      "detail": {
+        "subtotal": 1550,
+        "tax": 187.5,
+        "total": 1737.5,
+        "taxRows": [
+          "VAT — Standard (15%)"
+        ]
+      }
+    },
+    {
+      "name": "step 2b: no reload — DOM == API",
+      "ok": true,
+      "detail": {
+        "dom": {
+          "subtotal": 1550,
+          "tax": 187.5,
+          "total": 1737.5,
+          "taxRows": [
+            "VAT — Standard (15%)"
+          ]
+        },
+        "api": {
+          "status": "DRAFT",
+          "hasPerLineTax": true,
+          "taxInclusive": false,
+          "subtotal": 1550,
+          "taxAmount": 187.5,
+          "total": 1737.5,
+          "lineSum": 1550,
+          "lineTaxSum": 187.5,
+          "lines": [
+            {
+              "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+              "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+              "amount": 1250,
+              "taxRateName": "VAT — Standard",
+              "taxAmount": 187.5
+            },
+            {
+              "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+              "description": "OBS None line",
+              "amount": 100,
+              "taxRateName": null,
+              "taxAmount": null
+            },
+            {
+              "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+              "description": "OBS VAT line",
+              "amount": 200,
+              "taxRateName": null,
+              "taxAmount": null
+            }
+          ],
+          "taxBreakdown": [
+            {
+              "rate": "VAT — Standard (15%)",
+              "taxAmount": 187.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "step 2b: the edited line has no rate and no tax",
+      "ok": true,
+      "detail": {
+        "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+        "description": "OBS VAT line",
+        "amount": 200,
+        "taxRateName": null,
+        "taxAmount": null
+      }
+    },
+    {
+      "name": "step 2b: reloaded — VAT back to before the VAT line, totals match",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "hasPerLineTax": true,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 187.5,
+        "total": 1737.5,
+        "lineSum": 1550,
+        "lineTaxSum": 187.5,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": "VAT — Standard",
+            "taxAmount": 187.5
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "rate": "VAT — Standard (15%)",
+            "taxAmount": 187.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "step 2c: no reload — per-line tax off, VAT 0, Total == Subtotal",
+      "ok": true,
+      "detail": {
+        "dom": {
+          "subtotal": 1550,
+          "tax": 0,
+          "total": 1550,
+          "taxRows": [
+            "Tax"
+          ]
+        },
+        "api": {
+          "status": "DRAFT",
+          "hasPerLineTax": false,
+          "taxInclusive": false,
+          "subtotal": 1550,
+          "taxAmount": 0,
+          "total": 1550,
+          "lineSum": 1550,
+          "lineTaxSum": 0,
+          "lines": [
+            {
+              "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+              "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+              "amount": 1250,
+              "taxRateName": null,
+              "taxAmount": null
+            },
+            {
+              "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+              "description": "OBS None line",
+              "amount": 100,
+              "taxRateName": null,
+              "taxAmount": null
+            },
+            {
+              "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+              "description": "OBS VAT line",
+              "amount": 200,
+              "taxRateName": null,
+              "taxAmount": null
+            }
+          ],
+          "taxBreakdown": []
+        }
+      }
+    },
+    {
+      "name": "step 2c: no reload — header Tax Amount field shows 0 (not stale)",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "step 2c: Save Changes without a reload keeps VAT 0",
+      "ok": true,
+      "detail": {
+        "status": "DRAFT",
+        "hasPerLineTax": false,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 0,
+        "total": 1550,
+        "lineSum": 1550,
+        "lineTaxSum": 0,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": []
+      }
+    },
+    {
+      "name": "step 3: approved",
+      "ok": true,
+      "detail": "APPROVED"
+    },
+    {
+      "name": "step 3: approved totals — VAT 0, Total == Subtotal, == pre-approval",
+      "ok": true,
+      "detail": {
+        "status": "APPROVED",
+        "hasPerLineTax": false,
+        "taxInclusive": false,
+        "subtotal": 1550,
+        "taxAmount": 0,
+        "total": 1550,
+        "lineSum": 1550,
+        "lineTaxSum": 0,
+        "lines": [
+          {
+            "id": "ffa1e362-e393-43e5-a52c-abfe2fd84e49",
+            "description": "2026-11-28 · Alice Owner · Scoping call — shareholder agreement (fixed-fee engag",
+            "amount": 1250,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "62c2de36-a9b2-4c80-b801-ed24b346dbf1",
+            "description": "OBS None line",
+            "amount": 100,
+            "taxRateName": null,
+            "taxAmount": null
+          },
+          {
+            "id": "cabfdae3-c870-411a-b785-0e291e28efe4",
+            "description": "OBS VAT line",
+            "amount": 200,
+            "taxRateName": null,
+            "taxAmount": null
+          }
+        ],
+        "taxBreakdown": []
+      }
+    },
+    {
+      "name": "step 3: DOM totals == API",
+      "ok": true,
+      "detail": {
+        "subtotal": 1550,
+        "tax": 0,
+        "total": 1550,
+        "taxRows": [
+          "Tax"
+        ]
+      }
+    }
+  ],
+  "notes": [
+    "add \"OBS None line\": tax select pre-selected \"VAT — Standard (15%)\"",
+    "add \"OBS VAT line\": tax select pre-selected \"VAT — Standard (15%)\""
+  ],
+  "allChecksPass": true
+}

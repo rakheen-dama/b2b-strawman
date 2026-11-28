@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/frontend
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  03:51:51
+   Duration  915ms (transform 351ms, setup 187ms, import 819ms, tests 299ms, environment 455ms)
+

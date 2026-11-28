@@ -1,0 +1,28 @@
+== backend, on main code (4fa13dca3) + new tests ==
+[ERROR] Tests run: 28, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 944.8 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.tax.InvoiceTaxIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.tax.InvoiceTaxIntegrationTest.addLine_withNoTaxRate_besideATaxedLine_keepsOnlyThatLinesVat -- Time elapsed: 0.105 s <<< FAILURE!
+expected: 15.00
+ but was: 22.50
+[ERROR] io.b2mash.b2b.b2bstrawman.tax.InvoiceTaxIntegrationTest.addLine_withNoTaxRate_isUntaxed_evenWhenTheOrgHasADefaultRate -- Time elapsed: 0.057 s <<< FAILURE!
+java.lang.AssertionError: Expected no value at JSON path "$.lines[0].taxRateId" but found: '22ef1efb-bfd6-4d03-8bda-2fd193812d1f'
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:40)
+	at org.springframework.test.util.AssertionErrors.assertTrue(AssertionErrors.java:74)
+expected: 15.00
+ but was: 22.50
+[INFO] BUILD FAILURE
+
+== frontend vitest, on main code + new test ==
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/components/invoices/use-invoice-detail-none-tax.test.ts > useInvoiceDetail — the 'None' tax choice on a fee-note line > adding a line > sends the explicit no-tax signal when 'None' is chosen while a default VAT rate exists
+AssertionError: expected { description: 'Drafting', …(3) } to match object { taxRateId: null, noTaxRate: true }
+- Expected
++ Received
+-   "noTaxRate": true,
+    163|       expect(request).toMatchObject({ taxRateId: null, noTaxRate: true…
+ FAIL  __tests__/components/invoices/use-invoice-detail-none-tax.test.ts > useInvoiceDetail — the 'None' tax choice on a fee-note line > editing a line > sends clearTaxRate when a taxed line is changed to 'None'
+AssertionError: expected { description: 'Consultation', …(3) } to match object { taxRateId: null, clearTaxRate: true }
+- Expected
++ Received
+-   "clearTaxRate": true,
+    192|       expect(request).toMatchObject({ taxRateId: null, clearTaxRate: t…
+      Tests  2 failed | 4 passed (6)

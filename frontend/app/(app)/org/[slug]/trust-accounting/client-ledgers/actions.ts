@@ -43,7 +43,11 @@ export async function fetchClientLedgers(
     search?: string;
   } = {}
 ): Promise<ClientLedgerPage> {
+  // F-667A-10: the filters run on the server across every ledger, so the page and its totals
+  // describe the filtered set.
   const queryParams = new URLSearchParams();
+  if (params.nonZeroOnly) queryParams.set("nonZeroOnly", "true");
+  if (params.search) queryParams.set("search", params.search);
   queryParams.set("page", String(params.page ?? 0));
   queryParams.set("size", String(params.size ?? 20));
   queryParams.set("sort", "balance,desc");
@@ -53,28 +57,11 @@ export async function fetchClientLedgers(
     `/api/trust-accounts/${accountId}/client-ledgers?${qs}`
   );
 
-  let content = result.content;
-
-  // Client-side filtering for non-zero balance and search
-  if (params.nonZeroOnly) {
-    content = content.filter((c) => c.balance !== 0);
-  }
-  if (params.search) {
-    const term = params.search.toLowerCase();
-    content = content.filter((c) => c.clientName.toLowerCase().includes(term));
-  }
-
-  // Recalculate pagination metadata after client-side filtering.
-  // NOTE: This is only accurate when all matching data fits on one page.
-  // For true multi-page filtered results, backend filtering would be needed.
-  const filteredTotal = content.length;
-  const pageSize = result.page.size;
-
   return {
-    content,
-    totalElements: filteredTotal,
-    totalPages: filteredTotal > 0 ? Math.ceil(filteredTotal / pageSize) : 0,
-    pageSize,
+    content: result.content,
+    totalElements: result.page.totalElements,
+    totalPages: result.page.totalPages,
+    pageSize: result.page.size,
     pageNumber: result.page.number,
   };
 }

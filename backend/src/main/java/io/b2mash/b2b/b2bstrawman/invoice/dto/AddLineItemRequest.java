@@ -6,6 +6,11 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * A line added to a draft fee note. Tax: {@code taxRateId} applies that rate; otherwise {@code
+ * noTaxRate = true} leaves the line untaxed (the line form's "None"); otherwise the org default
+ * rate applies, so clients that send neither keep the default-rate behaviour.
+ */
 public record AddLineItemRequest(
     UUID matterId,
     String description,
@@ -13,4 +18,5 @@ public record AddLineItemRequest(
     @PositiveOrZero BigDecimal unitPrice,
     @PositiveOrZero Integer sortOrder,
     UUID taxRateId,
-    UUID tariffItemId) {}
+    UUID tariffItemId,
+    Boolean noTaxRate) {}

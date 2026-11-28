@@ -101,6 +101,18 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   // ADR-347: a payment can be posted while a balance is due (SENT or PARTIALLY_PAID).
   const canRecordPayment = isSent || isPartiallyPaid;
 
+  // The one way a fee note from the server reaches the page (add, edit and delete line, refresh,
+  // Save Changes, status actions): lines, totals and the header Tax Amount field move together.
+  // The header field is hidden while lines carry tax, so nobody can have typed into it: keep it at
+  // the server's tax, or it would show (and Save Changes would re-send) the VAT of lines that have
+  // since gone "None" or been deleted. On a header-tax note the typed value is kept. The field and
+  // Save Changes are disabled while any of these requests is pending (isPending), so no value can
+  // be typed between a request starting and its response landing here.
+  function applyServerInvoice(next: InvoiceResponse) {
+    if (invoice.hasPerLineTax) setTaxAmount(String(next.taxAmount ?? 0));
+    setInvoice(next);
+  }
+
   function handleError(result: { success: boolean; error?: string }) {
     if (!result.success) {
       setError(result.error ?? "An error occurred.");
@@ -123,7 +135,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     startTransition(async () => {
       const result = await refreshPaymentLink(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
       } else {
         handleError(result);
       }
@@ -144,7 +156,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         billingPeriodEnd: billingPeriodEnd || undefined,
       });
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
       } else {
         handleError(result);
       }
@@ -169,7 +181,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     startTransition(async () => {
       const result = await approveInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
       } else {
         handleError(result);
       }
@@ -181,7 +193,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     startTransition(async () => {
       const result = await sendInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
       } else if (result.canOverride && result.validationChecks) {
         setSendValidationChecks(result.validationChecks);
         setShowSendOverride(true);
@@ -197,7 +209,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     startTransition(async () => {
       const result = await sendInvoice(slug, invoice.id, invoice.clientId, true);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
         setSendValidationChecks([]);
       } else {
         handleError(result);
@@ -214,7 +226,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         paymentReference: data.paymentReference || undefined,
       });
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
         setShowPaymentForm(false);
       } else {
         handleError(result);
@@ -228,7 +240,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     startTransition(async () => {
       const result = await voidInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
       } else {
         handleError(result);
       }
@@ -239,13 +251,21 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     window.open(`/api/invoices/${invoice.id}/preview`, "_blank");
   }
 
-  async function handleRefresh() {
+  // Re-read the fee note after something outside this hook changed it (tariff and disbursement
+  // dialogs). Runs as a transition so it counts as pending work like a line save.
+  function handleRefresh() {
     setError(null);
+    startTransition(async () => {
+      await reloadInvoice();
+    });
+  }
+
+  async function reloadInvoice() {
     const result = await fetchInvoice(invoice.id);
     if (result.success && result.invoice) {
-      setInvoice(result.invoice);
-    } else if (result.error) {
-      setError(result.error);
+      applyServerInvoice(result.invoice);
+    } else {
+      handleError(result);
     }
   }
 
@@ -266,10 +286,13 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(newLineQty) || 1,
         unitPrice: parseFloat(newLineRate) || 0,
         taxRateId: newLineTaxRateId !== "none" ? newLineTaxRateId : null,
+        // "None" picked in the tax select means no tax, not the org default. With no rates
+        // loaded the select is hidden, nothing was chosen, and the backend default applies.
+        ...(newLineTaxRateId === "none" && taxRates.length > 0 && { noTaxRate: true }),
       };
       const result = await addLineItem(slug, invoice.id, invoice.clientId, request);
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
         setShowAddLine(false);
       } else {
         handleError(result);
@@ -294,6 +317,8 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(editLineQty) || 1,
         unitPrice: parseFloat(editLineRate) || 0,
         taxRateId: editLineTaxRateId !== "none" ? editLineTaxRateId : null,
+        // Without the flag a null rate means "keep and re-price the line's current rate".
+        ...(editLineTaxRateId === "none" && { clearTaxRate: true }),
       };
       const result = await updateLineItem(
         slug,
@@ -303,7 +328,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         request
       );
       if (result.success && result.invoice) {
-        setInvoice(result.invoice);
+        applyServerInvoice(result.invoice);
         setEditingLine(null);
       } else {
         handleError(result);
@@ -315,15 +340,10 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     setError(null);
     startTransition(async () => {
       const result = await deleteLineItem(slug, invoice.id, lineId, invoice.clientId);
+      // The delete returns no body; the server recomputes subtotal, VAT and the tax mode, so
+      // re-read the note rather than re-deriving totals here.
       if (result.success) {
-        setInvoice((prev) => ({
-          ...prev,
-          lines: prev.lines.filter((l) => l.id !== lineId),
-          subtotal: prev.lines.filter((l) => l.id !== lineId).reduce((sum, l) => sum + l.amount, 0),
-          total:
-            prev.lines.filter((l) => l.id !== lineId).reduce((sum, l) => sum + l.amount, 0) +
-            prev.taxAmount,
-        }));
+        await reloadInvoice();
       } else {
         handleError(result);
       }

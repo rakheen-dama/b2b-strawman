@@ -176,7 +176,8 @@ class InvoiceTariffIntegrationTest {
                           null, // unitPrice from tariff item
                           0,
                           null,
-                          tariffItemId);
+                          tariffItemId,
+                          null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -206,7 +207,8 @@ class InvoiceTariffIntegrationTest {
                           null, // use tariff item amount
                           0,
                           null,
-                          tariffItemId);
+                          tariffItemId,
+                          null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -233,7 +235,8 @@ class InvoiceTariffIntegrationTest {
                           new BigDecimal("750.00"), // override amount
                           0,
                           null,
-                          tariffItemId);
+                          tariffItemId,
+                          null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -282,7 +285,7 @@ class InvoiceTariffIntegrationTest {
             () -> {
               var request =
                   new AddLineItemRequest(
-                      null, null, new BigDecimal("1"), null, 0, null, UUID.randomUUID());
+                      null, null, new BigDecimal("1"), null, 0, null, UUID.randomUUID(), null);
 
               assertThatThrownBy(() -> invoiceService.addLineItem(invoiceIdHolder[0], request))
                   .isInstanceOf(ModuleNotEnabledException.class);
@@ -306,7 +309,8 @@ class InvoiceTariffIntegrationTest {
         () -> {
           var nonExistentId = UUID.randomUUID();
           var request =
-              new AddLineItemRequest(null, null, new BigDecimal("1"), null, 0, null, nonExistentId);
+              new AddLineItemRequest(
+                  null, null, new BigDecimal("1"), null, 0, null, nonExistentId, null);
 
           assertThatThrownBy(() -> invoiceService.addLineItem(invoiceIdHolder[0], request))
               .isInstanceOf(ResourceNotFoundException.class);
@@ -328,6 +332,7 @@ class InvoiceTariffIntegrationTest {
                           new BigDecimal("4"),
                           new BigDecimal("100.00"),
                           0,
+                          null,
                           null,
                           null); // no tariffItemId
 

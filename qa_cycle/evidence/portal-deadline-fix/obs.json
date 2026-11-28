@@ -1,0 +1,2345 @@
+{
+  "startedAt": "2026-11-28T05:55:11.117Z",
+  "gitHead": "c92489bd0700d875b24f433ade4927e4b3b9cf78",
+  "run": "mwzzxifh",
+  "steps": [
+    "2026-11-28T05:55:12.338Z portal sign-in via /login + Mailpit message 3GfVFVxj9H7BDHRTN68XcM → /matters",
+    "2026-11-28T05:55:15.130Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day0x\" on 2026-11-28 (+0)",
+    "2026-11-28T05:55:15.896Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day1x\" on 2026-11-29 (+1)",
+    "2026-11-28T05:55:16.687Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day7x\" on 2026-12-05 (+7)",
+    "2026-11-28T05:55:17.584Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day8x\" on 2026-12-06 (+8)",
+    "2026-11-28T05:55:18.471Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day14x\" on 2026-12-12 (+14)",
+    "2026-11-28T05:55:19.364Z firm UI: scheduled HEARING \"OBS-PDL mwzzxifh day15x\" on 2026-12-13 (+15)",
+    "2026-11-28T05:55:20.186Z firm UI: started GENERAL_3Y tracker, cause 2023-12-19 → due 2026-12-19 (+21)",
+    "2026-11-28T05:55:23.811Z firm UI: cancelled \"OBS-PDL mwzzxifh day0x\"",
+    "2026-11-28T05:55:24.612Z firm UI: cancelled \"OBS-PDL mwzzxifh day1x\"",
+    "2026-11-28T05:55:25.354Z firm UI: cancelled \"OBS-PDL mwzzxifh day7x\"",
+    "2026-11-28T05:55:26.112Z firm UI: cancelled \"OBS-PDL mwzzxifh day8x\"",
+    "2026-11-28T05:55:26.877Z firm UI: cancelled \"OBS-PDL mwzzxifh day14x\"",
+    "2026-11-28T05:55:27.623Z firm UI: cancelled \"OBS-PDL mwzzxifh day15x\"",
+    "2026-11-28T05:55:28.218Z firm UI: interrupted tracker (cause 2023-12-19)"
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "portal read model has the 7 new rows",
+      "ok": true,
+      "detail": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ]
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "johannesburg-now: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-now: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "johannesburg-0100sast: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+      }
+    },
+    {
+      "name": "johannesburg-0100sast: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-now: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "utc-now: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+      }
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-now: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-now: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "utc-0100sast: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+      }
+    },
+    {
+      "name": "utc-0100sast: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "new_york-now: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-now: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-28",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-11-28 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-28"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-11-29 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-11-29"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-12-05 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-05"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-12-06 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-06"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-12-12 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-12"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-12-13 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-13"
+    },
+    {
+      "name": "new_york-0100sast: API dueDate 2026-12-19 is date-only yyyy-MM-dd",
+      "ok": true,
+      "detail": "2026-12-19"
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day0x (2026-11-28, 0d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day0x",
+        "dueDate": "2026-11-28",
+        "apiDueDate": "2026-11-28",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 0,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day1x (2026-11-29, 1d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day1x",
+        "dueDate": "2026-11-29",
+        "apiDueDate": "2026-11-29",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 1,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "red",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day7x (2026-12-05, 7d) reads red",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day7x",
+        "dueDate": "2026-12-05",
+        "apiDueDate": "2026-12-05",
+        "status": "DUE_SOON",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 7,
+        "expectedTone": "red",
+        "observedTone": "red",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day8x (2026-12-06, 8d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day8x",
+        "dueDate": "2026-12-06",
+        "apiDueDate": "2026-12-06",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 8,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "amber",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day14x (2026-12-12, 14d) reads amber",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day14x",
+        "dueDate": "2026-12-12",
+        "apiDueDate": "2026-12-12",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 14,
+        "expectedTone": "amber",
+        "observedTone": "amber",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Hearing — OBS-PDL mwzzxifh day15x (2026-12-13, 15d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Hearing — OBS-PDL mwzzxifh day15x",
+        "dueDate": "2026-12-13",
+        "apiDueDate": "2026-12-13",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 15,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+      }
+    },
+    {
+      "name": "new_york-0100sast: Prescription deadline (2026-12-19, 21d) reads grey",
+      "ok": true,
+      "detail": {
+        "label": "Prescription deadline",
+        "dueDate": "2026-12-19",
+        "apiDueDate": "2026-12-19",
+        "status": "UPCOMING",
+        "saToday": "2026-11-28",
+        "browserLocalDate": "2026-11-27",
+        "days": 21,
+        "expectedTone": "grey",
+        "observedTone": "grey",
+        "mainWouldShow": "grey",
+        "rowText": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+      }
+    },
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [
+    {
+      "tag": "johannesburg-now",
+      "zone": "Africa/Johannesburg",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 07:55:20 GMT+0200 (South Africa Standard Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-28&to=2027-01-27",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ]
+    },
+    {
+      "tag": "johannesburg-0100sast",
+      "zone": "Africa/Johannesburg",
+      "pinned": "2026-11-28T01:00:00+02:00",
+      "browserNow": "Sat Nov 28 2026 01:00:00 GMT+0200 (South Africa Standard Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-28&to=2027-01-27",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ]
+    },
+    {
+      "tag": "utc-now",
+      "zone": "UTC",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 05:55:21 GMT+0000 (Coordinated Universal Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-28&to=2027-01-27",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ]
+    },
+    {
+      "tag": "utc-0100sast",
+      "zone": "UTC",
+      "pinned": "2026-11-28T01:00:00+02:00",
+      "browserNow": "Fri Nov 27 2026 23:00:00 GMT+0000 (Coordinated Universal Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-27&to=2027-01-26",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 29 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 6 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 13 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 19 Dec 2026"
+        }
+      ]
+    },
+    {
+      "tag": "new_york-now",
+      "zone": "America/New_York",
+      "pinned": null,
+      "browserNow": "Sat Nov 28 2026 00:55:21 GMT-0500 (Eastern Standard Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-28&to=2027-01-27",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-28",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+        }
+      ]
+    },
+    {
+      "tag": "new_york-0100sast",
+      "zone": "America/New_York",
+      "pinned": "2026-11-28T01:00:00+02:00",
+      "browserNow": "Fri Nov 27 2026 18:00:00 GMT-0500 (Eastern Standard Time)",
+      "requestUrl": "http://localhost:8081/portal/deadlines?from=2026-11-27&to=2027-01-26",
+      "api": [
+        {
+          "id": "de72d2c3-399a-4204-b839-d144497ba83a",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day0x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day1x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day7x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day8x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day14x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "descriptionSanitised": "Court date — Hearing — OBS-PDL mwzzxifh day15x",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        },
+        {
+          "id": "92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "sourceEntity": "PRESCRIPTION_TRACKER",
+          "deadlineType": "PRESCRIPTION",
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "descriptionSanitised": "General 3 years",
+          "matterId": "796da60d-62df-48e3-a59d-26db58560bcf"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-de72d2c3-399a-4204-b839-d144497ba83a",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-b516b0b4-0009-4649-af9c-e5ddf4a79087",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-f97bb591-02bc-4200-bb5a-46b15003ab56",
+          "tone": "red",
+          "text": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ed6f8c-5cce-4ffd-b5ac-07adcc12b703",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-a3739080-8c35-4f3e-af21-7c27bc3d18d9",
+          "tone": "amber",
+          "text": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-COURT_DATE-28ad3348-da39-4a8a-8ee8-1bfdefae1541",
+          "tone": "grey",
+          "text": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "testid": "deadline-row-PRESCRIPTION_TRACKER-92adff4b-d61f-4773-b52f-6077bb8a09ca",
+          "tone": "grey",
+          "text": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+        }
+      ],
+      "results": [
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day0x",
+          "dueDate": "2026-11-28",
+          "apiDueDate": "2026-11-28",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 0,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day0x Court date Due soon 27 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day1x",
+          "dueDate": "2026-11-29",
+          "apiDueDate": "2026-11-29",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 1,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "red",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day1x Court date Due soon 28 Nov 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day7x",
+          "dueDate": "2026-12-05",
+          "apiDueDate": "2026-12-05",
+          "status": "DUE_SOON",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 7,
+          "expectedTone": "red",
+          "observedTone": "red",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day7x Court date Due soon 4 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day8x",
+          "dueDate": "2026-12-06",
+          "apiDueDate": "2026-12-06",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 8,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "amber",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day8x Court date Upcoming 5 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day14x",
+          "dueDate": "2026-12-12",
+          "apiDueDate": "2026-12-12",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 14,
+          "expectedTone": "amber",
+          "observedTone": "amber",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day14x Court date Upcoming 11 Dec 2026"
+        },
+        {
+          "label": "Hearing — OBS-PDL mwzzxifh day15x",
+          "dueDate": "2026-12-13",
+          "apiDueDate": "2026-12-13",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 15,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Hearing — OBS-PDL mwzzxifh day15x Court date Upcoming 12 Dec 2026"
+        },
+        {
+          "label": "Prescription deadline",
+          "dueDate": "2026-12-19",
+          "apiDueDate": "2026-12-19",
+          "status": "UPCOMING",
+          "saToday": "2026-11-28",
+          "browserLocalDate": "2026-11-27",
+          "days": 21,
+          "expectedTone": "grey",
+          "observedTone": "grey",
+          "mainWouldShow": "grey",
+          "rowText": "Prescription deadline Prescription Upcoming 18 Dec 2026"
+        }
+      ]
+    }
+  ],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "796da60d-62df-48e3-a59d-26db58560bcf",
+    "name": "Website Redesign"
+  },
+  "todaySA": "2026-11-28",
+  "created": {
+    "courtDates": [
+      {
+        "offset": 0,
+        "date": "2026-11-28",
+        "courtName": "OBS-PDL mwzzxifh day0x",
+        "label": "Hearing — OBS-PDL mwzzxifh day0x"
+      },
+      {
+        "offset": 1,
+        "date": "2026-11-29",
+        "courtName": "OBS-PDL mwzzxifh day1x",
+        "label": "Hearing — OBS-PDL mwzzxifh day1x"
+      },
+      {
+        "offset": 7,
+        "date": "2026-12-05",
+        "courtName": "OBS-PDL mwzzxifh day7x",
+        "label": "Hearing — OBS-PDL mwzzxifh day7x"
+      },
+      {
+        "offset": 8,
+        "date": "2026-12-06",
+        "courtName": "OBS-PDL mwzzxifh day8x",
+        "label": "Hearing — OBS-PDL mwzzxifh day8x"
+      },
+      {
+        "offset": 14,
+        "date": "2026-12-12",
+        "courtName": "OBS-PDL mwzzxifh day14x",
+        "label": "Hearing — OBS-PDL mwzzxifh day14x"
+      },
+      {
+        "offset": 15,
+        "date": "2026-12-13",
+        "courtName": "OBS-PDL mwzzxifh day15x",
+        "label": "Hearing — OBS-PDL mwzzxifh day15x"
+      }
+    ],
+    "tracker": {
+      "offset": 21,
+      "date": "2026-12-19",
+      "cause": "2023-12-19"
+    }
+  },
+  "finishedAt": "2026-11-28T05:55:28.230Z",
+  "allChecksPass": true
+}

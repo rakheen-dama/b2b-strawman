@@ -1,7 +1,7 @@
 {
-  "commit": "d61e5dd4e",
-  "command": "cd portal && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, worktree-epic-669A, PR #1881 — packages/shared/src/format.ts K-68)",
+  "commit": "607cfe0ab",
+  "command": "cd portal && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-portal-deadlines; run at c92489bd0 — HEAD adds only qa_cycle/ evidence, portal/packages diff empty)",
   "exit": 0,
-  "ts": "2026-11-27T09:48:55Z",
-  "summary": "PR #1881 @d61e5dd4e — lint 0 errors (4 warnings), typecheck 0, format:check 0, vitest 51 files / 293 passed, build 0; orchestrator run"
+  "ts": "2026-11-28T05:56:11Z",
+  "summary": "fix/portal-deadline-countdown @607cfe0ab — lint 0 errors (4 pre-existing warnings, none in changed files), typecheck 0, format:check 0, vitest 51 files / 303 passed, build 0"
 }

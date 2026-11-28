@@ -1,0 +1,93 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-ledger-pager/frontend
+
+ ❯ __tests__/trust/client-ledgers-actions.test.ts (5 tests | 4 failed) 7ms
+     × keeps the server's totals: 25 ledgers is 2 pages, not the 1 page in hand 4ms
+     × asks the server for page 2 and returns its rows and totals 1ms
+     × sends nonZeroOnly and search to the server instead of filtering the page 1ms
+     × filtered totals come from the server: 22 non-zero ledgers across 2 pages 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust/client-ledgers-actions.test.ts > fetchClientLedgers (F-667A-10) > keeps the server's totals: 25 ledgers is 2 pages, not the 1 page in hand
+AssertionError: expected 20 to be 25 // Object.is equality
+
+- Expected
++ Received
+
+- 25
++ 20
+
+ ❯ __tests__/trust/client-ledgers-actions.test.ts:44:32
+     42|     const page = await fetchClientLedgers("acc-1", { page: 0, size: 20…
+     43|
+     44|     expect(page.totalElements).toBe(25);
+       |                                ^
+     45|     expect(page.totalPages).toBe(2);
+     46|     expect(page.pageNumber).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  __tests__/trust/client-ledgers-actions.test.ts > fetchClientLedgers (F-667A-10) > asks the server for page 2 and returns its rows and totals
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ __tests__/trust/client-ledgers-actions.test.ts:59:29
+     57|     expect(requestedQuery().get("page")).toBe("1");
+     58|     expect(page.pageNumber).toBe(1);
+     59|     expect(page.totalPages).toBe(2);
+       |                             ^
+     60|     // Zero-balance rows from the server are not dropped on the client
+     61|     expect(page.content.map((r) => r.clientId)).toEqual(rows.map((r) =…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  __tests__/trust/client-ledgers-actions.test.ts > fetchClientLedgers (F-667A-10) > sends nonZeroOnly and search to the server instead of filtering the page
+AssertionError: expected null to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+null
+
+ ❯ __tests__/trust/client-ledgers-actions.test.ts:77:34
+     75|
+     76|     const q = requestedQuery();
+     77|     expect(q.get("nonZeroOnly")).toBe("true");
+       |                                  ^
+     78|     expect(q.get("search")).toBe("zebra");
+     79|     expect(q.get("size")).toBe("20");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  __tests__/trust/client-ledgers-actions.test.ts > fetchClientLedgers (F-667A-10) > filtered totals come from the server: 22 non-zero ledgers across 2 pages
+AssertionError: expected 20 to be 22 // Object.is equality
+
+- Expected
++ Received
+
+- 22
++ 20
+
+ ❯ __tests__/trust/client-ledgers-actions.test.ts:91:32
+     89|     const page = await fetchClientLedgers("acc-1", { nonZeroOnly: true…
+     90|
+     91|     expect(page.totalElements).toBe(22);
+       |                                ^
+     92|     expect(page.totalPages).toBe(2);
+     93|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  03:51:21
+   Duration  352ms (transform 36ms, setup 77ms, import 21ms, tests 7ms, environment 142ms)
+

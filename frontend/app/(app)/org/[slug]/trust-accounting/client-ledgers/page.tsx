@@ -179,8 +179,8 @@ export default async function ClientLedgersPage({
           <CardHeader>
             <CardTitle>Client Balances</CardTitle>
             <CardDescription>
-              {ledgerPage.content.length} client
-              {ledgerPage.content.length !== 1 ? "s" : ""} found
+              {ledgerPage.totalElements} client
+              {ledgerPage.totalElements !== 1 ? "s" : ""} found
             </CardDescription>
           </CardHeader>
           <CardContent>

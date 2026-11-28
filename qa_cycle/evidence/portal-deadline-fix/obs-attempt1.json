@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-11-28T05:49:04.892Z",
+  "gitHead": "c92489bd0700d875b24f433ade4927e4b3b9cf78",
+  "run": "mwzzpnuk",
+  "steps": [
+    "2026-11-28T05:49:05.948Z portal sign-in via /login + Mailpit message 62USSR4uyAXDjfsRApeUXS → /matters"
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "restore: the client's deadline ids are back to the originals",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    }
+  ],
+  "readings": [],
+  "restore": {
+    "originalPortalIds": [],
+    "afterPortalIds": []
+  },
+  "matter": {
+    "id": "796da60d-62df-48e3-a59d-26db58560bcf",
+    "name": "Website Redesign"
+  },
+  "todaySA": "2026-11-28",
+  "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('create-court-date-dialog') to be hidden\u001b[22m\n\u001b[2m    35 × locator resolved to visible <div role=\"dialog\" tabindex=\"-1\" id=\"radix-_r_1a_\" data-state=\"open\" data-slot=\"dialog-content\" aria-labelledby=\"radix-_r_1b_\" aria-describedby=\"radix-_r_1c_\" data-testid=\"create-court-date-dialog\" class=\"data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg\">…</div>\u001b[22m\n\n    at /Users/rakheendama/Projects/2026/wt-fix-portal-deadlines/qa_cycle/evidence/portal-deadline-fix/scripts/obs.cjs:176:20",
+  "finishedAt": "2026-11-28T05:49:22.620Z",
+  "allChecksPass": false
+}

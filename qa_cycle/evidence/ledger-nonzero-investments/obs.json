@@ -1,0 +1,367 @@
+{
+  "at": "2026-11-28T08:53:38.532Z",
+  "run": "b0bo",
+  "pre": {
+    "trustAccounts": [
+      {
+        "id": "4ab38689-57ad-4cb2-85b6-1681e06a3199",
+        "name": "Mathebula & Partners Trust Account",
+        "type": "GENERAL",
+        "isPrimary": true
+      }
+    ],
+    "ledgerCounts": [
+      0
+    ]
+  },
+  "seeded": [
+    {
+      "key": "holder",
+      "id": "637f92ac-d458-46fb-94a8-6b05a913da4b",
+      "name": "OBS Inv Holder b0bo",
+      "matterId": "64be9bf4-df0e-4baf-a117-670abd600c9b",
+      "deposit": "30000.00",
+      "ms": 8951
+    },
+    {
+      "key": "plain",
+      "id": "8fae66e2-eec4-43f6-a061-fc0e87b20a94",
+      "name": "OBS Inv Plain b0bo",
+      "matterId": "44be7b77-fe90-4231-8c1c-9cde2fc33c22",
+      "deposit": "1000.00",
+      "ms": 6745
+    },
+    {
+      "key": "settled",
+      "id": "c8afdacd-98d6-4538-bde3-d868e6a8393e",
+      "name": "OBS Inv Settled b0bo",
+      "matterId": "465c2a43-95a9-454a-81c4-b472e9841c6c",
+      "deposit": "300.00",
+      "ms": 8686
+    }
+  ],
+  "steps": [
+    {
+      "label": "unfiltered",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers",
+      "desc": "3 clients found",
+      "headers": [
+        "Client Name",
+        "General balance",
+        "Total Deposits",
+        "Total Payments",
+        "Total Fee Transfers",
+        "Total Refunds",
+        "Placed in s86(4)",
+        "Invested (s86(4))",
+        "Last Transaction"
+      ],
+      "rowCount": 3,
+      "rows": [
+        {
+          "id": "8fae66e2-eec4-43f6-a061-fc0e87b20a94",
+          "name": "OBS Inv Plain b0bo",
+          "balance": 1000,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Inv Plain b0bo",
+            "General balance": "R 1 000,00",
+            "Total Deposits": "R 1 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "637f92ac-d458-46fb-94a8-6b05a913da4b",
+          "name": "OBS Inv Holder b0bo",
+          "balance": 0,
+          "invested": 30000,
+          "cells": {
+            "Client Name": "OBS Inv Holder b0bo",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 30 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 30 000,00",
+            "Invested (s86(4))": "R 30 000,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "c8afdacd-98d6-4538-bde3-d868e6a8393e",
+          "name": "OBS Inv Settled b0bo",
+          "balance": 0,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Inv Settled b0bo",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 300,00",
+            "Total Payments": "R 300,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        }
+      ],
+      "shot": "01-unfiltered.png"
+    },
+    {
+      "label": "nonzero-on",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers?nonZeroOnly=true",
+      "desc": "2 clients found",
+      "headers": [
+        "Client Name",
+        "General balance",
+        "Total Deposits",
+        "Total Payments",
+        "Total Fee Transfers",
+        "Total Refunds",
+        "Placed in s86(4)",
+        "Invested (s86(4))",
+        "Last Transaction"
+      ],
+      "rowCount": 2,
+      "rows": [
+        {
+          "id": "8fae66e2-eec4-43f6-a061-fc0e87b20a94",
+          "name": "OBS Inv Plain b0bo",
+          "balance": 1000,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Inv Plain b0bo",
+            "General balance": "R 1 000,00",
+            "Total Deposits": "R 1 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "637f92ac-d458-46fb-94a8-6b05a913da4b",
+          "name": "OBS Inv Holder b0bo",
+          "balance": 0,
+          "invested": 30000,
+          "cells": {
+            "Client Name": "OBS Inv Holder b0bo",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 30 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 30 000,00",
+            "Invested (s86(4))": "R 30 000,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        }
+      ],
+      "shot": "02-nonzero-on.png"
+    },
+    {
+      "label": "nonzero-off",
+      "url": "/org/e2e-test-org/trust-accounting/client-ledgers",
+      "desc": "3 clients found",
+      "headers": [
+        "Client Name",
+        "General balance",
+        "Total Deposits",
+        "Total Payments",
+        "Total Fee Transfers",
+        "Total Refunds",
+        "Placed in s86(4)",
+        "Invested (s86(4))",
+        "Last Transaction"
+      ],
+      "rowCount": 3,
+      "rows": [
+        {
+          "id": "8fae66e2-eec4-43f6-a061-fc0e87b20a94",
+          "name": "OBS Inv Plain b0bo",
+          "balance": 1000,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Inv Plain b0bo",
+            "General balance": "R 1 000,00",
+            "Total Deposits": "R 1 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "637f92ac-d458-46fb-94a8-6b05a913da4b",
+          "name": "OBS Inv Holder b0bo",
+          "balance": 0,
+          "invested": 30000,
+          "cells": {
+            "Client Name": "OBS Inv Holder b0bo",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 30 000,00",
+            "Total Payments": "R 0,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 30 000,00",
+            "Invested (s86(4))": "R 30 000,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        },
+        {
+          "id": "c8afdacd-98d6-4538-bde3-d868e6a8393e",
+          "name": "OBS Inv Settled b0bo",
+          "balance": 0,
+          "invested": 0,
+          "cells": {
+            "Client Name": "OBS Inv Settled b0bo",
+            "General balance": "R 0,00",
+            "Total Deposits": "R 300,00",
+            "Total Payments": "R 300,00",
+            "Total Fee Transfers": "R 0,00",
+            "Total Refunds": "R 0,00",
+            "Placed in s86(4)": "R 0,00",
+            "Invested (s86(4))": "R 0,00",
+            "Last Transaction": "28 Nov 2026"
+          }
+        }
+      ],
+      "shot": "03-nonzero-off.png"
+    }
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "pre-state: the list's account had no ledgers before the seed",
+      "ok": true,
+      "detail": {
+        "preCount": 0
+      }
+    },
+    {
+      "name": "seed: holder's general balance is R 0 and R 30 000 is invested (card, read-only GET)",
+      "ok": true,
+      "detail": {
+        "balance": 0,
+        "investedBalance": 30000
+      }
+    },
+    {
+      "name": "1. unfiltered count: 3 clients found",
+      "ok": true,
+      "detail": "3 clients found"
+    },
+    {
+      "name": "1. holder row: General balance R 0,00, Invested (s86(4)) R 30 000,00",
+      "ok": true,
+      "detail": {
+        "Client Name": "OBS Inv Holder b0bo",
+        "General balance": "R 0,00",
+        "Total Deposits": "R 30 000,00",
+        "Total Payments": "R 0,00",
+        "Total Fee Transfers": "R 0,00",
+        "Total Refunds": "R 0,00",
+        "Placed in s86(4)": "R 30 000,00",
+        "Invested (s86(4))": "R 30 000,00",
+        "Last Transaction": "28 Nov 2026"
+      }
+    },
+    {
+      "name": "1. all three seeded clients listed",
+      "ok": true,
+      "detail": [
+        "OBS Inv Plain b0bo",
+        "OBS Inv Holder b0bo",
+        "OBS Inv Settled b0bo"
+      ]
+    },
+    {
+      "name": "2. non-zero count: 2 clients found",
+      "ok": true,
+      "detail": "2 clients found"
+    },
+    {
+      "name": "2. the holder (general R 0, s86(4) R 30 000) is listed",
+      "ok": true,
+      "detail": [
+        "OBS Inv Plain b0bo",
+        "OBS Inv Holder b0bo"
+      ]
+    },
+    {
+      "name": "2. the plain client is listed",
+      "ok": true
+    },
+    {
+      "name": "2. the settled client (R 0, nothing invested) is hidden",
+      "ok": true
+    },
+    {
+      "name": "2. holder row figures unchanged under the filter",
+      "ok": true,
+      "detail": {
+        "Client Name": "OBS Inv Holder b0bo",
+        "General balance": "R 0,00",
+        "Total Deposits": "R 30 000,00",
+        "Total Payments": "R 0,00",
+        "Total Fee Transfers": "R 0,00",
+        "Total Refunds": "R 0,00",
+        "Placed in s86(4)": "R 30 000,00",
+        "Invested (s86(4))": "R 30 000,00",
+        "Last Transaction": "28 Nov 2026"
+      }
+    },
+    {
+      "name": "2. UI count == API totalElements (nonZeroOnly)",
+      "ok": true,
+      "detail": {
+        "size": 20,
+        "number": 0,
+        "totalElements": 2,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "3. filter off again: 3 clients found",
+      "ok": true,
+      "detail": "3 clients found"
+    },
+    {
+      "name": "3. UI count == API totalElements (unfiltered)",
+      "ok": true,
+      "detail": {
+        "size": 20,
+        "number": 0,
+        "totalElements": 3,
+        "totalPages": 1
+      }
+    },
+    {
+      "name": "console: no errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "notes": [
+    "Restore: no setting or pre-existing record was changed; only additive seed data (an investment account, 3 clients, their matters and postings) on a fresh throwaway stack. The investment is left placed so the screenshots stay reproducible; the stack teardown wipes it."
+  ],
+  "deferred": [
+    "A client taken on with ONLY an s86(4) investment (657A, no CLIENT row on the funding account): not driven through the UI here — it needs the take-on wizard's file upload on an account with no postings. Covered by ClientLedgerListInvestedIntegrationTest (unfiltered + filtered + row figures). DEFERRED, not PASS."
+  ],
+  "investmentId": "247e30e5-cde9-40c6-b0ba-efc266287efb",
+  "accountId": "4ab38689-57ad-4cb2-85b6-1681e06a3199",
+  "holderCard": {
+    "balance": 0,
+    "investedBalance": 30000
+  },
+  "pass": true
+}

@@ -1,0 +1,94 @@
+# BEFORE the fix (origin/main code 85c951895 + the new test only):
+# ./mvnw -q test -Dtest=ClientLedgerListInvestedIntegrationTest
+[ERROR] Tests run: 6, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 26.42 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest.searchApplies_toAClientListedOnlyForItsInvestment -- Time elapsed: 0.369 s <<< FAILURE!
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest.sortStaysBalanceDescThenClientId_andPagesNeitherDropNorRepeat -- Time elapsed: 0.027 s <<< FAILURE!
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+to contain exactly (and in same order):
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest.nonZeroOnly_keepsAClientWhoseGeneralBalanceIsZeroButWhoHoldsAnInvestment -- Time elapsed: 0.019 s <<< FAILURE!
+java.lang.AssertionError: 
+[listed under the non-zero filter] 
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd"]
+to contain exactly in any order:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["561c5f1b-8e06-450d-82f7-c207b025d53e", "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest.unfiltered_listsTheClientTakenOnWithOnlyAnInvestment -- Time elapsed: 0.018 s <<< FAILURE!
+java.lang.AssertionError: 
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+to contain exactly in any order:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerListInvestedIntegrationTest.theRowsFiguresAreUnchanged_generalBalanceAndInvestedBalanceSideBySide -- Time elapsed: 0.023 s <<< FAILURE!
+java.lang.AssertionError: 
+[list row for Trust Books TakenOn 11] 
+Expecting actual:
+  {"561c5f1b-8e06-450d-82f7-c207b025d53e"=Row[name=Trust Books Holder 5, balance=0.0, invested=30000.0, lastTransactionDate=2026-03-01], "62b12b10-c671-4f1b-b192-0d663f810aa9"=Row[name=Trust Books Settled 8, balance=0.0, invested=0, lastTransactionDate=2026-03-01], "8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd"=Row[name=Trust Books Plain 3, balance=1000.0, invested=0, lastTransactionDate=2026-03-01]}
+to contain key:
+[ERROR]   ClientLedgerListInvestedIntegrationTest.nonZeroOnly_keepsAClientWhoseGeneralBalanceIsZeroButWhoHoldsAnInvestment:131 [listed under the non-zero filter] 
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd"]
+to contain exactly in any order:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["561c5f1b-8e06-450d-82f7-c207b025d53e", "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+to contain exactly (and in same order):
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR]   ClientLedgerListInvestedIntegrationTest.theRowsFiguresAreUnchanged_generalBalanceAndInvestedBalanceSideBySide:155 [list row for Trust Books TakenOn 11] 
+Expecting actual:
+  {"561c5f1b-8e06-450d-82f7-c207b025d53e"=Row[name=Trust Books Holder 5, balance=0.0, invested=30000.0, lastTransactionDate=2026-03-01], "62b12b10-c671-4f1b-b192-0d663f810aa9"=Row[name=Trust Books Settled 8, balance=0.0, invested=0, lastTransactionDate=2026-03-01], "8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd"=Row[name=Trust Books Plain 3, balance=1000.0, invested=0, lastTransactionDate=2026-03-01]}
+to contain key:
+Expecting actual:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9"]
+to contain exactly in any order:
+  ["8b97f7f4-1f7f-4f1e-8dd1-c59fddcd48dd",
+    "561c5f1b-8e06-450d-82f7-c207b025d53e",
+    "62b12b10-c671-4f1b-b192-0d663f810aa9",
+    "3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+but could not find the following elements:
+  ["3e4ae7fc-11f7-478a-8b40-4199235aa946"]
+[ERROR] Tests run: 6, Failures: 5, Errors: 0, Skipped: 0

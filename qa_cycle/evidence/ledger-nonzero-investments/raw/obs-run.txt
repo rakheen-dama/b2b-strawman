@@ -1,0 +1,18 @@
+seeded OBS Inv Holder b0bo (8951 ms)
+seeded OBS Inv Plain b0bo (6745 ms)
+seeded OBS Inv Settled b0bo (8686 ms)
+PASS pre-state: the list's account had no ledgers before the seed — {"preCount":0}
+PASS seed: holder's general balance is R 0 and R 30 000 is invested (card, read-only GET) — {"balance":0,"investedBalance":30000}
+PASS 1. unfiltered count: 3 clients found — "3 clients found"
+PASS 1. holder row: General balance R 0,00, Invested (s86(4)) R 30 000,00 — {"Client Name":"OBS Inv Holder b0bo","General balance":"R 0,00","Total Deposits":"R 30 000,00","Total Payments":"R 0,00","Total Fee Transfers":"R 0,00","Total Refunds":"R 0,00","Placed in s86(4)":"R 30 000,00","Invested (s86(4))":"R 30 000,00","Last Transaction":"28 Nov 2026"}
+PASS 1. all three seeded clients listed — ["OBS Inv Plain b0bo","OBS Inv Holder b0bo","OBS Inv Settled b0bo"]
+PASS 2. non-zero count: 2 clients found — "2 clients found"
+PASS 2. the holder (general R 0, s86(4) R 30 000) is listed — ["OBS Inv Plain b0bo","OBS Inv Holder b0bo"]
+PASS 2. the plain client is listed
+PASS 2. the settled client (R 0, nothing invested) is hidden
+PASS 2. holder row figures unchanged under the filter — {"Client Name":"OBS Inv Holder b0bo","General balance":"R 0,00","Total Deposits":"R 30 000,00","Total Payments":"R 0,00","Total Fee Transfers":"R 0,00","Total Refunds":"R 0,00","Placed in s86(4)":"R 30 000,00","Invested (s86(4))":"R 30 000,00","Last Transaction":"28 Nov 2026"}
+PASS 2. UI count == API totalElements (nonZeroOnly) — {"size":20,"number":0,"totalElements":2,"totalPages":1}
+PASS 3. filter off again: 3 clients found — "3 clients found"
+PASS 3. UI count == API totalElements (unfiltered) — {"size":20,"number":0,"totalElements":3,"totalPages":1}
+PASS console: no errors — []
+OBS PASS

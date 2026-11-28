@@ -50,7 +50,11 @@ export interface PortalDeadline {
 }
 
 export interface ListDeadlinesParams {
-  /** ISO 8601 local date "YYYY-MM-DD", optional (defaults server-side to today). */
+  /**
+   * ISO 8601 local date "YYYY-MM-DD", optional. Defaults server-side to SA
+   * today; for the OVERDUE, COMPLETED and CANCELLED filters it defaults to no
+   * lower bound (D-127).
+   */
   from?: string;
   /** ISO 8601 local date "YYYY-MM-DD", optional (defaults server-side to today+60d). */
   to?: string;

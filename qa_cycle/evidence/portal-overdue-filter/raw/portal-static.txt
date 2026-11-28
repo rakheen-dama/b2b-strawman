@@ -1,0 +1,80 @@
+HEAD 93d6faccd5826d518cf33b3ad57c4f4123d0145c 2026-11-28T08:01:54Z
+Scope: all 5 workspace projects
+..                                       | Progress: resolved 1, reused 0, downloaded 0, added 0
+..                                       | +700 ++++++++++++++++++++++++++++++++
+..                                       | Progress: resolved 700, reused 698, downloaded 0, added 284
+..                                       | Progress: resolved 700, reused 698, downloaded 0, added 663
+..                                       | Progress: resolved 700, reused 698, downloaded 0, added 698
+..                                       | Progress: resolved 700, reused 698, downloaded 0, added 699
+..                                       | Progress: resolved 700, reused 698, downloaded 0, added 700, done
+
+dependencies:
++ @b2mash/shared 0.0.0 <- ../packages/shared
++ @b2mash/ui 0.0.0 <- ../packages/ui
++ class-variance-authority 0.7.1
++ clsx 2.1.1
++ jose 6.2.3
++ lucide-react 0.563.0
++ next 16.3.8
++ radix-ui 1.4.3
++ react 19.2.3
++ react-dom 19.2.3
++ tailwind-merge 3.5.0
+
+devDependencies:
++ @playwright/test 1.59.1
++ @tailwindcss/postcss 4.2.4
++ @testing-library/jest-dom 6.9.1
++ @testing-library/react 16.3.2
++ @testing-library/user-event 14.6.1
++ @types/node 20.19.39
++ @types/react 19.2.14
++ @types/react-dom 19.2.3
++ @vitest/coverage-v8 4.1.5
++ eslint 9.39.4
++ eslint-config-next 16.2.6
++ happy-dom 20.9.0
++ prettier 3.8.3
++ tailwindcss 4.2.4
++ tw-animate-css 1.4.0
++ typescript 5.9.3
++ vite 7.3.5
++ vitest 4.1.5
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild@0.27.7, unrs-resolver@1.11.1.               │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 7.2s using pnpm v10.26.1
+
+> portal@0.1.0 lint /Users/rakheendama/Projects/2026/wt-fix-portal-overdue/portal
+> eslint
+
+
+/Users/rakheendama/Projects/2026/wt-fix-portal-overdue/portal/app/accept/[token]/acceptance-page.tsx
+  251:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/wt-fix-portal-overdue/portal/app/login/page.tsx
+   47:7   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  143:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  199:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 4 problems (0 errors, 4 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+
+> portal@0.1.0 typecheck /Users/rakheendama/Projects/2026/wt-fix-portal-overdue/portal
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully
+
+> portal@0.1.0 format:check /Users/rakheendama/Projects/2026/wt-fix-portal-overdue/portal
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+static rc=0

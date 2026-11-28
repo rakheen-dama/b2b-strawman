@@ -1,0 +1,468 @@
+{
+  "startedAt": "2026-11-28T08:16:08.878Z",
+  "gitHead": "93d6faccd5826d518cf33b3ad57c4f4123d0145c",
+  "run": "mx04ysha",
+  "journal": [
+    {
+      "key": "past-open",
+      "offset": -3,
+      "action": null,
+      "date": "2026-11-25",
+      "courtName": "OBS-D127 mx04ysha past-open",
+      "label": "Hearing — OBS-D127 mx04ysha past-open",
+      "state": "cancelled"
+    },
+    {
+      "key": "past-heard",
+      "offset": -5,
+      "action": "outcome",
+      "date": "2026-11-23",
+      "courtName": "OBS-D127 mx04ysha past-heard",
+      "label": "Hearing — OBS-D127 mx04ysha past-heard",
+      "state": "heard"
+    },
+    {
+      "key": "past-cancelled",
+      "offset": -4,
+      "action": "cancel",
+      "date": "2026-11-24",
+      "courtName": "OBS-D127 mx04ysha past-cancelled",
+      "label": "Hearing — OBS-D127 mx04ysha past-cancelled",
+      "state": "cancelled"
+    },
+    {
+      "key": "future",
+      "offset": 2,
+      "action": null,
+      "date": "2026-11-30",
+      "courtName": "OBS-D127 mx04ysha future",
+      "label": "Hearing — OBS-D127 mx04ysha future",
+      "state": "cancelled"
+    }
+  ],
+  "steps": [
+    "2026-11-28T08:16:09.382Z portal sign-in via /login + Mailpit message RVgapZBFBs9Vq2c5Pj4wmQ → /matters",
+    "2026-11-28T08:16:11.621Z firm UI: scheduled HEARING \"OBS-D127 mx04ysha past-open\" on 2026-11-25 (-3)",
+    "2026-11-28T08:16:12.404Z firm UI: scheduled HEARING \"OBS-D127 mx04ysha past-heard\" on 2026-11-23 (-5)",
+    "2026-11-28T08:16:13.080Z firm UI: recorded outcome on \"OBS-D127 mx04ysha past-heard\" (HEARD)",
+    "2026-11-28T08:16:13.959Z firm UI: scheduled HEARING \"OBS-D127 mx04ysha past-cancelled\" on 2026-11-24 (-4)",
+    "2026-11-28T08:16:14.723Z firm UI: cancelled \"OBS-D127 mx04ysha past-cancelled\"",
+    "2026-11-28T08:16:15.537Z firm UI: scheduled HEARING \"OBS-D127 mx04ysha future\" on 2026-11-30 (2)",
+    "2026-11-28T08:16:17.087Z restore: cancelled \"OBS-D127 mx04ysha past-open\"",
+    "2026-11-28T08:16:18.314Z restore: cancelled \"OBS-D127 mx04ysha future\""
+  ],
+  "console": [],
+  "checks": [
+    {
+      "name": "portal-deadlines-overdue: request carries status=OVERDUE and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines?status=OVERDUE"
+    },
+    {
+      "name": "portal-deadlines-overdue: every row returned reads OVERDUE",
+      "ok": true,
+      "detail": [
+        [
+          "Hearing — OBS-D127 mx04ysha past-open",
+          "2026-11-25",
+          "OVERDUE"
+        ]
+      ]
+    },
+    {
+      "name": "portal-deadlines-overdue: rendered rows = API rows (1)",
+      "ok": true,
+      "detail": {
+        "rows": 1,
+        "api": 1,
+        "empty": false
+      }
+    },
+    {
+      "name": "portal-deadlines-completed: request carries status=COMPLETED and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines?status=COMPLETED"
+    },
+    {
+      "name": "portal-deadlines-completed: every row returned reads COMPLETED",
+      "ok": true,
+      "detail": [
+        [
+          "Hearing — OBS-D127 mx04ysha past-heard",
+          "2026-11-23",
+          "COMPLETED"
+        ]
+      ]
+    },
+    {
+      "name": "portal-deadlines-completed: rendered rows = API rows (1)",
+      "ok": true,
+      "detail": {
+        "rows": 1,
+        "api": 1,
+        "empty": false
+      }
+    },
+    {
+      "name": "portal-deadlines-cancelled: request carries status=CANCELLED and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines?status=CANCELLED"
+    },
+    {
+      "name": "portal-deadlines-cancelled: every row returned reads CANCELLED",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "portal-deadlines-cancelled: rendered rows = API rows (0)",
+      "ok": true,
+      "detail": {
+        "rows": 0,
+        "api": 0,
+        "empty": true
+      }
+    },
+    {
+      "name": "portal-deadlines-due_soon: request carries status=DUE_SOON and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines?status=DUE_SOON"
+    },
+    {
+      "name": "portal-deadlines-due_soon: every row returned reads DUE_SOON",
+      "ok": true,
+      "detail": [
+        [
+          "Hearing — OBS-D127 mx04ysha future",
+          "2026-11-30",
+          "DUE_SOON"
+        ]
+      ]
+    },
+    {
+      "name": "portal-deadlines-due_soon: rendered rows = API rows (1)",
+      "ok": true,
+      "detail": {
+        "rows": 1,
+        "api": 1,
+        "empty": false
+      }
+    },
+    {
+      "name": "portal-deadlines-all: request carries status=(none) and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "portal-deadlines-all: rendered rows = API rows (1)",
+      "ok": true,
+      "detail": {
+        "rows": 1,
+        "api": 1,
+        "empty": false
+      }
+    },
+    {
+      "name": "OVERDUE lists the unresolved past hearing (2026-11-25) — main's from=today excluded it",
+      "ok": true,
+      "detail": {
+        "row": {
+          "id": "9ab7d345-a050-4426-be7f-8317440f3fc5",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha past-open",
+          "dueDate": "2026-11-25",
+          "status": "OVERDUE",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-open",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        },
+        "mainEquivalent": {
+          "request": "/portal/deadlines?status=OVERDUE&from=2026-11-28",
+          "fixtureRows": []
+        }
+      }
+    },
+    {
+      "name": "OVERDUE does not list the heard, cancelled or future hearings",
+      "ok": true,
+      "detail": [
+        "Hearing — OBS-D127 mx04ysha past-open"
+      ]
+    },
+    {
+      "name": "COMPLETED lists the heard past hearing (2026-11-23) — main's from=today excluded it",
+      "ok": true,
+      "detail": {
+        "row": {
+          "id": "a5dd782c-d768-4785-88b9-1bb842dd0aae",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha past-heard",
+          "dueDate": "2026-11-23",
+          "status": "COMPLETED",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-heard",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        },
+        "mainEquivalent": {
+          "request": "/portal/deadlines?status=COMPLETED&from=2026-11-28",
+          "fixtureRows": []
+        }
+      }
+    },
+    {
+      "name": "COMPLETED does not list the open, cancelled or future hearings",
+      "ok": true,
+      "detail": [
+        "Hearing — OBS-D127 mx04ysha past-heard"
+      ]
+    },
+    {
+      "name": "CANCELLED: the cancelled hearing's portal row is deleted (B4), so it is not listed",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "DUE_SOON lists the future hearing (2026-11-30) and no past one",
+      "ok": true,
+      "detail": [
+        "Hearing — OBS-D127 mx04ysha future"
+      ]
+    },
+    {
+      "name": "All statuses keeps today..today+60: future listed, past hearings not listed",
+      "ok": true,
+      "detail": [
+        [
+          "Hearing — OBS-D127 mx04ysha future",
+          "2026-11-30"
+        ]
+      ]
+    },
+    {
+      "name": "initial page load requests no status and no from/to",
+      "ok": true,
+      "detail": "http://localhost:8081/portal/deadlines"
+    },
+    {
+      "name": "no console errors on the portal",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "restore: every filter is back to its originals, except the 1 HEARD residue row(s) in COMPLETED",
+      "ok": true,
+      "detail": {
+        "originals": {
+          "OVERDUE": [],
+          "COMPLETED": [],
+          "CANCELLED": [],
+          "DUE_SOON": [],
+          "ALL": []
+        },
+        "after": {
+          "OVERDUE": [],
+          "COMPLETED": [
+            "COURT_DATE-a5dd782c-d768-4785-88b9-1bb842dd0aae"
+          ],
+          "CANCELLED": [],
+          "DUE_SOON": [],
+          "ALL": []
+        },
+        "heardKeys": [
+          "COURT_DATE-a5dd782c-d768-4785-88b9-1bb842dd0aae"
+        ]
+      }
+    }
+  ],
+  "readings": [
+    {
+      "tag": "portal-deadlines-overdue",
+      "filter": "OVERDUE",
+      "requestUrl": "http://localhost:8081/portal/deadlines?status=OVERDUE",
+      "status": 200,
+      "api": [
+        {
+          "id": "9ab7d345-a050-4426-be7f-8317440f3fc5",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha past-open",
+          "dueDate": "2026-11-25",
+          "status": "OVERDUE",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-open",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-9ab7d345-a050-4426-be7f-8317440f3fc5",
+          "text": "Hearing — OBS-D127 mx04ysha past-open Court date Overdue 25 Nov 2026"
+        }
+      ],
+      "empty": false
+    },
+    {
+      "tag": "portal-deadlines-completed",
+      "filter": "COMPLETED",
+      "requestUrl": "http://localhost:8081/portal/deadlines?status=COMPLETED",
+      "status": 200,
+      "api": [
+        {
+          "id": "a5dd782c-d768-4785-88b9-1bb842dd0aae",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha past-heard",
+          "dueDate": "2026-11-23",
+          "status": "COMPLETED",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-heard",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-a5dd782c-d768-4785-88b9-1bb842dd0aae",
+          "text": "Hearing — OBS-D127 mx04ysha past-heard Court date Completed 23 Nov 2026"
+        }
+      ],
+      "empty": false
+    },
+    {
+      "tag": "portal-deadlines-cancelled",
+      "filter": "CANCELLED",
+      "requestUrl": "http://localhost:8081/portal/deadlines?status=CANCELLED",
+      "status": 200,
+      "api": [],
+      "rows": [],
+      "empty": true
+    },
+    {
+      "tag": "portal-deadlines-due_soon",
+      "filter": "DUE_SOON",
+      "requestUrl": "http://localhost:8081/portal/deadlines?status=DUE_SOON",
+      "status": 200,
+      "api": [
+        {
+          "id": "04a97123-32ec-4dc7-b171-42c89d99e8ea",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha future",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha future",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-04a97123-32ec-4dc7-b171-42c89d99e8ea",
+          "text": "Hearing — OBS-D127 mx04ysha future Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "empty": false
+    },
+    {
+      "tag": "portal-deadlines-all",
+      "filter": "ALL",
+      "requestUrl": "http://localhost:8081/portal/deadlines",
+      "status": 200,
+      "api": [
+        {
+          "id": "04a97123-32ec-4dc7-b171-42c89d99e8ea",
+          "sourceEntity": "COURT_DATE",
+          "deadlineType": "COURT_DATE",
+          "label": "Hearing — OBS-D127 mx04ysha future",
+          "dueDate": "2026-11-30",
+          "status": "DUE_SOON",
+          "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha future",
+          "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+        }
+      ],
+      "rows": [
+        {
+          "testid": "deadline-row-COURT_DATE-04a97123-32ec-4dc7-b171-42c89d99e8ea",
+          "text": "Hearing — OBS-D127 mx04ysha future Court date Due soon 30 Nov 2026"
+        }
+      ],
+      "empty": false
+    }
+  ],
+  "mainEquivalent": {
+    "OVERDUE": {
+      "request": "/portal/deadlines?status=OVERDUE&from=2026-11-28",
+      "fixtureRows": []
+    },
+    "COMPLETED": {
+      "request": "/portal/deadlines?status=COMPLETED&from=2026-11-28",
+      "fixtureRows": []
+    }
+  },
+  "restore": {
+    "originals": {
+      "OVERDUE": [],
+      "COMPLETED": [],
+      "CANCELLED": [],
+      "DUE_SOON": [],
+      "ALL": []
+    },
+    "residue": [
+      {
+        "courtName": "OBS-D127 mx04ysha past-heard",
+        "date": "2026-11-23",
+        "why": "HEARD court dates have no firm-UI actions (canTransition → all false); stack wiped with e2e-down after OBS"
+      }
+    ],
+    "after": {
+      "OVERDUE": [],
+      "COMPLETED": [
+        "COURT_DATE-a5dd782c-d768-4785-88b9-1bb842dd0aae"
+      ],
+      "CANCELLED": [],
+      "DUE_SOON": [],
+      "ALL": []
+    }
+  },
+  "deferred": [
+    {
+      "item": "CANCELLED filter listing a past cancelled row",
+      "reason": "no firm UI action produces a CANCELLED portal row: a cancelled court date (and the original row of a postpone) DELETES its portal row (DeadlinePortalSyncService.onCourtDateCancelled, B4), prescription interrupt deletes too, and filing-schedule sync is dormant. The rule is covered by PortalDeadlineStatusFilterLookbackIntegrationTest [B3]/[D3] on seeded rows."
+    }
+  ],
+  "matter": {
+    "id": "645fbf97-98f6-47c1-9aae-6419696021f3",
+    "name": "Website Redesign"
+  },
+  "todaySA": "2026-11-28",
+  "projected": [
+    {
+      "id": "a5dd782c-d768-4785-88b9-1bb842dd0aae",
+      "sourceEntity": "COURT_DATE",
+      "deadlineType": "COURT_DATE",
+      "label": "Hearing — OBS-D127 mx04ysha past-heard",
+      "dueDate": "2026-11-23",
+      "status": "COMPLETED",
+      "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-heard",
+      "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+    },
+    {
+      "id": "9ab7d345-a050-4426-be7f-8317440f3fc5",
+      "sourceEntity": "COURT_DATE",
+      "deadlineType": "COURT_DATE",
+      "label": "Hearing — OBS-D127 mx04ysha past-open",
+      "dueDate": "2026-11-25",
+      "status": "OVERDUE",
+      "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha past-open",
+      "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+    },
+    {
+      "id": "04a97123-32ec-4dc7-b171-42c89d99e8ea",
+      "sourceEntity": "COURT_DATE",
+      "deadlineType": "COURT_DATE",
+      "label": "Hearing — OBS-D127 mx04ysha future",
+      "dueDate": "2026-11-30",
+      "status": "DUE_SOON",
+      "descriptionSanitised": "Court date — Hearing — OBS-D127 mx04ysha future",
+      "matterId": "645fbf97-98f6-47c1-9aae-6419696021f3"
+    }
+  ],
+  "initialRequest": "http://localhost:8081/portal/deadlines",
+  "finishedAt": "2026-11-28T08:16:18.353Z",
+  "allChecksPass": true
+}

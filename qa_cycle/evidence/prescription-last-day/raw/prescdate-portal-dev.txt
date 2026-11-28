@@ -1,0 +1,25 @@
+
+> portal@0.1.0 dev /Users/rakheendama/Projects/2026/wt-prescription-last-day/portal
+> next dev --port 3002
+
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.113:3002
+✓ Ready in 345ms
+✓ Running next.config.ts took 77ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+ GET /login 200 in 1260ms (next.js: 1115ms, application-code: 145ms)
+ GET /login?orgId=e2e-test-org 200 in 58ms (next.js: 32ms, application-code: 26ms)
+ GET /auth/exchange?token=QBz1boMQ8j3w-xoaGoXWhHMp3pIX1LhssTjdkLDsPlc&orgId=e2e-test-org 200 in 254ms (next.js: 207ms, application-code: 46ms)
+ GET /matters 200 in 334ms (next.js: 321ms, application-code: 13ms)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+ GET /deadlines 200 in 214ms (next.js: 152ms, application-code: 61ms)
+[?25h

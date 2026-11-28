@@ -1,7 +1,7 @@
 {
-  "commit": "e0402945e",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-none-tax, fix/none-tax-option-ignored; full vitest under /tmp/kazi-heavy.lock)",
+  "commit": "b0af4d5e5",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-ledger-pager, F-667A-10)",
   "exit": 0,
-  "ts": "2026-11-28T01:34:36Z",
-  "summary": "None tax option ignored (edit + add) + header Tax Amount sync @e0402945e — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, vitest 554 files / 5673 passed / 2 skipped, build 0."
+  "ts": "2026-11-28T02:53:28Z",
+  "summary": "F-667A-10 @b0af4d5e5 (final head; code head 7741f31df, head adds evidence only) — lint 0 errors (75 warnings, pre-existing), typecheck 0, format clean, vitest 554 files / 5671 passed / 2 skipped, build 0. E2E fresh stacks from the worktree @7741f31df: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped (stack 1); exit-month 16/16 with portal :3002 (stack 2). OBS stack 3: 22/22 PASS."
 }

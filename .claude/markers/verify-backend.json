@@ -1,7 +1,7 @@
 {
-  "commit": "b023756f0",
-  "command": "bash backend/scripts/verify.sh (wt-fix-none-tax, fix/none-tax-option-ignored)",
+  "commit": "1bac55d63",
+  "command": "bash backend/scripts/verify.sh (wt-fix-ledger-pager, fix/client-ledgers-server-paging)",
   "exit": 0,
-  "ts": "2026-11-28T01:15:19Z",
-  "summary": "None tax option ignored (edit + add) @b023756f0 — 8229 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 25:22)"
+  "ts": "2026-11-28T02:28:30Z",
+  "summary": "F-667A-10 client-ledgers server paging @1bac55d63 (last backend commit; b0af4d5e5 head adds a frontend test + evidence only) — 8228 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 29:36)"
 }

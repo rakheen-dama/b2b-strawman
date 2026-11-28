@@ -2,6 +2,7 @@
 
 import { CalendarClock } from "lucide-react";
 import { Skeleton } from "@b2mash/ui/skeleton";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
 import { DEADLINE_STATUS_LABELS, labelFor } from "@/lib/labels";
@@ -44,28 +45,27 @@ const DEADLINE_TYPE_LABEL: Record<string, string> = {
 type UrgencyTone = "grey" | "amber" | "red" | "red-solid" | "green";
 
 /**
- * Maps a deadline to an urgency tone:
+ * Maps a deadline to an urgency tone by calendar days from today in South
+ * Africa to the yyyy-MM-dd due date (0 is the due date itself):
  * - COMPLETED / CANCELLED → green
  * - overdue (due < today) → red-solid
  * - due within 7 days     → red
  * - due within 14 days    → amber
  * - otherwise             → grey
+ *
+ * The count is the same in any browser zone at any hour. Local-midnight
+ * arithmetic was off by a day whenever the browser's date differed from SA's
+ * (a UTC browser 00:00–02:00 SAST, New York until 07:00 SAST: yesterday's
+ * deadline did not read overdue) and across a DST change in the browser zone.
  */
 export function urgencyToneFor(
   deadline: PortalDeadline,
-  today: Date = new Date(),
+  now: Date = new Date(),
 ): UrgencyTone {
   if (deadline.status === "COMPLETED" || deadline.status === "CANCELLED") {
     return "green";
   }
-  const due = new Date(`${deadline.dueDate}T00:00:00`);
-  const startOfToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const diffMs = due.getTime() - startOfToday.getTime();
-  const days = Math.floor(diffMs / 86_400_000);
+  const days = daysBetween(todayInSA(now), deadline.dueDate);
   if (days < 0) return "red-solid";
   if (days <= 7) return "red";
   if (days <= 14) return "amber";

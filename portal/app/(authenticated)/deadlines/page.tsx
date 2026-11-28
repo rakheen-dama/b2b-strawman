@@ -55,9 +55,10 @@ export default function DeadlinesPage() {
       if (cancelled) return;
       try {
         // No from/to: the backend defaults the window to today..today+60 on the
-        // South African calendar, evaluated per request. A window built from the
-        // browser's local date started on SA-tomorrow east of SA late in the
-        // evening (Dubai from 22:00 SAST), dropping today's deadlines.
+        // South African calendar, evaluated per request, with no lower bound for
+        // the Overdue, Completed and Cancelled filters (D-127). A window built
+        // from the browser's local date started on SA-tomorrow east of SA late
+        // in the evening (Dubai from 22:00 SAST), dropping today's deadlines.
         const data = await listDeadlines({
           // Never send "ALL" — omit the param so the backend returns all statuses.
           status: statusFilter === "ALL" ? undefined : statusFilter,

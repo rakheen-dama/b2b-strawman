@@ -1,0 +1,140 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+07:32:24.170 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-fix-portal-overdue/backend/target/test-classes/archunit.properties
+07:32:24.280 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest]: PortalDeadlineStatusFilterLookbackIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+07:32:24.447 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[ERROR] Tests run: 4, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 21.16 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.dateRangeValidationHandlesTheOpenLowerBound -- Time elapsed: 0.021 s <<< ERROR!
+io.b2mash.b2b.b2bstrawman.exception.InvalidStateException: 400 BAD_REQUEST, ProblemDetail[type='null', title='Invalid date range', status=400, detail='from must be on or before to', instance='null', properties='null']
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineService.listForContact(PortalDeadlineService.java:76)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.lambda$list$0(PortalDeadlineStatusFilterLookbackIntegrationTest.java:195)
+	at java.base/jdk.internal.vm.ScopedValueContainer.callWithoutScope(ScopedValueContainer.java:162)
+	at java.base/jdk.internal.vm.ScopedValueContainer.call(ScopedValueContainer.java:147)
+	at java.base/java.lang.ScopedValue$Carrier.call(ScopedValue.java:419)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.inCustomer(PortalDeadlineStatusFilterLookbackIntegrationTest.java:208)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.list(PortalDeadlineStatusFilterLookbackIntegrationTest.java:195)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.dateRangeValidationHandlesTheOpenLowerBound(PortalDeadlineStatusFilterLookbackIntegrationTest.java:159)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent -- Time elapsed: 0.029 s <<< FAILURE!
+org.assertj.core.error.AssertJMultipleFailuresError: 
+
+Multiple Failures (4 failures)
+-- failure 1 --
+[[B1] OVERDUE, no from: every unresolved past row, oldest first] 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+but could not find the following elements:
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:98)
+-- failure 2 --
+[[B2] COMPLETED, no from: past and future completed rows up to D+60] 
+Expecting actual:
+  [292ccbc1-cdd7-4e95-906c-daed7991a288]
+to contain exactly (and in same order):
+  [19a8a17d-795b-41a5-ae13-1d7cda38ddc3, 292ccbc1-cdd7-4e95-906c-daed7991a288]
+but could not find the following elements:
+  [19a8a17d-795b-41a5-ae13-1d7cda38ddc3]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:101)
+-- failure 3 --
+[[B3] CANCELLED, no from: past and future cancelled rows up to D+60 (not D+90)] 
+Expecting actual:
+  [3da804e1-bcac-44a6-bc5d-e276bf0b99ae]
+to contain exactly (and in same order):
+  [fd471a28-2704-4679-9ae1-7a95c3b7ffbb, 3da804e1-bcac-44a6-bc5d-e276bf0b99ae]
+but could not find the following elements:
+  [fd471a28-2704-4679-9ae1-7a95c3b7ffbb]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:104)
+-- failure 4 --
+[[B4] lower-case status is normalised before the lookback rule] 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+but could not find the following elements:
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:107)
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:111)
+
+[ERROR] Failures: 
+[ERROR]   PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent:111 
+Multiple Failures (4 failures)
+-- failure 1 --
+[[B1] OVERDUE, no from: every unresolved past row, oldest first] 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+but could not find the following elements:
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:98)
+-- failure 2 --
+[[B2] COMPLETED, no from: past and future completed rows up to D+60] 
+Expecting actual:
+  [292ccbc1-cdd7-4e95-906c-daed7991a288]
+to contain exactly (and in same order):
+  [19a8a17d-795b-41a5-ae13-1d7cda38ddc3, 292ccbc1-cdd7-4e95-906c-daed7991a288]
+but could not find the following elements:
+  [19a8a17d-795b-41a5-ae13-1d7cda38ddc3]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:101)
+-- failure 3 --
+[[B3] CANCELLED, no from: past and future cancelled rows up to D+60 (not D+90)] 
+Expecting actual:
+  [3da804e1-bcac-44a6-bc5d-e276bf0b99ae]
+to contain exactly (and in same order):
+  [fd471a28-2704-4679-9ae1-7a95c3b7ffbb, 3da804e1-bcac-44a6-bc5d-e276bf0b99ae]
+but could not find the following elements:
+  [fd471a28-2704-4679-9ae1-7a95c3b7ffbb]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:104)
+-- failure 4 --
+[[B4] lower-case status is normalised before the lookback rule] 
+Expecting actual:
+  []
+to contain exactly (and in same order):
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+but could not find the following elements:
+  [a1bedc3e-2104-4fed-86d6-f13413471585,
+    f924e5d1-ca01-4478-8a23-1efe35b67733,
+    d042f924-bfff-4731-92a2-719c77444c36]
+at PortalDeadlineStatusFilterLookbackIntegrationTest.pastLookingFiltersHaveNoLowerBoundWhenNoFromIsSent(PortalDeadlineStatusFilterLookbackIntegrationTest.java:107)
+[ERROR] Errors: 
+[ERROR]   PortalDeadlineStatusFilterLookbackIntegrationTest.dateRangeValidationHandlesTheOpenLowerBound:159->list:195->inCustomer:208->lambda$list$0:195 » InvalidState 400 BAD_REQUEST, ProblemDetail[type='null', title='Invalid date range', status=400, detail='from must be on or before to', instance='null', properties='null']
+[ERROR] Tests run: 4, Failures: 1, Errors: 1, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-fix-portal-overdue/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

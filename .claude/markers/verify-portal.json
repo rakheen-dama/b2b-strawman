@@ -1,7 +1,7 @@
 {
-  "commit": "d6f9d543e",
-  "command": "cd portal && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-date-display; run at d35c5d8d1 — rebase onto 6efca4504 brought only a frontend test + docs, portal/packages diff to d6f9d543e empty)",
+  "commit": "93d6faccd5826d518cf33b3ad57c4f4123d0145c",
+  "command": "cd portal && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, SHELL=/bin/bash NODE_OPTIONS='', wt-fix-portal-overdue)",
   "exit": 0,
-  "ts": "2026-11-28T06:22:29Z",
-  "summary": "fix/date-only-display-sa-calendar @d6f9d543e — lint 0 errors (4 pre-existing warnings), typecheck 0, format:check clean, vitest 52 files / 313 passed, build ok. e2e portal 34 passed; OBS 51/51."
+  "ts": "2026-11-28T08:02:40Z",
+  "summary": "fix/portal-overdue-filter-lookback @93d6faccd (portal diff is comments only) — lint 0 errors (4 pre-existing warnings), typecheck 0, format:check clean, vitest 52 files / 313 passed, build ok."
 }

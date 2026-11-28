@@ -1,0 +1,2 @@
+verify @93d6faccd 07:36:10Z-08:01:07Z exit=0; surefire 935 suites, 8247 <testcase>, 0 <failure>, 0 <error>, 55 <skipped>
+Surefire stderr has one [ERROR] line: 'Surefire is going to kill self fork JVM. The exit has elapsed 60 seconds after System.exit(0).' — emitted by a fork after its tests finished; mvnw exit 0, 0 failures/errors in reports.

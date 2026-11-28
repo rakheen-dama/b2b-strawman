@@ -1,7 +1,7 @@
 {
-  "commit": "e28e82837c85e3bfc156f45cabb24b309bbce9da",
-  "command": "bash backend/scripts/verify.sh (wt-prescription-last-day, fix/prescription-last-day-to-serve)",
+  "commit": "93d6faccd5826d518cf33b3ad57c4f4123d0145c",
+  "command": "bash backend/scripts/verify.sh -q (wt-fix-portal-overdue, fix/portal-overdue-filter-lookback)",
   "exit": 0,
-  "ts": "2026-11-28T03:23:52Z",
-  "summary": "Prescription last day to serve + Interrupt by service date @e28e82837 — 8232 <testcase> / 0 failures / 0 errors / 55 skipped (BUILD SUCCESS, 02:59:39Z-03:23:52Z)"
+  "ts": "2026-11-28T08:01:07Z",
+  "summary": "Portal deadlines Overdue/Completed/Cancelled no lower bound without from (D-127) @93d6faccd — 8247 <testcase> / 0 failures / 0 errors / 55 skipped (exit 0, 07:36:10Z-08:01:07Z)"
 }

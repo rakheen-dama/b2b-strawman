@@ -1,7 +1,7 @@
 {
-  "commit": "93d6faccd5826d518cf33b3ad57c4f4123d0145c",
-  "command": "bash backend/scripts/verify.sh -q (wt-fix-portal-overdue, fix/portal-overdue-filter-lookback)",
+  "commit": "278110eaba0a76b91b29c3bfe9b12da67c97e807",
+  "command": "bash backend/scripts/verify.sh -q (wt-fix-ledger-invested, fix/ledger-nonzero-incl-investments)",
   "exit": 0,
-  "ts": "2026-11-28T08:01:07Z",
-  "summary": "Portal deadlines Overdue/Completed/Cancelled no lower bound without from (D-127) @93d6faccd — 8247 <testcase> / 0 failures / 0 errors / 55 skipped (exit 0, 07:36:10Z-08:01:07Z)"
+  "ts": "2026-11-28T08:42:26Z",
+  "summary": "Client ledgers non-zero filter keeps clients holding s86(4) money (D-126) @278110eab — 8249 <testcase> / 0 failures / 0 errors / 55 skipped (exit 0, 08:16:44Z-08:42:26Z)"
 }

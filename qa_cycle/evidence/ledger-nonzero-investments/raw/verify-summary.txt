@@ -1,0 +1,1 @@
+bash backend/scripts/verify.sh -q @278110eab (wt-fix-ledger-invested): exit 0, 935 classes, 8249 <testcase>, failures=0, errors=0, skipped=55, 2026-11-28T08:16:44Z-08:42:26Z (25:42). Log tail: 'Surefire is going to kill self fork JVM' after System.exit(0) — fork shutdown notice, exit code 0.

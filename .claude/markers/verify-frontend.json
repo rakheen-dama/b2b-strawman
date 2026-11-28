@@ -1,7 +1,7 @@
 {
-  "commit": "a25ccc25c9a746b62daae6b0e4d77f0406d3875c",
+  "commit": "e06dffc5829f103a69a58a75f4265b0b6612c1ae",
   "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm build && pnpm test",
   "exit": 0,
-  "ts": "2026-11-28T05:17:51Z",
-  "summary": "lint 0 errors (75 pre-existing warnings), typecheck 0, format:check clean, build ok, vitest 556 files / 5695 passed + 2 skipped. Run at d430812cc; a25ccc25c9a746b62daae6b0e4d77f0406d3875c adds only qa_cycle/evidence (no frontend change). e2e legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped; OBS 19/19."
+  "ts": "2026-11-28T06:05:51Z",
+  "summary": "lint 0 errors (75 pre-existing warnings, 0 in changed file), typecheck 0, format:check clean, build ok, vitest 557 files / 5701 passed + 2 skipped (full suite at e06dffc5829f103a69a58a75f4265b0b6612c1ae). Test-only change; no e2e."
 }

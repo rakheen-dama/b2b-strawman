@@ -1,0 +1,74 @@
+# before fix: base 6f7032b18da13eb2a345002c17338024fb20dea9 + new test only; 2026-11-28T10:27:06Z
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-dashboard-active-clients/frontend
+
+ ❯ __tests__/trust/dashboard-active-clients.test.ts (5 tests | 3 failed) 7ms
+     × counts a client whose whole balance is placed in s86(4) (D-126) 5ms
+     × counts every active client, not only the first 200 ledgers 1ms
+     × asks the server for the non-zero count instead of filtering a page of rows 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust/dashboard-active-clients.test.ts > fetchDashboardData — Active Clients (D-131) > counts a client whose whole balance is placed in s86(4) (D-126)
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ __tests__/trust/dashboard-active-clients.test.ts:82:32
+     80|     const data = await fetchDashboardData("acc-1");
+     81|
+     82|     expect(data.activeClients).toBe(2);
+       |                                ^
+     83|   });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  __tests__/trust/dashboard-active-clients.test.ts > fetchDashboardData — Active Clients (D-131) > counts every active client, not only the first 200 ledgers
+AssertionError: expected 200 to be 250 // Object.is equality
+
+- Expected
++ Received
+
+- 250
++ 200
+
+ ❯ __tests__/trust/dashboard-active-clients.test.ts:92:32
+     90|     const data = await fetchDashboardData("acc-1");
+     91|
+     92|     expect(data.activeClients).toBe(250);
+       |                                ^
+     93|   });
+     94|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  __tests__/trust/dashboard-active-clients.test.ts > fetchDashboardData — Active Clients (D-131) > asks the server for the non-zero count instead of filtering a page of rows
+AssertionError: expected null to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+null
+
+ ❯ __tests__/trust/dashboard-active-clients.test.ts:102:44
+    100|     const requests = clientLedgerRequests();
+    101|     expect(requests).toHaveLength(1);
+    102|     expect(requests[0].get("nonZeroOnly")).toBe("true");
+       |                                            ^
+    103|     expect(requests[0].get("size")).toBe("1");
+    104|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  12:27:08
+   Duration  440ms (transform 89ms, setup 80ms, import 100ms, tests 7ms, environment 149ms)
+

@@ -1,0 +1,26 @@
+
+> portal@0.1.0 dev /Users/rakheendama/Projects/2026/wt-fix-dashboard-active-clients/portal
+> next dev --port 3002
+
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.113:3002
+✓ Ready in 426ms
+✓ Running next.config.ts took 110ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+ GET /login 200 in 1432ms (next.js: 1284ms, application-code: 148ms)
+ GET /trust/6063d4d2-e159-40e1-a3de-e79572b33359 200 in 752ms (next.js: 679ms, application-code: 73ms)
+ GET /trust/6063d4d2-e159-40e1-a3de-e79572b33359 200 in 29ms (next.js: 4ms, application-code: 25ms)
+ GET /login 200 in 21ms (next.js: 1.9ms, application-code: 19ms)
+ GET /trust/b55e39f7-5b48-4472-9a33-e1c7c27478cf 200 in 27ms (next.js: 4ms, application-code: 23ms)
+ GET /trust/b55e39f7-5b48-4472-9a33-e1c7c27478cf 200 in 24ms (next.js: 1.8ms, application-code: 22ms)
+[?25h
+ ELIFECYCLE  Command failed with exit code 143.

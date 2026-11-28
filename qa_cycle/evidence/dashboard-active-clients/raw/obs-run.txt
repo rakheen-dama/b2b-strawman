@@ -1,0 +1,18 @@
+2026-11-28T10:42:32Z
+PASS 0. before the seed: Active Clients reads 0 — "Active Clients0Clients with trust balances"
+seeded OBS Act Holder 72da (9487 ms)
+seeded OBS Act Plain 72da (6206 ms)
+seeded OBS Act Settled 72da (8871 ms)
+PASS pre-state: the dashboard's account had no ledgers before the seed — {"preCount":0}
+PASS seed: holder's general balance is R 0 and R 30 000 is invested (card, read-only GET) — {"balance":0,"investedBalance":30000}
+PASS 1. dashboard: Active Clients reads 2 (Plain + Holder; Settled not counted) — "Active Clients2Clients with trust balances"
+PASS 1. card hint still reads 'Clients with trust balances' — "Active Clients2Clients with trust balances"
+PASS 2. Non-zero balances only: 2 clients found — "2 clients found"
+PASS 2. list = Plain + Holder; Settled hidden — ["OBS Act Plain 72da","OBS Act Holder 72da"]
+PASS 2. dashboard card == list count — {"card":"2","list":"2 clients found"}
+PASS 2. card == API nonZeroOnly totalElements — {"size":1,"number":0,"totalElements":2,"totalPages":2}
+PASS 3. cross-check: the old rule (general ≠ 0 over ?size=200) gives 1 — the holder was left out — {"oldCount":1,"rows":[{"name":"OBS Act Plain 72da","balance":1000,"invested":0},{"name":"OBS Act Settled 72da","balance":0,"invested":0},{"name":"OBS Act Holder 72da","balance":0,"invested":30000}]}
+PASS console: no errors — []
+OBS PASS
+exit=0
+2026-11-28T10:43:03Z

@@ -16,6 +16,13 @@ import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 const SCAN_ROOTS = ["app", "components", "lib"] as const;
 
+// The scans walk the whole source tree; read it once and share it across the cases.
+let sourceTree: { rel: string; text: string }[] | undefined;
+const scannedFiles = () => (sourceTree ??= readSourceTree(SCAN_ROOTS));
+
+// The tree scans take 3.9-5.8 s on CI and hit vitest's 5 s default (runs 46030915561, 46089899092).
+const SCAN = { timeout: 30_000 };
+
 const token = (t: string) => new RegExp(`(?<![\\w:/-])${t.replace(/[/[\]]/g, "\\$&")}(?![\\w/-])`);
 const BG_TRANSPARENT = token("bg-transparent");
 const BORDER_SLATE_200 = token("border-slate-200");
@@ -39,7 +46,7 @@ function isLowContrastMuted(line: string): boolean {
 }
 
 function offendingLines(match: (line: string) => boolean): string[] {
-  return readSourceTree(SCAN_ROOTS).flatMap(({ rel, text }) =>
+  return scannedFiles().flatMap(({ rel, text }) =>
     text
       .split("\n")
       .map((line, i) => (match(line) ? `${rel}:${i + 1}` : null))
@@ -153,7 +160,7 @@ function unfilledField({ variants }: { variants: string[] }): boolean {
 }
 
 function nativeFields(): { where: string; variants: string[] }[] {
-  return readSourceTree(SCAN_ROOTS)
+  return scannedFiles()
     .filter(({ rel, text }) => rel.endsWith(".tsx") && /<(select|textarea)\b/.test(text))
     .flatMap(({ rel, text }) => nativeFieldsIn(rel, text));
 }
@@ -206,11 +213,11 @@ describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
     );
   });
 
-  it("D-3: no form field keeps an unfilled, near-invisible border in dark mode", () => {
+  it("D-3: no form field keeps an unfilled, near-invisible border in dark mode", SCAN, () => {
     expect(offendingLines(isUnfilledDarkField)).toEqual([]);
   });
 
-  it("D-3: every native select/textarea with a border carries the Input dark fill", () => {
+  it("D-3: every native select/textarea with a border carries the Input dark fill", SCAN, () => {
     const fields = nativeFields();
     expect(fields.length, "the scan finds the app's native fields").toBeGreaterThan(70);
     const missing = fields
@@ -228,7 +235,7 @@ describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
     expect(nativeSelectClassName).not.toContain("dark:border-slate-800");
   });
 
-  it("D-4: no element uses the text-slate-400 / dark:text-slate-600 muted pair", () => {
+  it("D-4: no element uses the text-slate-400 / dark:text-slate-600 muted pair", SCAN, () => {
     expect(offendingLines(isLowContrastMuted)).toEqual([]);
   });
 

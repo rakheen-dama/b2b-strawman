@@ -71,7 +71,7 @@ function makeLine(overrides?: Partial<InvoiceLineResponse>): InvoiceLineResponse
   };
 }
 
-function makeInvoice(): InvoiceResponse {
+function makeInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse {
   return {
     id: "inv-1",
     clientId: "c1",
@@ -114,13 +114,12 @@ function makeInvoice(): InvoiceResponse {
     taxRegistrationLabel: null,
     taxLabel: null,
     hasPerLineTax: true,
+    ...overrides,
   };
 }
 
-function renderDetail(taxRates: TaxRateResponse[]) {
-  return renderHook(() =>
-    useInvoiceDetail({ initialInvoice: makeInvoice(), slug: "acme", taxRates })
-  );
+function renderDetail(taxRates: TaxRateResponse[], initialInvoice = makeInvoice()) {
+  return renderHook(() => useInvoiceDetail({ initialInvoice, slug: "acme", taxRates }));
 }
 
 async function addLine(
@@ -194,6 +193,48 @@ describe("useInvoiceDetail — the 'None' tax choice on a fee-note line", () => 
       const request = await editLine(result, VAT.id);
       expect(request.taxRateId).toBe(VAT.id);
       expect(request.clearTaxRate).toBeUndefined();
+    });
+  });
+
+  describe("the header Tax Amount field after a line save", () => {
+    it("shows the server's tax (0) once the last taxed line is set to 'None', not the VAT it opened with", async () => {
+      const untaxed = makeInvoice({
+        hasPerLineTax: false,
+        taxAmount: 0,
+        total: 100,
+        lines: [
+          makeLine({ taxRateId: null, taxRateName: null, taxRatePercent: null, taxAmount: null }),
+        ],
+      });
+      vi.mocked(updateLineItem).mockResolvedValueOnce({ success: true, invoice: untaxed });
+      const { result } = renderDetail([VAT, ZERO_RATED]);
+      expect(result.current.taxAmount).toBe("15");
+
+      await editLine(result, "none");
+
+      expect(result.current.invoice.hasPerLineTax).toBe(false);
+      expect(result.current.taxAmount).toBe("0");
+    });
+
+    it("keeps a header tax the user typed on a header-tax note when a line is added", async () => {
+      const headerTaxNote = makeInvoice({
+        hasPerLineTax: false,
+        taxAmount: 10,
+        total: 110,
+        lines: [
+          makeLine({ taxRateId: null, taxRateName: null, taxRatePercent: null, taxAmount: null }),
+        ],
+      });
+      vi.mocked(addLineItem).mockResolvedValueOnce({
+        success: true,
+        invoice: { ...headerTaxNote, subtotal: 150, total: 160 },
+      });
+      const { result } = renderDetail([VAT], headerTaxNote);
+      act(() => result.current.setTaxAmount("12"));
+
+      await addLine(result, "none");
+
+      expect(result.current.taxAmount).toBe("12");
     });
   });
 });

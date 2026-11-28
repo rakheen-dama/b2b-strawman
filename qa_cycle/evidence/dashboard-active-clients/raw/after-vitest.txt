@@ -1,0 +1,10 @@
+# after fix (working tree on 6f7032b18da13eb2a345002c17338024fb20dea9); 2026-11-28T10:27:21Z
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-fix-dashboard-active-clients/frontend
+
+
+ Test Files  4 passed (4)
+      Tests  57 passed (57)
+   Start at  12:27:22
+   Duration  1.61s (transform 590ms, setup 280ms, import 1.46s, tests 678ms, environment 697ms)
+

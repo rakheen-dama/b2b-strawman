@@ -101,18 +101,19 @@ export async function fetchCashbookBalance(accountId: string): Promise<CashbookB
 // ── Dashboard aggregation ──────────────────────────────────────────
 
 export async function fetchDashboardData(accountId: string): Promise<TrustDashboardData> {
-  const [cashbook, ledgers, pendingApprovals, recentTransactions] = await Promise.all([
+  const [cashbook, activeLedgers, pendingApprovals, recentTransactions] = await Promise.all([
     fetchCashbookBalance(accountId),
-    // TODO: Replace with dedicated count endpoint when backend supports it
+    // "Active" = holds money in trust on the account: a general balance or s86(4) invested money
+    // (D-126/D-131). The server's nonZeroOnly filter applies that rule to every ledger in its count
+    // query, so one row is enough to read the total.
     api.get<PaginatedResponse<ClientLedgerCard>>(
-      `/api/trust-accounts/${accountId}/client-ledgers?size=200`
+      `/api/trust-accounts/${accountId}/client-ledgers?nonZeroOnly=true&size=1`
     ),
     fetchPendingApprovals(accountId),
     fetchRecentTransactions(accountId),
   ]);
 
-  // Count clients with non-zero balance as "active"
-  const activeClients = ledgers.content.filter((l) => l.balance !== 0).length;
+  const activeClients = activeLedgers.page.totalElements;
 
   // Build alerts from pending approvals aging
   const alerts: TrustAlert[] = [];

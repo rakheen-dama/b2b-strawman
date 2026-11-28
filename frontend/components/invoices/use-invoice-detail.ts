@@ -266,6 +266,9 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(newLineQty) || 1,
         unitPrice: parseFloat(newLineRate) || 0,
         taxRateId: newLineTaxRateId !== "none" ? newLineTaxRateId : null,
+        // "None" picked in the tax select means no tax, not the org default. With no rates
+        // loaded the select is hidden, nothing was chosen, and the backend default applies.
+        ...(newLineTaxRateId === "none" && taxRates.length > 0 && { noTaxRate: true }),
       };
       const result = await addLineItem(slug, invoice.id, invoice.clientId, request);
       if (result.success && result.invoice) {
@@ -294,6 +297,8 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         quantity: parseFloat(editLineQty) || 1,
         unitPrice: parseFloat(editLineRate) || 0,
         taxRateId: editLineTaxRateId !== "none" ? editLineTaxRateId : null,
+        // Without the flag a null rate means "keep and re-price the line's current rate".
+        ...(editLineTaxRateId === "none" && { clearTaxRate: true }),
       };
       const result = await updateLineItem(
         slug,

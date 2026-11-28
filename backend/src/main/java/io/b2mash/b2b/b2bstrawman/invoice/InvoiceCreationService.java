@@ -532,8 +532,12 @@ public class InvoiceCreationService {
 
     line = lineRepository.save(line);
 
-    invoiceTaxService.applyTaxToLine(line, request.taxRateId());
-    lineRepository.save(line);
+    // A chosen rate wins; an explicit "None" leaves the line untaxed even when the org has a
+    // default rate; a request that says neither gets the default rate.
+    if (request.taxRateId() != null || !Boolean.TRUE.equals(request.noTaxRate())) {
+      invoiceTaxService.applyTaxToLine(line, request.taxRateId());
+      lineRepository.save(line);
+    }
 
     invoiceTaxService.recalculateInvoiceTotals(invoice);
     invoice = invoiceRepository.save(invoice);

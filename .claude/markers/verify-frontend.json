@@ -1,7 +1,7 @@
 {
-  "commit": "364ca9028",
-  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-dsar-countdown, PR #1887)",
+  "commit": "726fcd21e",
+  "command": "cd frontend && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node 20.11.1, wt-fix-guard-timeout, contrast-guard timeout PR)",
   "exit": 0,
-  "ts": "2026-11-27T20:25:36Z",
-  "summary": "PR #1887 @364ca9028 (final head; gate ran on product commit 36a41e64d, head adds evidence only) — lint 0 errors (75 warnings, pre-existing, none in changed files), typecheck 0, format clean, vitest 553 files / 5665 passed / 2 skipped, build 0. E2E fresh stack from the worktree @36a41e64d: legal-lifecycle 105/105, legal-depth-ii 40 + 4 skipped, compliance + data-protection-settings 11/11 (raw/). OBS pre-midnight 6/6 PASS (today/past deadlines not producible via UI; covered by vitest)."
+  "ts": "2026-11-28T01:43:52Z",
+  "summary": "@726fcd21e (final head) — lint 0 errors (75 warnings, pre-existing, none in changed file), typecheck 0, format clean, build 0, full vitest 553 files / 5665 passed / 2 skipped exit 0 (88 s, under /tmp/kazi-heavy.lock). dark-mode-contrast-guard.test.ts 5/5 single-file runs green (6/6 each); --testTimeout=1 run shows the 3 scan cases keep their 30 s override (only the unmarked self-test times out). Test-only change; E2E not required."
 }
